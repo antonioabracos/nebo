@@ -1,0 +1,25 @@
+%ifndef nebo_ast_hir_lir_planner_e_otimizacao_STREAM_INC
+%define nebo_ast_hir_lir_planner_e_otimizacao_STREAM_INC 1
+%include "runtime/protocol/rpc.inc"
+%define NEBO_BACKPRESSURE 17
+%define NEBO_STREAM_END 18
+%define NEBO_RPC_METHOD_SERVER_STREAM 4
+%define NEBO_RPC_METHOD_CLIENT_STREAM 8
+%define NEBO_RPC_METHOD_BIDI_STREAM 16
+%define nebo_ast_hir_lir_planner_e_otimizacao_STREAM_MAX_CAPACITY 64
+%define NEBO_STREAM_MAX_ITEM_BYTES 256
+%define NEBO_STREAM_OPEN 0
+%define NEBO_STREAM_HALF_CLOSED 1
+%define nebo_ast_hir_lir_planner_e_otimizacao_STREAM_CANCELLED 2
+%define nebo_ast_hir_lir_planner_e_otimizacao_STREAM_BUFFER 0
+%define nebo_ast_hir_lir_planner_e_otimizacao_STREAM_CAPACITY 8
+%define NEBO_STREAM_ITEM_SIZE 16
+%define nebo_ast_hir_lir_planner_e_otimizacao_STREAM_HEAD 24
+%define nebo_ast_hir_lir_planner_e_otimizacao_STREAM_TAIL 32
+%define nebo_ast_hir_lir_planner_e_otimizacao_STREAM_COUNT 40
+%define NEBO_STREAM_STATE 48
+%define nebo_ast_hir_lir_planner_e_otimizacao_STREAM_FLAGS 56
+%define NEBO_STREAM_DEADLINE 64
+%define NEBO_STREAM_NOW 72
+%define nebo_ast_hir_lir_planner_e_otimizacao_STREAM_SIZE 80
+%endif

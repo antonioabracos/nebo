@@ -1,0 +1,27 @@
+%ifndef NEBOC_PROGRAMMER_TYPE_IR_INC
+%define NEBOC_PROGRAMMER_TYPE_IR_INC 1
+%define NEBOC_IR_PRODUCT 1
+%define NEBOC_IR_SUM 2
+%define NEBOC_IR_FIELD_ACCESS 3
+%define NEBOC_HIR_PRODUCT_CONSTRUCT 901
+%define NEBOC_HIR_SUM_CONSTRUCT 902
+%define NEBOC_HIR_FIELD_PROJECT 903
+%define NEBOC_LIR_AGGREGATE_INIT 911
+%define NEBOC_LIR_TAGGED_INIT 912
+%define NEBOC_LIR_FIELD_LOAD 913
+%define neboc_structs_enums_variants_e_tipos_do_programador_IR_KIND_OFFSET 0
+%define neboc_structs_enums_variants_e_tipos_do_programador_IR_SEMANTIC_PTR_OFFSET 8
+%define neboc_structs_enums_variants_e_tipos_do_programador_IR_SEMANTIC_HASH_OFFSET 16
+%define NEBOC_IR_NOMINAL_TYPE_OFFSET 24
+%define NEBOC_IR_MEMBER_INDEX_OFFSET 32
+%define neboc_structs_enums_variants_e_tipos_do_programador_IR_TARGET_OFFSET 40
+%define NEBOC_IR_HIR_OPCODE_OFFSET 48
+%define NEBOC_IR_LIR_OPCODE_OFFSET 56
+%define NEBOC_IR_ALLOCATION_OFFSET 64
+%define NEBOC_IR_MANGLE_OFFSET 72
+%define neboc_structs_enums_variants_e_tipos_do_programador_IR_HASH_OFFSET 80
+%define neboc_structs_enums_variants_e_tipos_do_programador_IR_DIAGNOSTIC_OFFSET 88
+%define neboc_structs_enums_variants_e_tipos_do_programador_IR_REQUEST_SIZE 96
+%define neboc_structs_enums_variants_e_tipos_do_programador_IR_REQUEST_QWORDS 12
+%define neboc_structs_enums_variants_e_tipos_do_programador_IR_TARGET_X86_64_SYSV 1
+%endif

@@ -1,0 +1,16 @@
+%ifndef NEBOC_NET_PORT_RUNTIME_INC
+%define NEBOC_NET_PORT_RUNTIME_INC 1
+%include "compiler/lowering/stdlib/net_port_native.inc"
+%define neboc_rede_e_protocolos_RUNTIME_MAGIC_OFFSET 0
+%define neboc_rede_e_protocolos_RUNTIME_PLAN_HASH_OFFSET 8
+%define neboc_rede_e_protocolos_RUNTIME_RESULT_OFFSET 16
+%define neboc_rede_e_protocolos_RUNTIME_OPERATION_OFFSET 24
+%define neboc_rede_e_protocolos_RUNTIME_GENERATION_OFFSET 32
+%define neboc_rede_e_protocolos_RUNTIME_CONSUMED_OFFSET 40
+%define neboc_rede_e_protocolos_RUNTIME_DIAGNOSTIC_OFFSET 48
+%define neboc_rede_e_protocolos_RUNTIME_HASH_OFFSET 56
+%define neboc_rede_e_protocolos_RUNTIME_HASHED_BYTES 56
+%define neboc_rede_e_protocolos_RUNTIME_QWORDS 8
+%define neboc_rede_e_protocolos_RUNTIME_SIZE 64
+%define neboc_rede_e_protocolos_RUNTIME_MAGIC 0x4e45424f47323952
+%endif

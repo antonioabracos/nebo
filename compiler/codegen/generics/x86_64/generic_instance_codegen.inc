@@ -1,0 +1,12 @@
+%ifndef neboc_option_result_null_externo_e_erros_tipados_GENERIC_CODEGEN_INC
+%define neboc_option_result_null_externo_e_erros_tipados_GENERIC_CODEGEN_INC 1
+
+%define NEBOC_GEN_CODEGEN_PLAN_OFFSET 0
+%define NEBOC_GEN_CODEGEN_WRITER_OFFSET 8
+%define NEBOC_GEN_CODEGEN_EMITTED_OFFSET 16
+%define NEBOC_GEN_CODEGEN_HASH_OFFSET 24
+%define NEBOC_GEN_CODEGEN_DIAGNOSTIC_OFFSET 32
+%define NEBOC_GEN_CODEGEN_QWORDS 5
+%define NEBOC_GEN_CODEGEN_SIZE 40
+
+%endif

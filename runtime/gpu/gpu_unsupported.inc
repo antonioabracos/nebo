@@ -1,0 +1,25 @@
+%ifndef NEBO_GPU_UNSUPPORTED_INC
+%define NEBO_GPU_UNSUPPORTED_INC 1
+%define NEBO_GPU_OK 0
+%define NEBO_GPU_E_ARGUMENT 1
+%define NEBO_GPU_E_BACKEND_UNSUPPORTED 2
+%define NEBO_GPU_E_CAPABILITY_REQUIRED 3
+%define NEBO_GPU_E_STATE 4
+%define NEBO_GPU_E_LIMIT 5
+%define NEBO_GPU_BACKEND_NONE 0
+%define NEBO_GPU_STATE_UNAVAILABLE 1
+%ifndef NEBO_GPU_UNSUPPORTED_IMPLEMENTATION
+extern nebo_gpu_enumerate
+extern nebo_gpu_backend_status
+extern nebo_gpu_context_create
+extern nebo_gpu_context_properties
+extern nebo_gpu_context_synchronize
+extern nebo_gpu_context_close
+extern nebo_gpu_buffer_create
+extern nebo_gpu_buffer_close
+extern nebo_gpu_copy_to_device
+extern nebo_gpu_copy_to_host
+extern nebo_gpu_tensor_transfer
+extern nebo_gpu_pin_host
+%endif
+%endif

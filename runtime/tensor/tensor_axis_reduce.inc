@@ -1,0 +1,7 @@
+%ifndef NEBO_TENSOR_AXIS_REDUCE_INC
+%define NEBO_TENSOR_AXIS_REDUCE_INC 1
+%include "compiler/semantic/tensor/tensor_reduce_contract.inc"
+%ifndef NEBO_TENSOR_AXIS_REDUCE_IMPLEMENTATION
+extern nebo_tensor_reduce_axes_f64
+%endif
+%endif

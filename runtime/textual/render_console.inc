@@ -1,0 +1,46 @@
+%ifndef NEBO_RENDER_CONSOLE_INC
+%define NEBO_RENDER_CONSOLE_INC 1
+
+; Immutable caller-owned RenderPlan node ABI.
+RENDER_NODE_KIND        equ 0
+RENDER_NODE_FLAGS       equ 8
+RENDER_NODE_DATA        equ 16
+RENDER_NODE_LENGTH      equ 24
+RENDER_NODE_META        equ 32
+RENDER_NODE_AUX         equ 40
+RENDER_NODE_SIZE        equ 48
+
+RENDER_NODE_TEXT        equ 1
+RENDER_NODE_BREAK       equ 2
+RENDER_NODE_SEPARATOR   equ 3
+RENDER_NODE_STYLE       equ 4
+RENDER_NODE_SEMANTIC    equ 5
+RENDER_NODE_STRUCTURE   equ 6
+
+RENDER_FLAG_FALLBACK    equ 1
+RENDER_FLAG_PRIVATE     equ 2
+RENDER_FLAG_REDACT      equ 4
+
+RENDER_TARGET_PLAIN     equ 1
+RENDER_TARGET_ANSI      equ 2
+RENDER_TARGET_MARKDOWN  equ 3
+RENDER_TARGET_HTML      equ 4
+RENDER_TARGET_HEADLESS  equ 5
+
+RENDER_OK               equ 0
+RENDER_E_INVALID        equ 1
+RENDER_E_LIMIT          equ 2
+RENDER_E_CAPACITY       equ 3
+RENDER_E_TARGET         equ 4
+RENDER_E_UNAVAILABLE    equ 5
+RENDER_E_PRIVACY        equ 6
+
+RENDER_MAX_NODES        equ 256
+RENDER_MAX_PAYLOAD      equ 4096
+RENDER_MAX_OUTPUT       equ 1048576
+RENDER_MAX_DEPTH        equ 16
+
+; Advanced monotonically by the O3 DAG materializer.
+RENDER_MAX_FEATURE_ID  equ 7407
+
+%endif

@@ -1,0 +1,25 @@
+%ifndef NEBO_BACKWARD_INC
+%define NEBO_BACKWARD_INC 1
+%define NEBO_BACKWARD_OK 0
+%define NEBO_BACKWARD_E_ARGUMENT 1
+%define NEBO_BACKWARD_E_LIMIT 2
+%define NEBO_BACKWARD_E_SHAPE 3
+%define NEBO_BACKWARD_E_GRAPH 4
+%define NEBO_BACKWARD_E_GENERATION 5
+%define NEBO_BACKWARD_E_NONFINITE 6
+%define NEBO_BACKWARD_E_OVERLAP 7
+%define NEBO_BACKWARD_MAX_NODES 256
+%define NEBO_BACKWARD_MAX_ELEMENTS 4096
+%define NEBO_BACKWARD_NODE_SIZE 64
+%define NEBO_BACKWARD_OP_LEAF 0
+%define NEBO_BACKWARD_OP_ADD 1
+%define NEBO_BACKWARD_OP_MUL 2
+%define NEBO_BACKWARD_OP_SUM 3
+%define NEBO_BACKWARD_NO_PARENT -1
+%ifndef NEBO_BACKWARD_IMPLEMENTATION
+extern nebo_loss_backward
+extern nebo_tensor_backward
+extern nebo_gradient_accumulate
+extern nebo_gradient_zero
+%endif
+%endif

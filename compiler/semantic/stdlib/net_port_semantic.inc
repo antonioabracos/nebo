@@ -1,0 +1,32 @@
+%ifndef NEBOC_NET_PORT_SEMANTIC_INC
+%define NEBOC_NET_PORT_SEMANTIC_INC 1
+%include "compiler/parser/net_port_contract.inc"
+%define neboc_rede_e_protocolos_SEM_MAGIC_OFFSET 0
+%define neboc_rede_e_protocolos_SEM_OPERATION_OFFSET 8
+%define neboc_rede_e_protocolos_SEM_ARITY_OFFSET 16
+%define NEBOC_SEM_PORT_OFFSET 24
+%define neboc_rede_e_protocolos_SEM_DIGIT_COUNT_OFFSET 32
+%define neboc_rede_e_protocolos_SEM_LITERAL_HASH_OFFSET 40
+%define neboc_rede_e_protocolos_SEM_TYPE_OFFSET 48
+%define neboc_rede_e_protocolos_SEM_EFFECT_OFFSET 56
+%define neboc_rede_e_protocolos_SEM_SYNTAX_HASH_OFFSET 64
+%define neboc_rede_e_protocolos_SEM_AUTHORITY_HASH_OFFSET 72
+%define neboc_rede_e_protocolos_SEM_RESULT_TYPE_OFFSET 80
+%define neboc_rede_e_protocolos_SEM_DECISION_OFFSET 88
+%define neboc_rede_e_protocolos_SEM_DIAGNOSTIC_OFFSET 96
+%define neboc_rede_e_protocolos_SEM_FLAGS_OFFSET 104
+%define neboc_rede_e_protocolos_SEM_RESERVED_OFFSET 112
+%define neboc_rede_e_protocolos_SEM_HASH_OFFSET 120
+%define neboc_rede_e_protocolos_SEM_HASHED_BYTES 120
+%define neboc_rede_e_protocolos_SEM_QWORDS 16
+%define neboc_rede_e_protocolos_SEM_SIZE 128
+%define neboc_rede_e_protocolos_SEM_ALIGNMENT 8
+%define neboc_rede_e_protocolos_SEM_MAGIC 0x4e45424f47323953
+%define neboc_rede_e_protocolos_SEM_TYPE_INT64 3
+%define neboc_rede_e_protocolos_SEM_EFFECT_PURE 0
+%define neboc_rede_e_protocolos_SEM_FLAG_AUTHENTICATED 1
+%define neboc_rede_e_protocolos_SEM_FLAG_OFFLINE_BOUNDED 2
+%define neboc_rede_e_protocolos_SEM_REQUIRED_FLAGS 3
+%define neboc_rede_e_protocolos_SEM_DECISION_DENY 0
+%define neboc_rede_e_protocolos_SEM_DECISION_PERMIT 1
+%endif

@@ -1,0 +1,122 @@
+%ifndef NEBOC_TEXT_CHAR_BYTES_SEMANTIC_INC
+%define NEBOC_TEXT_CHAR_BYTES_SEMANTIC_INC 1
+
+%define NEBOC_SEM_CONTRACT_KIND_OFFSET 0
+%define neboc_text_char_unicode_e_bytes_SEM_SYNTAX_REQUEST_OFFSET 8
+%define neboc_text_char_unicode_e_bytes_SEM_RECEIVER_TYPE_OFFSET 16
+%define NEBOC_SEM_RECEIVER_FORM_OFFSET 24
+%define neboc_text_char_unicode_e_bytes_SEM_RECEIVER_VALUE_ID_OFFSET 32
+%define neboc_text_char_unicode_e_bytes_SEM_SOURCE_FORM_OFFSET 40
+%define neboc_text_char_unicode_e_bytes_SEM_SOURCE_ID_OFFSET 48
+%define neboc_text_char_unicode_e_bytes_SEM_NODE_START_OFFSET 56
+%define neboc_text_char_unicode_e_bytes_SEM_NODE_END_OFFSET 64
+%define neboc_text_char_unicode_e_bytes_SEM_SUBJECT_START_OFFSET 72
+%define neboc_text_char_unicode_e_bytes_SEM_SUBJECT_END_OFFSET 80
+%define NEBOC_SEM_VALUE_FLAGS_OFFSET 88
+%define NEBOC_SEM_SCALAR_VALUE_OFFSET 96
+%define NEBOC_SEM_BYTE_LENGTH_OFFSET 104
+%define NEBOC_SEM_CODEPOINT_COUNT_OFFSET 112
+
+%define neboc_text_char_unicode_e_bytes_SEM_OPERATION_OFFSET 120
+%define neboc_text_char_unicode_e_bytes_SEM_OPERAND_TYPE_OFFSET 128
+%define neboc_text_char_unicode_e_bytes_SEM_RESULT_TYPE_OFFSET_lowering_textual 136
+%define neboc_text_char_unicode_e_bytes_SEMANTIC_KIND_OFFSET 144
+%define neboc_text_char_unicode_e_bytes_SEM_EFFECT_FLAGS_OFFSET 152
+%define neboc_text_char_unicode_e_bytes_SEM_HIR_KIND_OFFSET 160
+%define neboc_text_char_unicode_e_bytes_SEM_LIR_KIND_OFFSET 168
+%define NEBOC_SEM_OPERAND_REPR_OFFSET 176
+%define NEBOC_SEM_RESULT_REPR_OFFSET 184
+%define neboc_text_char_unicode_e_bytes_SEM_POLICY_OFFSET 192
+%define neboc_text_char_unicode_e_bytes_SEM_RUNTIME_METADATA_OFFSET 200
+%define neboc_text_char_unicode_e_bytes_SEM_SOURCE_DIAG_OFFSET 208
+%define neboc_text_char_unicode_e_bytes_SEM_ERROR_CODE_OFFSET 216
+%define neboc_text_char_unicode_e_bytes_SEM_ERROR_START_OFFSET_semantic_types 224
+%define neboc_text_char_unicode_e_bytes_SEM_ERROR_END_OFFSET_semantic_types 232
+%define neboc_text_char_unicode_e_bytes_SEM_SEMANTIC_HASH_OFFSET 240
+%define neboc_text_char_unicode_e_bytes_SEM_PROVENANCE_HASH_OFFSET 248
+%define NEBOC_SEM_RESERVED0_OFFSET 256
+%define NEBOC_SEM_RESERVED1_OFFSET 264
+%define neboc_text_char_unicode_e_bytes_SEM_REQUEST_SIZE_semantic_types 272
+
+%define NEBOC_SEM_CONTRACT_CHAR_LITERAL 1
+%define NEBOC_SEM_CONTRACT_API 2
+
+%define NEBOC_SEM_SOURCE_CHAR_LITERAL 1
+%define NEBOC_SEM_SOURCE_TEXT_LITERAL 2
+%define NEBOC_SEM_SOURCE_TEXT_EXPLICIT 3
+%define NEBOC_SEM_SOURCE_BYTES_STATIC 4
+%define NEBOC_SEM_SOURCE_BYTES_VALUE 5
+
+%define NEBOC_SEM_VALUE_TEXT_VALID_UTF8 1
+%define NEBOC_SEM_VALUE_IMMUTABLE 2
+%define NEBOC_SEM_VALUE_NO_BOM 4
+%define NEBOC_SEM_VALUE_BYTES_EMPTY 8
+%define NEBOC_SEM_VALUE_CHAR_SCALAR 16
+%define NEBOC_SEM_VALUE_FLAGS_TEXT 7
+%define NEBOC_SEM_VALUE_FLAGS_CHAR 18
+%define NEBOC_SEM_VALUE_FLAGS_BYTES_EMPTY 10
+
+%define NEBOC_SEM_OPERATION_CHAR_LITERAL 1
+%define NEBOC_SEM_OPERATION_TEXT_BYTE_LENGTH 2
+%define NEBOC_SEM_OPERATION_TEXT_CODEPOINT_COUNT 3
+%define NEBOC_SEM_OPERATION_CHAR_CODEPOINT 4
+%define NEBOC_SEM_OPERATION_BYTES_EMPTY 5
+%define NEBOC_SEM_OPERATION_BYTES_BYTE_LENGTH 6
+
+%define NEBOC_SEM_KIND_VALUE 1
+%define NEBOC_SEM_KIND_COUNT 2
+%define NEBOC_SEM_KIND_SCALAR_EXTRACT 3
+%define NEBOC_SEM_KIND_STATIC_FACTORY 4
+
+%define neboc_text_char_unicode_e_bytes_SEM_EFFECT_TOTAL 1
+%define neboc_text_char_unicode_e_bytes_SEM_EFFECT_PURE 2
+%define neboc_text_char_unicode_e_bytes_SEM_EFFECT_ALLOCATION_FREE 4
+%define neboc_text_char_unicode_e_bytes_SEM_EFFECT_IMMUTABLE 8
+%define NEBOC_SEM_EFFECT_NONNEGATIVE 16
+%define NEBOC_SEM_EFFECTS_VALUE 15
+%define NEBOC_SEM_EFFECTS_COUNT 31
+
+%define NEBOC_SEM_HIR_CHAR_CONSTANT 1
+%define NEBOC_SEM_HIR_TEXT_BYTE_LENGTH 2
+%define NEBOC_SEM_HIR_TEXT_CODEPOINT_COUNT 3
+%define NEBOC_SEM_HIR_CHAR_CODEPOINT 4
+%define NEBOC_SEM_HIR_BYTES_EMPTY 5
+%define NEBOC_SEM_HIR_BYTES_BYTE_LENGTH 6
+
+%define NEBOC_SEM_LIR_IMMEDIATE_U32 1
+%define NEBOC_SEM_LIR_TEXT_DESCRIPTOR_BYTE_LENGTH 2
+%define NEBOC_SEM_LIR_UTF8_CODEPOINT_COUNT 3
+%define NEBOC_SEM_LIR_ZERO_EXTEND_U32_TO_I64 4
+%define NEBOC_SEM_LIR_STATIC_EMPTY_BYTES_DESCRIPTOR 5
+%define NEBOC_SEM_LIR_BYTES_DESCRIPTOR_LENGTH 6
+
+%define neboc_text_char_unicode_e_bytes_SEM_REPR_NONE 0
+%define NEBOC_SEM_REPR_UNICODE_SCALAR_U32 1
+%define NEBOC_SEM_REPR_TEXT_DESCRIPTOR_24 2
+%define NEBOC_SEM_REPR_BYTES_DESCRIPTOR 3
+%define NEBOC_SEM_REPR_NONNEGATIVE_I64 4
+
+%define NEBOC_SEM_POLICY_CHAR_SCALAR_U32 1
+%define NEBOC_SEM_POLICY_TEXT_BYTE_LENGTH_O1 2
+%define NEBOC_SEM_POLICY_TEXT_CODEPOINT_COUNT_UTF8_ON 3
+%define NEBOC_SEM_POLICY_CHAR_CODEPOINT_ZERO_EXTEND 4
+%define NEBOC_SEM_POLICY_BYTES_EMPTY_STATIC 5
+%define NEBOC_SEM_POLICY_BYTES_BYTE_LENGTH_O1 6
+%define neboc_text_char_unicode_e_bytes_SEM_RUNTIME_METADATA_NONE 0
+
+%define neboc_text_char_unicode_e_bytes_SEM_ERROR_NONE 0
+%define neboc_text_char_unicode_e_bytes_SEM_ERROR_CONTRACT_INVALID 1
+%define NEBOC_SEM_ERROR_CONTRACT_INVARIANT 2
+%define neboc_text_char_unicode_e_bytes_SEM_ERROR_TYPE_INVARIANT 3
+%define neboc_text_char_unicode_e_bytes_SEM_ERROR_FLAG_INVARIANT 4
+%define neboc_text_char_unicode_e_bytes_SEM_ERROR_SPAN_INVARIANT 5
+%define neboc_text_char_unicode_e_bytes_SEM_ERROR_SOURCE_FORM_INVARIANT 6
+%define NEBOC_SEM_ERROR_SCALAR_INVARIANT 7
+%define NEBOC_SEM_ERROR_LENGTH_INVARIANT 8
+%define NEBOC_SEM_ERROR_BYTES_STATE_INVARIANT 9
+%define neboc_text_char_unicode_e_bytes_SEM_ERROR_METHOD_INVARIANT 10
+%define neboc_text_char_unicode_e_bytes_SEM_ERROR_RESULT_INVARIANT 11
+
+%define neboc_text_char_unicode_e_bytes_SEM_HASH_OFFSET_BASIS 1469598103934665603
+%define neboc_text_char_unicode_e_bytes_SEM_HASH_PRIME 1099511628211
+%endif

@@ -1,0 +1,43 @@
+%ifndef NEBOC_DOMAIN_REFINEMENT_IR_CONTRACT_INC
+%define NEBOC_DOMAIN_REFINEMENT_IR_CONTRACT_INC 1
+%include "compiler/semantic/types/domain_refinement_semantic.inc"
+
+%define NEBOC_IR_KIND_RESULT_CONSTRUCT 1
+%define NEBOC_IR_KIND_PREDICATE 2
+%define NEBOC_IR_KIND_EXTRACT_OR 3
+%define neboc_tipos_semanticos_refinamentos_unidades_e_opaque_types_IR_TARGET_X86_64_SYSV 1
+%define NEBOC_IR_ABI_INTEGER 1
+%define NEBOC_IR_FLAG_NOMINAL_TYPE 1
+%define NEBOC_IR_FLAG_TYPED_RESULT 2
+%define NEBOC_IR_FLAG_ZERO_ALLOCATION 4
+%define NEBOC_IR_FLAG_PAYLOAD_PRESERVED 8
+%define NEBOC_IR_FLAG_DETERMINISTIC 16
+%define NEBOC_IR_FLAGS_REQUIRED 31
+%define NEBOC_IR_DIAG_NONE 0
+%define NEBOC_IR_DIAG_SEMANTIC_INVALID 1
+%define NEBOC_IR_DIAG_SEMANTIC_HASH_MISMATCH 2
+%define NEBOC_IR_DIAG_TYPE_INVARIANT 3
+%define NEBOC_IR_DIAG_TAG_INVARIANT 4
+%define NEBOC_IR_DIAG_TARGET_UNSUPPORTED 5
+%define NEBOC_IR_DIAG_PAYLOAD_INVARIANT 6
+
+%define neboc_tipos_semanticos_refinamentos_unidades_e_opaque_types_IR_KIND_OFFSET 0
+%define neboc_tipos_semanticos_refinamentos_unidades_e_opaque_types_IR_SEMANTIC_PTR_OFFSET 8
+%define neboc_tipos_semanticos_refinamentos_unidades_e_opaque_types_IR_SEMANTIC_HASH_OFFSET 16
+%define NEBOC_IR_INPUT_TYPE_OFFSET 24
+%define NEBOC_IR_OUTPUT_TYPE_OFFSET 32
+%define NEBOC_IR_TAG_OFFSET 40
+%define NEBOC_IR_PAYLOAD_OFFSET 48
+%define neboc_tipos_semanticos_refinamentos_unidades_e_opaque_types_IR_TARGET_OFFSET 56
+%define NEBOC_IR_SLOT_SIZE_OFFSET 64
+%define NEBOC_IR_SLOT_ALIGNMENT_OFFSET 72
+%define NEBOC_IR_TAG_OFFSET_OFFSET 80
+%define NEBOC_IR_PAYLOAD_OFFSET_OFFSET 88
+%define neboc_tipos_semanticos_refinamentos_unidades_e_opaque_types_IR_ABI_CLASS_OFFSET 96
+%define neboc_tipos_semanticos_refinamentos_unidades_e_opaque_types_IR_FLAGS_OFFSET 104
+%define neboc_tipos_semanticos_refinamentos_unidades_e_opaque_types_IR_DIAGNOSTIC_OFFSET 112
+%define neboc_tipos_semanticos_refinamentos_unidades_e_opaque_types_IR_HASH_OFFSET 120
+%define neboc_tipos_semanticos_refinamentos_unidades_e_opaque_types_IR_REQUEST_SIZE 128
+%define neboc_tipos_semanticos_refinamentos_unidades_e_opaque_types_IR_REQUEST_QWORDS 16
+
+%endif

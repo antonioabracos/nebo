@@ -1,0 +1,7 @@
+%ifndef NEBO_HYBRID_INC
+%define NEBO_HYBRID_INC 1
+%define NEBO_HYBRID_MAX_DIM 64
+%define NEBO_HYBRID_OK 0
+%define NEBO_HYBRID_INVALID 1
+%define NEBO_HYBRID_LIMIT 2
+%endif

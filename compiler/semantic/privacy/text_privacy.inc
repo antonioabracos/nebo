@@ -1,0 +1,6 @@
+%ifndef NEBO_SEMANTIC_TEXT_PRIVACY_INC
+%define NEBO_SEMANTIC_TEXT_PRIVACY_INC 1
+%include "runtime/textual/text_privacy.inc"
+%define NEBO_PRIVACY_SEMANTIC_ACCEPT 0
+%define NEBO_PRIVACY_SEMANTIC_REJECT 1
+%endif

@@ -1,0 +1,83 @@
+%ifndef NEBOC_MOVE_COPY_CLONE_INC
+%define NEBOC_MOVE_COPY_CLONE_INC 1
+
+; TEXT-CHAR-UNICODE-E-BYTES-F02/F03/F04 public bounded ownership, lexical-borrow and cleanup
+; request.  Cleanup fields are semantic products and never contain pointers.
+%define NEBOC_SEM_SOURCE_OFFSET 0
+%define NEBOC_SEM_SOURCE_LENGTH_OFFSET 8
+%define NEBOC_SEM_TOKENS_OFFSET 16
+%define NEBOC_SEM_TOKEN_COUNT_OFFSET 24
+%define NEBOC_SEM_BUILDER_OFFSET 32
+%define NEBOC_SEM_ROOT_ID_OFFSET 40
+%define NEBOC_SEM_SYMBOLS_OFFSET 48
+%define NEBOC_SEM_SYMBOL_CAPACITY_OFFSET 56
+%define NEBOC_SEM_FOUND_OFFSET 64
+%define neboc_text_char_unicode_e_bytes_SEM_DIAGNOSTIC_OFFSET 72
+%define NEBOC_SEM_ERROR_TOKEN_OFFSET 80
+%define NEBOC_SEM_OPERATION_COUNT_OFFSET 88
+%define NEBOC_SEM_SYMBOL_COUNT_OFFSET 96
+%define neboc_text_char_unicode_e_bytes_SEM_RESULT_TYPE_OFFSET_lowering_memory_native_vertical 104
+%define NEBOC_SEM_RESULT_VALUE_OFFSET 112
+%define neboc_text_char_unicode_e_bytes_SEM_HASH_OFFSET 120
+%define NEBOC_SEM_COPY_COUNT_OFFSET 128
+%define NEBOC_SEM_MOVE_COUNT_OFFSET 136
+%define NEBOC_SEM_CLONE_COUNT_OFFSET 144
+%define NEBOC_SEM_LAYOUT_ID_OFFSET 152
+%define NEBOC_SEM_SCOPE_DEPTH_OFFSET 160
+%define NEBOC_SEM_CLEANUP_COUNT_OFFSET 168
+%define NEBOC_SEM_CLEANUP_ORDER_HASH_OFFSET 176
+%define NEBOC_SEM_CONTROL_OFFSET 184
+%define NEBOC_SEM_LOOP_DEPTH_OFFSET 192
+%define neboc_text_char_unicode_e_bytes_SEM_ERROR_START_OFFSET_semantic_memory_native_vertical 200
+%define neboc_text_char_unicode_e_bytes_SEM_ERROR_END_OFFSET_semantic_memory_native_vertical 208
+%define NEBOC_SEM_LIVE_OWNER_COUNT_OFFSET 216
+%define NEBOC_SEM_CLOSED_OWNER_COUNT_OFFSET 224
+%define NEBOC_SEM_SAFETY_PROOF_HASH_OFFSET 232
+%define neboc_text_char_unicode_e_bytes_SEM_REQUEST_SIZE_driver_cli_linux_x86_64_native_vertical 240
+%define neboc_text_char_unicode_e_bytes_SEM_REQUEST_QWORDS 30
+%define NEBOC_SEM_MAX_SYMBOLS 32
+
+%define neboc_text_char_unicode_e_bytes_SYMBOL_NAME_TOKEN_OFFSET 0
+%define neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET 8
+%define NEBOC_SYMBOL_CATEGORY_OFFSET 16
+%define neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET 24
+%define NEBOC_SYMBOL_VALUE_OFFSET 32
+%define NEBOC_SYMBOL_ORIGIN_NODE_OFFSET 40
+%define NEBOC_SYMBOL_SCOPE_DEPTH_OFFSET 48
+%define NEBOC_SYMBOL_CLEANUP_FLAGS_OFFSET 56
+%define NEBOC_SYMBOL_SIZE 64
+%define NEBOC_SYMBOL_QWORDS 8
+
+%define NEBOC_CATEGORY_COPY 1
+%define NEBOC_CATEGORY_UNIQUE_OWNER 2
+%define NEBOC_CATEGORY_SHARED_BORROW 3
+%define NEBOC_CATEGORY_UNIQUE_BORROW 4
+%define NEBOC_STATE_LIVE 1
+%define neboc_text_char_unicode_e_bytes_STATE_MOVED 2
+%define NEBOC_STATE_BORROWED_SHARED 3
+%define NEBOC_STATE_BORROWED_UNIQUE 4
+%define NEBOC_STATE_RELEASED 5
+%define neboc_text_char_unicode_e_bytes_STATE_DROPPED 6
+
+%define NEBOC_CLEANUP_REQUIRED 1
+%define NEBOC_CLEANUP_DEFERRED 2
+
+%define NEBOC_CONTROL_NONE 0
+%define NEBOC_CONTROL_RETURN 1
+%define NEBOC_CONTROL_BREAK 2
+%define NEBOC_CONTROL_CONTINUE 3
+
+%define neboc_text_char_unicode_e_bytes_DIAG_NONE 0
+%define NEBOC_DIAG_USE_AFTER_MOVE 1
+%define NEBOC_DIAG_DOUBLE_DROP 2
+%define NEBOC_DIAG_BORROW_CONFLICT 3
+%define NEBOC_DIAG_MOVE_WHILE_BORROWED 4
+%define NEBOC_DIAG_BORROW_ESCAPE 5
+%define NEBOC_DIAG_COPY_UNIQUE 6
+%define NEBOC_DIAG_CLONE_UNAVAILABLE 7
+%define NEBOC_DIAG_RESOURCE_LEAK_PATH 13
+%define neboc_text_char_unicode_e_bytes_DIAG_INTERNAL 99
+
+%define neboc_text_char_unicode_e_bytes_LAYOUT_ID 0x5246343242525702
+
+%endif

@@ -1,0 +1,35 @@
+%ifndef NEBOC_QUALITY_NATIVE_INC
+%define NEBOC_QUALITY_NATIVE_INC 1
+
+%include "compiler/lowering/quality/quality_ir.inc"
+
+; q0..q84 embed authenticated PF003 IR. q85..q96 are the certified native
+; plan; payload values and addresses never enter this record.
+%define neboc_quality_confidence_e_lineage_NATIVE_OUTPUT_OFFSET 680
+%define neboc_quality_confidence_e_lineage_NATIVE_TARGET_OFFSET 680
+%define NEBOC_NATIVE_WORD_BYTES_OFFSET 688
+%define NEBOC_NATIVE_SCORE_SCALE_OFFSET 696
+%define NEBOC_NATIVE_RUNTIME_GATE_OFFSET 704
+%define neboc_quality_confidence_e_lineage_NATIVE_RESULT_TYPE_OFFSET 712
+%define NEBOC_NATIVE_EFFECTIVE_QUALITY_OFFSET 720
+%define NEBOC_NATIVE_EFFECTIVE_CONFIDENCE_OFFSET 728
+%define NEBOC_NATIVE_LINEAGE_HASH_OFFSET 736
+%define neboc_quality_confidence_e_lineage_NATIVE_DECISION_OFFSET 744
+%define neboc_quality_confidence_e_lineage_NATIVE_DIAGNOSTIC_OFFSET 752
+%define neboc_quality_confidence_e_lineage_NATIVE_ALLOCATIONS_OFFSET 760
+%define neboc_quality_confidence_e_lineage_NATIVE_HASH_OFFSET 768
+%define neboc_quality_confidence_e_lineage_NATIVE_HASHED_BYTES 768
+%define neboc_quality_confidence_e_lineage_NATIVE_OUTPUT_QWORDS 12
+%define neboc_quality_confidence_e_lineage_NATIVE_REQUEST_SIZE 776
+%define neboc_quality_confidence_e_lineage_NATIVE_REQUEST_QWORDS 97
+%define neboc_quality_confidence_e_lineage_NATIVE_ALIGNMENT 8
+
+%define NEBOC_NATIVE_TARGET_X86_64_SYSV 1
+%define NEBOC_NATIVE_WORD_BYTES 8
+%define NEBOC_NATIVE_RUNTIME_GATE_ID 23041
+
+%if neboc_quality_confidence_e_lineage_NATIVE_OUTPUT_OFFSET != neboc_quality_confidence_e_lineage_IR_REQUEST_SIZE
+    %error "quality_confidence_e_lineage native/IR boundary drift"
+%endif
+
+%endif

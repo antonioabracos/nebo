@@ -1,0 +1,15 @@
+%ifndef NEBO_GRAPH_INC
+%define NEBO_GRAPH_INC 1
+%define nebo_graph_GRAPH_MAX_NODES_reactive 64
+%define nebo_graph_GRAPH_ADJACENCY_reactive 0
+%define NEBO_GRAPH_NODE_COUNT 8
+%define NEBO_GRAPH_STEP_BUDGET 16
+%define NEBO_GRAPH_COMPILED 24
+%define NEBO_GRAPH_ORDER_HASH 32
+%define nebo_graph_GRAPH_SIZE_reactive 40
+%define NEBO_GRAPH_STATUS_OK 0
+%define NEBO_GRAPH_STATUS_INVALID 1
+%define NEBO_GRAPH_STATUS_LIMIT 2
+%define NEBO_GRAPH_STATUS_CYCLE 3
+%define NEBO_GRAPH_STATUS_TIMEOUT 4
+%endif

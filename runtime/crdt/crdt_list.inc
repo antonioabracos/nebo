@@ -1,0 +1,7 @@
+%ifndef NEBO_CRDT_LIST_INC
+%define NEBO_CRDT_LIST_INC 1
+%define NEBO_RGA_MAX_NODES 4096
+%define NEBO_RGA_OK 0
+%define NEBO_RGA_INVALID 1
+%define NEBO_RGA_LIMIT 2
+%endif

@@ -1,0 +1,40 @@
+%ifndef NEBOC_OWNERSHIP_SEMANTIC_INC
+%define NEBOC_OWNERSHIP_SEMANTIC_INC 1
+
+%include "compiler/parser/ownership_contract.inc"
+
+; q0..q9 embed PF002 syntax, q10..q25 embed PF001 state, and q26..q36
+; are semantic-owned, pointerless observations. Inputs are never mutated.
+%define neboc_memoria_ownership_lifetimes_e_recursos_SEMANTIC_SYNTAX_OFFSET 0
+%define NEBOC_SEMANTIC_STATE_OFFSET 80
+%define NEBOC_SEMANTIC_OPERATION_OFFSET 208
+%define NEBOC_SEMANTIC_ACTOR_OFFSET 216
+%define NEBOC_SEMANTIC_REGION_OFFSET 224
+%define NEBOC_SEMANTIC_AUX_TOKEN_OFFSET 232
+%define NEBOC_SEMANTIC_REQUIRED_STATE_OFFSET 240
+%define NEBOC_SEMANTIC_RESULT_STATE_OFFSET 248
+%define NEBOC_SEMANTIC_EFFECTS_OFFSET 256
+%define neboc_memoria_ownership_lifetimes_e_recursos_SEMANTIC_DIAGNOSTIC_OFFSET 264
+%define neboc_memoria_ownership_lifetimes_e_recursos_SEMANTIC_DECISION_OFFSET 272
+%define neboc_memoria_ownership_lifetimes_e_recursos_SEMANTIC_ALLOCATIONS_OFFSET 280
+%define neboc_memoria_ownership_lifetimes_e_recursos_SEMANTIC_HASH_OFFSET 288
+%define neboc_memoria_ownership_lifetimes_e_recursos_SEMANTIC_HASHED_BYTES 288
+%define neboc_memoria_ownership_lifetimes_e_recursos_SEMANTIC_REQUEST_QWORDS 37
+%define neboc_memoria_ownership_lifetimes_e_recursos_SEMANTIC_REQUEST_SIZE 296
+%define NEBOC_SEMANTIC_OUTPUT_QWORDS 11
+%define neboc_memoria_ownership_lifetimes_e_recursos_SEMANTIC_ALIGNMENT 8
+
+%define NEBOC_EFFECT_READ 1
+%define NEBOC_EFFECT_BORROW_SHARED 2
+%define NEBOC_EFFECT_BORROW_MUTABLE 4
+%define NEBOC_EFFECT_CONSUME 8
+%define NEBOC_EFFECT_CLEANUP 16
+
+%if NEBOC_SEMANTIC_STATE_OFFSET != neboc_memoria_ownership_lifetimes_e_recursos_SYNTAX_SIZE
+    %error "memoria_ownership_lifetimes_e_recursos semantic/syntax boundary drift"
+%endif
+%if NEBOC_SEMANTIC_OPERATION_OFFSET != NEBOC_SEMANTIC_STATE_OFFSET + neboc_memoria_ownership_lifetimes_e_recursos_RECORD_SIZE
+    %error "memoria_ownership_lifetimes_e_recursos semantic/state boundary drift"
+%endif
+
+%endif

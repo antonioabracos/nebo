@@ -1,0 +1,35 @@
+graph_tree_embeddings_e_projections_graph_renderer_STATE_GREEN equ 0
+graph_tree_embeddings_e_projections_graph_renderer_ERROR_INVALID equ -1
+; END GRAPH-TREE-EMBEDDINGS-E-PROJECTIONS-GRAPH-RENDERER-F01
+
+graph_tree_embeddings_e_projections_tree_renderer_STATE_GREEN equ 0
+graph_tree_embeddings_e_projections_tree_renderer_ERROR_INVALID equ -1
+; END GRAPH-TREE-EMBEDDINGS-E-PROJECTIONS-TREE-RENDERER-F02
+
+graph_tree_embeddings_e_projections_layouts_STATE_GREEN equ 0
+graph_tree_embeddings_e_projections_layouts_ERROR_INVALID equ -1
+; END GRAPH-TREE-EMBEDDINGS-E-PROJECTIONS-LAYOUTS-F03
+
+graph_tree_embeddings_e_projections_highlight_highlightpath_STATE_GREEN equ 0
+graph_tree_embeddings_e_projections_highlight_highlightpath_ERROR_INVALID equ -1
+; END GRAPH-TREE-EMBEDDINGS-E-PROJECTIONS-HIGHLIGHT-HIGHLIGHTPATH-F04
+
+graph_tree_embeddings_e_projections_embeddings_STATE_GREEN equ 0
+graph_tree_embeddings_e_projections_embeddings_ERROR_INVALID equ -1
+; END GRAPH-TREE-EMBEDDINGS-E-PROJECTIONS-EMBEDDINGS-F05
+
+graph_tree_embeddings_e_projections_projection_project_dimensions_STATE_GREEN equ 0
+graph_tree_embeddings_e_projections_projection_project_dimensions_ERROR_INVALID equ -1
+; END GRAPH-TREE-EMBEDDINGS-E-PROJECTIONS-PROJECTION-PROJECT-DIMENSIONS-F06
+
+graph_tree_embeddings_e_projections_dependency_computational_graphs_STATE_GREEN equ 0
+graph_tree_embeddings_e_projections_dependency_computational_graphs_ERROR_INVALID equ -1
+; END GRAPH-TREE-EMBEDDINGS-E-PROJECTIONS-DEPENDENCY-COMPUTATIONAL-GRAPHS-F07
+
+graph_tree_embeddings_e_projections_large_graph_limits_STATE_GREEN equ 0
+graph_tree_embeddings_e_projections_large_graph_limits_ERROR_INVALID equ -1
+; END GRAPH-TREE-EMBEDDINGS-E-PROJECTIONS-LARGE-GRAPH-LIMITS-F08
+
+graph_tree_embeddings_e_projections_closeout_STATE_GREEN equ 0
+graph_tree_embeddings_e_projections_closeout_ERROR_INVALID equ -1
+; END GRAPH-TREE-EMBEDDINGS-E-PROJECTIONS-CLOSEOUT-F09

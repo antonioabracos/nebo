@@ -1,0 +1,16 @@
+%ifndef NEBO_EVENT_STORE_INC
+%define NEBO_EVENT_STORE_INC 1
+%define NEBO_EVENT_ID 0
+%define nebo_event_store_EVENT_VALUE 8
+%define nebo_event_store_EVENT_SIZE 16
+%define NEBO_STORE_EVENTS 0
+%define NEBO_STORE_CAPACITY 8
+%define NEBO_STORE_COUNT 16
+%define NEBO_STORE_SIZE 24
+%define NEBO_EVENT_MAX 4096
+%define NEBO_EVENT_OK 0
+%define NEBO_EVENT_INVALID 1
+%define NEBO_EVENT_LIMIT 2
+%define NEBO_EVENT_CONFLICT 3
+%define NEBO_EVENT_DUPLICATE 4
+%endif

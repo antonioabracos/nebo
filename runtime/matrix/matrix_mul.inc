@@ -1,0 +1,9 @@
+%ifndef NEBO_MATRIX_MUL_INC
+%define NEBO_MATRIX_MUL_INC 1
+%include "compiler/semantic/matrix/matrix_contract.inc"
+%ifndef NEBO_MATRIX_MUL_IMPLEMENTATION
+extern nebo_matrix_matmul_f64
+extern nebo_matrix_matvec_f64
+extern nebo_matrix_outer_f64
+%endif
+%endif

@@ -1,0 +1,9 @@
+%ifndef NEBO_AUDIO_DEVICE_INC
+%define NEBO_AUDIO_DEVICE_INC 1
+%define NEBO_AUDIO_DEVICE_E_UNSUPPORTED_BACKEND 64
+%ifndef NEBO_AUDIO_DEVICE_IMPLEMENTATION
+extern nebo_audio_device_open
+extern nebo_audio_device_write
+extern nebo_audio_device_close
+%endif
+%endif

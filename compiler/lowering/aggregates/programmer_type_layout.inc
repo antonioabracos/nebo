@@ -1,0 +1,28 @@
+%ifndef NEBOC_PROGRAMMER_TYPE_LAYOUT_INC
+%define NEBOC_PROGRAMMER_TYPE_LAYOUT_INC 1
+%define NEBOC_LAYOUT_PRODUCT 1
+%define NEBOC_LAYOUT_SUM 2
+%define NEBOC_LAYOUT_FLAG_INTERNAL_NATIVE 1
+%define NEBOC_LAYOUT_FLAG_ZERO_PADDING 2
+%define NEBOC_LAYOUT_FLAG_ALLOCATION_FREE 4
+%define NEBOC_LAYOUT_FLAG_NO_METADATA 8
+%define NEBOC_LAYOUT_FLAGS_REQUIRED 15
+%define NEBOC_LAYOUT_KIND_OFFSET 0
+%define neboc_structs_enums_variants_e_tipos_do_programador_LAYOUT_MEMBER_COUNT_OFFSET 8
+%define NEBOC_LAYOUT_SIZES_PTR_OFFSET 16
+%define NEBOC_LAYOUT_ALIGNS_PTR_OFFSET 24
+%define NEBOC_LAYOUT_VARIANT_COUNT_OFFSET 32
+%define NEBOC_LAYOUT_PAYLOAD_SIZE_OFFSET 40
+%define NEBOC_LAYOUT_PAYLOAD_ALIGN_OFFSET 48
+%define NEBOC_LAYOUT_OFFSETS_PTR_OFFSET 56
+%define neboc_structs_enums_variants_e_tipos_do_programador_LAYOUT_SIZE_OFFSET 64
+%define neboc_structs_enums_variants_e_tipos_do_programador_LAYOUT_ALIGN_OFFSET 72
+%define NEBOC_LAYOUT_TAG_OFFSET 80
+%define NEBOC_LAYOUT_TAG_WIDTH_OFFSET 88
+%define NEBOC_LAYOUT_PAYLOAD_OFFSET 96
+%define NEBOC_LAYOUT_FLAGS_OFFSET 104
+%define neboc_structs_enums_variants_e_tipos_do_programador_LAYOUT_DIAGNOSTIC_OFFSET 112
+%define NEBOC_LAYOUT_HASH_OFFSET 120
+%define neboc_structs_enums_variants_e_tipos_do_programador_LAYOUT_REQUEST_SIZE 128
+%define neboc_structs_enums_variants_e_tipos_do_programador_LAYOUT_REQUEST_QWORDS 16
+%endif

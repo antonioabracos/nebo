@@ -1,0 +1,1981 @@
+; Nebo Assembly — TEXT-CHAR-UNICODE-E-BYTES-PF005 public Text/Char/Bytes x86-64 codegen
+bits 64
+default rel
+%include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"
+%include "compiler/support/status/status_codes.inc"
+%include "compiler/tokens/token.inc"
+%include "compiler/tokens/token_kind.inc"
+%include "compiler/ast/ast_node.inc"
+%include "compiler/codegen/asm-writer/assembly_writer.inc"
+%include "compiler/codegen/textual/x86_64/text_char_bytes_codegen.inc"
+%include "compiler/lowering/textual/bytes_access_lowering.inc"
+%include "compiler/lowering/textual/int_bits_lowering.inc"
+extern neboc_assembly_writer_append_bytes
+extern neboc_assembly_writer_append_i64_decimal
+extern neboc_assembly_writer_append_u64_decimal
+extern neboc_bytes_access_lower
+
+section .rodata
+n_byte_length: db "byteLength"
+n_byte_length_len equ $-n_byte_length
+n_codepoint_count: db "codepointCount"
+n_codepoint_count_len equ $-n_codepoint_count
+n_codepoint: db "codepoint"
+n_codepoint_len equ $-n_codepoint
+n_empty: db "empty"
+n_empty_len equ $-n_empty
+n_from_byte: db "fromByte"
+n_from_byte_len equ $-n_from_byte
+n_from_values: db "fromValues"
+n_from_values_len equ $-n_from_values
+n_at: db "at"
+n_at_len equ $-n_at
+n_get: db "get"
+n_get_len equ $-n_get
+text_char_bytes_codegen_n_slice: db "slice"
+text_char_bytes_codegen_n_slice_len equ $-text_char_bytes_codegen_n_slice
+n_is_some: db "isSome"
+n_is_some_len equ $-n_is_some
+n_is_none: db "isNone"
+n_is_none_len equ $-n_is_none
+n_unwrap_or: db "unwrapOr"
+n_unwrap_or_len equ $-n_unwrap_or
+n_bit_and: db "bitAnd"
+n_bit_and_len equ $-n_bit_and
+n_bit_or: db "bitOr"
+n_bit_or_len equ $-n_bit_or
+n_bit_xor: db "bitXor"
+n_bit_xor_len equ $-n_bit_xor
+n_bit_not: db "bitNot"
+n_bit_not_len equ $-n_bit_not
+n_shift_left: db "shiftLeft"
+n_shift_left_len equ $-n_shift_left
+n_shift_right: db "shiftRight"
+n_shift_right_len equ $-n_shift_right
+n_test_bit: db "testBit"
+n_test_bit_len equ $-n_test_bit
+n_with_bit: db "withBit"
+n_with_bit_len equ $-n_with_bit
+n_console: db "console"
+n_console_len equ $-n_console
+n_scan: db "scan"
+n_scan_len equ $-n_scan
+n_text: db "Text"
+n_text_len equ $-n_text
+rodata_header: db 10,'section .rodata',10
+rodata_header_len equ $-rodata_header
+align8: db 'align 8',10
+align8_len equ $-align8
+text_data_prefix: db 'nebo_text_data'
+text_data_prefix_len equ $-text_data_prefix
+text_data_mid: db ': db '
+text_data_mid_len equ $-text_data_mid
+text_desc_prefix: db 'nebo_text_desc'
+text_desc_prefix_len equ $-text_desc_prefix
+text_desc_mid: db ':',10,'    dq nebo_text_data'
+text_desc_mid_len equ $-text_desc_mid
+text_desc_length: db 10,'    dq '
+text_desc_length_len equ $-text_desc_length
+text_desc_tail: db 10,'    dd 0',10,'    dw 1',10,'    dw 1',10
+text_desc_tail_len equ $-text_desc_tail
+bytes_data_prefix: db 'nebo_bytes_data'
+bytes_data_prefix_len equ $-bytes_data_prefix
+bytes_data_mid: db ': db '
+bytes_data_mid_len equ $-bytes_data_mid
+bytes_desc_prefix: db 'nebo_bytes_desc'
+bytes_desc_prefix_len equ $-bytes_desc_prefix
+bytes_desc_mid: db ':',10,'    dq nebo_bytes_data'
+bytes_desc_mid_len equ $-bytes_desc_mid
+bytes_desc_length: db 10,'    dq '
+bytes_desc_length_len equ $-bytes_desc_length
+bytes_desc_tail: db 10,'    dd 3',10,'    dw 1',10,'    dw 1',10
+bytes_desc_tail_len equ $-bytes_desc_tail
+slice_data_prefix: db 'nebo_bytes_slice_data'
+slice_data_prefix_len equ $-slice_data_prefix
+slice_desc_prefix: db 'nebo_bytes_slice_desc'
+slice_desc_prefix_len equ $-slice_desc_prefix
+slice_desc_mid: db ':',10,'    dq nebo_bytes_slice_data'
+slice_desc_mid_len equ $-slice_desc_mid
+text_section: db 10,'section .text',10
+text_section_len equ $-text_section
+comma_space: db ', '
+comma_space_len equ $-comma_space
+newline: db 10
+newline_len equ $-newline
+prologue: db '    push rbp',10,'    mov rbp, rsp',10
+prologue_len equ $-prologue
+option_frame: db '    sub rsp, 16',10
+option_frame_len equ $-option_frame
+epilogue: db '    mov rsp, rbp',10,'    pop rbp',10,'    xor eax, eax',10,'    ret',10
+epilogue_len equ $-epilogue
+return_epilogue: db '    mov rsp, rbp',10,'    pop rbp',10,'    ret',10
+return_epilogue_len equ $-return_epilogue
+lea_text_prefix: db '    lea rdi, [rel nebo_text_desc'
+lea_text_prefix_len equ $-lea_text_prefix
+lea_text_suffix: db ']',10
+lea_text_suffix_len equ $-lea_text_suffix
+lea_bytes_prefix: db '    lea rax, [rel nebo_bytes_desc'
+lea_bytes_prefix_len equ $-lea_bytes_prefix
+lea_bytes_suffix: db ']',10
+lea_bytes_suffix_len equ $-lea_bytes_suffix
+lea_slice_prefix: db '    lea rax, [rel nebo_bytes_slice_desc'
+lea_slice_prefix_len equ $-lea_slice_prefix
+lea_option_slot: db '    lea rdi, [rbp - 16]',10
+lea_option_slot_len equ $-lea_option_slot
+lea_option_result: db '    lea rax, [rbp - 16]',10
+lea_option_result_len equ $-lea_option_result
+mov_esi_zero: db '    xor esi, esi',10
+mov_esi_zero_len equ $-mov_esi_zero
+mov_esi_one: db '    mov esi, 1',10
+mov_esi_one_len equ $-mov_esi_one
+mov_edx: db '    mov edx, '
+mov_edx_len equ $-mov_edx
+neg_rax: db '    neg rax',10
+neg_rax_len equ $-neg_rax
+push_rax: db '    push rax',10
+push_rax_len equ $-push_rax
+bit_and_rax: db '    pop rcx',10,'    and rax, rcx',10
+bit_and_rax_len equ $-bit_and_rax
+bit_or_rax: db '    pop rcx',10,'    or rax, rcx',10
+bit_or_rax_len equ $-bit_or_rax
+bit_xor_rax: db '    pop rcx',10,'    xor rax, rcx',10
+bit_xor_rax_len equ $-bit_xor_rax
+bit_not_rax: db '    not rax',10
+bit_not_rax_len equ $-bit_not_rax
+shift_left_rax: db '    shl rax, '
+shift_left_rax_len equ $-shift_left_rax
+shift_right_rax: db '    sar rax, '
+shift_right_rax_len equ $-shift_right_rax
+test_bit_rax: db '    bt rax, '
+test_bit_rax_len equ $-test_bit_rax
+test_bit_suffix: db 10,'    setc al',10,'    movzx rax, al',10
+test_bit_suffix_len equ $-test_bit_suffix
+with_bit_set_rax: db '    bts rax, '
+with_bit_set_rax_len equ $-with_bit_set_rax
+with_bit_clear_rax: db '    btr rax, '
+with_bit_clear_rax_len equ $-with_bit_clear_rax
+mov_edi: db '    mov edi, '
+mov_edi_len equ $-mov_edi
+mov_rax: db '    mov rax, '
+mov_rax_len equ $-mov_rax
+mov_rdi_rax: db '    mov rdi, rax',10
+mov_rdi_rax_len equ $-mov_rdi_rax
+clear_scan_ids: db '    xor esi, esi',10,'    xor edx, edx',10,'    xor ecx, ecx',10
+clear_scan_ids_len equ $-clear_scan_ids
+call_text_byte_length: db '    call nebo_runtime_textual_text_byte_length',10
+call_text_byte_length_len equ $-call_text_byte_length
+call_text_codepoint_count: db '    call nebo_runtime_textual_text_codepoint_count',10
+call_text_codepoint_count_len equ $-call_text_codepoint_count
+call_char_codepoint: db '    call nebo_runtime_textual_char_codepoint',10
+call_char_codepoint_len equ $-call_char_codepoint
+call_bytes_empty: db '    call nebo_runtime_textual_bytes_empty',10
+call_bytes_empty_len equ $-call_bytes_empty
+call_bytes_byte_length: db '    call nebo_runtime_textual_bytes_byte_length',10
+call_bytes_byte_length_len equ $-call_bytes_byte_length
+call_option_zero: db '    call neboc_runtime_store_zero_payload',10
+call_option_zero_len equ $-call_option_zero
+call_option_integer: db '    call neboc_runtime_store_integer',10
+call_option_integer_len equ $-call_option_integer
+call_option_tag_test: db '    call neboc_runtime_tag_test',10
+call_option_tag_test_len equ $-call_option_tag_test
+call_option_unwrap: db '    call neboc_runtime_unwrap_integer',10
+call_option_unwrap_len equ $-call_option_unwrap
+call_console_publish_text: db '    call nebo_runtime_console_publish_text',10
+call_console_publish_text_len equ $-call_console_publish_text
+call_scan_anonymous: db '    call nebo_runtime_contract_3',10
+call_scan_anonymous_len equ $-call_scan_anonymous
+
+section .text
+; Emit deterministic Text descriptors before the backend opens start().
+NEBOC_ABI_FUNCTION neboc_text_char_bytes_codegen_emit_data
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,64
+ mov r12,rdi
+ test r12,r12
+ jz .invalid
+ mov r13,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ test r13,r13
+ jz .invalid
+ mov r15,[r13+NEBOC_AST_BUILDER_COUNT_OFFSET]
+ mov r14,1
+ mov qword [rsp],0
+.loop:
+ cmp r14,r15
+ ja .finish
+ mov rdi,r13
+ mov rsi,r14
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ mov [rsp+8],rax
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_TEXT_LITERAL
+ je .text_literal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .next
+ mov rbx,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_from_byte]
+ mov ecx,n_from_byte_len
+ call g04c_token_match
+ test eax,eax
+ jnz .bytes_constructor
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_from_values]
+ mov ecx,n_from_values_len
+ call g04c_token_match
+ test eax,eax
+ jnz .bytes_constructor
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_get]
+ mov ecx,n_get_len
+ call g04c_token_match
+ test eax,eax
+ jnz .option_get
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel text_char_bytes_codegen_n_slice]
+ mov ecx,text_char_bytes_codegen_n_slice_len
+ call g04c_token_match
+ test eax,eax
+ jnz .bytes_slice
+ jmp .next
+.option_get:
+ mov dword [r12+NEBOC_CODEGEN_OPTION_USED_OFFSET],1
+ jmp .next
+.bytes_slice:
+ cmp qword [rsp],0
+ jne .slice_header_done
+ mov rdi,r12
+ lea rsi,[rel rodata_header]
+ mov edx,rodata_header_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov qword [rsp],1
+.slice_header_done:
+ mov rdi,r12
+ mov rsi,r14
+ call g04c_emit_bytes_slice_data
+ test eax,eax
+ jnz .done
+ jmp .next
+.bytes_constructor:
+ cmp qword [rsp],0
+ jne .header_done
+ mov rdi,r12
+ lea rsi,[rel rodata_header]
+ mov edx,rodata_header_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov qword [rsp],1
+.header_done:
+ mov rdi,r12
+ mov rsi,r14
+ call g04c_emit_bytes_constructor_data
+ test eax,eax
+ jnz .done
+ jmp .next
+.text_literal:
+ cmp qword [rsp],0
+ jne .text_header_done
+ mov rdi,r12
+ lea rsi,[rel rodata_header]
+ mov edx,rodata_header_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov qword [rsp],1
+.text_header_done:
+ mov rax,[rsp+8]
+ mov rbx,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov eax,ebx
+ mov [rsp+16],rax
+ shr rbx,32
+ mov [rsp+24],rbx
+ mov rax,[rsp+16]
+ add rax,rbx
+ jc .literal
+ cmp rax,[r12+NEBOC_CODEGEN_LITERAL_LENGTH_OFFSET]
+ ja .literal
+ mov rdi,r12
+ lea rsi,[rel align8]
+ mov edx,align8_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel text_data_prefix]
+ mov edx,text_data_prefix_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,r14
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel text_data_mid]
+ mov edx,text_data_mid_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ xor ebx,ebx
+.bytes:
+ cmp rbx,[rsp+16]
+ jae .bytes_done
+ test rbx,rbx
+ jz .byte_value
+ mov rdi,r12
+ lea rsi,[rel comma_space]
+ mov edx,comma_space_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+.byte_value:
+ mov rax,[r12+NEBOC_CODEGEN_LITERAL_BYTES_OFFSET]
+ add rax,[rsp+24]
+ movzx esi,byte [rax+rbx]
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ inc rbx
+ jmp .bytes
+.bytes_done:
+ mov rdi,r12
+ lea rsi,[rel newline]
+ mov edx,newline_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel text_desc_prefix]
+ mov edx,text_desc_prefix_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,r14
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel text_desc_mid]
+ mov edx,text_desc_mid_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,r14
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel text_desc_length]
+ mov edx,text_desc_length_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,[rsp+16]
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel text_desc_tail]
+ mov edx,text_desc_tail_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+.next:
+ inc r14
+ jmp .loop
+.finish:
+ cmp qword [rsp],0
+ je .ok
+ mov rdi,r12
+ lea rsi,[rel text_section]
+ mov edx,text_section_len
+ call g04c_append
+ jmp .done
+.ok: xor eax,eax
+ jmp .done
+.literal:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_LITERAL
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .done
+.writer:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_WRITER
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ jmp .done
+.ast:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_AST
+ mov eax,NEBOC_STATUS_INTERNAL_ERROR
+ jmp .done
+.invalid: mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+.done:
+ add rsp,64
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ cld
+ ret
+
+; request*, bounded Bytes expression, out { length, packed }.
+g04c_extract_static_bytes:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,64
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ mov qword [r14],0
+ mov qword [r14+8],0
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,r13
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .bad
+ mov r15,rax
+ mov rbx,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_empty]
+ mov ecx,n_empty_len
+ call g04c_token_match
+ test eax,eax
+ jnz .ok
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_from_byte]
+ mov ecx,n_from_byte_len
+ call g04c_token_match
+ test eax,eax
+ jnz .one
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_from_values]
+ mov ecx,n_from_values_len
+ call g04c_token_match
+ test eax,eax
+ jnz .four
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel text_char_bytes_codegen_n_slice]
+ mov ecx,text_char_bytes_codegen_n_slice_len
+ call g04c_token_match
+ test eax,eax
+ jnz .slice
+ jmp .bad
+.one: mov qword [rsp],1
+ jmp .constructor
+.four: mov qword [rsp],4
+.constructor:
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov r13,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov qword [rsp+8],0
+ xor r15d,r15d
+.value_loop:
+ cmp r15,[rsp]
+ jae .values_done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,r13
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_INTEGER_LITERAL
+ jne .bad
+ mov r13,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rax,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov ecx,r15d
+ shl ecx,3
+ shl rax,cl
+ or [rsp+8],rax
+ inc r15
+ jmp .value_loop
+.values_done:
+ mov rax,[rsp]
+ mov [r14],rax
+ mov rax,[rsp+8]
+ mov [r14+8],rax
+ jmp .ok
+.slice:
+ mov r13,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ mov rsi,r13
+ mov rdx,r14
+ call g04c_extract_static_bytes
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,r13
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov r13,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,r13
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_INTEGER_LITERAL
+ jne .bad
+ mov rcx,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov [rsp+16],rcx
+ mov r13,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,r13
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_INTEGER_LITERAL
+ jne .bad
+ mov rdx,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rcx,[rsp+16]
+ cmp rcx,rdx
+ ja .bad
+ cmp rdx,[r14]
+ ja .bad
+ sub rdx,rcx
+ mov rax,[r14+8]
+ shl rcx,3
+ shr rax,cl
+ test rdx,rdx
+ jz .slice_empty
+ mov rcx,rdx
+ shl rcx,3
+ mov rbx,1
+ shl rbx,cl
+ dec rbx
+ and rax,rbx
+ jmp .slice_write
+.slice_empty: xor eax,eax
+.slice_write:
+ mov [r14],rdx
+ mov [r14+8],rax
+.ok: xor eax,eax
+ jmp .done
+.bad: mov eax,NEBOC_STATUS_INVALID_SOURCE
+.done:
+ add rsp,64
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; request*, slice call node id: emit the bounded slice as another immutable
+; Bytes descriptor. A zero-length slice keeps one inert data byte but length 0.
+g04c_emit_bytes_slice_data:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,32
+ mov r12,rdi
+ mov r13,rsi
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rsp]
+ call g04c_extract_static_bytes
+ test eax,eax
+ jnz .bad
+ mov rdi,r12
+ lea rsi,[rel align8]
+ mov edx,align8_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel slice_data_prefix]
+ mov edx,slice_data_prefix_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel bytes_data_mid]
+ mov edx,bytes_data_mid_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ xor r14d,r14d
+.byte_loop:
+ cmp r14,[rsp]
+ jae .bytes_done
+ test r14,r14
+ jz .byte_value
+ mov rdi,r12
+ lea rsi,[rel comma_space]
+ mov edx,comma_space_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+.byte_value:
+ mov rax,[rsp+8]
+ mov ecx,r14d
+ shl ecx,3
+ shr rax,cl
+ and eax,255
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,rax
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ inc r14
+ jmp .byte_loop
+.bytes_done:
+ cmp qword [rsp],0
+ jne .data_newline
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ xor esi,esi
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+.data_newline:
+ mov rdi,r12
+ lea rsi,[rel newline]
+ mov edx,newline_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel slice_desc_prefix]
+ mov edx,slice_desc_prefix_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel slice_desc_mid]
+ mov edx,slice_desc_mid_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel bytes_desc_length]
+ mov edx,bytes_desc_length_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,[rsp]
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel bytes_desc_tail]
+ mov edx,bytes_desc_tail_len
+ call g04c_append
+ jmp .done
+.writer: mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ jmp .done
+.bad: mov eax,NEBOC_STATUS_INVALID_SOURCE
+.done:
+ add rsp,32
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; request*, constructor call node id: emit one immutable static Bytes descriptor.
+g04c_emit_bytes_constructor_data:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,16
+ mov r12,rdi
+ mov r13,rsi
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,r13
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov rbx,rax
+ mov r14,[rbx+NEBOC_AST_NODE_PAYLOAD1_OFFSET]
+ cmp r14,1
+ je .have_count
+ cmp r14,4
+ jne .bad
+.have_count:
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov r15,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ lea rsi,[rel align8]
+ mov edx,align8_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel bytes_data_prefix]
+ mov edx,bytes_data_prefix_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel bytes_data_mid]
+ mov edx,bytes_data_mid_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ xor ebx,ebx
+.value_loop:
+ cmp rbx,r14
+ jae .values_done
+ test r15,r15
+ jz .bad
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,r15
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_INTEGER_LITERAL
+ jne .bad
+ mov r15,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rax,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov [rsp],rax
+ test rbx,rbx
+ jz .value
+ mov rdi,r12
+ lea rsi,[rel comma_space]
+ mov edx,comma_space_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+.value:
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,[rsp]
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ inc rbx
+ jmp .value_loop
+.values_done:
+ mov rdi,r12
+ lea rsi,[rel newline]
+ mov edx,newline_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel bytes_desc_prefix]
+ mov edx,bytes_desc_prefix_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel bytes_desc_mid]
+ mov edx,bytes_desc_mid_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel bytes_desc_length]
+ mov edx,bytes_desc_length_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,r14
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel bytes_desc_tail]
+ mov edx,bytes_desc_tail_len
+ call g04c_append
+ jmp .done
+.writer:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_WRITER
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ jmp .done
+.bad:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_AST
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.done:
+ add rsp,16
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+NEBOC_ABI_FUNCTION neboc_text_char_bytes_codegen_emit_start
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,32
+ mov r12,rdi
+ test r12,r12
+ jz .invalid
+ mov r13,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ test r13,r13
+ jz .invalid
+ mov qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_OPERATION_COUNT_OFFSET],0
+ mov qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_CODE_OFFSET],0
+ mov qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_DEPTH_OFFSET],0
+ mov dword [r12+NEBOC_CODEGEN_RETURN_SEEN_OFFSET],0
+ cmp qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_MAX_DEPTH_OFFSET],0
+ jne .depth_ok
+ mov qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_MAX_DEPTH_OFFSET],neboc_text_char_unicode_e_bytes_CODEGEN_MAX_DEPTH_DEFAULT
+.depth_ok:
+ mov rdi,r13
+ mov rsi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_ROOT_ID_OFFSET]
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_PROGRAM
+ jne .ast
+ mov rbx,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+.find_start:
+ test rbx,rbx
+ jz .ast
+ mov rdi,r13
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_FUNCTION_DECL
+ je .unsupported
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_START_DECL
+ je .start
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ jmp .find_start
+.start:
+ mov rbx,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r13
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_BLOCK
+ jne .ast
+ mov [rsp],rax
+ mov rdi,r12
+ lea rsi,[rel prologue]
+ mov edx,prologue_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ cmp dword [r12+NEBOC_CODEGEN_OPTION_USED_OFFSET],0
+ je .frame_ready
+ mov rdi,r12
+ lea rsi,[rel option_frame]
+ mov edx,option_frame_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+.frame_ready:
+ mov rax,[rsp]
+ mov rbx,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+.statement_loop:
+ test rbx,rbx
+ jz .tail
+ mov rdi,r13
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ mov r15,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rcx,[rax+NEBOC_AST_NODE_KIND_OFFSET]
+ cmp rcx,NEBOC_AST_BINDING_STMT
+ je .stmt
+ cmp rcx,NEBOC_AST_EXPRESSION_STMT
+ je .stmt
+ cmp rcx,NEBOC_AST_RETURN_STMT
+ jne .unsupported
+.stmt:
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rsi,rsi
+ jz .ast
+ mov rdi,r13
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_BINDING_TERMINAL
+ je .unwrap
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_RETURN_TERMINAL
+ jne .expr_ready
+ mov dword [r12+NEBOC_CODEGEN_RETURN_SEEN_OFFSET],1
+.unwrap:
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+.expr_ready:
+ mov rdi,r12
+ call g04c_emit_any
+ test eax,eax
+ jnz .done
+ mov rbx,r15
+ jmp .statement_loop
+.tail:
+ cmp qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_OPERATION_COUNT_OFFSET],0
+ je .unsupported
+ mov rdi,r12
+ cmp dword [r12+NEBOC_CODEGEN_RETURN_SEEN_OFFSET],0
+ jne .return_tail
+ lea rsi,[rel epilogue]
+ mov edx,epilogue_len
+ call g04c_append
+ jmp .done
+.return_tail:
+ lea rsi,[rel return_epilogue]
+ mov edx,return_epilogue_len
+ call g04c_append
+ jmp .done
+.unsupported:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_UNSUPPORTED
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .done
+.ast:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_AST
+ mov eax,NEBOC_STATUS_INTERNAL_ERROR
+ jmp .done
+.invalid: mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+.done:
+ add rsp,32
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ cld
+ ret
+
+g04c_emit_any:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ mov r12,rdi
+ mov r13,rsi
+ mov [rsp],r13
+ inc qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_DEPTH_OFFSET]
+ mov rax,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_DEPTH_OFFSET]
+ cmp rax,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_MAX_DEPTH_OFFSET]
+ ja .unsupported
+ mov r14,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rdi,r14
+ mov rsi,r13
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ mov rbx,rax
+ cmp qword [rbx+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_INTEGER_LITERAL
+ je .integer_literal
+ cmp qword [rbx+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_UNARY_EXPR
+ je .unary_expr
+ cmp qword [rbx+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CHAR_LITERAL
+ je .char_literal
+ cmp qword [rbx+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .unsupported
+ mov r13,[rbx+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_byte_length]
+ mov ecx,n_byte_length_len
+ call g04c_token_match
+ test eax,eax
+ jnz .byte_length
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_codepoint_count]
+ mov ecx,n_codepoint_count_len
+ call g04c_token_match
+ test eax,eax
+ jnz .codepoint_count
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_codepoint]
+ mov ecx,n_codepoint_len
+ call g04c_token_match
+ test eax,eax
+ jnz .codepoint
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_empty]
+ mov ecx,n_empty_len
+ call g04c_token_match
+ test eax,eax
+ jnz .empty
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_from_byte]
+ mov ecx,n_from_byte_len
+ call g04c_token_match
+ test eax,eax
+ jnz .bytes_constructor
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_from_values]
+ mov ecx,n_from_values_len
+ call g04c_token_match
+ test eax,eax
+ jnz .bytes_constructor
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_at]
+ mov ecx,n_at_len
+ call g04c_token_match
+ test eax,eax
+ jnz .bytes_at
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_get]
+ mov ecx,n_get_len
+ call g04c_token_match
+ test eax,eax
+ jnz .bytes_get
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel text_char_bytes_codegen_n_slice]
+ mov ecx,text_char_bytes_codegen_n_slice_len
+ call g04c_token_match
+ test eax,eax
+ jnz .bytes_slice
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_is_some]
+ mov ecx,n_is_some_len
+ call g04c_token_match
+ test eax,eax
+ jnz .option_is_some
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_is_none]
+ mov ecx,n_is_none_len
+ call g04c_token_match
+ test eax,eax
+ jnz .option_is_none
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_unwrap_or]
+ mov ecx,n_unwrap_or_len
+ call g04c_token_match
+ test eax,eax
+ jnz .option_unwrap_or
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_bit_and]
+ mov ecx,n_bit_and_len
+ call g04c_token_match
+ test eax,eax
+ jnz .bit_and
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_bit_or]
+ mov ecx,n_bit_or_len
+ call g04c_token_match
+ test eax,eax
+ jnz .bit_or
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_bit_xor]
+ mov ecx,n_bit_xor_len
+ call g04c_token_match
+ test eax,eax
+ jnz .bit_xor
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_bit_not]
+ mov ecx,n_bit_not_len
+ call g04c_token_match
+ test eax,eax
+ jnz .bit_not
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_shift_left]
+ mov ecx,n_shift_left_len
+ call g04c_token_match
+ test eax,eax
+ jnz .shift_left
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_shift_right]
+ mov ecx,n_shift_right_len
+ call g04c_token_match
+ test eax,eax
+ jnz .shift_right
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_test_bit]
+ mov ecx,n_test_bit_len
+ call g04c_token_match
+ test eax,eax
+ jnz .test_bit
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_with_bit]
+ mov ecx,n_with_bit_len
+ call g04c_token_match
+ test eax,eax
+ jnz .with_bit
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_console]
+ mov ecx,n_console_len
+ call g04c_token_match
+ test eax,eax
+ jnz .console
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_scan]
+ mov ecx,n_scan_len
+ call g04c_token_match
+ test eax,eax
+ jnz .scan
+ jmp .unsupported
+.integer_literal:
+ mov rdi,r12
+ lea rsi,[rel mov_rax]
+ mov edx,mov_rax_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,[rbx+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ call neboc_assembly_writer_append_i64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel newline]
+ mov edx,newline_len
+ call g04c_append
+ jmp .count
+.unary_expr:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_any
+ test eax,eax
+ jnz .finish
+ cmp qword [rbx+NEBOC_AST_NODE_PAYLOAD0_OFFSET],NEBOC_TOKEN_MINUS
+ jne .unsupported
+ mov rdi,r12
+ lea rsi,[rel neg_rax]
+ mov edx,neg_rax_len
+ call g04c_append
+ jmp .count
+.char_literal:
+ mov rdi,r12
+ lea rsi,[rel mov_edi]
+ mov edx,mov_edi_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov esi,[rbx+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel newline]
+ mov edx,newline_len
+ call g04c_append
+ jmp .count
+.bytes_slice:
+ mov rdi,r12
+ lea rsi,[rel lea_slice_prefix]
+ mov edx,lea_slice_prefix_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,[rsp]
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel lea_bytes_suffix]
+ mov edx,lea_bytes_suffix_len
+ call g04c_append
+ jmp .count
+.bytes_at:
+ mov rdi,r12
+ mov rsi,[rsp]
+ mov edx,NEBOC_BYTES_ACCESS_AT
+ call g04c_evaluate_access
+ test eax,eax
+ jnz .unsupported
+ mov [rsp],rdx
+ mov rdi,r12
+ lea rsi,[rel mov_rax]
+ mov edx,mov_rax_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,[rsp]
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel newline]
+ mov edx,newline_len
+ call g04c_append
+ jmp .count
+.bytes_get:
+ mov rdi,r12
+ mov rsi,[rsp]
+ mov edx,NEBOC_BYTES_ACCESS_GET
+ call g04c_evaluate_access
+ test eax,eax
+ jnz .unsupported
+ mov [rsp],rdx
+ mov r13,rcx
+ mov rdi,r12
+ lea rsi,[rel lea_option_slot]
+ mov edx,lea_option_slot_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ test r13,r13
+ jz .get_none
+ mov rdi,r12
+ lea rsi,[rel mov_esi_one]
+ mov edx,mov_esi_one_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel mov_edx]
+ mov edx,mov_edx_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,[rsp]
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel newline]
+ mov edx,newline_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_option_integer]
+ mov edx,call_option_integer_len
+ call g04c_append
+ jmp .get_address
+.get_none:
+ mov rdi,r12
+ lea rsi,[rel mov_esi_zero]
+ mov edx,mov_esi_zero_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_option_zero]
+ mov edx,call_option_zero_len
+ call g04c_append
+.get_address:
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel lea_option_result]
+ mov edx,lea_option_result_len
+ call g04c_append
+ jmp .count
+.option_is_some:
+ mov r13d,1
+ jmp .option_predicate
+.option_is_none:
+ xor r13d,r13d
+.option_predicate:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_any
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel mov_rdi_rax]
+ mov edx,mov_rdi_rax_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ test r13,r13
+ jz .predicate_zero
+ lea rsi,[rel mov_esi_one]
+ mov edx,mov_esi_one_len
+ jmp .predicate_tag
+.predicate_zero:
+ lea rsi,[rel mov_esi_zero]
+ mov edx,mov_esi_zero_len
+.predicate_tag:
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_option_tag_test]
+ mov edx,call_option_tag_test_len
+ call g04c_append
+ jmp .count
+.option_unwrap_or:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_any
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel mov_rdi_rax]
+ mov edx,mov_rdi_rax_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel mov_esi_one]
+ mov edx,mov_esi_one_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r14
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r14
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ mov r13,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ lea rsi,[rel mov_edx]
+ mov edx,mov_edx_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel newline]
+ mov edx,newline_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_option_unwrap]
+ mov edx,call_option_unwrap_len
+ call g04c_append
+ jmp .count
+.bit_and:
+ mov r13d,NEBOC_INT_BITS_AND
+ jmp .bit_binary
+.bit_or:
+ mov r13d,NEBOC_INT_BITS_OR
+ jmp .bit_binary
+.bit_xor:
+ mov r13d,NEBOC_INT_BITS_XOR
+.bit_binary:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_any
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel push_rax]
+ mov edx,push_rax_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r14
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ call g04c_emit_any
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ cmp r13,NEBOC_INT_BITS_AND
+ je .emit_and
+ cmp r13,NEBOC_INT_BITS_OR
+ je .emit_or
+ lea rsi,[rel bit_xor_rax]
+ mov edx,bit_xor_rax_len
+ jmp .emit_bit
+.emit_and:
+ lea rsi,[rel bit_and_rax]
+ mov edx,bit_and_rax_len
+ jmp .emit_bit
+.emit_or:
+ lea rsi,[rel bit_or_rax]
+ mov edx,bit_or_rax_len
+.emit_bit:
+ call g04c_append
+ jmp .count
+.bit_not:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_any
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel bit_not_rax]
+ mov edx,bit_not_rax_len
+ call g04c_append
+ jmp .count
+.shift_left:
+ mov r13d,NEBOC_INT_BITS_SHIFT_LEFT
+ jmp .bit_position
+.shift_right:
+ mov r13d,NEBOC_INT_BITS_SHIFT_RIGHT
+ jmp .bit_position
+.test_bit:
+ mov r13d,NEBOC_INT_BITS_TEST_BIT
+ jmp .bit_position
+.with_bit:
+ mov r13d,NEBOC_INT_BITS_WITH_BIT
+.bit_position:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_any
+ test eax,eax
+ jnz .finish
+ mov rdi,r14
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r14
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ mov [rsp],rax
+ mov rdi,r12
+ cmp r13,NEBOC_INT_BITS_SHIFT_LEFT
+ je .emit_shift_left
+ cmp r13,NEBOC_INT_BITS_SHIFT_RIGHT
+ je .emit_shift_right
+ cmp r13,NEBOC_INT_BITS_TEST_BIT
+ je .emit_test_bit
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r14
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ cmp qword [rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET],0
+ je .emit_with_bit_clear
+ mov rdi,r12
+ lea rsi,[rel with_bit_set_rax]
+ mov edx,with_bit_set_rax_len
+ jmp .emit_position_prefix
+.emit_with_bit_clear:
+ mov rdi,r12
+ lea rsi,[rel with_bit_clear_rax]
+ mov edx,with_bit_clear_rax_len
+ jmp .emit_position_prefix
+.emit_shift_left:
+ lea rsi,[rel shift_left_rax]
+ mov edx,shift_left_rax_len
+ jmp .emit_position_prefix
+.emit_shift_right:
+ lea rsi,[rel shift_right_rax]
+ mov edx,shift_right_rax_len
+ jmp .emit_position_prefix
+.emit_test_bit:
+ lea rsi,[rel test_bit_rax]
+ mov edx,test_bit_rax_len
+.emit_position_prefix:
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rax,[rsp]
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ cmp r13,NEBOC_INT_BITS_TEST_BIT
+ jne .emit_position_newline
+ lea rsi,[rel test_bit_suffix]
+ mov edx,test_bit_suffix_len
+ call g04c_append
+ jmp .count
+.emit_position_newline:
+ lea rsi,[rel newline]
+ mov edx,newline_len
+ call g04c_append
+ jmp .count
+.byte_length:
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call g04c_emit_receiver
+ test eax,eax
+ jnz .finish
+ mov rdi,r14
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .text_length
+ test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
+ jnz .text_length
+ mov rdi,r12
+ lea rsi,[rel mov_rdi_rax]
+ mov edx,mov_rdi_rax_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_bytes_byte_length]
+ mov edx,call_bytes_byte_length_len
+ call g04c_append
+ jmp .count
+.text_length:
+ mov rdi,r12
+ lea rsi,[rel call_text_byte_length]
+ mov edx,call_text_byte_length_len
+ call g04c_append
+ jmp .count
+.codepoint_count:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_text_codepoint_count]
+ mov edx,call_text_codepoint_count_len
+ call g04c_append
+ jmp .count
+.codepoint:
+ mov rdi,r14
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CHAR_LITERAL
+ jne .unsupported
+ mov r13,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ lea rsi,[rel mov_edi]
+ mov edx,mov_edi_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel newline]
+ mov edx,newline_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_char_codepoint]
+ mov edx,call_char_codepoint_len
+ call g04c_append
+ jmp .count
+.empty:
+ mov rdi,r12
+ lea rsi,[rel call_bytes_empty]
+ mov edx,call_bytes_empty_len
+ call g04c_append
+ jmp .count
+.bytes_constructor:
+ mov rdi,r12
+ lea rsi,[rel lea_bytes_prefix]
+ mov edx,lea_bytes_prefix_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,[rsp]
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel lea_bytes_suffix]
+ mov edx,lea_bytes_suffix_len
+ call g04c_append
+ jmp .count
+.console:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_console_publish_text]
+ mov edx,call_console_publish_text_len
+ call g04c_append
+ jmp .count
+.scan:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_scan_prompt
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel clear_scan_ids]
+ mov edx,clear_scan_ids_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_scan_anonymous]
+ mov edx,call_scan_anonymous_len
+ call g04c_append
+.count:
+ test eax,eax
+ jnz .finish
+ inc qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_OPERATION_COUNT_OFFSET]
+ xor eax,eax
+ jmp .finish
+.writer:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_WRITER
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ jmp .finish
+.ast:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_AST
+ mov eax,NEBOC_STATUS_INTERNAL_ERROR
+ jmp .finish
+.unsupported:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_CODEGEN_ERROR_UNSUPPORTED
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.finish:
+ dec qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_DEPTH_OFFSET]
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; request*, receiver node id: materialize the prompt descriptor used by either
+; Text.scan() or Text.console().scan().  Console.scan on a named binding keeps
+; its existing runtime/headless contract and is outside this frontend slice.
+%define call NEBOC_ABI_FUNCTION_SCOPED_CALL
+g04c_emit_scan_prompt:
+ push rbx
+ push r12
+ mov r12,rdi
+ mov rbx,rsi
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .direct
+ mov rdi,r12
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_text_receiver
+ jmp .done
+.direct:
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_text_receiver
+ jmp .done
+.bad:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.done:
+ pop r12
+ pop rbx
+ ret
+
+; request*, node id: emit either Text descriptor address or Bytes.empty().
+%undef call
+g04c_emit_receiver:
+ push rbx
+ push r12
+ sub rsp,8
+ mov r12,rdi
+ mov rbx,rsi
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_TEXT_LITERAL
+ je .text
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .bad
+ test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
+ jnz .text
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_any
+ jmp .done
+.text:
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_text_receiver
+ jmp .done
+.bad: mov eax,NEBOC_STATUS_INVALID_SOURCE
+.done:
+ add rsp,8
+ pop r12
+ pop rbx
+ ret
+
+%define call NEBOC_ABI_FUNCTION_SCOPED_CALL
+g04c_emit_text_receiver:
+ push rbx
+ push r12
+ push r13
+ sub rsp,8
+ mov r12,rdi
+ mov rbx,rsi
+ mov r13,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rdi,r13
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_TEXT_LITERAL
+ je .have
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .bad
+ test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
+ jz .bad
+ mov rbx,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r13
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_TEXT_LITERAL
+ jne .bad
+.have:
+ mov rdi,r12
+ lea rsi,[rel lea_text_prefix]
+ mov edx,lea_text_prefix_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ mov rsi,rbx
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel lea_text_suffix]
+ mov edx,lea_text_suffix_len
+ call g04c_append
+ jmp .done
+.writer: mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ jmp .done
+.bad: mov eax,NEBOC_STATUS_INVALID_SOURCE
+.done:
+ add rsp,8
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; request*, access call node id, lowering operation -> status with
+; RDX=result value, RCX=Option tag, R8=slice length, R9=slice packed bytes.
+%undef call
+g04c_evaluate_access:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,112
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,r13
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov r15,rax
+ mov r13,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rsp+80]
+ call g04c_extract_static_bytes
+ test eax,eax
+ jnz .bad
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,r13
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_INTEGER_LITERAL
+ jne .bad
+ mov rcx,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov [rsp+NEBOC_BYTES_ACCESS_INDEX_OFFSET],rcx
+ cmp r14,NEBOC_BYTES_ACCESS_SLICE
+ jne .fill
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_INTEGER_LITERAL
+ jne .bad
+ mov rcx,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov [rsp+NEBOC_BYTES_ACCESS_END_OFFSET],rcx
+.fill:
+ mov [rsp+NEBOC_BYTES_ACCESS_OPERATION_OFFSET],r14
+ mov rax,[rsp+80]
+ mov [rsp+NEBOC_BYTES_ACCESS_LENGTH_OFFSET],rax
+ mov rax,[rsp+88]
+ mov [rsp+NEBOC_BYTES_ACCESS_PACKED_OFFSET],rax
+ lea rdi,[rsp]
+ call neboc_bytes_access_lower
+ test eax,eax
+ jnz .done
+ mov rdx,[rsp+NEBOC_BYTES_ACCESS_RESULT_VALUE_OFFSET]
+ mov rcx,[rsp+NEBOC_BYTES_ACCESS_OPTION_TAG_OFFSET]
+ mov r8,[rsp+NEBOC_BYTES_ACCESS_RESULT_LENGTH_OFFSET]
+ mov r9,[rsp+NEBOC_BYTES_ACCESS_RESULT_PACKED_OFFSET]
+ jmp .done
+.bad: mov eax,NEBOC_STATUS_INVALID_SOURCE
+.done:
+ add rsp,112
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+%define call NEBOC_ABI_FUNCTION_SCOPED_CALL
+g04c_append:
+ mov rax,[rdi+neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_textual_x86_64]
+ test rax,rax
+ jz .bad
+ mov rdi,rax
+ call neboc_assembly_writer_append_bytes
+ ret
+.bad: mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+%undef call
+g04c_token_match:
+ push rbx
+ push r12
+ push r13
+ sub rsp,8
+ mov r12,rdi
+ mov r13,rsi
+ mov rbx,rdx
+ cmp r13,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_TOKEN_COUNT_OFFSET]
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ add rax,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_TOKENS_OFFSET]
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .no
+ mov rdx,[rax+NEBOC_TOKEN_END_OFFSET]
+ sub rdx,[rax+NEBOC_TOKEN_START_OFFSET]
+ cmp rdx,rcx
+ jne .no
+ mov rsi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_SOURCE_OFFSET]
+ add rsi,[rax+NEBOC_TOKEN_START_OFFSET]
+ mov rdi,rbx
+ cld
+ repe cmpsb
+ jne .no
+ mov eax,1
+ jmp .done
+.no: xor eax,eax
+.done:
+ add rsp,8
+ pop r13
+ pop r12
+ pop rbx
+ cld
+ ret
+
+g04c_node_ptr:
+ test rdi,rdi
+ jz .none
+ test rsi,rsi
+ jz .none
+ cmp rsi,[rdi+NEBOC_AST_BUILDER_COUNT_OFFSET]
+ ja .none
+ mov rax,rsi
+ dec rax
+ imul rax,NEBOC_AST_NODE_SIZE
+ add rax,[rdi+NEBOC_AST_BUILDER_DATA_OFFSET]
+ ret
+.none: xor eax,eax
+ ret
+section .note.GNU-stack noalloc noexec nowrite progbits

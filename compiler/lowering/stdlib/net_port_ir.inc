@@ -1,0 +1,27 @@
+%ifndef NEBOC_NET_PORT_IR_INC
+%define NEBOC_NET_PORT_IR_INC 1
+%include "compiler/semantic/stdlib/net_port_semantic.inc"
+%define neboc_rede_e_protocolos_IR_MAGIC_OFFSET 0
+%define neboc_rede_e_protocolos_IR_OPERATION_OFFSET 8
+%define neboc_rede_e_protocolos_IR_ARITY_OFFSET 16
+%define NEBOC_IR_PORT_OFFSET 24
+%define neboc_rede_e_protocolos_IR_DIGIT_COUNT_OFFSET 32
+%define neboc_rede_e_protocolos_IR_LITERAL_HASH_OFFSET 40
+%define neboc_rede_e_protocolos_IR_RESULT_TYPE_OFFSET 48
+%define neboc_rede_e_protocolos_IR_EFFECT_OFFSET 56
+%define neboc_rede_e_protocolos_IR_SYNTAX_HASH_OFFSET 64
+%define neboc_rede_e_protocolos_IR_AUTHORITY_HASH_OFFSET 72
+%define neboc_rede_e_protocolos_IR_SEMANTIC_HASH_OFFSET 80
+%define neboc_rede_e_protocolos_IR_DECISION_OFFSET 88
+%define neboc_rede_e_protocolos_IR_DIAGNOSTIC_OFFSET 96
+%define neboc_rede_e_protocolos_IR_FLAGS_OFFSET 104
+%define neboc_rede_e_protocolos_IR_TARGET_OFFSET 112
+%define neboc_rede_e_protocolos_IR_HASH_OFFSET 120
+%define neboc_rede_e_protocolos_IR_HASHED_BYTES 120
+%define neboc_rede_e_protocolos_IR_QWORDS 16
+%define neboc_rede_e_protocolos_IR_SIZE 128
+%define neboc_rede_e_protocolos_IR_MAGIC 0x4e45424f47323949
+%define neboc_rede_e_protocolos_IR_FLAG_TARGET_NEUTRAL 1
+%define neboc_rede_e_protocolos_IR_FLAG_PURE 2
+%define neboc_rede_e_protocolos_IR_REQUIRED_FLAGS 3
+%endif

@@ -1,0 +1,13 @@
+%ifndef neboc_seguranca_numerica_conversoes_e_overflow_MODULE_CODEGEN_INC
+%define neboc_seguranca_numerica_conversoes_e_overflow_MODULE_CODEGEN_INC 1
+
+%include "compiler/lowering/modules/module_plan.inc"
+
+%define NEBOC_MODULE_CODEGEN_PLAN_OFFSET 0
+%define NEBOC_MODULE_CODEGEN_WRITER_OFFSET 8
+%define NEBOC_MODULE_CODEGEN_EMITTED_OFFSET 16
+%define NEBOC_MODULE_CODEGEN_DIAGNOSTIC_OFFSET 24
+%define NEBOC_MODULE_CODEGEN_QWORDS 4
+%define NEBOC_MODULE_CODEGEN_SIZE 32
+
+%endif

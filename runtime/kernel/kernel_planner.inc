@@ -1,0 +1,34 @@
+%ifndef NEBO_KERNEL_PLANNER_INC
+%define NEBO_KERNEL_PLANNER_INC 1
+%include "runtime/kernel/avx2_kernels.inc"
+%define NEBO_KERNEL_OP_ADD 1
+%define NEBO_KERNEL_OP_DOT 2
+%define NEBO_KERNEL_OP_REDUCE_SUM 3
+%define NEBO_KERNEL_OP_RELU 4
+%define NEBO_KERNEL_OP_CONVERT_I64_F64 5
+%define NEBO_KERNEL_OP_MATMUL 6
+%define NEBO_KERNEL_DTYPE_F64 1
+%define NEBO_KERNEL_DTYPE_I64_TO_F64 2
+%define NEBO_PLAN_REASON_SMALL 1
+%define NEBO_PLAN_REASON_ISA 2
+%define NEBO_PLAN_REASON_OPERATION 3
+%define NEBO_REQUEST_OP 0
+%define NEBO_REQUEST_DTYPE 8
+%define NEBO_REQUEST_ELEMENTS 16
+%define NEBO_REQUEST_ALIGNMENT 24
+%define NEBO_REQUEST_OVERLAP 32
+%define NEBO_REQUEST_WORKSPACE 40
+%define NEBO_REQUEST_FEATURES 48
+%define nebo_kernel_planner_REQUEST_SIZE 56
+%define NEBO_PLAN_TIER 0
+%define NEBO_PLAN_REASON 8
+%define NEBO_PLAN_VECTOR_WIDTH 16
+%define NEBO_PLAN_WORKSPACE 24
+%define NEBO_PLAN_TRACE 32
+%define NEBO_PLAN_SIZE 40
+%ifndef NEBO_KERNEL_PLANNER_IMPLEMENTATION
+extern nebo_kernel_plan
+extern nebo_kernel_tier_registry
+extern nebo_kernel_tier_registry_count
+%endif
+%endif

@@ -1,0 +1,8 @@
+%ifndef NEBO_PDE_INC
+%define NEBO_PDE_INC 1
+%define NEBO_PDE_OK 0
+%define NEBO_PDE_INVALID 1
+%define NEBO_PDE_LIMIT 2
+%define NEBO_PDE_MAX_AXIS 256
+%define NEBO_PDE_MAX_CELLS 65536
+%endif

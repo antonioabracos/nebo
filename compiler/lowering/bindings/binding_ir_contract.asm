@@ -1,0 +1,112 @@
+; Nebo Assembly — BINDINGS-CONSTANTES-MUTABILIDADE-E-DEFINITE-ASSIGNMENT-PF003 isolated binding abstract IR contract
+bits 64
+default rel
+%include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"
+%include "compiler/support/status/status_codes.inc"
+%include "compiler/parser/binding_definite_assignment_contract.inc"
+%include "compiler/semantic/bindings/binding_semantic.inc"
+%include "compiler/lowering/bindings/binding_ir_contract.inc"
+section .text
+NEBOC_ABI_FUNCTION neboc_binding_ir_lower
+ push r12
+ mov r12,rdi
+ test r12,r12
+ jz .invalid_argument
+ mov r11,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_SEMANTIC_REQUEST_OFFSET]
+ test r11,r11
+ jz .invalid_argument
+ lea rdi,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_OPERATION_OFFSET]
+ mov ecx,(neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_REQUEST_SIZE-neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_OPERATION_OFFSET)/8
+ xor eax,eax
+ rep stosq
+ cmp qword [r11+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SEM_ERROR_CODE_OFFSET],neboc_bindings_constantes_mutabilidade_e_definite_assignment_SEM_ERROR_NONE
+ jne .semantic_invalid
+ cmp qword [r11+NEBOC_SEM_SOURCE_DIAGNOSTIC_OFFSET],NEBOC_BIND_DIAG_NONE
+ jne .semantic_invalid
+ mov rax,[r11+NEBOC_SEM_RESULT_OPERATION_OFFSET]
+ cmp rax,NEBOC_SEM_OPERATION_DIRECT_BINDING
+ jb .semantic_invariant
+ cmp rax,NEBOC_SEM_OPERATION_FLOW_MERGE
+ ja .semantic_invariant
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_OPERATION_OFFSET],rax
+ mov rax,[r11+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SEM_SYMBOL_ID_OFFSET]
+ test rax,rax
+ jz .semantic_invariant
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_SYMBOL_ID_OFFSET],rax
+ mov rax,[r11+NEBOC_SEM_RESULT_STATE_OFFSET]
+ cmp rax,NEBOC_BIND_STATE_DECLARED_UNINITIALIZED
+ jb .semantic_invariant
+ cmp rax,NEBOC_BIND_STATE_INITIALIZED
+ ja .semantic_invariant
+ mov [r12+NEBOC_IR_RESULT_STATE_OFFSET],rax
+ mov rax,[r11+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SEM_RESULT_TYPE_OFFSET]
+ test rax,rax
+ jz .semantic_invariant
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_RESULT_TYPE_OFFSET],rax
+ mov rax,[r11+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SEM_HIR_KIND_OFFSET]
+ test rax,rax
+ jz .semantic_invariant
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_HIR_KIND_OFFSET],rax
+ mov rdx,[r11+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SEM_LIR_KIND_OFFSET]
+ test rdx,rdx
+ jz .semantic_invariant
+ cmp rax,rdx
+ jne .semantic_invariant
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_LIR_KIND_OFFSET],rdx
+ mov rax,[r11+NEBOC_SEM_SYMBOL_FLAGS_OFFSET]
+ test rax,NEBOC_SEM_SYMBOL_IMMUTABLE
+ jz .semantic_invariant
+ mov [r12+NEBOC_IR_SYMBOL_FLAGS_OFFSET],rax
+ mov rax,[r11+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SEM_EFFECT_FLAGS_OFFSET]
+ test rax,NEBOC_SEM_EFFECT_NO_RUNTIME_OBJECT
+ jz .semantic_invariant
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_EFFECT_FLAGS_OFFSET],rax
+ cmp qword [r11+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SEM_RUNTIME_METADATA_OFFSET],neboc_bindings_constantes_mutabilidade_e_definite_assignment_SEM_RUNTIME_METADATA_NONE
+ jne .semantic_invariant
+ mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_RUNTIME_METADATA_OFFSET],neboc_bindings_constantes_mutabilidade_e_definite_assignment_SEM_RUNTIME_METADATA_NONE
+ mov rax,[r11+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SEM_SEMANTIC_HASH_OFFSET]
+ test rax,rax
+ jz .semantic_invariant
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_SEMANTIC_HASH_OFFSET],rax
+ mov rax,[r11+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SEM_SOURCE_ID_OFFSET]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_SOURCE_ID_OFFSET],rax
+ mov rax,[r11+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SEM_NODE_START_OFFSET]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_NODE_START_OFFSET],rax
+ mov rdx,[r11+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SEM_NODE_END_OFFSET]
+ cmp rdx,rax
+ jbe .semantic_invariant
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_NODE_END_OFFSET],rdx
+ mov rax,neboc_bindings_constantes_mutabilidade_e_definite_assignment_SEM_HASH_OFFSET_BASIS
+ mov r10,neboc_bindings_constantes_mutabilidade_e_definite_assignment_SEM_HASH_PRIME
+ xor rax,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_OPERATION_OFFSET]
+ imul rax,r10
+ xor rax,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_SYMBOL_ID_OFFSET]
+ imul rax,r10
+ xor rax,[r12+NEBOC_IR_RESULT_STATE_OFFSET]
+ imul rax,r10
+ xor rax,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_RESULT_TYPE_OFFSET]
+ imul rax,r10
+ xor rax,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_HIR_KIND_OFFSET]
+ imul rax,r10
+ xor rax,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_LIR_KIND_OFFSET]
+ imul rax,r10
+ xor rax,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_SEMANTIC_HASH_OFFSET]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_HASH_OFFSET],rax
+ xor eax,eax
+ pop r12
+ ret
+.semantic_invalid:
+ mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_ERROR_CODE_OFFSET],neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_ERROR_SEMANTIC_INVALID
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ pop r12
+ ret
+.semantic_invariant:
+ mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_ERROR_CODE_OFFSET],neboc_bindings_constantes_mutabilidade_e_definite_assignment_IR_ERROR_SEMANTIC_INVARIANT
+ mov eax,NEBOC_STATUS_INTERNAL_ERROR
+ pop r12
+ ret
+.invalid_argument:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ pop r12
+ ret
+section .note.GNU-stack noalloc noexec nowrite progbits

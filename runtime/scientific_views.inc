@@ -1,0 +1,39 @@
+matrix_tensor_volume_e_comparacao_cientifica_matrix_views_STATE_GREEN equ 0
+matrix_tensor_volume_e_comparacao_cientifica_matrix_views_ERROR_INVALID equ -1
+; END MATRIX-TENSOR-VOLUME-E-COMPARACAO-CIENTIFICA-MATRIX-VIEWS-F01
+
+matrix_tensor_volume_e_comparacao_cientifica_tensor_base_e_shape_inspector_STATE_GREEN equ 0
+matrix_tensor_volume_e_comparacao_cientifica_tensor_base_e_shape_inspector_ERROR_INVALID equ -1
+; END MATRIX-TENSOR-VOLUME-E-COMPARACAO-CIENTIFICA-TENSOR-BASE-E-SHAPE-INSPECTOR-F02
+
+matrix_tensor_volume_e_comparacao_cientifica_tensor_slices_axis_index_STATE_GREEN equ 0
+matrix_tensor_volume_e_comparacao_cientifica_tensor_slices_axis_index_ERROR_INVALID equ -1
+; END MATRIX-TENSOR-VOLUME-E-COMPARACAO-CIENTIFICA-TENSOR-SLICES-AXIS-INDEX-F03
+
+matrix_tensor_volume_e_comparacao_cientifica_volume_slices_STATE_GREEN equ 0
+matrix_tensor_volume_e_comparacao_cientifica_volume_slices_ERROR_INVALID equ -1
+; END MATRIX-TENSOR-VOLUME-E-COMPARACAO-CIENTIFICA-VOLUME-SLICES-F04
+
+matrix_tensor_volume_e_comparacao_cientifica_isosurface_threshold_STATE_GREEN equ 0
+matrix_tensor_volume_e_comparacao_cientifica_isosurface_threshold_ERROR_INVALID equ -1
+; END MATRIX-TENSOR-VOLUME-E-COMPARACAO-CIENTIFICA-ISOSURFACE-THRESHOLD-F05
+
+matrix_tensor_volume_e_comparacao_cientifica_compare_with_metric_STATE_GREEN equ 0
+matrix_tensor_volume_e_comparacao_cientifica_compare_with_metric_ERROR_INVALID equ -1
+; END MATRIX-TENSOR-VOLUME-E-COMPARACAO-CIENTIFICA-COMPARE-WITH-METRIC-F06
+
+matrix_tensor_volume_e_comparacao_cientifica_colormap_quality_STATE_GREEN equ 0
+matrix_tensor_volume_e_comparacao_cientifica_colormap_quality_ERROR_INVALID equ -1
+; END MATRIX-TENSOR-VOLUME-E-COMPARACAO-CIENTIFICA-COLORMAP-QUALITY-F07
+
+matrix_tensor_volume_e_comparacao_cientifica_large_tensor_bounded_views_STATE_GREEN equ 0
+matrix_tensor_volume_e_comparacao_cientifica_large_tensor_bounded_views_ERROR_INVALID equ -1
+; END MATRIX-TENSOR-VOLUME-E-COMPARACAO-CIENTIFICA-LARGE-TENSOR-BOUNDED-VIEWS-F08
+
+matrix_tensor_volume_e_comparacao_cientifica_scientific_reference_oracles_STATE_GREEN equ 0
+matrix_tensor_volume_e_comparacao_cientifica_scientific_reference_oracles_ERROR_INVALID equ -1
+; END MATRIX-TENSOR-VOLUME-E-COMPARACAO-CIENTIFICA-SCIENTIFIC-REFERENCE-ORACLES-F09
+
+matrix_tensor_volume_e_comparacao_cientifica_closeout_STATE_GREEN equ 0
+matrix_tensor_volume_e_comparacao_cientifica_closeout_ERROR_INVALID equ -1
+; END MATRIX-TENSOR-VOLUME-E-COMPARACAO-CIENTIFICA-CLOSEOUT-F10

@@ -1,0 +1,33 @@
+%ifndef NEBOC_GENERIC_NATIVE_CONTRACT_INC
+%define NEBOC_GENERIC_NATIVE_CONTRACT_INC 1
+
+%define NEBOC_NATIVE_HELPER_BOOL 1
+%define NEBOC_NATIVE_HELPER_INT 2
+%define NEBOC_NATIVE_HELPER_FLOAT 3
+%define NEBOC_NATIVE_HELPER_CHAR 4
+
+%define neboc_generics_constraints_overload_e_dispatch_NATIVE_REGISTER_RDI 1
+%define neboc_generics_constraints_overload_e_dispatch_NATIVE_REGISTER_RAX 2
+%define neboc_generics_constraints_overload_e_dispatch_NATIVE_REGISTER_XMM0 3
+
+%define NEBOC_NATIVE_FLAG_DIRECT_CALL 1
+%define NEBOC_NATIVE_FLAG_SCALAR_VALUE 2
+%define NEBOC_NATIVE_FLAG_FRAMELESS 4
+%define neboc_generics_constraints_overload_e_dispatch_NATIVE_REQUIRED_FLAGS 7
+
+%define NEBOC_DIAG_NATIVE_ABI_INVARIANT 20
+
+%define neboc_generics_constraints_overload_e_dispatch_NATIVE_TYPE_ID_OFFSET 0
+%define neboc_generics_constraints_overload_e_dispatch_NATIVE_TARGET_ID_OFFSET 8
+%define NEBOC_NATIVE_IR_FLAGS_OFFSET 16
+%define NEBOC_NATIVE_IR_ABI_CLASS_OFFSET 24
+%define NEBOC_NATIVE_HELPER_ID_OFFSET 32
+%define neboc_generics_constraints_overload_e_dispatch_NATIVE_PARAMETER_REGISTER_OFFSET 40
+%define neboc_generics_constraints_overload_e_dispatch_NATIVE_RETURN_REGISTER_OFFSET 48
+%define NEBOC_NATIVE_VALUE_WIDTH_OFFSET 56
+%define NEBOC_NATIVE_STACK_BYTES_OFFSET 64
+%define neboc_generics_constraints_overload_e_dispatch_NATIVE_FLAGS_OFFSET 72
+%define neboc_generics_constraints_overload_e_dispatch_NATIVE_DIAGNOSTIC_OFFSET 80
+%define neboc_generics_constraints_overload_e_dispatch_NATIVE_REQUEST_SIZE 88
+
+%endif

@@ -1,0 +1,42 @@
+%ifndef NEBOC_PRIVACY_IR_INC
+%define NEBOC_PRIVACY_IR_INC 1
+
+%include "compiler/semantic/privacy/privacy_semantic.inc"
+
+; q0..q50 embed the complete semantic envelope. q51..q64 are fixed abstract
+; HIR/LIR outputs; no target layout or runtime representation is selected.
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_IR_OUTPUT_OFFSET 408
+%define NEBOC_IR_HIR_CLASSIFY_OFFSET 408
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_IR_HIR_POLICY_GATE_OFFSET 416
+%define NEBOC_IR_HIR_REDACT_OFFSET 424
+%define NEBOC_IR_HIR_SINK_GATE_OFFSET 432
+%define NEBOC_IR_LIR_LABEL_UNION_OFFSET 440
+%define NEBOC_IR_LIR_REDACT_MASK_OFFSET 448
+%define NEBOC_IR_LIR_TRUST_ASSERT_OFFSET 456
+%define NEBOC_IR_LIR_SINK_ASSERT_OFFSET 464
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_IR_RESULT_TYPE_OFFSET 472
+%define NEBOC_IR_EFFECTIVE_LABELS_OFFSET 480
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_IR_DECISION_OFFSET 488
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_IR_DIAGNOSTIC_OFFSET 496
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_IR_ALLOCATIONS_OFFSET 504
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_IR_HASH_OFFSET 512
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_IR_HASHED_BYTES 512
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_IR_OUTPUT_QWORDS 14
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_IR_REQUEST_SIZE 520
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_IR_REQUEST_QWORDS 65
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_IR_ALIGNMENT 8
+
+%define NEBOC_HIR_PRIVACY_CLASSIFY 2201
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_HIR_POLICY_GATE 2202
+%define NEBOC_HIR_REDACT 2203
+%define NEBOC_HIR_SINK_GATE 2204
+%define NEBOC_LIR_LABEL_UNION 2211
+%define NEBOC_LIR_REDACT_MASK 2212
+%define NEBOC_LIR_TRUST_ASSERT 2213
+%define NEBOC_LIR_SINK_ASSERT 2214
+
+%if neboc_privacidade_dados_sensiveis_e_zero_trust_IR_OUTPUT_OFFSET != neboc_privacidade_dados_sensiveis_e_zero_trust_SEMANTIC_REQUEST_SIZE
+    %error "privacidade_dados_sensiveis_e_zero_trust IR/semantic boundary drift"
+%endif
+
+%endif

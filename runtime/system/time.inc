@@ -1,0 +1,12 @@
+%ifndef NEBO_TIME_INC
+%define NEBO_TIME_INC 1
+%include "compiler/semantic/system/system_contract.inc"
+extern nebo_clock_capability_init
+extern nebo_duration_from_millis
+extern nebo_duration_to_millis
+extern nebo_duration_add
+extern nebo_instant_now
+extern nebo_system_time_now
+extern nebo_instant_elapsed
+extern nebo_duration_sleep
+%endif

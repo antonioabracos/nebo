@@ -1,0 +1,22 @@
+%ifndef nebo_stream_STREAM_INC
+%define nebo_stream_STREAM_INC 1
+%define nebo_stream_STREAM_MAX_CAPACITY 256
+%define NEBO_STREAM_POLICY_REJECT 1
+%define NEBO_STREAM_POLICY_DROP_OLDEST 2
+%define nebo_stream_STREAM_BUFFER 0
+%define nebo_stream_STREAM_CAPACITY 8
+%define nebo_stream_STREAM_HEAD 16
+%define nebo_stream_STREAM_TAIL 24
+%define nebo_stream_STREAM_COUNT 32
+%define nebo_stream_STREAM_CANCELLED 40
+%define NEBO_STREAM_POLICY 48
+%define NEBO_STREAM_DROPPED 56
+%define nebo_stream_STREAM_SIZE 64
+%define NEBO_STREAM_STATUS_OK 0
+%define NEBO_STREAM_STATUS_INVALID 1
+%define NEBO_STREAM_STATUS_LIMIT 2
+%define NEBO_STREAM_STATUS_BACKPRESSURE 3
+%define NEBO_STREAM_STATUS_EMPTY 4
+%define NEBO_STREAM_STATUS_CANCELLED 5
+%define NEBO_STREAM_STATUS_OVERFLOW 6
+%endif

@@ -1,0 +1,9 @@
+%ifndef NEBOC_SOURCE_UTF8_INC
+%define NEBOC_SOURCE_UTF8_INC 1
+
+%define NEBOC_UTF8_BOM_BYTE_0 0xef
+%define NEBOC_UTF8_BOM_BYTE_1 0xbb
+%define NEBOC_UTF8_BOM_BYTE_2 0xbf
+%define NEBOC_UTF8_BOM_SIZE 3
+
+%endif

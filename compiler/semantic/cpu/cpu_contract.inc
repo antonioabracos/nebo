@@ -1,0 +1,22 @@
+%ifndef NEBO_CPU_CONTRACT_INC
+%define NEBO_CPU_CONTRACT_INC 1
+%define NEBO_CPU_FEATURE_SSE2 1
+%define NEBO_CPU_FEATURE_AVX 2
+%define NEBO_CPU_FEATURE_AVX2 4
+%define NEBO_CPU_FEATURE_OSXSAVE 8
+%define NEBO_CPU_FEATURE_XCR0_YMM 16
+%define NEBO_CPU_MAGIC 0x4350554631373031
+%define NEBO_CPU_MAGIC_OFF 0
+%define NEBO_CPU_MAX_LEAF 8
+%define NEBO_CPU_FEATURES 16
+%define NEBO_CPU_CACHE_LINE 24
+%define NEBO_CPU_VENDOR_EBX 32
+%define NEBO_CPU_VENDOR_EDX 36
+%define NEBO_CPU_VENDOR_ECX 40
+%define NEBO_CPU_SIZE 48
+%ifndef NEBO_CPU_CONTRACT_IMPLEMENTATION
+extern nebo_cpu_detect
+extern nebo_cpu_sanitize_features
+extern nebo_cpu_validate
+%endif
+%endif

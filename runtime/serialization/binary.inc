@@ -1,0 +1,18 @@
+%ifndef NEBO_BINARY_INC
+%define NEBO_BINARY_INC 1
+%include "compiler/semantic/system/codec_contract.inc"
+extern nebo_binary_encoder_init
+extern nebo_binary_encoder_put_u32
+extern nebo_binary_encoder_put_u64
+extern nebo_binary_encoder_put_bytes
+extern nebo_binary_encoder_enter
+extern nebo_binary_encoder_leave
+extern nebo_binary_encoder_finish
+extern nebo_binary_decoder_init
+extern nebo_binary_decoder_get_u32
+extern nebo_binary_decoder_get_u64
+extern nebo_binary_decoder_get_bytes
+extern nebo_binary_decoder_enter
+extern nebo_binary_decoder_leave
+extern nebo_binary_decoder_finish
+%endif

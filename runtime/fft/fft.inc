@@ -1,0 +1,9 @@
+%ifndef NEBO_FFT_INC
+%define NEBO_FFT_INC 1
+%define NEBO_FFT_OK 0
+%define NEBO_FFT_INVALID 1
+%define NEBO_FFT_UNSUPPORTED_LENGTH 2
+%define NEBO_FFT_FORWARD 0
+%define NEBO_FFT_INVERSE 1
+%define NEBO_FFT_MAX_LENGTH 1024
+%endif

@@ -1,0 +1,9 @@
+{
+  "cli": "neboc 1.0.0",
+  "compiler": "neboc",
+  "edition": "1.0",
+  "language": "Nebo",
+  "schema": "NEBO-VERSION-v1",
+  "target": "x86_64-systemv-elf-linux",
+  "version": "1.0.0"
+}

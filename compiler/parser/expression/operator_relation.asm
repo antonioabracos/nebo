@@ -1,0 +1,78 @@
+; Range/relation/equality family contracts with explicit non-associativity.
+bits 64
+default rel
+
+%include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"
+%include "compiler/tokens/token_kind.inc"
+%include "compiler/parser/expression/operator_precedence.inc"
+
+%define RELATION_TOKEN_OFFSET 0
+%define RELATION_REGISTRY_ID_OFFSET 8
+%define RELATION_FAMILY_OFFSET 16
+%define RELATION_BP_OFFSET 24
+%define RELATION_FLAGS_OFFSET 32
+%define RELATION_ENTRY_SIZE 40
+%define RELATION_ENTRY_COUNT 6
+
+section .rodata
+align 8
+relation_entries:
+ dq NEBOC_TOKEN_LESS,24,NEBOC_OPERATOR_FAMILY_RELATIONAL,NEBOC_OPERATOR_BP_RELATIONAL,NEBOC_OPERATOR_PARSE_FLAG_ACTIVE_CURRENT|NEBOC_OPERATOR_PARSE_FLAG_NONASSOCIATIVE
+ dq NEBOC_TOKEN_LESS_EQUAL,25,NEBOC_OPERATOR_FAMILY_RELATIONAL,NEBOC_OPERATOR_BP_RELATIONAL,NEBOC_OPERATOR_PARSE_FLAG_ACTIVE_CURRENT|NEBOC_OPERATOR_PARSE_FLAG_NONASSOCIATIVE
+ dq NEBOC_TOKEN_GREATER,26,NEBOC_OPERATOR_FAMILY_RELATIONAL,NEBOC_OPERATOR_BP_RELATIONAL,NEBOC_OPERATOR_PARSE_FLAG_ACTIVE_CURRENT|NEBOC_OPERATOR_PARSE_FLAG_NONASSOCIATIVE
+ dq NEBOC_TOKEN_GREATER_EQUAL,27,NEBOC_OPERATOR_FAMILY_RELATIONAL,NEBOC_OPERATOR_BP_RELATIONAL,NEBOC_OPERATOR_PARSE_FLAG_ACTIVE_CURRENT|NEBOC_OPERATOR_PARSE_FLAG_NONASSOCIATIVE
+ dq NEBOC_TOKEN_EQUAL_EQUAL,28,NEBOC_OPERATOR_FAMILY_EQUALITY,NEBOC_OPERATOR_BP_EQUALITY,NEBOC_OPERATOR_PARSE_FLAG_ACTIVE_CURRENT|NEBOC_OPERATOR_PARSE_FLAG_NONASSOCIATIVE
+ dq NEBOC_TOKEN_BANG_EQUAL,29,NEBOC_OPERATOR_FAMILY_EQUALITY,NEBOC_OPERATOR_BP_EQUALITY,NEBOC_OPERATOR_PARSE_FLAG_ACTIVE_CURRENT|NEBOC_OPERATOR_PARSE_FLAG_NONASSOCIATIVE
+
+section .text
+; relation_lookup(token_kind) -> RAX=record or zero, EDX=Registry ID,
+; ECX=family, R8D=BP, R9D=flags.
+NEBOC_ABI_FUNCTION neboc_operator_relation_lookup
+ lea rax,[rel relation_entries]
+ mov r10d,RELATION_ENTRY_COUNT
+.loop:
+ cmp [rax+RELATION_TOKEN_OFFSET],rdi
+ je .found
+ add rax,RELATION_ENTRY_SIZE
+ dec r10d
+ jnz .loop
+ xor eax,eax
+ xor edx,edx
+ xor ecx,ecx
+ xor r8d,r8d
+ xor r9d,r9d
+ ret
+.found:
+ mov edx,[rax+RELATION_REGISTRY_ID_OFFSET]
+ mov ecx,[rax+RELATION_FAMILY_OFFSET]
+ mov r8d,[rax+RELATION_BP_OFFSET]
+ mov r9d,[rax+RELATION_FLAGS_OFFSET]
+ ret
+
+; Return EAX=0 only for a second operator in the same non-associative family.
+NEBOC_ABI_FUNCTION neboc_operator_nonassoc_chain_allowed
+ cmp rdi,rsi
+ jne .allowed
+ cmp edi,NEBOC_OPERATOR_FAMILY_RANGE
+ je .rejected
+ cmp edi,NEBOC_OPERATOR_FAMILY_RELATIONAL
+ je .rejected
+ cmp edi,NEBOC_OPERATOR_FAMILY_EQUALITY
+ je .rejected
+.allowed:
+ mov eax,1
+ ret
+.rejected:
+ xor eax,eax
+ ret
+
+; Ranges have P125/non-associative shape but no P01 lexical activation.
+NEBOC_ABI_FUNCTION neboc_operator_range_contract
+ xor eax,eax
+ mov edx,NEBOC_OPERATOR_FAMILY_RANGE
+ mov ecx,NEBOC_OPERATOR_BP_RANGE
+ mov r8d,NEBOC_OPERATOR_PARSE_ASSOC_NONASSOC
+ mov r9d,NEBOC_OPERATOR_PARSE_FLAG_INACTIVE_CURRENT|NEBOC_OPERATOR_PARSE_FLAG_NONASSOCIATIVE
+ ret
+
+section .note.GNU-stack noalloc noexec nowrite progbits

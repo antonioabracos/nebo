@@ -1,0 +1,11 @@
+%ifndef NEBO_RULES_INC
+%define NEBO_RULES_INC 1
+%define NEBO_RULE_ENTRY_SIZE 32
+%define NEBO_RULE_MAX 64
+%define NEBO_RULE_OK 0
+%define NEBO_RULE_INVALID 1
+%define NEBO_RULE_LIMIT 2
+%define NEBO_RULE_NO_MATCH 3
+%define NEBO_RULE_CONFLICT 4
+%define NEBO_RULE_CYCLE 5
+%endif

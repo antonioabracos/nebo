@@ -1,0 +1,27 @@
+%ifndef NEBOC_OWNERSHIP_RUNTIME_INC
+%define NEBOC_OWNERSHIP_RUNTIME_INC 1
+
+%include "compiler/lowering/memory/ownership_native.inc"
+
+; q83..q107 are the single-use runtime observation and execution-state copy.
+%define NEBOC_RUNTIME_STATE_OFFSET 664
+%define NEBOC_RUNTIME_EXECUTED_OFFSET 792
+%define NEBOC_RUNTIME_STATUS_OFFSET 800
+%define NEBOC_RUNTIME_OBSERVED_STATE_OFFSET 808
+%define NEBOC_RUNTIME_CLEANUP_DELTA_OFFSET 816
+%define NEBOC_RUNTIME_GENERATION_DELTA_OFFSET 824
+%define NEBOC_RUNTIME_FINAL_STATE_HASH_OFFSET 832
+%define neboc_memoria_ownership_lifetimes_e_recursos_RUNTIME_DIAGNOSTIC_OFFSET 840
+%define neboc_memoria_ownership_lifetimes_e_recursos_RUNTIME_DECISION_OFFSET 848
+%define neboc_memoria_ownership_lifetimes_e_recursos_RUNTIME_EVENT_HASH_OFFSET 856
+%define neboc_memoria_ownership_lifetimes_e_recursos_RUNTIME_HASHED_BYTES 856
+%define neboc_memoria_ownership_lifetimes_e_recursos_RUNTIME_OUTPUT_QWORDS 25
+%define neboc_memoria_ownership_lifetimes_e_recursos_RUNTIME_REQUEST_QWORDS 108
+%define neboc_memoria_ownership_lifetimes_e_recursos_RUNTIME_REQUEST_SIZE 864
+%define neboc_memoria_ownership_lifetimes_e_recursos_RUNTIME_ALIGNMENT 8
+
+%if NEBOC_RUNTIME_STATE_OFFSET != NEBOC_NATIVE_PLAN_SIZE
+    %error "G24 runtime/native boundary drift"
+%endif
+
+%endif

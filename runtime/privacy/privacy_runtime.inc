@@ -1,0 +1,27 @@
+%ifndef NEBOC_PRIVACY_RUNTIME_INC
+%define NEBOC_PRIVACY_RUNTIME_INC 1
+
+%include "compiler/semantic/privacy/privacy_policy.inc"
+
+; q0..q1 inputs: authenticated PF001 record pointer and requested label subset.
+; q2..q6 are deterministic runtime-owned outputs.
+%define NEBOC_RUNTIME_PRIVACY_RECORD_OFFSET 0
+%define NEBOC_RUNTIME_REQUESTED_LABELS_OFFSET 8
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_RUNTIME_DECISION_OFFSET 16
+%define NEBOC_RUNTIME_EFFECTIVE_LABELS_OFFSET 24
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_RUNTIME_DIAGNOSTIC_OFFSET 32
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_RUNTIME_EVENT_HASH_OFFSET 40
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_RUNTIME_ALLOCATIONS_OFFSET 48
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_RUNTIME_REQUEST_SIZE 56
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_RUNTIME_REQUEST_QWORDS 7
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_RUNTIME_ALIGNMENT 8
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_RUNTIME_OUTPUT_OFFSET 16
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_RUNTIME_OUTPUT_QWORDS 5
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_RUNTIME_EVENT_HASHED_BYTES 40
+%define neboc_privacidade_dados_sensiveis_e_zero_trust_RUNTIME_ALLOCATION_NONE 0
+
+%if NEBOC_PRIVACY_REQUEST_QWORDS != 35
+    %error "G22 runtime/PF001 record qword drift"
+%endif
+
+%endif

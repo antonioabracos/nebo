@@ -1,0 +1,73 @@
+%ifndef NEBOC_GENERIC_API_CONTRACT_INC
+%define NEBOC_GENERIC_API_CONTRACT_INC 1
+
+%define NEBOC_OP_GENERIC_DECL 1
+%define NEBOC_OP_GENERIC_CALL 2
+%define NEBOC_OP_GENERIC_TYPE 3
+%define NEBOC_OP_EXPLICIT_TYPE_ARGUMENTS 4
+%define neboc_generics_constraints_overload_e_dispatch_OP_ALIAS 5
+%define NEBOC_OP_CODE_SHARING 6
+
+%define NEBOC_BOUND_NONE 0
+%define NEBOC_BOUND_SCALAR 1
+%define NEBOC_TYPE_PARAMETER_T 256
+
+%define neboc_generics_constraints_overload_e_dispatch_TYPE_BOOL 2
+%define neboc_generics_constraints_overload_e_dispatch_TYPE_INT 3
+%define neboc_generics_constraints_overload_e_dispatch_TYPE_TEXT 4
+%define neboc_generics_constraints_overload_e_dispatch_TYPE_FLOAT 9
+%define neboc_generics_constraints_overload_e_dispatch_TYPE_CHAR 10
+
+%define neboc_generics_constraints_overload_e_dispatch_INPUT_EXACT_SPELLING 1
+%define NEBOC_INPUT_EXACT_PARAMETER_NAME 2
+%define NEBOC_INPUT_EXACT_OPERATION_NAME 4
+%define NEBOC_INPUT_DUPLICATE_PARAMETER 8
+%define neboc_generics_constraints_overload_e_dispatch_INPUT_REQUIRED_FLAGS 7
+
+%define neboc_generics_constraints_overload_e_dispatch_AST_NONE 0
+%define NEBOC_AST_GENERIC_DECL 1
+%define NEBOC_AST_GENERIC_CALL 2
+%define NEBOC_AST_DEFERRED 3
+
+%define NEBOC_RESULT_SYNTAX_ONLY 1
+%define NEBOC_RESULT_INVARIANT 2
+%define NEBOC_RESULT_EXACT_INFERENCE 4
+%define NEBOC_RESULT_MONOMORPHIZE 8
+
+%define neboc_generics_constraints_overload_e_dispatch_DIAG_NONE 0
+%define NEBOC_DIAG_EXPECTED_TYPE_PARAMETER 1
+%define NEBOC_DIAG_TYPE_PARAMETER_ARITY 2
+%define NEBOC_DIAG_DUPLICATE_TYPE_PARAMETER 3
+%define NEBOC_DIAG_BOUND_EXPECTED 4
+%define NEBOC_DIAG_BOUND_UNKNOWN 5
+%define NEBOC_DIAG_BOUND_NOT_SATISFIED 6
+%define NEBOC_DIAG_RECEIVER_TYPE_PARAMETER_REQUIRED 7
+%define NEBOC_DIAG_RETURN_TYPE_PARAMETER_REQUIRED 8
+%define NEBOC_DIAG_POSITIONAL_PARAMETERS_DEFERRED 9
+%define NEBOC_DIAG_EXPLICIT_TYPE_ARGUMENTS_DEFERRED 10
+%define NEBOC_DIAG_GENERIC_TYPE_DEFERRED 11
+%define neboc_generics_constraints_overload_e_dispatch_DIAG_ALIAS_FORBIDDEN 12
+%define NEBOC_DIAG_OVERLOAD_NO_MATCH 13
+%define NEBOC_DIAG_OVERLOAD_AMBIGUOUS 14
+%define NEBOC_DIAG_CODE_SHARING_DEFERRED 15
+
+%define neboc_generics_constraints_overload_e_dispatch_API_OPERATION_OFFSET 0
+%define NEBOC_API_TYPE_PARAMETER_COUNT_OFFSET 8
+%define NEBOC_API_BOUND_OFFSET 16
+%define neboc_generics_constraints_overload_e_dispatch_API_RECEIVER_TYPE_OFFSET 24
+%define NEBOC_API_RETURN_TYPE_OFFSET 32
+%define NEBOC_API_POSITIONAL_COUNT_OFFSET 40
+%define neboc_generics_constraints_overload_e_dispatch_API_INPUT_FLAGS_OFFSET 48
+%define NEBOC_API_CANDIDATE_COUNT_OFFSET 56
+%define neboc_generics_constraints_overload_e_dispatch_API_SUBJECT_PTR_OFFSET 64
+%define neboc_generics_constraints_overload_e_dispatch_API_SUBJECT_LENGTH_OFFSET 72
+%define neboc_generics_constraints_overload_e_dispatch_API_ABSOLUTE_START_OFFSET 80
+%define NEBOC_API_AST_FORM_OFFSET 88
+%define neboc_generics_constraints_overload_e_dispatch_API_RESULT_TYPE_OFFSET 96
+%define neboc_generics_constraints_overload_e_dispatch_API_DIAGNOSTIC_OFFSET 104
+%define neboc_generics_constraints_overload_e_dispatch_API_ERROR_START_OFFSET 112
+%define neboc_generics_constraints_overload_e_dispatch_API_ERROR_END_OFFSET 120
+%define neboc_generics_constraints_overload_e_dispatch_API_HASH_OFFSET 128
+%define neboc_generics_constraints_overload_e_dispatch_API_REQUEST_SIZE 136
+
+%endif

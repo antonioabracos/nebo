@@ -1,0 +1,13 @@
+; CLI-NEBOC-BUILD-REPL-E-FERRAMENTAS-F03 bounded native ABI.
+%ifndef NEBO_MESH_INC
+%define NEBO_MESH_INC 1
+%include "compiler/semantic/spatial/mesh_contract.inc"
+%define NEBO_MESH_REPORT_STATUS 0
+%define NEBO_MESH_REPORT_COUNT 8
+%define NEBO_MESH_REPORT_SUM 16
+%define NEBO_MESH_REPORT_HASH 24
+%define NEBO_MESH_REPORT_MIN 32
+%define NEBO_MESH_REPORT_MAX 40
+%define NEBO_MESH_REPORT_PROFILE 48
+%define NEBO_MESH_REPORT_SIZE 56
+%endif

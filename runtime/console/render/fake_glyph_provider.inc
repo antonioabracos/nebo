@@ -1,0 +1,27 @@
+%ifndef NEBO_FAKE_GLYPH_PROVIDER_INC
+%define NEBO_FAKE_GLYPH_PROVIDER_INC 1
+
+%include "runtime/console/layout/console_layout.inc"
+
+; DEC-D003: no external font asset enters MF044. The headless provider is a
+; deterministic synthetic bitmap provider. Native embedded atlas remains for a
+; later front with a separately recorded asset/license decision.
+%define NEBO_FAKE_GLYPH_ADVANCE_OFFSET 0
+%define NEBO_FAKE_GLYPH_WIDTH_OFFSET 8
+%define NEBO_FAKE_GLYPH_HEIGHT_OFFSET 16
+%define NEBO_FAKE_GLYPH_BASELINE_OFFSET 24
+%define NEBO_FAKE_GLYPH_LINE_HEIGHT_OFFSET 32
+%define NEBO_FAKE_GLYPH_COVERAGE_FLAGS_OFFSET 40
+%define NEBO_FAKE_GLYPH_REPLACEMENT_CODEPOINT_OFFSET 48
+%define NEBO_FAKE_GLYPH_LAST_STATUS_OFFSET 56
+%define NEBO_FAKE_GLYPH_PROVIDER_SIZE 64
+%define NEBO_FAKE_GLYPH_PROVIDER_QWORDS 8
+
+%define NEBO_FAKE_GLYPH_COVERAGE_ASCII 1
+%define NEBO_FAKE_GLYPH_COVERAGE_LATIN1 2
+%define NEBO_FAKE_GLYPH_COVERAGE_EURO 4
+%define NEBO_FAKE_GLYPH_COVERAGE_REPLACEMENT 8
+%define NEBO_FAKE_GLYPH_REQUIRED_COVERAGE 15
+%define NEBO_FAKE_GLYPH_REPLACEMENT_CODEPOINT 0xFFFD
+
+%endif

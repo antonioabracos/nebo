@@ -1,0 +1,31 @@
+dashboards_panels_cells_e_composicao_multi_view_dashboard_create_spec_STATE_GREEN equ 0
+dashboards_panels_cells_e_composicao_multi_view_dashboard_create_spec_ERROR_INVALID equ -1
+; END DASHBOARDS-PANELS-CELLS-E-COMPOSICAO-MULTI-VIEW-DASHBOARD-CREATE-SPEC-F01
+
+dashboards_panels_cells_e_composicao_multi_view_panel_composition_STATE_GREEN equ 0
+dashboards_panels_cells_e_composicao_multi_view_panel_composition_ERROR_INVALID equ -1
+; END DASHBOARDS-PANELS-CELLS-E-COMPOSICAO-MULTI-VIEW-PANEL-COMPOSITION-F02
+
+dashboards_panels_cells_e_composicao_multi_view_add_text_chart_table_timeline_STATE_GREEN equ 0
+dashboards_panels_cells_e_composicao_multi_view_add_text_chart_table_timeline_ERROR_INVALID equ -1
+; END DASHBOARDS-PANELS-CELLS-E-COMPOSICAO-MULTI-VIEW-ADD-TEXT-CHART-TABLE-TIMELINE-F03
+
+dashboards_panels_cells_e_composicao_multi_view_cell_logpanel_source_STATE_GREEN equ 0
+dashboards_panels_cells_e_composicao_multi_view_cell_logpanel_source_ERROR_INVALID equ -1
+; END DASHBOARDS-PANELS-CELLS-E-COMPOSICAO-MULTI-VIEW-CELL-LOGPANEL-SOURCE-F04
+
+dashboards_panels_cells_e_composicao_multi_view_layout_present_show_STATE_GREEN equ 0
+dashboards_panels_cells_e_composicao_multi_view_layout_present_show_ERROR_INVALID equ -1
+; END DASHBOARDS-PANELS-CELLS-E-COMPOSICAO-MULTI-VIEW-LAYOUT-PRESENT-SHOW-F05
+
+dashboards_panels_cells_e_composicao_multi_view_dashboard_export_STATE_GREEN equ 0
+dashboards_panels_cells_e_composicao_multi_view_dashboard_export_ERROR_INVALID equ -1
+; END DASHBOARDS-PANELS-CELLS-E-COMPOSICAO-MULTI-VIEW-DASHBOARD-EXPORT-F06
+
+dashboards_panels_cells_e_composicao_multi_view_cross_widget_interactions_STATE_GREEN equ 0
+dashboards_panels_cells_e_composicao_multi_view_cross_widget_interactions_ERROR_INVALID equ -1
+; END DASHBOARDS-PANELS-CELLS-E-COMPOSICAO-MULTI-VIEW-CROSS-WIDGET-INTERACTIONS-F07
+
+dashboards_panels_cells_e_composicao_multi_view_lifecycle_snapshots_STATE_GREEN equ 0
+dashboards_panels_cells_e_composicao_multi_view_lifecycle_snapshots_ERROR_INVALID equ -1
+; END DASHBOARDS-PANELS-CELLS-E-COMPOSICAO-MULTI-VIEW-LIFECYCLE-SNAPSHOTS-F08

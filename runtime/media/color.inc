@@ -1,0 +1,20 @@
+%ifndef nebo_color_COLOR_INC_media_native_vertical
+%define nebo_color_COLOR_INC_media_native_vertical 1
+%define NEBO_MEDIA_OK 0
+%define NEBO_MEDIA_E_ARGUMENT 1
+%define NEBO_MEDIA_E_FORMAT 2
+%define NEBO_MEDIA_E_RANGE 3
+%define NEBO_PIXEL_RGBA8 1
+%define NEBO_PIXEL_GRAY8 2
+%define NEBO_PIXEL_FORMAT_RGBA8_VALUE 0x0000000004040001
+%define NEBO_PIXEL_FORMAT_GRAY8_VALUE 0x0000000001010002
+%ifndef NEBO_COLOR_IMPLEMENTATION
+extern nebo_color_rgb_media_native_vertical
+extern nebo_color_rgba_media_native_vertical
+extern nebo_color_to_linear_u8
+extern nebo_color_to_srgb_q16
+extern nebo_pixel_format_rgba8
+extern nebo_pixel_format_gray8
+extern nebo_pixel_pack
+%endif
+%endif

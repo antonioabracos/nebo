@@ -1,0 +1,40 @@
+%ifndef NEBOC_GENERIC_SEMANTIC_INC
+%define NEBOC_GENERIC_SEMANTIC_INC 1
+
+%define NEBOC_SEM_KIND_DECLARATION 1
+%define NEBOC_SEM_KIND_CALL 2
+
+%define NEBOC_SELECTED_NONE 0
+%define NEBOC_SELECTED_CONCRETE 1
+%define NEBOC_SELECTED_GENERIC 2
+
+%define NEBOC_RANK_CONCRETE 0
+%define NEBOC_RANK_GENERIC 1
+
+%define NEBOC_SEM_FLAG_REQUIRES_CONVERSION 1
+%define NEBOC_SEM_DEFAULT_INSTANCE_LIMIT 32
+
+%define NEBOC_DIAG_INSTANTIATION_LIMIT 16
+%define neboc_generics_constraints_overload_e_dispatch_DIAG_SEMANTIC_SPAN_INVARIANT 17
+%define NEBOC_DIAG_MONOMORPHIZATION_INVARIANT 18
+%define NEBOC_DIAG_UNSUPPORTED_TARGET 19
+
+%define neboc_generics_constraints_overload_e_dispatch_SEM_KIND_OFFSET 0
+%define NEBOC_SEM_DECLARATION_ID_OFFSET 8
+%define neboc_generics_constraints_overload_e_dispatch_SEM_RECEIVER_TYPE_OFFSET 16
+%define NEBOC_SEM_BODY_RETURN_TYPE_OFFSET 24
+%define NEBOC_SEM_CONCRETE_CANDIDATES_OFFSET 32
+%define NEBOC_SEM_GENERIC_CANDIDATES_OFFSET 40
+%define neboc_generics_constraints_overload_e_dispatch_SEM_FLAGS_OFFSET 48
+%define NEBOC_SEM_INSTANCE_COUNT_OFFSET 56
+%define NEBOC_SEM_INSTANCE_LIMIT_OFFSET 64
+%define neboc_generics_constraints_overload_e_dispatch_SEM_SOURCE_START_OFFSET 72
+%define neboc_generics_constraints_overload_e_dispatch_SEM_SOURCE_END_OFFSET 80
+%define NEBOC_SEM_SELECTED_KIND_OFFSET 88
+%define NEBOC_SEM_SUBSTITUTION_TYPE_OFFSET 96
+%define NEBOC_SEM_RANK_OFFSET 104
+%define neboc_generics_constraints_overload_e_dispatch_SEM_DIAGNOSTIC_OFFSET 112
+%define NEBOC_SEM_INSTANCE_KEY_OFFSET 120
+%define neboc_generics_constraints_overload_e_dispatch_SEM_REQUEST_SIZE 128
+
+%endif

@@ -1,0 +1,7 @@
+%ifndef NEBO_MCMC_SMC_INC
+%define NEBO_MCMC_SMC_INC 1
+%define NEBO_MC_OK 0
+%define NEBO_MC_INVALID 1
+%define NEBO_MC_LIMIT 2
+%define NEBO_MC_MAX_PARTICLES 100000
+%endif

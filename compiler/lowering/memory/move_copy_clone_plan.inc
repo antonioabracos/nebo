@@ -1,0 +1,23 @@
+%ifndef NEBOC_MOVE_COPY_CLONE_PLAN_INC
+%define NEBOC_MOVE_COPY_CLONE_PLAN_INC 1
+
+%define neboc_text_char_unicode_e_bytes_PLAN_MAGIC_OFFSET 0
+%define neboc_text_char_unicode_e_bytes_PLAN_SEMANTIC_HASH_OFFSET 8
+%define NEBOC_PLAN_OPERATION_COUNT_OFFSET 16
+%define NEBOC_PLAN_SYMBOL_COUNT_OFFSET 24
+%define neboc_text_char_unicode_e_bytes_PLAN_RESULT_TYPE_OFFSET 32
+%define neboc_text_char_unicode_e_bytes_PLAN_RESULT_VALUE_OFFSET 40
+%define NEBOC_PLAN_COPY_COUNT_OFFSET 48
+%define NEBOC_PLAN_MOVE_COUNT_OFFSET 56
+%define NEBOC_PLAN_CLONE_COUNT_OFFSET 64
+%define NEBOC_PLAN_CLEANUP_COUNT_OFFSET 72
+%define NEBOC_PLAN_CLEANUP_ORDER_HASH_OFFSET 80
+%define NEBOC_PLAN_CLOSED_OWNER_COUNT_OFFSET 88
+%define NEBOC_PLAN_SAFETY_PROOF_HASH_OFFSET 96
+%define neboc_text_char_unicode_e_bytes_PLAN_HASH_OFFSET 104
+%define neboc_text_char_unicode_e_bytes_PLAN_HASHED_BYTES 104
+%define neboc_text_char_unicode_e_bytes_PLAN_SIZE 112
+%define neboc_text_char_unicode_e_bytes_PLAN_QWORDS 14
+%define neboc_text_char_unicode_e_bytes_PLAN_MAGIC 0x52463432504c4e31
+
+%endif

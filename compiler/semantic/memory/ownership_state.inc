@@ -1,0 +1,72 @@
+%ifndef NEBOC_OWNERSHIP_STATE_INC
+%define NEBOC_OWNERSHIP_STATE_INC 1
+
+%include "compiler/diagnostics/catalog.inc"
+
+; MEMORIA-OWNERSHIP-LIFETIMES-E-RECURSOS-PF001 internal, caller-owned and pointerless resource state.
+%define neboc_memoria_ownership_lifetimes_e_recursos_MAGIC_OFFSET 0
+%define NEBOC_GENERATION_OFFSET 8
+%define NEBOC_RESOURCE_ID_OFFSET 16
+%define NEBOC_OWNER_TOKEN_OFFSET 24
+%define NEBOC_OWNER_REGION_OFFSET 32
+%define NEBOC_STATE_OFFSET 40
+%define NEBOC_BORROW_MODE_OFFSET 48
+%define NEBOC_BORROW_COUNT_OFFSET 56
+%define NEBOC_BORROW_TOKEN_OFFSET 64
+%define NEBOC_BORROW_REGION_OFFSET 72
+%define NEBOC_CLEANUP_COUNT_OFFSET 80
+%define NEBOC_TRANSITION_COUNT_OFFSET 88
+%define NEBOC_LAST_OPERATION_OFFSET 96
+%define neboc_memoria_ownership_lifetimes_e_recursos_DIAGNOSTIC_OFFSET 104
+%define neboc_memoria_ownership_lifetimes_e_recursos_DECISION_OFFSET 112
+%define neboc_memoria_ownership_lifetimes_e_recursos_STATE_HASH_OFFSET 120
+%define neboc_memoria_ownership_lifetimes_e_recursos_HASHED_BYTES 104
+%define neboc_memoria_ownership_lifetimes_e_recursos_RECORD_QWORDS 16
+%define neboc_memoria_ownership_lifetimes_e_recursos_RECORD_SIZE 128
+%define neboc_memoria_ownership_lifetimes_e_recursos_ALIGNMENT 8
+
+%define neboc_memoria_ownership_lifetimes_e_recursos_MAGIC 0x4e45424f47323431
+
+%define NEBOC_STATE_UNINITIALIZED 0
+%define NEBOC_STATE_OWNED 1
+%define NEBOC_STATE_BORROWED 2
+%define neboc_memoria_ownership_lifetimes_e_recursos_STATE_MOVED 3
+%define neboc_memoria_ownership_lifetimes_e_recursos_STATE_DROPPED 4
+
+%define NEBOC_BORROW_NONE 0
+%define NEBOC_BORROW_SHARED 1
+%define NEBOC_BORROW_MUTABLE 2
+
+%define NEBOC_OP_INIT 1
+%define NEBOC_OP_BORROW_SHARED 2
+%define NEBOC_OP_RELEASE_SHARED 3
+%define NEBOC_OP_BORROW_MUTABLE 4
+%define NEBOC_OP_RELEASE_MUTABLE 5
+%define NEBOC_OP_MOVE_OUT 6
+%define NEBOC_OP_DROP 7
+%define NEBOC_OP_END_LIFETIME 8
+%define NEBOC_OP_ACCESS_OWNER 9
+%define NEBOC_OP_ACCESS_BORROW 10
+%define NEBOC_OP_COUNT 10
+
+%define neboc_memoria_ownership_lifetimes_e_recursos_DECISION_DENY 0
+%define neboc_memoria_ownership_lifetimes_e_recursos_DECISION_PERMIT 1
+
+; PF001 reserves the contiguous memoria_ownership_lifetimes_e_recursos namespace. PF002 promotes these aliases.
+%if NEBOC_DIAG_CATALOG_COUNT = 64
+    %define neboc_memoria_ownership_lifetimes_e_recursos_DIAG_LEX_driver_cli_linux_x86_64 65
+    %define neboc_memoria_ownership_lifetimes_e_recursos_DIAG_PARSE_driver_cli_linux_x86_64 66
+    %define neboc_memoria_ownership_lifetimes_e_recursos_DIAG_TYPE_codegen_memory_x86_64 67
+    %define neboc_memoria_ownership_lifetimes_e_recursos_DIAG_CODEGEN_codegen_memory_x86_64 68
+    %define neboc_memoria_ownership_lifetimes_e_recursos_DIAG_RUNTIME_driver_cli_linux_x86_64 69
+    %define neboc_memoria_ownership_lifetimes_e_recursos_DIAG_SECURITY_codegen_memory_x86_64 70
+%else
+    %define neboc_memoria_ownership_lifetimes_e_recursos_DIAG_LEX_driver_cli_linux_x86_64 neboc_memoria_ownership_lifetimes_e_recursos_DIAG_LEX_diagnostics
+    %define neboc_memoria_ownership_lifetimes_e_recursos_DIAG_PARSE_driver_cli_linux_x86_64 neboc_memoria_ownership_lifetimes_e_recursos_DIAG_PARSE_diagnostics
+    %define neboc_memoria_ownership_lifetimes_e_recursos_DIAG_TYPE_codegen_memory_x86_64 neboc_memoria_ownership_lifetimes_e_recursos_DIAG_TYPE_diagnostics
+    %define neboc_memoria_ownership_lifetimes_e_recursos_DIAG_CODEGEN_codegen_memory_x86_64 neboc_memoria_ownership_lifetimes_e_recursos_DIAG_CODEGEN_diagnostics
+    %define neboc_memoria_ownership_lifetimes_e_recursos_DIAG_RUNTIME_driver_cli_linux_x86_64 neboc_memoria_ownership_lifetimes_e_recursos_DIAG_RUNTIME_diagnostics
+    %define neboc_memoria_ownership_lifetimes_e_recursos_DIAG_SECURITY_codegen_memory_x86_64 neboc_memoria_ownership_lifetimes_e_recursos_DIAG_SECURITY_diagnostics
+%endif
+
+%endif

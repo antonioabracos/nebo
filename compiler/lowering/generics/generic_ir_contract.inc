@@ -1,0 +1,26 @@
+%ifndef NEBOC_GENERIC_IR_CONTRACT_INC
+%define NEBOC_GENERIC_IR_CONTRACT_INC 1
+
+%define NEBOC_TARGET_X86_64_SYSV 1
+%define NEBOC_ABI_CLASS_INTEGER 1
+%define NEBOC_ABI_CLASS_SSE 2
+
+%define NEBOC_IR_FLAG_MONOMORPHIZED 1
+%define NEBOC_IR_FLAG_NO_RUNTIME_DESCRIPTOR 2
+%define NEBOC_IR_FLAG_NO_ALLOCATION 4
+%define neboc_generics_constraints_overload_e_dispatch_IR_REQUIRED_FLAGS 7
+
+%define NEBOC_IR_DECLARATION_ID_OFFSET 0
+%define NEBOC_IR_TYPE_ID_OFFSET 8
+%define NEBOC_IR_SEMANTIC_KEY_OFFSET 16
+%define NEBOC_IR_RECEIVER_TYPE_OFFSET 24
+%define NEBOC_IR_RETURN_TYPE_OFFSET 32
+%define NEBOC_IR_TARGET_ID_OFFSET 40
+%define NEBOC_IR_INSTANCE_ID_OFFSET 48
+%define neboc_generics_constraints_overload_e_dispatch_IR_ABI_CLASS_OFFSET 56
+%define NEBOC_IR_SYMBOL_HASH_OFFSET 64
+%define neboc_generics_constraints_overload_e_dispatch_IR_FLAGS_OFFSET 72
+%define neboc_generics_constraints_overload_e_dispatch_IR_DIAGNOSTIC_OFFSET 80
+%define neboc_generics_constraints_overload_e_dispatch_IR_REQUEST_SIZE 88
+
+%endif

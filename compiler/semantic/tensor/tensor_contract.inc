@@ -1,0 +1,33 @@
+%ifndef NEBO_TENSOR_CONTRACT_INC
+%define NEBO_TENSOR_CONTRACT_INC 1
+%include "compiler/semantic/numeric/numeric_contract.inc"
+%define NEBO_TENSOR_MAGIC 0x54454e5346313631
+%define NEBO_TENSOR_DTYPE_BOOL 1
+%define NEBO_TENSOR_DTYPE_I64 2
+%define NEBO_TENSOR_DTYPE_F64 3
+%define NEBO_TENSOR_DEVICE_CPU 0
+%define NEBO_TENSOR_FLAG_OWNED 1
+%define NEBO_TENSOR_FLAG_VIEW 2
+%define NEBO_TENSOR_FLAG_READONLY 4
+%define NEBO_TENSOR_FLAG_CONTIGUOUS 8
+%define NEBO_TENSOR_MAGIC_OFF 0
+%define NEBO_TENSOR_DTYPE 8
+%define NEBO_TENSOR_DEVICE 16
+%define NEBO_TENSOR_RANK 24
+%define NEBO_TENSOR_SHAPE 32
+%define NEBO_TENSOR_STRIDES 80
+%define NEBO_TENSOR_DATA 128
+%define NEBO_TENSOR_CAPACITY 136
+%define NEBO_TENSOR_STORAGE_ID 144
+%define NEBO_TENSOR_GENERATION 152
+%define NEBO_TENSOR_FLAGS 160
+%define NEBO_TENSOR_SIZE 168
+%define NEBO_TENSOR_MAX_RANK 6
+%define NEBO_TENSOR_MAX_ELEMENTS 4096
+%ifndef NEBO_TENSOR_CONTRACT_IMPLEMENTATION
+extern nebo_tensor_init_owned
+extern nebo_tensor_validate
+extern nebo_tensor_validate_view_owner
+extern nebo_tensor_element_count
+%endif
+%endif

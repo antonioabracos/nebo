@@ -1,0 +1,13 @@
+%ifndef NEBO_DIRECTORY_INC
+%define NEBO_DIRECTORY_INC 1
+%include "compiler/semantic/system/filesystem_contract.inc"
+extern nebo_directory_create
+extern nebo_directory_create_all
+extern nebo_directory_open
+extern nebo_directory_entries
+extern nebo_directory_walk
+extern nebo_directory_close
+extern nebo_path_remove_file
+extern nebo_path_remove_directory
+extern nebo_path_remove_tree
+%endif

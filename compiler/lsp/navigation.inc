@@ -1,0 +1,9 @@
+; RF166 P03 HOVER-SIGNATURE-HELP-DEFINITION-REFERENCES-E-RENAME-POR-SYMBOLID bounded tooling/prelude/trivia ABI.
+%ifndef neboc_navigation_INC
+%define neboc_navigation_INC 1
+%define NEBOC_DOC_RESULT_BYTES 24
+%define NEBOC_DOC_MAX_INPUT 4096
+%define NEBOC_DOC_STATUS_ARGUMENT 1
+%define NEBOC_DOC_STATUS_LENGTH 2
+%define NEBOC_DOC_STATUS_ENCODING 3
+%endif

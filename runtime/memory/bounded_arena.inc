@@ -1,0 +1,47 @@
+%ifndef NEBOC_BOUNDED_ARENA_INC
+%define NEBOC_BOUNDED_ARENA_INC 1
+
+%define neboc_text_char_unicode_e_bytes_LAYOUT_SIZE_OFFSET 0
+%define neboc_text_char_unicode_e_bytes_LAYOUT_ALIGNMENT_OFFSET 8
+%define neboc_text_char_unicode_e_bytes_LAYOUT_SIZE 16
+
+%define NEBOC_ARENA_MAGIC_OFFSET 0
+%define neboc_text_char_unicode_e_bytes_ARENA_BASE_OFFSET 8
+%define neboc_text_char_unicode_e_bytes_ARENA_CAPACITY_OFFSET 16
+%define NEBOC_ARENA_CURSOR_OFFSET 24
+%define neboc_text_char_unicode_e_bytes_ARENA_GENERATION_OFFSET 32
+%define NEBOC_BOUNDED_ARENA_ALLOCATION_COUNT_OFFSET 40
+%define neboc_text_char_unicode_e_bytes_ARENA_HIGH_WATER_OFFSET 48
+%define NEBOC_ARENA_LIVE_BORROWS_OFFSET 56
+%define NEBOC_BOUNDED_ARENA_RESET_COUNT_OFFSET 64
+%define NEBOC_ARENA_LAST_DIAGNOSTIC_OFFSET 72
+%define NEBOC_ARENA_STATE_HASH_OFFSET 80
+%define neboc_text_char_unicode_e_bytes_ARENA_SIZE 88
+%define NEBOC_ARENA_QWORDS 11
+
+%define NEBOC_RESULT_TAG_OFFSET 0
+%define neboc_text_char_unicode_e_bytes_RESULT_DIAGNOSTIC_OFFSET 8
+%define NEBOC_RESULT_BLOCK_OFFSET_OFFSET 16
+%define NEBOC_RESULT_BLOCK_SIZE_OFFSET 24
+%define NEBOC_RESULT_BLOCK_ALIGNMENT_OFFSET 32
+%define NEBOC_RESULT_BLOCK_GENERATION_OFFSET 40
+%define NEBOC_RESULT_END_OFFSET 48
+%define neboc_text_char_unicode_e_bytes_RESULT_SIZE 56
+%define neboc_text_char_unicode_e_bytes_RESULT_QWORDS 7
+
+%define neboc_text_char_unicode_e_bytes_RESULT_OK 0
+%define neboc_text_char_unicode_e_bytes_RESULT_ERR 1
+%define NEBOC_ARENA_MAGIC 0x5246343241524e31
+%define NEBOC_MAX_REQUEST 65536
+%define NEBOC_MAX_ALIGNMENT 4096
+%define NEBOC_MAX_ARENA_CAPACITY 1048576
+
+%define NEBOC_ARENA_DIAG_DOUBLE_FREE 2
+%define NEBOC_ARENA_DIAG_SIZE 8
+%define NEBOC_ARENA_DIAG_ALIGNMENT 9
+%define NEBOC_ARENA_DIAG_EXHAUSTED 10
+%define NEBOC_ARENA_DIAG_OVERFLOW 11
+%define NEBOC_ARENA_DIAG_RESET_BORROWED 12
+%define NEBOC_ARENA_DIAG_INTERNAL 99
+
+%endif

@@ -1,0 +1,14 @@
+%ifndef NEBO_IMAGE_TRANSFORM_INC
+%define NEBO_IMAGE_TRANSFORM_INC 1
+%define NEBO_IMAGE_FILTER_NEAREST 0
+%define NEBO_IMAGE_FILTER_BILINEAR 1
+%ifndef NEBO_IMAGE_TRANSFORM_IMPLEMENTATION
+extern nebo_image_crop_into
+extern nebo_image_resize_into
+extern nebo_image_flip_horizontal_into
+extern nebo_image_flip_vertical_into
+extern nebo_image_rotate90_into
+extern nebo_image_convert_into
+extern nebo_image_composite_over
+%endif
+%endif

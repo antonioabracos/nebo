@@ -1,0 +1,20 @@
+%ifndef NEBO_CANCEL_INC
+%define NEBO_CANCEL_INC 1
+%include "compiler/semantic/concurrency/concurrency_contract.inc"
+%define NEBO_CANCEL_TOKEN_STATE 0
+%define NEBO_CANCEL_TOKEN_PARENT 8
+%define NEBO_CANCEL_TOKEN_DEADLINE_SECONDS 16
+%define NEBO_CANCEL_TOKEN_DEADLINE_NANOS 24
+%define NEBO_CANCEL_TOKEN_CLEANUP 32
+%define NEBO_CANCEL_TOKEN_CLEANUP_CONTEXT 40
+%define NEBO_CANCEL_BUDGET_ACTIVE 40
+%ifndef NEBO_CANCEL_IMPLEMENTATION
+extern nebo_cancellation_budget_init
+extern nebo_cancellation_token_init
+extern nebo_cancellation_cancel
+extern nebo_cancellation_is_cancelled
+extern nebo_deadline_expired
+extern nebo_cancellation_check
+extern nebo_cancellation_release
+%endif
+%endif

@@ -1,0 +1,15 @@
+%ifndef NEBO_GPU_DIAGNOSTICS_INC
+%define NEBO_GPU_DIAGNOSTICS_INC 1
+%define NEBO_GPU_DIAG_OK 0
+%define NEBO_GPU_DIAG_E_ARGUMENT 1
+%define NEBO_GPU_DIAG_E_UNSUPPORTED 2
+%define NEBO_GPU_DIAG_DOMAIN 0x475055
+%define NEBO_GPU_DIAG_BACKEND_NONE 0
+%ifndef NEBO_GPU_DIAGNOSTICS_IMPLEMENTATION
+extern nebo_gpu_error_report
+extern nebo_gpu_profile_begin
+extern nebo_gpu_profile_read
+extern nebo_gpu_memory_budget
+extern nebo_gpu_failure_inject
+%endif
+%endif

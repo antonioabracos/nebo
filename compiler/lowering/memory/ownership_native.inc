@@ -1,0 +1,30 @@
+%ifndef NEBOC_OWNERSHIP_NATIVE_INC
+%define NEBOC_OWNERSHIP_NATIVE_INC 1
+
+%include "compiler/lowering/memory/ownership_ir.inc"
+
+; q0..q54 embed PF003 IR. q55..q82 form an authenticated native plan.
+%define NEBOC_NATIVE_STATE_OFFSET 440
+%define NEBOC_NATIVE_EXPECTED_PRE_HASH_OFFSET 568
+%define NEBOC_NATIVE_EXPECTED_RESULT_STATE_OFFSET 576
+%define NEBOC_NATIVE_EXPECTED_CLEANUP_DELTA_OFFSET 584
+%define NEBOC_NATIVE_EXPECTED_GENERATION_DELTA_OFFSET 592
+%define neboc_memoria_ownership_lifetimes_e_recursos_NATIVE_OPERATION_OFFSET 600
+%define NEBOC_NATIVE_ACTOR_OFFSET 608
+%define NEBOC_NATIVE_REGION_OFFSET 616
+%define NEBOC_NATIVE_AUX_TOKEN_OFFSET 624
+%define neboc_memoria_ownership_lifetimes_e_recursos_NATIVE_DIAGNOSTIC_OFFSET 632
+%define neboc_memoria_ownership_lifetimes_e_recursos_NATIVE_DECISION_OFFSET 640
+%define neboc_memoria_ownership_lifetimes_e_recursos_NATIVE_ALLOCATIONS_OFFSET 648
+%define neboc_memoria_ownership_lifetimes_e_recursos_NATIVE_HASH_OFFSET 656
+%define neboc_memoria_ownership_lifetimes_e_recursos_NATIVE_HASHED_BYTES 656
+%define NEBOC_NATIVE_PLAN_QWORDS 83
+%define NEBOC_NATIVE_PLAN_SIZE 664
+%define NEBOC_NATIVE_OWNED_QWORDS 28
+%define neboc_memoria_ownership_lifetimes_e_recursos_NATIVE_ALIGNMENT 8
+
+%if NEBOC_NATIVE_STATE_OFFSET != neboc_memoria_ownership_lifetimes_e_recursos_IR_REQUEST_SIZE
+    %error "memoria_ownership_lifetimes_e_recursos native/IR boundary drift"
+%endif
+
+%endif

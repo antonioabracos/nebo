@@ -1,0 +1,22 @@
+%ifndef NEBO_OPTIMIZERS_INC
+%define NEBO_OPTIMIZERS_INC 1
+%define NEBO_OPTIMIZER_OK 0
+%define NEBO_OPTIMIZER_E_ARGUMENT 1
+%define NEBO_OPTIMIZER_E_LIMIT 2
+%define NEBO_OPTIMIZER_E_NONFINITE 3
+%define NEBO_OPTIMIZER_E_HYPERPARAMETER 4
+%define NEBO_OPTIMIZER_E_STEP 5
+%define NEBO_OPTIMIZER_E_CAPACITY 6
+%define NEBO_OPTIMIZER_E_OVERLAP 7
+%define NEBO_OPTIMIZER_MAX_PARAMS 4096
+%define NEBO_OPTIMIZER_MAX_STEPS 10000
+%ifndef NEBO_OPTIMIZERS_IMPLEMENTATION
+extern nebo_optimizer_sgd
+extern nebo_optimizer_momentum
+extern nebo_optimizer_adam
+extern nebo_optimizer_zero_grad
+extern nebo_schedule_step_decay
+extern nebo_schedule_linear_decay
+extern nebo_optimizer_state_copy
+%endif
+%endif

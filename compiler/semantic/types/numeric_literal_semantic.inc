@@ -1,0 +1,62 @@
+%ifndef NEBOC_NUMERIC_LITERAL_SEMANTIC_INC
+%define NEBOC_NUMERIC_LITERAL_SEMANTIC_INC 1
+
+; Input fields.
+%define neboc_literais_numericos_bases_e_representacao_SEM_SYNTAX_REQUEST_OFFSET 0
+%define NEBOC_SEM_CONTEXT_FLAGS_OFFSET 8
+%define NEBOC_SEM_AST_TOKEN_INDEX_OFFSET 16
+%define neboc_literais_numericos_bases_e_representacao_SEM_AST_SOURCE_ID_OFFSET 24
+%define NEBOC_SEM_AST_START_OFFSET 32
+%define NEBOC_SEM_AST_END_OFFSET 40
+
+; Output fields.
+%define NEBOC_SEM_TYPE_ID_OFFSET 48
+%define NEBOC_SEM_SIGNED_VALUE_OFFSET 56
+%define neboc_literais_numericos_bases_e_representacao_SEM_CONSTANT_STATE_OFFSET 64
+%define neboc_literais_numericos_bases_e_representacao_SEM_FLAGS_OFFSET 72
+%define NEBOC_SEM_PROVENANCE_BASE_OFFSET 80
+%define NEBOC_SEM_PROVENANCE_DIGITS_OFFSET 88
+%define NEBOC_SEM_PROVENANCE_SEPARATORS_OFFSET 96
+%define neboc_literais_numericos_bases_e_representacao_SEM_HIR_KIND_OFFSET 104
+%define NEBOC_SEM_LIR_REPR_OFFSET 112
+%define neboc_literais_numericos_bases_e_representacao_SEM_RUNTIME_METADATA_OFFSET 120
+%define neboc_literais_numericos_bases_e_representacao_SEM_ERROR_CODE_OFFSET 128
+%define neboc_literais_numericos_bases_e_representacao_SEM_SOURCE_DIAG_OFFSET 136
+%define neboc_literais_numericos_bases_e_representacao_SEM_ERROR_START_OFFSET 144
+%define neboc_literais_numericos_bases_e_representacao_SEM_ERROR_END_OFFSET 152
+%define neboc_literais_numericos_bases_e_representacao_SEM_SEMANTIC_HASH_OFFSET 160
+%define neboc_literais_numericos_bases_e_representacao_SEM_PROVENANCE_HASH_OFFSET 168
+%define neboc_literais_numericos_bases_e_representacao_SEM_REQUEST_SIZE 176
+
+%define NEBOC_SEM_CONTEXT_NONE 0
+%define NEBOC_SEM_CONTEXT_UNARY_MINUS 1
+%define NEBOC_SEM_CONTEXT_EXPLICIT_INT 2
+%define NEBOC_SEM_CONTEXT_ALLOWED_MASK 3
+
+%define NEBOC_SEM_CONSTANT_NONE 0
+%define NEBOC_SEM_CONSTANT_VALID 1
+
+%define NEBOC_SEM_FLAG_NONE 0
+%define NEBOC_SEM_FLAG_UNARY_MINUS 1
+%define NEBOC_SEM_FLAG_EXPLICIT_INT 2
+%define NEBOC_SEM_FLAG_BASE_PROVENANCE 4
+%define NEBOC_SEM_FLAG_SEPARATOR_PROVENANCE 8
+%define NEBOC_SEM_FLAG_INT64_MIN 16
+
+%define NEBOC_SEM_HIR_INT_CONSTANT 1
+%define NEBOC_SEM_LIR_SIGNED_I64 1
+%define neboc_literais_numericos_bases_e_representacao_SEM_RUNTIME_METADATA_NONE 0
+
+%define neboc_literais_numericos_bases_e_representacao_SEM_ERROR_NONE 0
+%define NEBOC_SEM_ERROR_SYNTAX_INVALID 1
+%define NEBOC_SEM_ERROR_TOKEN_INVARIANT 2
+%define NEBOC_SEM_ERROR_PROVENANCE_INVARIANT 3
+%define neboc_literais_numericos_bases_e_representacao_SEM_ERROR_SPAN_INVARIANT 4
+%define NEBOC_SEM_ERROR_POSITIVE_MAGNITUDE_OVERFLOW 5
+%define neboc_literais_numericos_bases_e_representacao_SEM_ERROR_CONTEXT_INVARIANT 6
+%define NEBOC_SEM_ERROR_INTERNAL 7
+
+%define neboc_literais_numericos_bases_e_representacao_SEM_HASH_OFFSET_BASIS 1469598103934665603
+%define neboc_literais_numericos_bases_e_representacao_SEM_HASH_PRIME 1099511628211
+
+%endif

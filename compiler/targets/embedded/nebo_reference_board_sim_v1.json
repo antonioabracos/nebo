@@ -1,0 +1,35 @@
+{
+  "schema": "NEBO_REFERENCE_BOARD_PROFILE-v1",
+  "board_id": "NEBO_REFERENCE_BOARD_SIM_V1",
+  "maturity": "SIMULATOR_ONLY",
+  "cpu": {
+    "architecture": "x86_64",
+    "model": "nebo-reference-scalar-v1",
+    "endianness": "little",
+    "clock_hz": 10000000
+  },
+  "memory": {
+    "rom": {"origin": 1048576, "bytes": 262144, "permissions": "rx"},
+    "ram": {"origin": 2097152, "bytes": 262144, "permissions": "rw"},
+    "initial_stack": 2359296,
+    "stack_alignment": 16
+  },
+  "interrupt_controller": {
+    "model": "nebo-sim-vector-v1",
+    "vectors": 16,
+    "nested": false
+  },
+  "peripherals": {
+    "gpio": 3145728,
+    "spi": 3149824,
+    "i2c": 3153920,
+    "uart": 3158016,
+    "timer": 3162112,
+    "watchdog": 3166208
+  },
+  "claims": {
+    "physical_board": false,
+    "hard_realtime": false,
+    "secure_boot": false
+  }
+}

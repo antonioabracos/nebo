@@ -1,0 +1,15 @@
+%ifndef NEBO_DB_TX_INC
+%define NEBO_DB_TX_INC 1
+%define NEBO_DB_TX_CURRENT 0
+%define NEBO_DB_TX_SHADOW 8
+%define NEBO_DB_TX_SAVE 16
+%define NEBO_DB_TX_COUNT 24
+%define NEBO_DB_TX_ACTIVE 32
+%define NEBO_DB_TX_HAS_SAVE 40
+%define NEBO_DB_TX_SIZE 48
+%define NEBO_DB_TX_MAX_OPS 4096
+%define NEBO_DB_TX_OK 0
+%define NEBO_DB_TX_INVALID 1
+%define NEBO_DB_TX_LIMIT 2
+%define NEBO_DB_TX_STATE 3
+%endif

@@ -1,0 +1,12 @@
+%ifndef NEBO_TENSOR_STRUCTURAL_INC
+%define NEBO_TENSOR_STRUCTURAL_INC 1
+%include "compiler/semantic/tensor/tensor_contract.inc"
+%ifndef NEBO_TENSOR_STRUCTURAL_IMPLEMENTATION
+extern nebo_tensor_concat0_f64
+extern nebo_tensor_stack0_f64
+extern nebo_tensor_split0_view
+extern nebo_tensor_pad2d_f64
+extern nebo_tensor_matmul2d_f64
+extern nebo_tensor_einsum_reject
+%endif
+%endif

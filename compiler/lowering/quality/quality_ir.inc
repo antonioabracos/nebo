@@ -1,0 +1,43 @@
+%ifndef NEBOC_QUALITY_IR_INC
+%define NEBOC_QUALITY_IR_INC 1
+
+%include "compiler/semantic/quality/quality_semantic.inc"
+
+; q0..q68 embed PF003 semantic state. q69..q84 are fixed target-neutral IR.
+%define neboc_quality_confidence_e_lineage_IR_OUTPUT_OFFSET 552
+%define NEBOC_IR_HIR_QUALITY_OFFSET 552
+%define NEBOC_IR_HIR_CONFIDENCE_OFFSET 560
+%define NEBOC_IR_HIR_LINEAGE_OFFSET 568
+%define NEBOC_IR_HIR_THRESHOLD_GATE_OFFSET 576
+%define NEBOC_IR_LIR_MIN_QUALITY_OFFSET 584
+%define NEBOC_IR_LIR_MIN_CONFIDENCE_OFFSET 592
+%define NEBOC_IR_LIR_LINEAGE_HASH_OFFSET 600
+%define NEBOC_IR_LIR_SECURITY_ASSERT_OFFSET 608
+%define neboc_quality_confidence_e_lineage_IR_RESULT_TYPE_OFFSET 616
+%define NEBOC_IR_EFFECTIVE_QUALITY_OFFSET 624
+%define NEBOC_IR_EFFECTIVE_CONFIDENCE_OFFSET 632
+%define NEBOC_IR_LINEAGE_HASH_OFFSET 640
+%define neboc_quality_confidence_e_lineage_IR_DECISION_OFFSET 648
+%define neboc_quality_confidence_e_lineage_IR_DIAGNOSTIC_OFFSET 656
+%define neboc_quality_confidence_e_lineage_IR_ALLOCATIONS_OFFSET 664
+%define neboc_quality_confidence_e_lineage_IR_HASH_OFFSET 672
+%define neboc_quality_confidence_e_lineage_IR_HASHED_BYTES 672
+%define neboc_quality_confidence_e_lineage_IR_OUTPUT_QWORDS 16
+%define neboc_quality_confidence_e_lineage_IR_REQUEST_SIZE 680
+%define neboc_quality_confidence_e_lineage_IR_REQUEST_QWORDS 85
+%define neboc_quality_confidence_e_lineage_IR_ALIGNMENT 8
+
+%define NEBOC_HIR_QUALITY_PROPAGATE 2301
+%define NEBOC_HIR_CONFIDENCE_PROPAGATE 2302
+%define NEBOC_HIR_LINEAGE_BIND 2303
+%define NEBOC_HIR_THRESHOLD_GATE 2304
+%define NEBOC_LIR_MIN_QUALITY 2311
+%define NEBOC_LIR_MIN_CONFIDENCE 2312
+%define NEBOC_LIR_LINEAGE_HASH 2313
+%define NEBOC_LIR_SECURITY_ASSERT 2314
+
+%if neboc_quality_confidence_e_lineage_IR_OUTPUT_OFFSET != neboc_quality_confidence_e_lineage_SEMANTIC_REQUEST_SIZE
+    %error "quality_confidence_e_lineage IR/semantic boundary drift"
+%endif
+
+%endif

@@ -1,0 +1,138 @@
+%ifndef NEBOC_EFFECT_POLICY_IR_INC
+%define NEBOC_EFFECT_POLICY_IR_INC 1
+
+%include "compiler/semantic/effect/effect_policy_semantic.inc"
+
+; EFFECTS-CAPABILITIES-E-POLITICAS-PF003 pointerless semantic-envelope to abstract HIR/LIR contract.
+; q0..q24 are caller-owned semantic inputs; q25..q36 are lowering outputs.
+%define NEBOC_POLICY_IR_DECLARED_EFFECTS_OFFSET 0
+%define NEBOC_POLICY_IR_CAPABILITIES_OFFSET 8
+%define NEBOC_POLICY_IR_ALLOW_OFFSET 16
+%define NEBOC_POLICY_IR_DENY_OFFSET 24
+%define NEBOC_POLICY_IR_BUDGET_OFFSET 32
+%define NEBOC_POLICY_IR_TRUST_OFFSET 40
+%define NEBOC_POLICY_IR_AUDIT_ID_OFFSET 48
+%define NEBOC_POLICY_IR_PERMIT_OFFSET 56
+%define NEBOC_POLICY_IR_PARSER_HASH_OFFSET 64
+%define NEBOC_POLICY_IR_CLAUSE_MASK_OFFSET 72
+%define NEBOC_POLICY_IR_DIRECT_EFFECTS_OFFSET 80
+%define NEBOC_POLICY_IR_CALLEE_EFFECTS_OFFSET 88
+%define NEBOC_POLICY_IR_SOURCE_START_OFFSET 96
+%define NEBOC_POLICY_IR_SOURCE_END_OFFSET 104
+%define NEBOC_POLICY_IR_SEMANTIC_FLAGS_OFFSET 112
+%define NEBOC_POLICY_IR_INFERRED_EFFECTS_OFFSET 120
+%define NEBOC_POLICY_IR_MISSING_EFFECTS_OFFSET 128
+%define NEBOC_POLICY_IR_REJECTED_EFFECTS_OFFSET 136
+%define NEBOC_POLICY_IR_COST_OFFSET 144
+%define NEBOC_POLICY_IR_SEMANTIC_DIAGNOSTIC_OFFSET 152
+%define NEBOC_POLICY_IR_AUDIT_HASH_OFFSET 160
+%define NEBOC_POLICY_IR_DECISION_OFFSET 168
+%define NEBOC_POLICY_IR_SEMANTIC_RESULT_TYPE_OFFSET 176
+%define NEBOC_POLICY_IR_SEMANTIC_HASH_OFFSET 184
+%define NEBOC_POLICY_IR_SEMANTIC_ALLOCATIONS_OFFSET 192
+
+%define NEBOC_POLICY_IR_HIR_EFFECT_UNION_OFFSET 200
+%define NEBOC_POLICY_IR_HIR_POLICY_GATE_OFFSET 208
+%define NEBOC_POLICY_IR_HIR_PERMIT_OFFSET 216
+%define NEBOC_POLICY_IR_LIR_MASK_OR_OFFSET 224
+%define NEBOC_POLICY_IR_LIR_POLICY_ASSERT_OFFSET 232
+%define NEBOC_POLICY_IR_LIR_CONST_I64_OFFSET 240
+%define NEBOC_POLICY_IR_RESULT_TYPE_OFFSET 248
+%define NEBOC_POLICY_IR_PERMIT_CONSTANT_OFFSET 256
+%define NEBOC_POLICY_IR_EFFECTIVE_MASK_OFFSET 264
+%define NEBOC_POLICY_IR_DIAGNOSTIC_OFFSET 272
+%define NEBOC_POLICY_IR_ALLOCATIONS_OFFSET 280
+%define NEBOC_POLICY_IR_HASH_OFFSET 288
+
+%define NEBOC_POLICY_IR_SEMANTIC_HASHED_BYTES 184
+%define NEBOC_POLICY_IR_HASHED_BYTES 288
+%define NEBOC_POLICY_IR_OUTPUT_OFFSET 200
+%define NEBOC_POLICY_IR_OUTPUT_QWORDS 12
+%define NEBOC_POLICY_IR_REQUEST_SIZE 296
+%define NEBOC_POLICY_IR_REQUEST_QWORDS 37
+%define NEBOC_POLICY_IR_ALIGNMENT 8
+
+%define NEBOC_HIR_EFFECT_UNION 2101
+%define neboc_effects_capabilities_e_politicas_HIR_POLICY_GATE 2102
+%define NEBOC_HIR_PERMIT 2103
+%define NEBOC_LIR_MASK_OR 2111
+%define NEBOC_LIR_POLICY_ASSERT 2112
+%define NEBOC_LIR_CONST_I64 2113
+
+%define NEBOC_POLICY_IR_REQUIRED_CLAUSE_MASK 0x7f
+%define NEBOC_POLICY_IR_REQUIRED_SEMANTIC_FLAGS 7
+%define NEBOC_POLICY_IR_RESULT_TYPE_INT 3
+%define NEBOC_POLICY_IR_ALLOCATION_NONE 0
+
+; Canonical public names used by the PF003 validator and subsequent stages.
+%define NEBOC_IR_DECLARED_EFFECTS_OFFSET 0
+%define NEBOC_IR_CAPABILITIES_OFFSET 8
+%define NEBOC_IR_ALLOW_OFFSET 16
+%define NEBOC_IR_DENY_OFFSET 24
+%define NEBOC_IR_BUDGET_OFFSET 32
+%define NEBOC_IR_TRUST_OFFSET 40
+%define NEBOC_IR_AUDIT_ID_OFFSET 48
+%define NEBOC_IR_PERMIT_OFFSET 56
+%define NEBOC_IR_PARSER_HASH_OFFSET 64
+%define NEBOC_IR_CLAUSE_MASK_OFFSET 72
+%define NEBOC_IR_DIRECT_EFFECTS_OFFSET 80
+%define NEBOC_IR_CALLEE_EFFECTS_OFFSET 88
+%define NEBOC_IR_SOURCE_START_OFFSET 96
+%define NEBOC_IR_SOURCE_END_OFFSET 104
+%define NEBOC_IR_SEMANTIC_FLAGS_OFFSET 112
+%define NEBOC_IR_INFERRED_EFFECTS_OFFSET 120
+%define NEBOC_IR_MISSING_EFFECTS_OFFSET 128
+%define NEBOC_IR_REJECTED_EFFECTS_OFFSET 136
+%define NEBOC_IR_COST_OFFSET 144
+%define NEBOC_IR_SEMANTIC_DIAGNOSTIC_OFFSET 152
+%define NEBOC_IR_AUDIT_HASH_OFFSET 160
+%define neboc_effects_capabilities_e_politicas_IR_DECISION_OFFSET 168
+%define NEBOC_IR_SEMANTIC_RESULT_TYPE_OFFSET 176
+%define neboc_effects_capabilities_e_politicas_IR_SEMANTIC_HASH_OFFSET 184
+%define NEBOC_IR_SEMANTIC_ALLOCATIONS_OFFSET 192
+%define NEBOC_IR_HIR_EFFECT_UNION_OFFSET 200
+%define neboc_effects_capabilities_e_politicas_IR_HIR_POLICY_GATE_OFFSET 208
+%define NEBOC_IR_HIR_PERMIT_OFFSET 216
+%define NEBOC_IR_LIR_MASK_OR_OFFSET 224
+%define NEBOC_IR_LIR_POLICY_ASSERT_OFFSET 232
+%define NEBOC_IR_LIR_CONST_I64_OFFSET 240
+%define neboc_effects_capabilities_e_politicas_IR_RESULT_TYPE_OFFSET 248
+%define NEBOC_IR_PERMIT_CONSTANT_OFFSET 256
+%define NEBOC_IR_EFFECTIVE_MASK_OFFSET 264
+%define neboc_effects_capabilities_e_politicas_IR_DIAGNOSTIC_OFFSET 272
+%define neboc_effects_capabilities_e_politicas_IR_ALLOCATIONS_OFFSET 280
+%define neboc_effects_capabilities_e_politicas_IR_HASH_OFFSET 288
+%define NEBOC_IR_SEMANTIC_HASHED_BYTES 184
+%define neboc_effects_capabilities_e_politicas_IR_HASHED_BYTES 288
+%define neboc_effects_capabilities_e_politicas_IR_OUTPUT_OFFSET 200
+%define neboc_effects_capabilities_e_politicas_IR_OUTPUT_QWORDS 12
+%define neboc_effects_capabilities_e_politicas_IR_REQUEST_SIZE 296
+%define neboc_effects_capabilities_e_politicas_IR_REQUEST_QWORDS 37
+%define neboc_effects_capabilities_e_politicas_IR_ALIGNMENT 8
+%define NEBOC_IR_MAX_SOURCE_BYTES 4096
+
+; q0..q24 embed the semantic envelope byte-for-byte.  Fail assembly if either
+; owner changes a boundary without an explicit IR ABI migration.
+%if NEBOC_POLICY_IR_DECLARED_EFFECTS_OFFSET != NEBOC_SEMANTIC_DECLARED_EFFECTS_OFFSET
+    %error "effects_capabilities_e_politicas IR/semantic declared-effects offset drift"
+%endif
+%if NEBOC_POLICY_IR_PARSER_HASH_OFFSET != NEBOC_SEMANTIC_PARSER_HASH_OFFSET
+    %error "effects_capabilities_e_politicas IR/semantic parser-hash offset drift"
+%endif
+%if NEBOC_POLICY_IR_SEMANTIC_FLAGS_OFFSET != NEBOC_SEMANTIC_FLAGS_OFFSET
+    %error "effects_capabilities_e_politicas IR/semantic flags offset drift"
+%endif
+%if NEBOC_POLICY_IR_INFERRED_EFFECTS_OFFSET != NEBOC_SEMANTIC_INFERRED_EFFECTS_OFFSET
+    %error "effects_capabilities_e_politicas IR/semantic inferred-effects offset drift"
+%endif
+%if NEBOC_POLICY_IR_SEMANTIC_HASH_OFFSET != neboc_effects_capabilities_e_politicas_SEMANTIC_HASH_OFFSET
+    %error "effects_capabilities_e_politicas IR/semantic hash offset drift"
+%endif
+%if NEBOC_POLICY_IR_SEMANTIC_ALLOCATIONS_OFFSET != neboc_effects_capabilities_e_politicas_SEMANTIC_ALLOCATIONS_OFFSET
+    %error "effects_capabilities_e_politicas IR/semantic allocation offset drift"
+%endif
+%if NEBOC_POLICY_IR_OUTPUT_OFFSET != neboc_effects_capabilities_e_politicas_SEMANTIC_REQUEST_SIZE
+    %error "effects_capabilities_e_politicas IR/semantic envelope size drift"
+%endif
+
+%endif

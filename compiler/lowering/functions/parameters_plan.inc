@@ -1,0 +1,34 @@
+%ifndef NEBOC_PARAMETERS_PLAN_INC
+%define NEBOC_PARAMETERS_PLAN_INC 1
+
+%define neboc_seguranca_numerica_conversoes_e_overflow_PLAN_MAGIC_OFFSET 0
+%define NEBOC_PLAN_PROFILE_OFFSET 8
+%define neboc_seguranca_numerica_conversoes_e_overflow_PLAN_SEMANTIC_HASH_OFFSET 16
+%define NEBOC_PLAN_FOUND_OFFSET 24
+%define NEBOC_PLAN_OUTPUT_TYPE_OFFSET 32
+%define NEBOC_PLAN_OUTPUT_VALUE_OFFSET 40
+%define NEBOC_PLAN_EXPLICIT_COUNT_OFFSET 48
+%define NEBOC_PLAN_DEFAULT_COUNT_OFFSET 56
+%define NEBOC_PLAN_NAMED_COUNT_OFFSET 64
+%define NEBOC_PLAN_RETURN_ARITY_OFFSET 72
+%define NEBOC_PLAN_ABI_HASH_OFFSET 80
+%define NEBOC_PLAN_OVERLOAD_COUNT_OFFSET 88
+%define NEBOC_PLAN_CANDIDATE_MASK_OFFSET 96
+%define NEBOC_PLAN_SELECTED_INDEX_OFFSET 104
+%define NEBOC_PLAN_SELECTED_SCORE_OFFSET 112
+%define NEBOC_PLAN_DISPATCH_HASH_OFFSET 120
+%define NEBOC_PLAN_MANGLE_HASH_OFFSET 128
+%define NEBOC_PLAN_CALLABLE_COUNT_OFFSET 136
+%define NEBOC_PLAN_CAPTURE_MODE_OFFSET 144
+%define NEBOC_PLAN_CALL_COUNT_OFFSET 152
+%define neboc_seguranca_numerica_conversoes_e_overflow_PLAN_DROP_COUNT_OFFSET 160
+%define NEBOC_PLAN_ENV_SIZE_OFFSET 168
+%define NEBOC_PLAN_CALLABLE_SELECTED_INDEX_OFFSET 176
+%define NEBOC_PLAN_CALLABLE_HASH_OFFSET 184
+%define neboc_seguranca_numerica_conversoes_e_overflow_PLAN_HASH_OFFSET 192
+%define neboc_seguranca_numerica_conversoes_e_overflow_PLAN_SIZE 200
+%define neboc_seguranca_numerica_conversoes_e_overflow_PLAN_QWORDS 25
+%define neboc_seguranca_numerica_conversoes_e_overflow_PLAN_HASHED_BYTES 192
+%define neboc_seguranca_numerica_conversoes_e_overflow_PLAN_MAGIC 0x5246323747303350
+
+%endif

@@ -1,0 +1,21 @@
+%ifndef NEBOC_PRODUCT_LAYOUT_INC
+%define NEBOC_PRODUCT_LAYOUT_INC 1
+
+%define neboc_option_result_null_externo_e_erros_tipados_LAYOUT_MEMBER_COUNT_OFFSET 0
+%define NEBOC_LAYOUT_SIZES_OFFSET 8
+%define NEBOC_LAYOUT_ALIGNS_OFFSET 16
+%define NEBOC_LAYOUT_DROP_COUNTS_OFFSET 24
+%define NEBOC_LAYOUT_OFFSETS_OFFSET 32
+%define neboc_option_result_null_externo_e_erros_tipados_LAYOUT_SIZE_OFFSET 40
+%define neboc_option_result_null_externo_e_erros_tipados_LAYOUT_ALIGN_OFFSET 48
+%define NEBOC_LAYOUT_DROP_COUNT_OFFSET 56
+%define NEBOC_LAYOUT_CLEANUP_HASH_OFFSET 64
+%define neboc_option_result_null_externo_e_erros_tipados_LAYOUT_DIAGNOSTIC_OFFSET 72
+%define neboc_option_result_null_externo_e_erros_tipados_LAYOUT_REQUEST_SIZE 80
+%define neboc_option_result_null_externo_e_erros_tipados_LAYOUT_REQUEST_QWORDS 10
+
+%define NEBOC_LAYOUT_MAX_MEMBERS 8
+%define NEBOC_LAYOUT_MAX_ALIGN 4096
+%define NEBOC_LAYOUT_MAX_SIZE 1048576
+
+%endif

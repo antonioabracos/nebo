@@ -1,0 +1,39 @@
+plot3d_scene3d_camera_lighting_e_mesh_plot3d_kind_registry_STATE_GREEN equ 0
+plot3d_scene3d_camera_lighting_e_mesh_plot3d_kind_registry_ERROR_INVALID equ -1
+; END PLOT3D-SCENE3D-CAMERA-LIGHTING-E-MESH-PLOT3D-KIND-REGISTRY-F01
+
+plot3d_scene3d_camera_lighting_e_mesh_point_cloud_STATE_GREEN equ 0
+plot3d_scene3d_camera_lighting_e_mesh_point_cloud_ERROR_INVALID equ -1
+; END PLOT3D-SCENE3D-CAMERA-LIGHTING-E-MESH-POINT-CLOUD-F02
+
+plot3d_scene3d_camera_lighting_e_mesh_line_3d_STATE_GREEN equ 0
+plot3d_scene3d_camera_lighting_e_mesh_line_3d_ERROR_INVALID equ -1
+; END PLOT3D-SCENE3D-CAMERA-LIGHTING-E-MESH-LINE-3D-F03
+
+plot3d_scene3d_camera_lighting_e_mesh_surface_e_mesh_STATE_GREEN equ 0
+plot3d_scene3d_camera_lighting_e_mesh_surface_e_mesh_ERROR_INVALID equ -1
+; END PLOT3D-SCENE3D-CAMERA-LIGHTING-E-MESH-SURFACE-E-MESH-F04
+
+plot3d_scene3d_camera_lighting_e_mesh_camera_orbit_free_position_lookat_STATE_GREEN equ 0
+plot3d_scene3d_camera_lighting_e_mesh_camera_orbit_free_position_lookat_ERROR_INVALID equ -1
+; END PLOT3D-SCENE3D-CAMERA-LIGHTING-E-MESH-CAMERA-ORBIT-FREE-POSITION-LOOKAT-F05
+
+plot3d_scene3d_camera_lighting_e_mesh_axes_grid_light_ambient_STATE_GREEN equ 0
+plot3d_scene3d_camera_lighting_e_mesh_axes_grid_light_ambient_ERROR_INVALID equ -1
+; END PLOT3D-SCENE3D-CAMERA-LIGHTING-E-MESH-AXES-GRID-LIGHT-AMBIENT-F06
+
+plot3d_scene3d_camera_lighting_e_mesh_scene3d_composition_STATE_GREEN equ 0
+plot3d_scene3d_camera_lighting_e_mesh_scene3d_composition_ERROR_INVALID equ -1
+; END PLOT3D-SCENE3D-CAMERA-LIGHTING-E-MESH-SCENE3D-COMPOSITION-F07
+
+plot3d_scene3d_camera_lighting_e_mesh_depth_precision_clipping_STATE_GREEN equ 0
+plot3d_scene3d_camera_lighting_e_mesh_depth_precision_clipping_ERROR_INVALID equ -1
+; END PLOT3D-SCENE3D-CAMERA-LIGHTING-E-MESH-DEPTH-PRECISION-CLIPPING-F08
+
+plot3d_scene3d_camera_lighting_e_mesh_headless_schema_live_renderer_parity_STATE_GREEN equ 0
+plot3d_scene3d_camera_lighting_e_mesh_headless_schema_live_renderer_parity_ERROR_INVALID equ -1
+; END PLOT3D-SCENE3D-CAMERA-LIGHTING-E-MESH-HEADLESS-SCHEMA-LIVE-RENDERER-PARITY-F09
+
+plot3d_scene3d_camera_lighting_e_mesh_closeout_STATE_GREEN equ 0
+plot3d_scene3d_camera_lighting_e_mesh_closeout_ERROR_INVALID equ -1
+; END PLOT3D-SCENE3D-CAMERA-LIGHTING-E-MESH-CLOSEOUT-F10

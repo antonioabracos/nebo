@@ -1,0 +1,8 @@
+component	value
+stage0_sha256	b0d6290ad515594cc4e387f527a25210c6b4e4d2c411e61d59b579f983caf36f
+stage0_version	neboc 0.2.0-rc.2
+stage0_language	x86_64 NASM Assembly
+assembler	NASM local toolchain
+linker	GNU ld local toolchain
+kernel	Linux raw-syscall execution boundary
+source_compiler	NOT_AVAILABLE

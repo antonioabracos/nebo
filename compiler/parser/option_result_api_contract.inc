@@ -1,0 +1,97 @@
+%ifndef NEBOC_OPTION_RESULT_API_CONTRACT_INC
+%define NEBOC_OPTION_RESULT_API_CONTRACT_INC 1
+
+%define NEBOC_OP_CONSTRUCT 1
+%define NEBOC_OP_OBSERVER 2
+%define NEBOC_OP_NULL_LITERAL 3
+%define NEBOC_OP_PROPAGATION 4
+%define NEBOC_OP_TRY_CATCH 5
+%define NEBOC_OP_FATAL_UNWRAP 6
+%define NEBOC_OP_PATTERN_MATCH 7
+%define neboc_option_result_null_externo_e_erros_tipados_OP_ALIAS 8
+%define NEBOC_OP_GENERAL_GENERIC 9
+
+%define NEBOC_CONTAINER_NONE 0
+%define NEBOC_CONTAINER_OPTION 1
+%define NEBOC_CONTAINER_RESULT 2
+
+%define NEBOC_VARIANT_NONE_VALUE 1
+%define NEBOC_VARIANT_SOME 2
+%define NEBOC_VARIANT_OK 3
+%define NEBOC_VARIANT_ERR 4
+
+%define NEBOC_OBSERVER_NONE 0
+%define NEBOC_OBSERVER_IS_SOME 1
+%define NEBOC_OBSERVER_IS_NONE 2
+%define NEBOC_OBSERVER_IS_OK 3
+%define NEBOC_OBSERVER_IS_ERR 4
+%define NEBOC_OBSERVER_UNWRAP_OR 5
+
+%define NEBOC_TYPE_NONE 0
+%define NEBOC_TYPE_VOID 1
+%define neboc_option_result_null_externo_e_erros_tipados_TYPE_BOOL_codegen_scalars_x86_64 2
+%define neboc_option_result_null_externo_e_erros_tipados_TYPE_INT_codegen_scalars_x86_64 3
+%define neboc_option_result_null_externo_e_erros_tipados_TYPE_TEXT_parser 4
+%define neboc_option_result_null_externo_e_erros_tipados_TYPE_FLOAT 9
+%define neboc_option_result_null_externo_e_erros_tipados_TYPE_CHAR_codegen_scalars_x86_64 10
+%define NEBOC_TYPE_BYTES 11
+
+%define neboc_option_result_null_externo_e_erros_tipados_AST_NONE 0
+%define NEBOC_AST_OPTION_CONSTRUCTOR 1
+%define NEBOC_AST_RESULT_CONSTRUCTOR 2
+%define NEBOC_AST_OBSERVER_CALL 3
+%define NEBOC_AST_DEFERRED_SYNTAX 4
+
+%define neboc_option_result_null_externo_e_erros_tipados_INPUT_EXACT_SPELLING 1
+
+%define NEBOC_FLAG_SYNTAX_ONLY 1
+%define NEBOC_FLAG_EXPLICIT_CONTAINER 2
+%define NEBOC_FLAG_TOTAL 4
+%define NEBOC_FLAG_SOME 8
+%define NEBOC_FLAG_NONE 16
+%define NEBOC_FLAG_OK 32
+%define NEBOC_FLAG_ERR 64
+%define NEBOC_FLAG_FALLBACK 128
+
+%define neboc_option_result_null_externo_e_erros_tipados_DIAG_NONE_parser 0
+%define NEBOC_DIAG_UNKNOWN_CONTAINER 1
+%define NEBOC_DIAG_TYPE_ARITY 2
+%define NEBOC_DIAG_PAYLOAD_TYPE_UNAVAILABLE 3
+%define NEBOC_DIAG_VARIANT_MISMATCH 4
+%define NEBOC_DIAG_VARIANT_ARITY 5
+%define NEBOC_DIAG_OBSERVER_UNKNOWN 6
+%define neboc_option_result_null_externo_e_erros_tipados_DIAG_OBSERVER_WRONG_DOMAIN 7
+%define NEBOC_DIAG_OBSERVER_ARITY 8
+%define NEBOC_DIAG_UNWRAP_OR_ARITY 9
+%define NEBOC_DIAG_NULL_FORBIDDEN 10
+%define NEBOC_DIAG_PROPAGATION_DEFERRED 11
+%define NEBOC_DIAG_TRY_CATCH_DEFERRED 12
+%define NEBOC_DIAG_FATAL_UNWRAP_DEFERRED 13
+%define NEBOC_DIAG_PATTERN_MATCH_DEFERRED 14
+%define neboc_option_result_null_externo_e_erros_tipados_DIAG_ALIAS_FORBIDDEN 15
+%define NEBOC_DIAG_VOID_PAYLOAD_FORBIDDEN 16
+%define NEBOC_DIAG_GENERAL_GENERICS_DEFERRED 17
+
+%define neboc_option_result_null_externo_e_erros_tipados_OPERATION_OFFSET 0
+%define NEBOC_CONTAINER_OFFSET 8
+%define NEBOC_TYPE_ARG_COUNT_OFFSET 16
+%define NEBOC_SUCCESS_TYPE_OFFSET 24
+%define NEBOC_ERROR_TYPE_OFFSET 32
+%define NEBOC_VARIANT_OFFSET 40
+%define NEBOC_VARIANT_ARG_COUNT_OFFSET 48
+%define NEBOC_OBSERVER_OFFSET 56
+%define NEBOC_OBSERVER_ARG_COUNT_OFFSET 64
+%define NEBOC_INPUT_FLAGS_OFFSET 72
+%define NEBOC_SUBJECT_PTR_OFFSET 80
+%define NEBOC_SUBJECT_LENGTH_OFFSET 88
+%define NEBOC_ABSOLUTE_START_OFFSET 96
+%define NEBOC_AST_FORM_OFFSET 104
+%define NEBOC_RESULT_TYPE_OFFSET 112
+%define neboc_option_result_null_externo_e_erros_tipados_RESULT_FLAGS_OFFSET 120
+%define neboc_option_result_null_externo_e_erros_tipados_DIAGNOSTIC_OFFSET 128
+%define NEBOC_ERROR_START_OFFSET 136
+%define NEBOC_ERROR_END_OFFSET 144
+%define NEBOC_HASH_OFFSET 152
+%define neboc_option_result_null_externo_e_erros_tipados_REQUEST_SIZE 160
+
+%endif

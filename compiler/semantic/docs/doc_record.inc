@@ -1,0 +1,9 @@
+; RF166 P02 DOCRECORD-SYMBOLID-SCHEMA-TIPADO-E-EXPORT-PARA-INTERFACES bounded semantic-documentation ABI.
+%ifndef neboc_doc_record_INC
+%define neboc_doc_record_INC 1
+%define NEBOC_DOC_RESULT_BYTES 24
+%define NEBOC_DOC_MAX_INPUT 4096
+%define NEBOC_DOC_STATUS_ARGUMENT 1
+%define NEBOC_DOC_STATUS_LENGTH 2
+%define NEBOC_DOC_STATUS_ENCODING 3
+%endif

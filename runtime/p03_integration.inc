@@ -1,0 +1,3 @@
+dashboards_panels_cells_e_composicao_multi_view_closeout_STATE_GREEN equ 0
+dashboards_panels_cells_e_composicao_multi_view_closeout_ERROR_INVALID equ -1
+; END DASHBOARDS-PANELS-CELLS-E-COMPOSICAO-MULTI-VIEW-CLOSEOUT-F09

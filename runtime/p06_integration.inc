@@ -1,0 +1,4 @@
+%ifndef NEBO_P06_INTEGRATION_INC
+%define NEBO_P06_INTEGRATION_INC 1
+%define P06_CONTRACT 1
+%endif

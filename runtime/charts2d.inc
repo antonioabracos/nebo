@@ -1,0 +1,39 @@
+charts_2d_axes_series_e_validacao_numerica_chart_plot_kind_registry_STATE_GREEN equ 0
+charts_2d_axes_series_e_validacao_numerica_chart_plot_kind_registry_ERROR_INVALID equ -1
+; END CHARTS-2D-AXES-SERIES-E-VALIDACAO-NUMERICA-CHART-PLOT-KIND-REGISTRY-F01
+
+charts_2d_axes_series_e_validacao_numerica_line_e_time_series_STATE_GREEN equ 0
+charts_2d_axes_series_e_validacao_numerica_line_e_time_series_ERROR_INVALID equ -1
+; END CHARTS-2D-AXES-SERIES-E-VALIDACAO-NUMERICA-LINE-E-TIME-SERIES-F02
+
+charts_2d_axes_series_e_validacao_numerica_bar_STATE_GREEN equ 0
+charts_2d_axes_series_e_validacao_numerica_bar_ERROR_INVALID equ -1
+; END CHARTS-2D-AXES-SERIES-E-VALIDACAO-NUMERICA-BAR-F03
+
+charts_2d_axes_series_e_validacao_numerica_histogram_STATE_GREEN equ 0
+charts_2d_axes_series_e_validacao_numerica_histogram_ERROR_INVALID equ -1
+; END CHARTS-2D-AXES-SERIES-E-VALIDACAO-NUMERICA-HISTOGRAM-F04
+
+charts_2d_axes_series_e_validacao_numerica_scatter_points_STATE_GREEN equ 0
+charts_2d_axes_series_e_validacao_numerica_scatter_points_ERROR_INVALID equ -1
+; END CHARTS-2D-AXES-SERIES-E-VALIDACAO-NUMERICA-SCATTER-POINTS-F05
+
+charts_2d_axes_series_e_validacao_numerica_heatmap_matrix_STATE_GREEN equ 0
+charts_2d_axes_series_e_validacao_numerica_heatmap_matrix_ERROR_INVALID equ -1
+; END CHARTS-2D-AXES-SERIES-E-VALIDACAO-NUMERICA-HEATMAP-MATRIX-F06
+
+charts_2d_axes_series_e_validacao_numerica_x_y_axes_e_labels_STATE_GREEN equ 0
+charts_2d_axes_series_e_validacao_numerica_x_y_axes_e_labels_ERROR_INVALID equ -1
+; END CHARTS-2D-AXES-SERIES-E-VALIDACAO-NUMERICA-X-Y-AXES-E-LABELS-F07
+
+charts_2d_axes_series_e_validacao_numerica_bins_legend_labels_colorby_sizeby_STATE_GREEN equ 0
+charts_2d_axes_series_e_validacao_numerica_bins_legend_labels_colorby_sizeby_ERROR_INVALID equ -1
+; END CHARTS-2D-AXES-SERIES-E-VALIDACAO-NUMERICA-BINS-LEGEND-LABELS-COLORBY-SIZEBY-F08
+
+charts_2d_axes_series_e_validacao_numerica_headless_visual_differential_conformance_STATE_GREEN equ 0
+charts_2d_axes_series_e_validacao_numerica_headless_visual_differential_conformance_ERROR_INVALID equ -1
+; END CHARTS-2D-AXES-SERIES-E-VALIDACAO-NUMERICA-HEADLESS-VISUAL-DIFFERENTIAL-CONFORMANCE-F09
+
+charts_2d_axes_series_e_validacao_numerica_closeout_STATE_GREEN equ 0
+charts_2d_axes_series_e_validacao_numerica_closeout_ERROR_INVALID equ -1
+; END CHARTS-2D-AXES-SERIES-E-VALIDACAO-NUMERICA-CLOSEOUT-F10

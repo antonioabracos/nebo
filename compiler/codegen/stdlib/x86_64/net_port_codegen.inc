@@ -1,0 +1,12 @@
+%ifndef NEBOC_NET_PORT_CODEGEN_INC
+%define NEBOC_NET_PORT_CODEGEN_INC 1
+%define neboc_rede_e_protocolos_CODEGEN_RUNTIME_OFFSET 0
+%define neboc_rede_e_protocolos_CODEGEN_WRITER_OFFSET 8
+%define neboc_rede_e_protocolos_CODEGEN_EMITTED_OFFSET 16
+%define neboc_rede_e_protocolos_CODEGEN_DIAGNOSTIC_OFFSET 24
+%define neboc_rede_e_protocolos_CODEGEN_HASH_OFFSET 32
+%define neboc_rede_e_protocolos_CODEGEN_REQUEST_QWORDS 5
+%define neboc_rede_e_protocolos_CODEGEN_REQUEST_SIZE 40
+%define neboc_rede_e_protocolos_CODEGEN_ALIGNMENT 8
+%define neboc_rede_e_protocolos_CODEGEN_EMITTED_START 1
+%endif

@@ -1,0 +1,18 @@
+%ifndef NEBO_VECTOR_INC
+%define NEBO_VECTOR_INC 1
+%include "compiler/semantic/numeric/numeric_contract.inc"
+%ifndef NEBO_VECTOR_IMPLEMENTATION
+extern nebo_vector_i64_copy
+extern nebo_vector_i64_at
+extern nebo_vector_i64_add
+extern nebo_vector_i64_scale
+extern nebo_vector_i64_dot
+extern nebo_vector_f64_copy
+extern nebo_vector_f64_at
+extern nebo_vector_f64_add
+extern nebo_vector_f64_scale
+extern nebo_vector_f64_dot
+extern nebo_vector_f64_norm
+extern nebo_vector_f64_normalize
+%endif
+%endif

@@ -1,0 +1,21 @@
+%ifndef NEBOC_QUALITY_RUNTIME_INC
+%define NEBOC_QUALITY_RUNTIME_INC 1
+
+%include "compiler/lowering/quality/quality_native.inc"
+
+%define neboc_quality_confidence_e_lineage_RUNTIME_PLAN_HASH_OFFSET 0
+%define NEBOC_RUNTIME_REQUIRED_QUALITY_OFFSET 8
+%define NEBOC_RUNTIME_REQUIRED_CONFIDENCE_OFFSET 16
+%define NEBOC_RUNTIME_EXPECTED_LINEAGE_OFFSET 24
+%define NEBOC_RUNTIME_OBSERVED_QUALITY_OFFSET 32
+%define NEBOC_RUNTIME_OBSERVED_CONFIDENCE_OFFSET 40
+%define NEBOC_RUNTIME_OBSERVED_LINEAGE_OFFSET 48
+%define neboc_quality_confidence_e_lineage_RUNTIME_DECISION_OFFSET 56
+%define neboc_quality_confidence_e_lineage_RUNTIME_DIAGNOSTIC_OFFSET 64
+%define neboc_quality_confidence_e_lineage_RUNTIME_EVENT_HASH_OFFSET 72
+%define neboc_quality_confidence_e_lineage_RUNTIME_HASHED_BYTES 72
+%define neboc_quality_confidence_e_lineage_RUNTIME_REQUEST_SIZE 80
+%define neboc_quality_confidence_e_lineage_RUNTIME_REQUEST_QWORDS 10
+%define neboc_quality_confidence_e_lineage_RUNTIME_ALIGNMENT 8
+
+%endif

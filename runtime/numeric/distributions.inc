@@ -1,0 +1,14 @@
+%ifndef nebo_distributions_DISTRIBUTIONS_INC_numeric_native_vertical
+%define nebo_distributions_DISTRIBUTIONS_INC_numeric_native_vertical 1
+%include "compiler/semantic/numeric/numeric_contract.inc"
+%include "runtime/system/random.inc"
+%ifndef NEBO_DISTRIBUTIONS_IMPLEMENTATION
+extern nebo_distribution_uniform01_f64
+extern nebo_distribution_uniform_f64
+extern nebo_distribution_normal_f64
+extern nebo_distribution_bernoulli
+extern nebo_distribution_categorical
+extern nebo_distribution_shuffle_i64
+extern nebo_distribution_sample_i64
+%endif
+%endif

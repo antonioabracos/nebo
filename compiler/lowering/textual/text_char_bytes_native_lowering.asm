@@ -1,0 +1,239 @@
+; Nebo Assembly — TEXT-CHAR-UNICODE-E-BYTES-PF004 isolated Text/Char/Bytes native lowering
+bits 64
+default rel
+%include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"
+%include "compiler/support/status/status_codes.inc"
+%include "compiler/semantic/types/type_table.inc"
+%include "compiler/parser/text_char_bytes_api_contract.inc"
+%include "compiler/semantic/types/text_char_bytes_semantic.inc"
+%include "compiler/lowering/textual/text_char_bytes_ir_contract.inc"
+%include "compiler/lowering/textual/text_char_bytes_native_lowering.inc"
+
+section .text
+NEBOC_ABI_FUNCTION neboc_text_char_bytes_native_lower
+ push r12
+ push r13
+ push r14
+ push r15
+ mov r12,rdi
+ test r12,r12
+ jz .invalid_argument
+ mov r13,[r12+neboc_text_char_unicode_e_bytes_NATIVE_SEMANTIC_REQUEST_OFFSET]
+ mov r14,[r12+neboc_text_char_unicode_e_bytes_NATIVE_IR_REQUEST_OFFSET]
+ test r13,r13
+ jz .invalid_argument
+ test r14,r14
+ jz .invalid_argument
+ lea rdi,[r12+neboc_text_char_unicode_e_bytes_NATIVE_OPERATION_OFFSET]
+ mov ecx,(neboc_text_char_unicode_e_bytes_NATIVE_REQUEST_SIZE-neboc_text_char_unicode_e_bytes_NATIVE_OPERATION_OFFSET)/8
+ xor eax,eax
+ rep stosq
+ cmp qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_TARGET_ID_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_TARGET_X86_64_SYSTEMV_ELF_LINUX
+ jne .target_error
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_SEM_ERROR_NONE
+ jne .semantic_error
+ cmp qword [r14+neboc_text_char_unicode_e_bytes_IR_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_IR_ERROR_NONE
+ jne .ir_error
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_RUNTIME_METADATA_OFFSET],neboc_text_char_unicode_e_bytes_SEM_RUNTIME_METADATA_NONE
+ jne .metadata_error
+ cmp qword [r14+neboc_text_char_unicode_e_bytes_IR_RUNTIME_METADATA_OFFSET],0
+ jne .metadata_error
+ mov r15,[r13+neboc_text_char_unicode_e_bytes_SEM_OPERATION_OFFSET]
+ cmp r15,[r14+neboc_text_char_unicode_e_bytes_IR_OPERATION_OFFSET]
+ jne .contract_error
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_SEMANTIC_HASH_OFFSET],0
+ je .contract_error
+ cmp qword [r14+neboc_text_char_unicode_e_bytes_IR_HASH_OFFSET],0
+ je .contract_error
+ cmp r15,NEBOC_SEM_OPERATION_CHAR_LITERAL
+ je .char_literal
+ cmp r15,NEBOC_SEM_OPERATION_TEXT_BYTE_LENGTH
+ je .text_byte_length
+ cmp r15,NEBOC_SEM_OPERATION_TEXT_CODEPOINT_COUNT
+ je .text_codepoint_count
+ cmp r15,NEBOC_SEM_OPERATION_CHAR_CODEPOINT
+ je .char_codepoint
+ cmp r15,NEBOC_SEM_OPERATION_BYTES_EMPTY
+ je .bytes_empty
+ cmp r15,NEBOC_SEM_OPERATION_BYTES_BYTE_LENGTH
+ je .bytes_byte_length
+ jmp .operation_error
+
+.char_literal:
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_RESULT_TYPE_OFFSET_lowering_textual],NEBOC_TEXT_CHAR_BYTES_SEMANTIC_TYPE_ID_CHAR
+ jne .contract_error
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_LIR_KIND_OFFSET],NEBOC_SEM_LIR_IMMEDIATE_U32
+ jne .contract_error
+ cmp qword [r14+neboc_text_char_unicode_e_bytes_IR_LIR_KIND_OFFSET],NEBOC_SEM_LIR_IMMEDIATE_U32
+ jne .contract_error
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_OPERAND_TYPE_OFFSET],0
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_TYPE_OFFSET],NEBOC_TEXT_CHAR_BYTES_SEMANTIC_TYPE_ID_CHAR
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_OPERAND_REPR_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_REPR_NONE
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_REPR_OFFSET],NEBOC_NATIVE_REPR_U32
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_OPERAND_ABI_CLASS_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_ABI_NONE
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_ABI_CLASS_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_ABI_INTEGER
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_PARAMETER_REGISTER_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_REGISTER_NONE
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RETURN_REGISTER_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_REGISTER_RAX
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_INSTRUCTION_OFFSET],NEBOC_NATIVE_INSTRUCTION_IMMEDIATE_U32
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RUNTIME_HELPER_OFFSET],NEBOC_NATIVE_HELPER_NONE
+ mov qword [r12+NEBOC_NATIVE_OPERAND_SIZE_OFFSET],0
+ mov qword [r12+NEBOC_NATIVE_OPERAND_ALIGNMENT_OFFSET],1
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_SIZE_OFFSET],4
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_ALIGNMENT_OFFSET],4
+ jmp .finish
+.text_byte_length:
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_LIR_KIND_OFFSET],NEBOC_SEM_LIR_TEXT_DESCRIPTOR_BYTE_LENGTH
+ jne .contract_error
+ cmp qword [r14+neboc_text_char_unicode_e_bytes_IR_LIR_KIND_OFFSET],NEBOC_SEM_LIR_TEXT_DESCRIPTOR_BYTE_LENGTH
+ jne .contract_error
+ mov eax,NEBOC_NATIVE_HELPER_TEXT_BYTE_LENGTH
+ mov edx,NEBOC_NATIVE_INSTRUCTION_LOAD_DESCRIPTOR_LENGTH
+ jmp .text_count
+.text_codepoint_count:
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_LIR_KIND_OFFSET],NEBOC_SEM_LIR_UTF8_CODEPOINT_COUNT
+ jne .contract_error
+ cmp qword [r14+neboc_text_char_unicode_e_bytes_IR_LIR_KIND_OFFSET],NEBOC_SEM_LIR_UTF8_CODEPOINT_COUNT
+ jne .contract_error
+ mov eax,NEBOC_NATIVE_HELPER_TEXT_CODEPOINT_COUNT
+ mov edx,NEBOC_NATIVE_INSTRUCTION_UTF8_COUNT_LOOP
+.text_count:
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_OPERAND_TYPE_OFFSET],NEBOC_TYPE_ID_TEXT
+ jne .contract_error
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_RESULT_TYPE_OFFSET_lowering_textual],NEBOC_TYPE_ID_INT
+ jne .contract_error
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_OPERAND_TYPE_OFFSET],NEBOC_TYPE_ID_TEXT
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_TYPE_OFFSET],NEBOC_TYPE_ID_INT
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_OPERAND_REPR_OFFSET],NEBOC_NATIVE_REPR_TEXT_DESCRIPTOR_PTR
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_REPR_OFFSET],NEBOC_NATIVE_REPR_NONNEGATIVE_I64
+ mov [r12+neboc_text_char_unicode_e_bytes_NATIVE_INSTRUCTION_OFFSET],rdx
+ mov [r12+neboc_text_char_unicode_e_bytes_NATIVE_RUNTIME_HELPER_OFFSET],rax
+ mov qword [r12+NEBOC_NATIVE_OPERAND_SIZE_OFFSET],24
+ mov qword [r12+NEBOC_NATIVE_OPERAND_ALIGNMENT_OFFSET],8
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_SIZE_OFFSET],8
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_ALIGNMENT_OFFSET],8
+ jmp .instance_common
+.char_codepoint:
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_LIR_KIND_OFFSET],NEBOC_SEM_LIR_ZERO_EXTEND_U32_TO_I64
+ jne .contract_error
+ cmp qword [r14+neboc_text_char_unicode_e_bytes_IR_LIR_KIND_OFFSET],NEBOC_SEM_LIR_ZERO_EXTEND_U32_TO_I64
+ jne .contract_error
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_OPERAND_TYPE_OFFSET],NEBOC_TEXT_CHAR_BYTES_SEMANTIC_TYPE_ID_CHAR
+ jne .contract_error
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_RESULT_TYPE_OFFSET_lowering_textual],NEBOC_TYPE_ID_INT
+ jne .contract_error
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_OPERAND_TYPE_OFFSET],NEBOC_TEXT_CHAR_BYTES_SEMANTIC_TYPE_ID_CHAR
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_TYPE_OFFSET],NEBOC_TYPE_ID_INT
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_OPERAND_REPR_OFFSET],NEBOC_NATIVE_REPR_U32
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_REPR_OFFSET],NEBOC_NATIVE_REPR_NONNEGATIVE_I64
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_INSTRUCTION_OFFSET],NEBOC_NATIVE_INSTRUCTION_ZERO_EXTEND_U32_TO_I64
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RUNTIME_HELPER_OFFSET],NEBOC_NATIVE_HELPER_CHAR_CODEPOINT
+ mov qword [r12+NEBOC_NATIVE_OPERAND_SIZE_OFFSET],4
+ mov qword [r12+NEBOC_NATIVE_OPERAND_ALIGNMENT_OFFSET],4
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_SIZE_OFFSET],8
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_ALIGNMENT_OFFSET],8
+ jmp .instance_common
+.bytes_empty:
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_LIR_KIND_OFFSET],NEBOC_SEM_LIR_STATIC_EMPTY_BYTES_DESCRIPTOR
+ jne .contract_error
+ cmp qword [r14+neboc_text_char_unicode_e_bytes_IR_LIR_KIND_OFFSET],NEBOC_SEM_LIR_STATIC_EMPTY_BYTES_DESCRIPTOR
+ jne .contract_error
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_RESULT_TYPE_OFFSET_lowering_textual],NEBOC_TEXT_CHAR_BYTES_SEMANTIC_TYPE_ID_BYTES
+ jne .contract_error
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_OPERAND_TYPE_OFFSET],0
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_TYPE_OFFSET],NEBOC_TEXT_CHAR_BYTES_SEMANTIC_TYPE_ID_BYTES
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_OPERAND_REPR_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_REPR_NONE
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_REPR_OFFSET],NEBOC_NATIVE_REPR_BYTES_DESCRIPTOR_PTR
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_OPERAND_ABI_CLASS_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_ABI_NONE
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_ABI_CLASS_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_ABI_INTEGER
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_PARAMETER_REGISTER_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_REGISTER_NONE
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RETURN_REGISTER_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_REGISTER_RAX
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_INSTRUCTION_OFFSET],NEBOC_NATIVE_INSTRUCTION_LEA_STATIC_DESCRIPTOR
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RUNTIME_HELPER_OFFSET],NEBOC_NATIVE_HELPER_BYTES_EMPTY
+ mov qword [r12+NEBOC_NATIVE_OPERAND_SIZE_OFFSET],0
+ mov qword [r12+NEBOC_NATIVE_OPERAND_ALIGNMENT_OFFSET],1
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_SIZE_OFFSET],24
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_ALIGNMENT_OFFSET],8
+ mov qword [r12+NEBOC_NATIVE_DESCRIPTOR_FLAGS_OFFSET],NEBOC_NATIVE_BYTES_FLAGS_STATIC_IMMUTABLE_EMPTY
+ jmp .finish
+.bytes_byte_length:
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_LIR_KIND_OFFSET],NEBOC_SEM_LIR_BYTES_DESCRIPTOR_LENGTH
+ jne .contract_error
+ cmp qword [r14+neboc_text_char_unicode_e_bytes_IR_LIR_KIND_OFFSET],NEBOC_SEM_LIR_BYTES_DESCRIPTOR_LENGTH
+ jne .contract_error
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_OPERAND_TYPE_OFFSET],NEBOC_TEXT_CHAR_BYTES_SEMANTIC_TYPE_ID_BYTES
+ jne .contract_error
+ cmp qword [r13+neboc_text_char_unicode_e_bytes_SEM_RESULT_TYPE_OFFSET_lowering_textual],NEBOC_TYPE_ID_INT
+ jne .contract_error
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_OPERAND_TYPE_OFFSET],NEBOC_TEXT_CHAR_BYTES_SEMANTIC_TYPE_ID_BYTES
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_TYPE_OFFSET],NEBOC_TYPE_ID_INT
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_OPERAND_REPR_OFFSET],NEBOC_NATIVE_REPR_BYTES_DESCRIPTOR_PTR
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_REPR_OFFSET],NEBOC_NATIVE_REPR_NONNEGATIVE_I64
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_INSTRUCTION_OFFSET],NEBOC_NATIVE_INSTRUCTION_LOAD_DESCRIPTOR_LENGTH
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RUNTIME_HELPER_OFFSET],NEBOC_NATIVE_HELPER_BYTES_BYTE_LENGTH
+ mov qword [r12+NEBOC_NATIVE_OPERAND_SIZE_OFFSET],24
+ mov qword [r12+NEBOC_NATIVE_OPERAND_ALIGNMENT_OFFSET],8
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_SIZE_OFFSET],8
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_ALIGNMENT_OFFSET],8
+.instance_common:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_OPERAND_ABI_CLASS_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_ABI_INTEGER
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RESULT_ABI_CLASS_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_ABI_INTEGER
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_PARAMETER_REGISTER_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_REGISTER_RDI
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RETURN_REGISTER_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_REGISTER_RAX
+.finish:
+ mov [r12+neboc_text_char_unicode_e_bytes_NATIVE_OPERATION_OFFSET],r15
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_SCRATCH_SIZE_OFFSET],0
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_RUNTIME_METADATA_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_RUNTIME_METADATA_NONE
+ mov rax,[r13+neboc_text_char_unicode_e_bytes_SEM_SEMANTIC_HASH_OFFSET]
+ mov [r12+neboc_text_char_unicode_e_bytes_NATIVE_SEMANTIC_HASH_OFFSET],rax
+ mov rax,[r14+neboc_text_char_unicode_e_bytes_IR_HASH_OFFSET]
+ mov [r12+neboc_text_char_unicode_e_bytes_NATIVE_IR_HASH_OFFSET],rax
+ mov rax,1469598103934665603
+ mov rcx,1099511628211
+ mov rdx,neboc_text_char_unicode_e_bytes_NATIVE_OPERATION_OFFSET
+.hash_loop:
+ xor rax,[r12+rdx]
+ imul rax,rcx
+ add rdx,8
+ cmp rdx,neboc_text_char_unicode_e_bytes_NATIVE_SEMANTIC_HASH_OFFSET
+ jb .hash_loop
+ mov [r12+neboc_text_char_unicode_e_bytes_NATIVE_HASH_OFFSET],rax
+ xor eax,eax
+ jmp .done
+.invalid_argument:
+ test r12,r12
+ jz .invalid_return
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_ERROR_CODE_OFFSET],NEBOC_NATIVE_ERROR_ARGUMENT
+.invalid_return:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ jmp .done
+.target_error:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_ERROR_TARGET
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ jmp .done
+.semantic_error:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_ERROR_SEMANTIC
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .done
+.ir_error:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_ERROR_IR
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .done
+.metadata_error:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_ERROR_METADATA
+ mov eax,NEBOC_STATUS_INTERNAL_ERROR
+ jmp .done
+.contract_error:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_ERROR_CODE_OFFSET],neboc_text_char_unicode_e_bytes_NATIVE_ERROR_CONTRACT
+ mov eax,NEBOC_STATUS_INTERNAL_ERROR
+ jmp .done
+.operation_error:
+ mov qword [r12+neboc_text_char_unicode_e_bytes_NATIVE_ERROR_CODE_OFFSET],NEBOC_NATIVE_ERROR_OPERATION
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+.done:
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ cld
+ ret
+section .note.GNU-stack noalloc noexec nowrite progbits

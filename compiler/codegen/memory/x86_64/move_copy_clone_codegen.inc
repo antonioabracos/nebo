@@ -1,0 +1,13 @@
+%ifndef NEBOC_MOVE_COPY_CLONE_CODEGEN_INC
+%define NEBOC_MOVE_COPY_CLONE_CODEGEN_INC 1
+
+%define neboc_text_char_unicode_e_bytes_CODEGEN_PLAN_OFFSET 0
+%define neboc_text_char_unicode_e_bytes_CODEGEN_WRITER_OFFSET_codegen_memory_x86_64_native_vertical 8
+%define neboc_text_char_unicode_e_bytes_CODEGEN_EMITTED_OFFSET 16
+%define neboc_text_char_unicode_e_bytes_CODEGEN_DIAGNOSTIC_OFFSET 24
+%define neboc_text_char_unicode_e_bytes_CODEGEN_HASH_OFFSET 32
+%define neboc_text_char_unicode_e_bytes_CODEGEN_SIZE 40
+%define neboc_text_char_unicode_e_bytes_CODEGEN_QWORDS 5
+%define neboc_text_char_unicode_e_bytes_CODEGEN_EMITTED_START 1
+
+%endif

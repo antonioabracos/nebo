@@ -1,0 +1,14 @@
+%ifndef NEBO_MATRIX_CORE_INC
+%define NEBO_MATRIX_CORE_INC 1
+%include "compiler/semantic/matrix/matrix_contract.inc"
+%ifndef NEBO_MATRIX_CORE_IMPLEMENTATION
+extern nebo_matrix_identity_f64
+extern nebo_matrix_at_f64
+extern nebo_matrix_set_f64
+extern nebo_matrix_row_view
+extern nebo_matrix_column_view
+extern nebo_matrix_slice_view
+extern nebo_matrix_transpose_view
+extern nebo_matrix_contiguous_f64
+%endif
+%endif

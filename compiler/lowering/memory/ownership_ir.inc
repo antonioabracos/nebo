@@ -1,0 +1,45 @@
+%ifndef NEBOC_OWNERSHIP_IR_INC
+%define NEBOC_OWNERSHIP_IR_INC 1
+
+%include "compiler/semantic/memory/ownership_semantic.inc"
+
+; q0..q36 embed PF003 semantic state. q37..q54 are fixed target-neutral IR.
+%define neboc_memoria_ownership_lifetimes_e_recursos_IR_OUTPUT_OFFSET 296
+%define NEBOC_IR_HIR_RESOURCE_BIND_OFFSET 296
+%define NEBOC_IR_HIR_OWNER_BIND_OFFSET 304
+%define NEBOC_IR_HIR_LIFETIME_GUARD_OFFSET 312
+%define NEBOC_IR_HIR_ACTION_OFFSET 320
+%define NEBOC_IR_LIR_STATE_HASH_ASSERT_OFFSET 328
+%define NEBOC_IR_LIR_AUTHORITY_ASSERT_OFFSET 336
+%define NEBOC_IR_LIR_TRANSITION_CALL_OFFSET 344
+%define NEBOC_IR_LIR_EXACT_CLEANUP_OFFSET 352
+%define NEBOC_IR_RESOURCE_ID_OFFSET 360
+%define neboc_memoria_ownership_lifetimes_e_recursos_IR_OPERATION_OFFSET 368
+%define NEBOC_IR_ACTOR_OFFSET 376
+%define NEBOC_IR_REGION_OFFSET 384
+%define NEBOC_IR_AUX_TOKEN_OFFSET 392
+%define NEBOC_IR_EFFECTS_OFFSET 400
+%define neboc_memoria_ownership_lifetimes_e_recursos_IR_DECISION_OFFSET 408
+%define neboc_memoria_ownership_lifetimes_e_recursos_IR_DIAGNOSTIC_OFFSET 416
+%define neboc_memoria_ownership_lifetimes_e_recursos_IR_ALLOCATIONS_OFFSET 424
+%define neboc_memoria_ownership_lifetimes_e_recursos_IR_HASH_OFFSET 432
+%define neboc_memoria_ownership_lifetimes_e_recursos_IR_HASHED_BYTES 432
+%define neboc_memoria_ownership_lifetimes_e_recursos_IR_OUTPUT_QWORDS 18
+%define neboc_memoria_ownership_lifetimes_e_recursos_IR_REQUEST_QWORDS 55
+%define neboc_memoria_ownership_lifetimes_e_recursos_IR_REQUEST_SIZE 440
+%define neboc_memoria_ownership_lifetimes_e_recursos_IR_ALIGNMENT 8
+
+%define NEBOC_HIR_RESOURCE_BIND 2401
+%define NEBOC_HIR_OWNER_BIND 2402
+%define NEBOC_HIR_LIFETIME_GUARD 2403
+%define NEBOC_HIR_ACTION 2404
+%define NEBOC_LIR_STATE_HASH_ASSERT 2411
+%define NEBOC_LIR_AUTHORITY_ASSERT 2412
+%define NEBOC_LIR_TRANSITION_CALL 2413
+%define NEBOC_LIR_EXACT_CLEANUP 2414
+
+%if neboc_memoria_ownership_lifetimes_e_recursos_IR_OUTPUT_OFFSET != neboc_memoria_ownership_lifetimes_e_recursos_SEMANTIC_REQUEST_SIZE
+    %error "memoria_ownership_lifetimes_e_recursos IR/semantic boundary drift"
+%endif
+
+%endif

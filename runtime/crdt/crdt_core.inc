@@ -1,0 +1,7 @@
+%ifndef NEBO_CRDT_CORE_INC
+%define NEBO_CRDT_CORE_INC 1
+%define NEBO_CRDT_MAX_REPLICAS 16
+%define NEBO_CRDT_OK 0
+%define NEBO_CRDT_INVALID 1
+%define NEBO_CRDT_LIMIT 2
+%endif

@@ -1,0 +1,39 @@
+%ifndef NEBOC_QUALITY_CONTRACT_INC
+%define NEBOC_QUALITY_CONTRACT_INC 1
+%include "compiler/semantic/quality/quality_lineage.inc"
+%define neboc_quality_confidence_e_lineage_PARSE_SOURCE_OFFSET 0
+%define neboc_quality_confidence_e_lineage_PARSE_SOURCE_LENGTH_OFFSET 8
+%define neboc_quality_confidence_e_lineage_PARSE_OUTPUT_OFFSET 16
+%define neboc_quality_confidence_e_lineage_PARSE_ERROR_OFFSET_OFFSET 24
+%define neboc_quality_confidence_e_lineage_PARSE_DIAGNOSTIC_OFFSET 32
+%define neboc_quality_confidence_e_lineage_PARSE_CONSUMED_OFFSET 40
+%define neboc_quality_confidence_e_lineage_PARSE_CANONICAL_HASH_OFFSET 48
+%define neboc_quality_confidence_e_lineage_PARSE_FEATURE_MASK_OFFSET 56
+%define neboc_quality_confidence_e_lineage_PARSE_REQUEST_SIZE 64
+%define neboc_quality_confidence_e_lineage_PARSE_REQUEST_QWORDS 8
+%define neboc_quality_confidence_e_lineage_PARSE_MAX_SOURCE_BYTES 4096
+%define neboc_quality_confidence_e_lineage_PARSE_ALIGNMENT 8
+%define NEBOC_RESULT_DIRECT_QUALITY_OFFSET 0
+%define NEBOC_RESULT_INHERITED_QUALITY_OFFSET 8
+%define NEBOC_RESULT_DIRECT_CONFIDENCE_OFFSET 16
+%define NEBOC_RESULT_INHERITED_CONFIDENCE_OFFSET 24
+%define NEBOC_RESULT_MIN_QUALITY_OFFSET 32
+%define NEBOC_RESULT_MIN_CONFIDENCE_OFFSET 40
+%define NEBOC_RESULT_SOURCE_ID_OFFSET 48
+%define NEBOC_RESULT_TRANSFORM_ID_OFFSET 56
+%define NEBOC_RESULT_PARENT_HASH_OFFSET 64
+%define neboc_quality_confidence_e_lineage_RESULT_FLAGS_OFFSET 72
+%define NEBOC_RESULT_STATEMENT_LENGTH_OFFSET 80
+%define NEBOC_RESULT_SHAPE_HASH_OFFSET 88
+%define NEBOC_RESULT_RESERVED_OFFSET 96
+%define neboc_quality_confidence_e_lineage_RESULT_SIZE 104
+%define neboc_quality_confidence_e_lineage_RESULT_QWORDS 13
+%define NEBOC_RESULT_HASHED_BYTES 88
+%define NEBOC_RESULT_ALIGNMENT 8
+%define NEBOC_FEATURE_QUALITY 1
+%define NEBOC_FEATURE_CONFIDENCE 2
+%define NEBOC_FEATURE_LINEAGE 4
+%define NEBOC_FEATURE_GATE 8
+%define neboc_quality_confidence_e_lineage_FEATURE_COMPLETE 15
+%define NEBOC_RESULT_FLAG_CANONICAL 1
+%endif

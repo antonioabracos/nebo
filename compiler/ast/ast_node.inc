@@ -51,6 +51,32 @@
 %define NEBOC_AST_FLAG_RECOVERED 4
 %define NEBOC_AST_FLAG_TYPE_CONSTRUCTOR 8
 %define NEBOC_AST_FLAG_MUTABLE_BINDING 16
+; NPT-LANG-27 reuses the existing assignment node and `=` token while
+; retaining the complete `.at(index)` target as its first child.
+%define NEBOC_AST_FLAG_COLLECTION_ELEMENT_ASSIGNMENT 32
+; NPT-LANG-21: the parameter spelling contains an authenticated bounded
+; generic type constructor (`Slice<Int|Bool|Char>`).  Payload0 remains the
+; outer type token and Payload1 remains the binding-name token; the element
+; token is therefore recoverable at Payload0+2 without widening AstNode.
+%define NEBOC_AST_FLAG_GENERIC_PARAMETER 32
+; NPT-LANG-37: an existing receiver-first FunctionDecl parsed directly inside
+; one outer function body.  The flag is compiler-private and never denotes a
+; source-visible top-level function value.
+%define NEBOC_AST_FLAG_NESTED_PRIVATE 64
+; C13-PRC-A3 compiler-private bridge for the already-public two-statement
+; typed binding spelling (`Type.name; value.name;`).  The marker is assigned
+; only after exact adjacency, name and initializer-type validation.
+%define NEBOC_AST_FLAG_TYPED_BINDING_DECLARATION 128
+; C13-PRC-A3: a nominal vertical has already authenticated the public
+; `Type.Variant` receiver.  The shared Pratt parser retains the two token IDs
+; in one compiler-private receiver node so a following public method suffix can
+; compose with FunctionTable codegen without introducing field-access syntax.
+%define NEBOC_AST_FLAG_NOMINAL_VARIANT_RECEIVER 256
+; C13-PRC-A3: the shared parser represents the already-public Tuple `.N`
+; projection as a compiler-private call-shaped node.  Payload0 retains the
+; exact integer token and Payload1 its constant position; no new source form
+; or public runtime ABI is introduced.
+%define NEBOC_AST_FLAG_TUPLE_POSITIONAL_PROJECTION 512
 
 %define NEBOC_AST_BUILDER_DATA_OFFSET 0
 %define NEBOC_AST_BUILDER_COUNT_OFFSET 8

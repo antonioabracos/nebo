@@ -1,0 +1,5 @@
+start() {
+  Text("Nebo 1.0").message;
+  message.console();
+  0;
+}

@@ -1,0 +1,5 @@
+start() {
+    Buffer.zeroed(4).buffer;
+    buffer.view(1, 3).view;
+    view.at(2).value;
+}

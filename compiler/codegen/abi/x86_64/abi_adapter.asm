@@ -55,6 +55,10 @@ abi_push_rax: db '    push rax',10
 abi_push_rax_length equ $-abi_push_rax
 abi_call_prefix: db '    call nebo_fn_'
 abi_call_prefix_length equ $-abi_call_prefix
+abi_nested_call_prefix: db '    call nebo_nested_fn_'
+abi_nested_call_prefix_length equ $-abi_nested_call_prefix
+abi_nested_separator: db '_'
+abi_nested_separator_length equ $-abi_nested_separator
 abi_epilogue: db '    mov rsp, rbp',10,'    pop rbp',10,'    ret',10
 abi_epilogue_length equ $-abi_epilogue
 abi_newline: db 10
@@ -1384,6 +1388,112 @@ NEBOC_ABI_FUNCTION neboc_abi_adapter_emit_prepared_call
 .invalid_return:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
 .done:
+ add rsp,32
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; abi_adapter_emit_prepared_private_nested_call(adapter*, outer_function_id,
+;                                                lexical_ordinal)
+; Receiver/arguments are already in their ordinary System V registers.  This
+; compiler-private path changes only deterministic label spelling and retains
+; the exact call accounting/rollback contract.
+NEBOC_ABI_FUNCTION neboc_abi_adapter_emit_prepared_private_nested_call
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,32
+ mov rbx,rdi
+ mov r12,rsi
+ mov r13,rdx
+ test rbx,rbx
+ jz .nested_invalid_return
+ mov rdi,rbx
+ call neboc_abi_adapter_validate
+ test eax,eax
+ jnz .nested_done
+ cmp qword [rbx+NEBOC_ABI_ADAPTER_STATE_OFFSET],NEBOC_ABI_ADAPTER_STATE_FUNCTION
+ jne .nested_state
+ test r12,r12
+ jz .nested_call_invalid
+ cmp r13,1
+ jne .nested_call_invalid
+ mov r14,[rbx+NEBOC_ABI_ADAPTER_CURRENT_SIGNATURE_OFFSET]
+ mov rax,[rbx+NEBOC_ABI_ADAPTER_CURRENT_FUNCTION_CALLS_OFFSET]
+ cmp rax,[r14+NEBOC_ABI_SIGNATURE_RUNTIME_CALL_COUNT_OFFSET]
+ jae .nested_call_invalid
+ mov r15,[rbx+NEBOC_ABI_ADAPTER_WRITER_OFFSET]
+ mov rax,[r15+NEBOC_ASSEMBLY_WRITER_LENGTH_OFFSET]
+ mov [rsp],rax
+ mov rax,[rbx+NEBOC_ABI_ADAPTER_EMITTED_CALLS_OFFSET]
+ mov [rsp+8],rax
+ mov rax,[rbx+NEBOC_ABI_ADAPTER_CURRENT_FUNCTION_CALLS_OFFSET]
+ mov [rsp+16],rax
+ mov rdi,r15
+ lea rsi,[rel abi_nested_call_prefix]
+ mov edx,abi_nested_call_prefix_length
+ call neboc_assembly_writer_append_bytes
+ test eax,eax
+ jnz .nested_restore
+ mov rdi,r15
+ mov rsi,r12
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .nested_restore
+ mov rdi,r15
+ lea rsi,[rel abi_nested_separator]
+ mov edx,abi_nested_separator_length
+ call neboc_assembly_writer_append_bytes
+ test eax,eax
+ jnz .nested_restore
+ mov rdi,r15
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .nested_restore
+ mov rdi,r15
+ lea rsi,[rel abi_newline]
+ mov edx,abi_newline_length
+ call neboc_assembly_writer_append_bytes
+ test eax,eax
+ jnz .nested_restore
+ inc qword [rbx+NEBOC_ABI_ADAPTER_EMITTED_CALLS_OFFSET]
+ inc qword [rbx+NEBOC_ABI_ADAPTER_CURRENT_FUNCTION_CALLS_OFFSET]
+ mov qword [rbx+NEBOC_ABI_ADAPTER_LAST_ERROR_OFFSET],NEBOC_ABI_ERROR_NONE
+ xor eax,eax
+ jmp .nested_done
+.nested_restore:
+ mov r11d,eax
+ mov rax,[rsp]
+ mov [r15+NEBOC_ASSEMBLY_WRITER_LENGTH_OFFSET],rax
+ mov rax,[rsp+8]
+ mov [rbx+NEBOC_ABI_ADAPTER_EMITTED_CALLS_OFFSET],rax
+ mov rax,[rsp+16]
+ mov [rbx+NEBOC_ABI_ADAPTER_CURRENT_FUNCTION_CALLS_OFFSET],rax
+ mov eax,r11d
+ cmp eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ jne .nested_writer
+ mov qword [rbx+NEBOC_ABI_ADAPTER_LAST_ERROR_OFFSET],NEBOC_ABI_ERROR_WRITER_LIMIT
+ jmp .nested_done
+.nested_writer:
+ mov qword [rbx+NEBOC_ABI_ADAPTER_LAST_ERROR_OFFSET],NEBOC_ABI_ERROR_WRITER_NOT_READY
+ jmp .nested_done
+.nested_call_invalid:
+ mov qword [rbx+NEBOC_ABI_ADAPTER_LAST_ERROR_OFFSET],NEBOC_ABI_ERROR_CALL_INVALID
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ jmp .nested_done
+.nested_state:
+ mov qword [rbx+NEBOC_ABI_ADAPTER_LAST_ERROR_OFFSET],NEBOC_ABI_ERROR_BAD_STATE
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ jmp .nested_done
+.nested_invalid_return:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+.nested_done:
  add rsp,32
  pop r15
  pop r14

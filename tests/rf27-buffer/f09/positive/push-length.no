@@ -1,0 +1,5 @@
+start() {
+    Buffer.withCapacity(4).buffer;
+    buffer.push(7).pushed;
+    buffer.length().return;
+}

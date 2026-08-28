@@ -92,11 +92,22 @@ parser_top_loop:
  cmp rcx,NEBOC_TOKEN_EOF
  je parser_finish
  cmp rcx,NEBOC_TOKEN_KW_START
- je parser_call_start
+ jne parser_check_function
+ test qword [r12+NEBOC_PARSER_FLAGS_OFFSET],NEBOC_PARSER_FLAG_FORBID_START
+ jnz parser_forbidden_start
+ jmp parser_call_start
+parser_check_function:
  cmp rcx,NEBOC_TOKEN_LPAREN
  je parser_call_function
  mov rdi,r12
  mov esi,NEBOC_PARSE_DIAG_TOP_LEVEL_STATEMENT
+ mov rdx,rax
+ call neboc_parser_set_error
+ jmp parser_done
+
+parser_forbidden_start:
+ mov rdi,r12
+ mov esi,NEBOC_PARSE_DIAG_ENTRYPOINT_FORBIDDEN_FOR_TARGET
  mov rdx,rax
  call neboc_parser_set_error
  jmp parser_done
@@ -140,7 +151,12 @@ parser_link_count:
 
 parser_finish:
  cmp qword [r12+NEBOC_PARSER_START_COUNT_OFFSET],1
+ je parser_success
+ test qword [r12+NEBOC_PARSER_FLAGS_OFFSET],NEBOC_PARSER_FLAG_ALLOW_ZERO_START
+ jz parser_missing_start
+ cmp qword [r12+NEBOC_PARSER_START_COUNT_OFFSET],0
  jne parser_missing_start
+parser_success:
  xor eax,eax
  jmp parser_done
 parser_missing_start:
@@ -367,6 +383,8 @@ function_param_scan:
  jae function_expected_at_index
  lea rax,[r11+1]
  TOKEN_PTR r10,rax
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LESS
+ je function_param_generic_scan
  cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
  jne function_expected_at_index
  lea rax,[r11+2]
@@ -375,6 +393,32 @@ function_param_scan:
  jne function_expected_at_index
  inc qword [rsp+40]
  add r11,3
+ jmp function_param_separator
+function_param_generic_scan:
+ ; Exact material generic parameter shape: Outer<Element>.name.  Semantic
+ ; owners later restrict Outer to Slice and Element to Int/Bool/Char.
+ lea rax,[r11+5]
+ cmp rax,r14
+ jae function_expected_at_index
+ lea rax,[r11+2]
+ TOKEN_PTR r10,rax
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne function_expected_at_index
+ lea rax,[r11+3]
+ TOKEN_PTR r10,rax
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_GREATER
+ jne function_expected_at_index
+ lea rax,[r11+4]
+ TOKEN_PTR r10,rax
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne function_expected_at_index
+ lea rax,[r11+5]
+ TOKEN_PTR r10,rax
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne function_expected_at_index
+ inc qword [rsp+40]
+ add r11,6
+function_param_separator:
  cmp r11,r14
  jae function_expected_at_index
  TOKEN_PTR rax,r11
@@ -470,12 +514,21 @@ function_append_params:
  cmp r11,[rsp+16]
  jae function_append_block
  mov [rsp+72],r11
+ mov qword [rsp+88],3
+ lea rax,[r11+1]
+ TOKEN_PTR r10,rax
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LESS
+ jne function_append_param_width_ready
+ mov qword [rsp+88],6
+function_append_param_width_ready:
  TOKEN_PTR r10,r11
  mov rdi,r15
  mov esi,NEBOC_AST_PARAMETER
  mov rdx,[r12+NEBOC_PARSER_SOURCE_ID_OFFSET]
  mov rcx,[r10+NEBOC_TOKEN_START_OFFSET]
- lea rax,[r11+2]
+ mov rax,[rsp+88]
+ dec rax
+ add rax,r11
  TOKEN_PTR r10,rax
  mov r8,[r10+NEBOC_TOKEN_END_OFFSET]
  lea r9,[r12+NEBOC_PARSER_SCRATCH0_OFFSET]
@@ -502,9 +555,15 @@ function_append_params:
  mov r10,[r12+NEBOC_PARSER_SCRATCH1_OFFSET]
  mov r11,[rsp+72]
  mov [r10+NEBOC_AST_NODE_PAYLOAD0_OFFSET],r11
- lea rax,[r11+2]
+ mov rax,[rsp+88]
+ cmp rax,6
+ jne function_append_param_payload_name
+ or qword [r10+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_GENERIC_PARAMETER
+function_append_param_payload_name:
+ dec rax
+ add rax,r11
  mov [r10+NEBOC_AST_NODE_PAYLOAD1_OFFSET],rax
- add r11,3
+ add r11,[rsp+88]
  cmp r11,[rsp+16]
  jae function_append_params
  inc r11

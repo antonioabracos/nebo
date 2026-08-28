@@ -1,0 +1,4 @@
+start() {
+    ACCENT = Color.hex("#FF6600");
+    "RF116 typed Color options".console(Console.fg(ACCENT), Console.bg(Color.rgb(16, 24, 32)));
+}

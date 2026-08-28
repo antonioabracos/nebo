@@ -28,8 +28,26 @@ json_start: db ',"start":'
 json_start_len equ $-json_start
 json_end: db ',"end":'
 json_end_len equ $-json_end
-json_close_primary: db '}}'
+json_close_primary: db '}'
 json_close_primary_len equ $-json_close_primary
+json_related: db ',"related":{"sourceId":'
+json_related_len equ $-json_related
+json_related_label: db ',"label":'
+json_related_label_len equ $-json_related_label
+json_note: db ',"note":'
+json_note_len equ $-json_note
+json_fixits: db ',"fixIts":['
+json_fixits_len equ $-json_fixits
+json_fix_start: db '{"start":'
+json_fix_start_len equ $-json_fix_start
+json_fix_end: db ',"end":'
+json_fix_end_len equ $-json_fix_end
+json_fix_replacement: db ',"replacement":'
+json_fix_replacement_len equ $-json_fix_replacement
+json_comma: db ','
+json_close_item: db '}'
+json_close_array: db ']'
+json_close_object: db '}'
 json_newline: db 10
 json_quote: db '"'
 json_backslash_quote: db '\"'
@@ -50,7 +68,43 @@ sarif_location: db '},"locations":[{"physicalLocation":{"region":{"byteOffset":'
 sarif_location_len equ $-sarif_location
 sarif_byte_length: db ',"byteLength":'
 sarif_byte_length_len equ $-sarif_byte_length
-sarif_close: db '}}}]}]}]}'
+sarif_close_locations: db '}}}]'
+sarif_close_locations_len equ $-sarif_close_locations
+sarif_related: db ',"relatedLocations":[{"id":1,"physicalLocation":{"region":{"byteOffset":'
+sarif_related_len equ $-sarif_related
+sarif_related_length: db ',"byteLength":'
+sarif_related_length_len equ $-sarif_related_length
+sarif_related_message: db '}},"message":{"text":'
+sarif_related_message_len equ $-sarif_related_message
+sarif_related_close: db '}}]'
+sarif_related_close_len equ $-sarif_related_close
+sarif_note: db ',"note":'
+sarif_note_len equ $-sarif_note
+sarif_properties: db ',"properties":{"neboSchema":1,"severity":'
+sarif_properties_len equ $-sarif_properties
+sarif_category: db ',"category":'
+sarif_category_len equ $-sarif_category
+sarif_phase: db ',"phase":'
+sarif_phase_len equ $-sarif_phase
+sarif_source_id: db ',"sourceId":'
+sarif_source_id_len equ $-sarif_source_id
+sarif_span_start: db ',"spanStart":'
+sarif_span_start_len equ $-sarif_span_start
+sarif_span_end: db ',"spanEnd":'
+sarif_span_end_len equ $-sarif_span_end
+sarif_message_key: db ',"messageKey":'
+sarif_message_key_len equ $-sarif_message_key
+sarif_fixes: db ',"fixes":[{"description":{"text":"insert required control-header delimiter"},"artifactChanges":[{"artifactLocation":{"uri":"source"},"replacements":['
+sarif_fixes_len equ $-sarif_fixes
+sarif_replacement: db '{"deletedRegion":{"byteOffset":'
+sarif_replacement_len equ $-sarif_replacement
+sarif_deleted_length: db ',"byteLength":0},"insertedContent":{"text":'
+sarif_deleted_length_len equ $-sarif_deleted_length
+sarif_replacement_close: db '}}'
+sarif_replacement_close_len equ $-sarif_replacement_close
+sarif_fixes_close: db ']}]}]'
+sarif_fixes_close_len equ $-sarif_fixes_close
+sarif_close: db '}]}]}'
 sarif_close_len equ $-sarif_close
 t_error: db 'error'
 t_error_len equ $-t_error
@@ -73,6 +127,26 @@ lsp_source: db ',"source":"neboc","message":'
 lsp_source_len equ $-lsp_source
 lsp_related: db ',"relatedInformation":[],"data":{"neboCode":'
 lsp_related_len equ $-lsp_related
+lsp_related_begin: db ',"relatedInformation":[{"location":{"uri":"source","range":{"start":{"line":'
+lsp_related_begin_len equ $-lsp_related_begin
+lsp_related_after_range: db '}}},"message":'
+lsp_related_after_range_len equ $-lsp_related_after_range
+lsp_related_end: db '}],"data":{"neboCode":'
+lsp_related_end_len equ $-lsp_related_end
+lsp_schema: db ',"schema":1,"severity":'
+lsp_schema_len equ $-lsp_schema
+lsp_category: db ',"category":'
+lsp_category_len equ $-lsp_category
+lsp_phase: db ',"phase":'
+lsp_phase_len equ $-lsp_phase
+lsp_source_id: db ',"sourceId":'
+lsp_source_id_len equ $-lsp_source_id
+lsp_span_start: db ',"spanStart":'
+lsp_span_start_len equ $-lsp_span_start
+lsp_span_end: db ',"spanEnd":'
+lsp_span_end_len equ $-lsp_span_end
+lsp_message_key: db ',"messageKey":'
+lsp_message_key_len equ $-lsp_message_key
 lsp_close: db '}}'
 lsp_close_len equ $-lsp_close
 
@@ -258,6 +332,303 @@ machine_writer_json_string:
  jnz .finish
 %endmacro
 
+; Emit exact zero-width insertion edits from the existing diagnostic argument
+; slots. The dedicated flag prevents ordinary message arguments from being
+; reinterpreted as source edits.
+machine_emit_json_fixits:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ mov rbx,rdi
+ mov r12,rsi
+ test qword [rbx+NEBOC_DIAGNOSTIC_FLAGS_OFFSET],NEBOC_DIAGNOSTIC_FLAG_HAS_FIXITS
+ jz .ok
+ mov r14,[rbx+NEBOC_DIAGNOSTIC_ARGUMENT_COUNT_OFFSET]
+ test r14,r14
+ jz .ok
+ cmp r14,NEBOC_DIAGNOSTIC_MAX_ARGUMENTS
+ ja .invalid
+ APPEND_LITERAL json_fixits,json_fixits_len
+ xor r13d,r13d
+.loop:
+ cmp r13,r14
+ jae .close
+ test r13,r13
+ jz .item
+ APPEND_LITERAL json_comma,1
+.item:
+ mov rax,r13
+ imul rax,NEBOC_DIAGNOSTIC_ARGUMENT_SIZE
+ lea rcx,[rbx+NEBOC_DIAGNOSTIC_ARGUMENTS_OFFSET]
+ add rcx,rax
+ mov [rsp],rcx
+ APPEND_LITERAL json_fix_start,json_fix_start_len
+ mov rcx,[rsp]
+ mov rdi,r12
+ mov rsi,[rcx+NEBOC_DIAGNOSTIC_ARGUMENT_VALUE_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .finish
+ APPEND_LITERAL json_fix_end,json_fix_end_len
+ mov rcx,[rsp]
+ mov rdi,r12
+ mov rsi,[rcx+NEBOC_DIAGNOSTIC_ARGUMENT_VALUE_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .finish
+ APPEND_LITERAL json_fix_replacement,json_fix_replacement_len
+ mov rcx,[rsp]
+ mov rdi,r12
+ mov rsi,[rcx+NEBOC_DIAGNOSTIC_ARGUMENT_DATA_OFFSET]
+ mov rdx,[rcx+NEBOC_DIAGNOSTIC_ARGUMENT_LENGTH_OFFSET]
+ call machine_writer_json_string
+ test eax,eax
+ jnz .finish
+ APPEND_LITERAL json_close_item,1
+ inc r13
+ jmp .loop
+.close:
+ APPEND_LITERAL json_close_array,1
+.ok:
+ xor eax,eax
+ jmp .finish
+.invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+.finish:
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Emit the one canonical legacy secondary span and note into schema-v1 JSON.
+; Diagnostics without either flag remain byte-identical.
+machine_emit_json_context:
+ push rbx
+ push r12
+ sub rsp,8
+ mov rbx,rdi
+ mov r12,rsi
+ test qword [rbx+NEBOC_DIAGNOSTIC_FLAGS_OFFSET],NEBOC_DIAGNOSTIC_FLAG_HAS_SECONDARY
+ jz .note
+ APPEND_LITERAL json_related,json_related_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_ID_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .done
+ APPEND_LITERAL json_start,json_start_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .done
+ APPEND_LITERAL json_end,json_end_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_END_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .done
+ APPEND_LITERAL json_related_label,json_related_label_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_SECONDARY_LABEL_OFFSET]
+ mov rdx,[rbx+NEBOC_DIAGNOSTIC_SECONDARY_LABEL_LENGTH_OFFSET]
+ call machine_writer_json_string
+ test eax,eax
+ jnz .done
+ APPEND_LITERAL json_close_object,1
+.note:
+ test qword [rbx+NEBOC_DIAGNOSTIC_FLAGS_OFFSET],NEBOC_DIAGNOSTIC_FLAG_HAS_NOTE
+ jz .ok
+ APPEND_LITERAL json_note,json_note_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_NOTE_OFFSET]
+ mov rdx,[rbx+NEBOC_DIAGNOSTIC_NOTE_LENGTH_OFFSET]
+ call machine_writer_json_string
+ test eax,eax
+ jnz .done
+.ok:
+ xor eax,eax
+.finish:
+.done:
+ add rsp,8
+ pop r12
+ pop rbx
+ ret
+
+machine_emit_sarif_context:
+ push rbx
+ push r12
+ sub rsp,8
+ mov rbx,rdi
+ mov r12,rsi
+ test qword [rbx+NEBOC_DIAGNOSTIC_FLAGS_OFFSET],NEBOC_DIAGNOSTIC_FLAG_HAS_SECONDARY
+ jz .ok
+ APPEND_LITERAL sarif_related,sarif_related_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .done
+ APPEND_LITERAL sarif_related_length,sarif_related_length_len
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_END_OFFSET]
+ sub rsi,[rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET]
+ mov rdi,r12
+ call machine_writer_u64
+ test eax,eax
+ jnz .done
+ APPEND_LITERAL sarif_related_message,sarif_related_message_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_SECONDARY_LABEL_OFFSET]
+ mov rdx,[rbx+NEBOC_DIAGNOSTIC_SECONDARY_LABEL_LENGTH_OFFSET]
+ call machine_writer_json_string
+ test eax,eax
+ jnz .done
+ APPEND_LITERAL sarif_related_close,sarif_related_close_len
+.ok:
+ xor eax,eax
+.finish:
+.done:
+ add rsp,8
+ pop r12
+ pop rbx
+ ret
+
+; SARIF retains its native fields and carries the exact canonical Nebo record
+; in properties so it is semantically reversible alongside JSON and LSP.
+machine_emit_sarif_metadata:
+ push rbx
+ push r12
+ sub rsp,8
+ mov rbx,rdi
+ mov r12,rsi
+ APPEND_LITERAL sarif_properties,sarif_properties_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_SEVERITY_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .done
+ APPEND_LITERAL sarif_category,sarif_category_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_CATEGORY_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .done
+ APPEND_LITERAL sarif_phase,sarif_phase_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_PHASE_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .done
+ APPEND_LITERAL sarif_source_id,sarif_source_id_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_ID_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .done
+ APPEND_LITERAL sarif_span_start,sarif_span_start_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .done
+ APPEND_LITERAL sarif_span_end,sarif_span_end_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_END_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .done
+ APPEND_LITERAL sarif_message_key,sarif_message_key_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_MESSAGE_KEY_OFFSET]
+ mov rdx,[rbx+NEBOC_DIAGNOSTIC_MESSAGE_KEY_LENGTH_OFFSET]
+ call machine_writer_json_string
+ test eax,eax
+ jnz .done
+ test qword [rbx+NEBOC_DIAGNOSTIC_FLAGS_OFFSET],NEBOC_DIAGNOSTIC_FLAG_HAS_NOTE
+ jz .close
+ APPEND_LITERAL sarif_note,sarif_note_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_NOTE_OFFSET]
+ mov rdx,[rbx+NEBOC_DIAGNOSTIC_NOTE_LENGTH_OFFSET]
+ call machine_writer_json_string
+ test eax,eax
+ jnz .done
+.close:
+ APPEND_LITERAL json_close_object,1
+ xor eax,eax
+.finish:
+.done:
+ add rsp,8
+ pop r12
+ pop rbx
+ ret
+
+machine_emit_sarif_fixits:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ mov rbx,rdi
+ mov r12,rsi
+ test qword [rbx+NEBOC_DIAGNOSTIC_FLAGS_OFFSET],NEBOC_DIAGNOSTIC_FLAG_HAS_FIXITS
+ jz .ok
+ mov r14,[rbx+NEBOC_DIAGNOSTIC_ARGUMENT_COUNT_OFFSET]
+ test r14,r14
+ jz .ok
+ cmp r14,NEBOC_DIAGNOSTIC_MAX_ARGUMENTS
+ ja .invalid
+ APPEND_LITERAL sarif_fixes,sarif_fixes_len
+ xor r13d,r13d
+.loop:
+ cmp r13,r14
+ jae .close
+ test r13,r13
+ jz .item
+ APPEND_LITERAL json_comma,1
+.item:
+ mov rax,r13
+ imul rax,NEBOC_DIAGNOSTIC_ARGUMENT_SIZE
+ lea rcx,[rbx+NEBOC_DIAGNOSTIC_ARGUMENTS_OFFSET]
+ add rcx,rax
+ mov [rsp],rcx
+ APPEND_LITERAL sarif_replacement,sarif_replacement_len
+ mov rcx,[rsp]
+ mov rdi,r12
+ mov rsi,[rcx+NEBOC_DIAGNOSTIC_ARGUMENT_VALUE_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .finish
+ APPEND_LITERAL sarif_deleted_length,sarif_deleted_length_len
+ mov rcx,[rsp]
+ mov rdi,r12
+ mov rsi,[rcx+NEBOC_DIAGNOSTIC_ARGUMENT_DATA_OFFSET]
+ mov rdx,[rcx+NEBOC_DIAGNOSTIC_ARGUMENT_LENGTH_OFFSET]
+ call machine_writer_json_string
+ test eax,eax
+ jnz .finish
+ APPEND_LITERAL sarif_replacement_close,sarif_replacement_close_len
+ inc r13
+ jmp .loop
+.close:
+ APPEND_LITERAL sarif_fixes_close,sarif_fixes_close_len
+.ok:
+ xor eax,eax
+ jmp .finish
+.invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+.finish:
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
 ; emit_common_json(diagnostic*, writer*)
 machine_emit_common_json:
  push rbx
@@ -316,6 +687,17 @@ machine_emit_common_json:
  test eax,eax
  jnz .finish
  APPEND_LITERAL json_close_primary,json_close_primary_len
+ mov rdi,rbx
+ mov rsi,r12
+ call machine_emit_json_context
+ test eax,eax
+ jnz .finish
+ mov rdi,rbx
+ mov rsi,r12
+ call machine_emit_json_fixits
+ test eax,eax
+ jnz .finish
+ APPEND_LITERAL json_close_object,1
  xor eax,eax
 .finish:
  add rsp,8
@@ -488,6 +870,22 @@ NEBOC_ABI_FUNCTION neboc_diagnostic_encoder_sarif
  call machine_writer_u64
  test eax,eax
  jnz .rollback
+ APPEND_LITERAL sarif_close_locations,sarif_close_locations_len
+ mov rdi,rbx
+ mov rsi,r12
+ call machine_emit_sarif_context
+ test eax,eax
+ jnz .rollback
+ mov rdi,rbx
+ mov rsi,r12
+ call machine_emit_sarif_fixits
+ test eax,eax
+ jnz .rollback
+ mov rdi,rbx
+ mov rsi,r12
+ call machine_emit_sarif_metadata
+ test eax,eax
+ jnz .rollback
  APPEND_LITERAL sarif_close,sarif_close_len
  xor eax,eax
  jmp .finish
@@ -516,7 +914,7 @@ NEBOC_ABI_FUNCTION neboc_diagnostic_encoder_lsp
  push r13
  push r14
  push r15
- sub rsp,104
+ sub rsp,200
  mov rbx,rdi
  mov r13,rsi
  mov r12,rdx
@@ -539,6 +937,23 @@ NEBOC_ABI_FUNCTION neboc_diagnostic_encoder_lsp
  call neboc_source_map_line_column
  test eax,eax
  jnz .finish
+ test qword [rbx+NEBOC_DIAGNOSTIC_FLAGS_OFFSET],NEBOC_DIAGNOSTIC_FLAG_HAS_SECONDARY
+ jz .locations_ready
+ mov rdi,r13
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_ID_OFFSET]
+ mov rdx,[rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET]
+ lea rcx,[rsp+96]
+ call neboc_source_map_line_column
+ test eax,eax
+ jnz .finish
+ mov rdi,r13
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_ID_OFFSET]
+ mov rdx,[rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_END_OFFSET]
+ lea rcx,[rsp+144]
+ call neboc_source_map_line_column
+ test eax,eax
+ jnz .finish
+.locations_ready:
  mov qword [r12+NEBOC_WRITER_LENGTH_OFFSET],0
  APPEND_LITERAL lsp_prefix,lsp_prefix_len
  mov rsi,[rsp+NEBOC_MACHINE_SOURCE_LOCATION_LINE_OFFSET]
@@ -597,11 +1012,110 @@ NEBOC_ABI_FUNCTION neboc_diagnostic_encoder_lsp
  call machine_writer_json_string
  test eax,eax
  jnz .rollback
+ test qword [rbx+NEBOC_DIAGNOSTIC_FLAGS_OFFSET],NEBOC_DIAGNOSTIC_FLAG_HAS_SECONDARY
+ jz .empty_related
+ APPEND_LITERAL lsp_related_begin,lsp_related_begin_len
+ mov rsi,[rsp+96+NEBOC_MACHINE_SOURCE_LOCATION_LINE_OFFSET]
+ dec rsi
+ mov rdi,r12
+ call machine_writer_u64
+ test eax,eax
+ jnz .rollback
+ APPEND_LITERAL lsp_character,lsp_character_len
+ mov rsi,[rsp+96+NEBOC_SOURCE_LOCATION_SCALAR_COLUMN_OFFSET]
+ dec rsi
+ mov rdi,r12
+ call machine_writer_u64
+ test eax,eax
+ jnz .rollback
+ APPEND_LITERAL lsp_end,lsp_end_len
+ mov rsi,[rsp+144+NEBOC_MACHINE_SOURCE_LOCATION_LINE_OFFSET]
+ dec rsi
+ mov rdi,r12
+ call machine_writer_u64
+ test eax,eax
+ jnz .rollback
+ APPEND_LITERAL lsp_character,lsp_character_len
+ mov rsi,[rsp+144+NEBOC_SOURCE_LOCATION_SCALAR_COLUMN_OFFSET]
+ dec rsi
+ mov rdi,r12
+ call machine_writer_u64
+ test eax,eax
+ jnz .rollback
+ APPEND_LITERAL lsp_related_after_range,lsp_related_after_range_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_SECONDARY_LABEL_OFFSET]
+ mov rdx,[rbx+NEBOC_DIAGNOSTIC_SECONDARY_LABEL_LENGTH_OFFSET]
+ call machine_writer_json_string
+ test eax,eax
+ jnz .rollback
+ APPEND_LITERAL lsp_related_end,lsp_related_end_len
+ jmp .related_ready
+.empty_related:
  APPEND_LITERAL lsp_related,lsp_related_len
+.related_ready:
  mov rdi,r12
  mov rsi,[rbx+NEBOC_DIAGNOSTIC_PUBLIC_CODE_OFFSET]
  mov rdx,[rbx+NEBOC_DIAGNOSTIC_PUBLIC_CODE_LENGTH_OFFSET]
  call machine_writer_json_string
+ test eax,eax
+ jnz .rollback
+ APPEND_LITERAL lsp_schema,lsp_schema_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_SEVERITY_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .rollback
+ APPEND_LITERAL lsp_category,lsp_category_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_CATEGORY_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .rollback
+ APPEND_LITERAL lsp_phase,lsp_phase_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_PHASE_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .rollback
+ APPEND_LITERAL lsp_source_id,lsp_source_id_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_ID_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .rollback
+ APPEND_LITERAL lsp_span_start,lsp_span_start_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .rollback
+ APPEND_LITERAL lsp_span_end,lsp_span_end_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_END_OFFSET]
+ call machine_writer_u64
+ test eax,eax
+ jnz .rollback
+ APPEND_LITERAL lsp_message_key,lsp_message_key_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_MESSAGE_KEY_OFFSET]
+ mov rdx,[rbx+NEBOC_DIAGNOSTIC_MESSAGE_KEY_LENGTH_OFFSET]
+ call machine_writer_json_string
+ test eax,eax
+ jnz .rollback
+ test qword [rbx+NEBOC_DIAGNOSTIC_FLAGS_OFFSET],NEBOC_DIAGNOSTIC_FLAG_HAS_NOTE
+ jz .note_ready
+ APPEND_LITERAL json_note,json_note_len
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_NOTE_OFFSET]
+ mov rdx,[rbx+NEBOC_DIAGNOSTIC_NOTE_LENGTH_OFFSET]
+ call machine_writer_json_string
+ test eax,eax
+ jnz .rollback
+.note_ready:
+ mov rdi,rbx
+ mov rsi,r12
+ call machine_emit_json_fixits
  test eax,eax
  jnz .rollback
  APPEND_LITERAL lsp_close,lsp_close_len
@@ -610,7 +1124,7 @@ NEBOC_ABI_FUNCTION neboc_diagnostic_encoder_lsp
 .rollback:
  mov [r12+NEBOC_WRITER_LENGTH_OFFSET],r14
 .finish:
- add rsp,104
+ add rsp,200
  pop r15
  pop r14
  pop r13

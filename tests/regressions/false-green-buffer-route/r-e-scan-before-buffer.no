@@ -1,0 +1,6 @@
+start() {
+    "Nome: ".console().scan().nome;
+    Buffer.withCapacity(4).stockList;
+    nome.console();
+    0.return;
+}

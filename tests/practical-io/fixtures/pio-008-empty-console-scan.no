@@ -1,0 +1,4 @@
+start() {
+  "Value:".console().scan().value;
+  "|EMPTY_OK".console();
+}

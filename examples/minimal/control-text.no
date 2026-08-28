@@ -1,0 +1,11 @@
+start() {
+    Int(100).explicit_num;
+    100.implicit_num;
+    Text("Nebo").explicit_text;
+    "Nebo".implicit_text;
+    if ((true || (1 / 0 == 0)) && ((false && (1 / 0 == 0)) == false) && (explicit_num == implicit_num) && (explicit_text == implicit_text)) {
+        7;
+    } else {
+        9;
+    }
+}

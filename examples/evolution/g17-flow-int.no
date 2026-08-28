@@ -1,0 +1,4 @@
+start() {
+    Flow<Int> 17.flow;
+    flow.value();
+}

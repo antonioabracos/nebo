@@ -24,6 +24,25 @@
 %define NEBOC_STMT_SCRATCH7_OFFSET 152
 %define NEBOC_STMT_REQUEST_SIZE 160
 
+; Private machine-readable C02 migration edits. Insertion spans use equal
+; start/end byte offsets, as required for a zero-width source insertion.
+%define NEBOC_STMT_FIXIT_COUNT_OFFSET NEBOC_STMT_SCRATCH1_OFFSET
+%define NEBOC_STMT_FIXIT0_START_OFFSET NEBOC_STMT_SCRATCH2_OFFSET
+%define NEBOC_STMT_FIXIT0_END_OFFSET NEBOC_STMT_SCRATCH3_OFFSET
+%define NEBOC_STMT_FIXIT0_KIND_OFFSET NEBOC_STMT_SCRATCH4_OFFSET
+%define NEBOC_STMT_FIXIT1_START_OFFSET NEBOC_STMT_SCRATCH5_OFFSET
+%define NEBOC_STMT_FIXIT1_END_OFFSET NEBOC_STMT_SCRATCH6_OFFSET
+%define NEBOC_STMT_FIXIT1_KIND_OFFSET NEBOC_STMT_SCRATCH7_OFFSET
+%define NEBOC_STMT_FIXIT_INSERT_LPAREN 1
+%define NEBOC_STMT_FIXIT_INSERT_RPAREN 2
+
 %define NEBOC_STMT_DEFAULT_MAX_NESTING 512
+
+; CLI materialization contexts for the existing receiver-first declaration
+; grammar.  Only the direct outer-body owner intercepts and publishes a
+; declaration.  The statement parser uses these bits solely to diagnose
+; branch/loop/start and depth-two attempts causally.
+%define NEBOC_STMT_FLAG_NPT37_OUTER_FUNCTION_BODY 1
+%define NEBOC_STMT_FLAG_NPT37_NESTED_FUNCTION_BODY 2
 
 %endif

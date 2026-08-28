@@ -1,0 +1,21 @@
+{
+  "default": "user",
+  "dotfiles_edited": false,
+  "profiles": {
+    "prefix": {
+      "destination": "EXPLICIT_PREFIX",
+      "mode": "0755/0644",
+      "root_required": false
+    },
+    "system-local": {
+      "destination": "/usr/local",
+      "implicit": false,
+      "root_required": "MAY_REQUIRE_EXTERNAL_ADMIN"
+    },
+    "user": {
+      "destination": "EXPLICIT_USER_PREFIX",
+      "mode": "0755/0644",
+      "root_required": false
+    }
+  }
+}

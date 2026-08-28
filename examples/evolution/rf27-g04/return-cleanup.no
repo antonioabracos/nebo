@@ -1,0 +1,6 @@
+start() {
+  "return".owner;
+  owner.deferDrop().scheduled;
+  22.return;
+  99;
+}

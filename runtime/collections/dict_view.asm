@@ -5,7 +5,6 @@ default rel
 %include "compiler/support/status/status_codes.inc"
 %include "compiler/semantic/collections/hash_map_contract.inc"
 extern neboc_dict_validate
-%define VIEW_MAGIC 0x5246385649455734
 
 section .text
 ; init(view*, dict*, kind)
@@ -18,6 +17,14 @@ NEBOC_ABI_FUNCTION neboc_dict_view_init
  jb .init_invalid
  cmp rdx,NEBO_DICT_VIEW_ENTRIES
  ja .init_invalid
+ mov rax,[rdi]
+ or rax,[rdi+8]
+ or rax,[rdi+16]
+ or rax,[rdi+24]
+ or rax,[rdi+32]
+ or rax,[rdi+40]
+ or rax,[rdi+48]
+ jnz .init_source
  push r12
  push r13
  push r14
@@ -40,8 +47,9 @@ NEBOC_ABI_FUNCTION neboc_dict_view_init
  mov [r12+NEBO_DICT_VIEW_KIND],r14
  mov rdx,[r13+NEBO_DICT_LENGTH]
  mov [r12+NEBO_DICT_VIEW_REMAINING],rdx
- mov rcx,VIEW_MAGIC
+ mov rcx,NEBO_DICT_VIEW_MAGIC
  xor rax,r13
+ xor rax,r14
  xor rax,rcx
  mov [r12+NEBO_DICT_VIEW_TOKEN],rax
  inc dword [r13+NEBO_DICT_BORROW_COUNT]
@@ -53,6 +61,9 @@ NEBOC_ABI_FUNCTION neboc_dict_view_init
  pop r14
  pop r13
  pop r12
+ ret
+.init_source:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
  ret
 .init_invalid:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
@@ -68,9 +79,12 @@ NEBOC_ABI_FUNCTION neboc_dict_view_next
  jz .next_invalid
  test rcx,rcx
  jz .next_invalid
- mov qword [rsi],0
- mov qword [rdx],0
- mov qword [rcx],0
+ mov rax,rdi
+ or rax,rsi
+ or rax,rdx
+ or rax,rcx
+ test rax,7
+ jnz .next_invalid
  cmp qword [rdi+NEBO_DICT_VIEW_RELEASED],0
  jne .next_stale
  mov r8,[rdi+NEBO_DICT_VIEW_OWNER]
@@ -79,13 +93,21 @@ NEBOC_ABI_FUNCTION neboc_dict_view_next
  mov r9,[rdi+NEBO_DICT_VIEW_GENERATION]
  cmp r9,[r8+NEBO_DICT_GENERATION]
  jne .next_stale
- mov r10,VIEW_MAGIC
+ cmp dword [r8+NEBO_DICT_BORROW_COUNT],0
+ je .next_stale
+ mov r11,[rdi+NEBO_DICT_VIEW_KIND]
+ cmp r11,NEBO_DICT_VIEW_KEYS
+ jb .next_stale
+ cmp r11,NEBO_DICT_VIEW_ENTRIES
+ ja .next_stale
+ mov r10,NEBO_DICT_VIEW_MAGIC
  xor r9,r8
+ xor r9,r11
  xor r9,r10
  cmp r9,[rdi+NEBO_DICT_VIEW_TOKEN]
  jne .next_stale
  cmp qword [rdi+NEBO_DICT_VIEW_REMAINING],0
- je .next_ok
+ je .next_end
  mov r9,[rdi+NEBO_DICT_VIEW_INDEX]
 .scan:
  cmp r9,[r8+NEBO_DICT_CAPACITY]
@@ -97,7 +119,6 @@ NEBOC_ABI_FUNCTION neboc_dict_view_next
  mov [rdi+NEBO_DICT_VIEW_INDEX],r9
  cmp qword [r10+NEBO_DICT_SLOT_STATE],NEBO_DICT_OCCUPIED
  jne .scan
- mov r11,[rdi+NEBO_DICT_VIEW_KIND]
  cmp r11,NEBO_DICT_VIEW_VALUES
  je .value_only
  mov rax,[r10+NEBO_DICT_SLOT_KEY]
@@ -113,6 +134,9 @@ NEBOC_ABI_FUNCTION neboc_dict_view_next
 .next_ok:
  xor eax,eax
  ret
+.next_end:
+ mov qword [rcx],0
+ jmp .next_ok
 .next_stale:
  mov eax,NEBOC_STATUS_INVALID_SOURCE
  ret
@@ -123,20 +147,54 @@ NEBOC_ABI_FUNCTION neboc_dict_view_next
 NEBOC_ABI_FUNCTION neboc_dict_view_release
  test rdi,rdi
  jz .release_invalid
+ test rdi,7
+ jnz .release_invalid
  cmp qword [rdi+NEBO_DICT_VIEW_RELEASED],0
- jne .release_ok
- mov rax,[rdi+NEBO_DICT_VIEW_OWNER]
- test rax,rax
- jz .release_mark
- cmp dword [rax+NEBO_DICT_BORROW_COUNT],0
- je .release_mark
- dec dword [rax+NEBO_DICT_BORROW_COUNT]
+ jne .release_stale
+ push r12
+ push r13
+ sub rsp,8
+ mov r12,rdi
+ mov r13,[r12+NEBO_DICT_VIEW_OWNER]
+ test r13,r13
+ jz .release_stale_saved
+ mov rdi,r13
+ call neboc_dict_validate
+ test eax,eax
+ jnz .release_done
+ mov rax,[r12+NEBO_DICT_VIEW_GENERATION]
+ cmp rax,[r13+NEBO_DICT_GENERATION]
+ jne .release_stale_saved
+ mov rdx,[r12+NEBO_DICT_VIEW_KIND]
+ cmp rdx,NEBO_DICT_VIEW_KEYS
+ jb .release_stale_saved
+ cmp rdx,NEBO_DICT_VIEW_ENTRIES
+ ja .release_stale_saved
+ mov rcx,NEBO_DICT_VIEW_MAGIC
+ xor rax,r13
+ xor rax,rdx
+ xor rax,rcx
+ cmp rax,[r12+NEBO_DICT_VIEW_TOKEN]
+ jne .release_stale_saved
+ cmp dword [r13+NEBO_DICT_BORROW_COUNT],0
+ je .release_stale_saved
+ dec dword [r13+NEBO_DICT_BORROW_COUNT]
 .release_mark:
- mov qword [rdi+NEBO_DICT_VIEW_OWNER],0
- mov qword [rdi+NEBO_DICT_VIEW_TOKEN],0
- mov qword [rdi+NEBO_DICT_VIEW_RELEASED],1
+ mov qword [r12+NEBO_DICT_VIEW_OWNER],0
+ mov qword [r12+NEBO_DICT_VIEW_TOKEN],0
+ mov qword [r12+NEBO_DICT_VIEW_RELEASED],1
 .release_ok:
  xor eax,eax
+ jmp .release_done
+.release_stale_saved:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.release_done:
+ add rsp,8
+ pop r13
+ pop r12
+ ret
+.release_stale:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
  ret
 .release_invalid:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT

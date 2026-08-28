@@ -23,7 +23,6 @@ NEBOC_ABI_FUNCTION neboc_set_insert
  push rbp
  sub rsp,16
  mov r12,rdx
- mov qword [r12],0
  mov rdx,1
  lea rcx,[rsp]
  lea r8,[rsp+8]
@@ -56,7 +55,6 @@ NEBOC_ABI_FUNCTION neboc_set_remove
  push rbp
  sub rsp,16
  mov r12,rdx
- mov qword [r12],0
  lea rdx,[rsp]
  lea rcx,[rsp+8]
  call neboc_dict_remove
@@ -85,6 +83,63 @@ NEBOC_ABI_FUNCTION neboc_set_difference
  mov ecx,3
  jmp neboc_set_algebra
 
+; subset(left*, right*, out_bool*) -> Status.
+NEBOC_ABI_FUNCTION neboc_set_subset
+ test rdx,rdx
+ jz .subset_invalid
+ test rdx,7
+ jnz .subset_invalid
+ push r12
+ push r13
+ push r14
+ push r15
+ push rbp
+ sub rsp,16
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ call neboc_dict_validate
+ test eax,eax
+ jnz .subset_done
+ mov rdi,r13
+ call neboc_dict_validate
+ test eax,eax
+ jnz .subset_done
+ xor r15d,r15d
+.subset_scan:
+ cmp r15,[r12+NEBO_DICT_CAPACITY]
+ jae .subset_yes
+ mov rax,r15
+ shl rax,5
+ add rax,[r12+NEBO_DICT_STORAGE]
+ inc r15
+ cmp qword [rax+NEBO_DICT_SLOT_STATE],NEBO_DICT_OCCUPIED
+ jne .subset_scan
+ mov rdi,r13
+ mov rsi,[rax+NEBO_DICT_SLOT_KEY]
+ call neboc_dict_contains
+ test eax,eax
+ jz .subset_no
+ jmp .subset_scan
+.subset_yes:
+ mov qword [r14],1
+ xor eax,eax
+ jmp .subset_done
+.subset_no:
+ mov qword [r14],0
+ xor eax,eax
+.subset_done:
+ add rsp,16
+ pop rbp
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ ret
+.subset_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
 ; algebra(left*, right*, empty_dest*, kind)
 NEBOC_ABI_FUNCTION neboc_set_algebra
  push r12
@@ -92,7 +147,7 @@ NEBOC_ABI_FUNCTION neboc_set_algebra
  push r14
  push r15
  push rbp
- sub rsp,32
+ sub rsp,64
  mov r12,rdi
  mov r13,rsi
  mov r14,rdx
@@ -108,7 +163,15 @@ NEBOC_ABI_FUNCTION neboc_set_algebra
  call neboc_dict_validate
  test eax,eax
  jnz .alg_done
+ cmp r14,r12
+ je .alg_invalid
+ cmp r14,r13
+ je .alg_invalid
  cmp qword [r14+NEBO_DICT_LENGTH],0
+ jne .alg_invalid
+ cmp qword [r14+NEBO_DICT_TOMBSTONES],0
+ jne .alg_invalid
+ cmp qword [r14+NEBO_DICT_MAX_PROBE],0
  jne .alg_invalid
  cmp dword [r14+NEBO_DICT_BORROW_COUNT],0
  jne .alg_invalid
@@ -116,6 +179,29 @@ NEBOC_ABI_FUNCTION neboc_set_algebra
  jb .alg_invalid
  cmp r15,3
  ja .alg_invalid
+ ; Destination storage must be disjoint from both input storage ranges.
+ mov rax,[r14+NEBO_DICT_STORAGE]
+ mov rcx,[r14+NEBO_DICT_CAPACITY]
+ shl rcx,5
+ add rcx,rax
+ mov rdx,[r12+NEBO_DICT_STORAGE]
+ mov r8,[r12+NEBO_DICT_CAPACITY]
+ shl r8,5
+ add r8,rdx
+ cmp rax,r8
+ jae .alg_left_disjoint
+ cmp rdx,rcx
+ jb .alg_invalid
+.alg_left_disjoint:
+ mov rdx,[r13+NEBO_DICT_STORAGE]
+ mov r8,[r13+NEBO_DICT_CAPACITY]
+ shl r8,5
+ add r8,rdx
+ cmp rax,r8
+ jae .alg_storage_disjoint
+ cmp rdx,rcx
+ jb .alg_invalid
+.alg_storage_disjoint:
  mov rax,[r12+NEBO_DICT_LENGTH]
  cmp r15,1
  jne .not_union_bound
@@ -128,11 +214,19 @@ NEBOC_ABI_FUNCTION neboc_set_algebra
  cmp rax,rcx
  cmova rax,rcx
 .bound:
+ mov [rsp+32],rax
  shl rax,2
  mov rcx,[r14+NEBO_DICT_CAPACITY]
  imul rcx,3
  cmp rax,rcx
  ja .alg_limit
+ mov rax,[rsp+32]
+ mov rcx,NEBO_DICT_GENERATION_MASK
+ sub rcx,rax
+ cmp [r14+NEBO_DICT_GENERATION],rcx
+ ja .alg_limit
+ mov rax,[r14+NEBO_DICT_GENERATION]
+ mov [rsp+40],rax
  mov [rsp],r12
  mov qword [rsp+8],0
 .scan:
@@ -169,7 +263,7 @@ NEBOC_ABI_FUNCTION neboc_set_algebra
  lea r8,[rsp+24]
  call neboc_dict_insert
  test eax,eax
- jnz .alg_done
+ jnz .alg_rollback
  jmp .scan
 .source_done:
  cmp r15,1
@@ -182,13 +276,27 @@ NEBOC_ABI_FUNCTION neboc_set_algebra
 .alg_ok:
  xor eax,eax
  jmp .alg_done
+.alg_rollback:
+ mov [rsp+48],rax
+ mov rdi,[r14+NEBO_DICT_STORAGE]
+ mov rcx,[r14+NEBO_DICT_CAPACITY]
+ shl rcx,2
+ xor eax,eax
+ rep stosq
+ mov qword [r14+NEBO_DICT_LENGTH],0
+ mov qword [r14+NEBO_DICT_TOMBSTONES],0
+ mov qword [r14+NEBO_DICT_MAX_PROBE],0
+ mov rax,[rsp+40]
+ mov [r14+NEBO_DICT_GENERATION],rax
+ mov rax,[rsp+48]
+ jmp .alg_done
 .alg_limit:
  mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
  jmp .alg_done
 .alg_invalid:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
 .alg_done:
- add rsp,32
+ add rsp,64
  pop rbp
  pop r15
  pop r14

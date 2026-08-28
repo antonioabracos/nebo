@@ -28,7 +28,7 @@ def lsp(symbols: Path) -> None:
         length=int(line.split(b":",1)[1]);
         while sys.stdin.buffer.readline() not in {b"\r\n",b"\n",b""}: pass
         req=json.loads(sys.stdin.buffer.read(length)); method=req.get("method"); ident=req.get("id")
-        if method=="initialize": result={"capabilities":{"workspaceSymbolProvider":True,"documentFormattingProvider":True},"serverInfo":{"name":"nebo-offline-lsp","version":"1.0.0"}}
+        if method=="initialize": result={"capabilities":{"workspaceSymbolProvider":True,"documentFormattingProvider":True},"serverInfo":{"name":"nebo-offline-lsp","version":"1.0.1"}}
         elif method=="workspace/symbol": result=[{"name":r["public_name"],"kind":13,"location":{"uri":"nebo-symbol:"+r["symbol_id"],"range":{"start":{"line":0,"character":0},"end":{"line":0,"character":0}}}} for r in rows[:128]]
         elif method=="shutdown": result=None
         elif method=="exit": break

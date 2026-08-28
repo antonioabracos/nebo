@@ -1,0 +1,5 @@
+start() {
+    Vector<Int> [1, 2, 3, 4].left;
+    Vector<Int> [4, 3, 2, 1].right;
+    left.dot(right);
+}

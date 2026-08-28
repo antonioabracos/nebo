@@ -34,6 +34,8 @@ n_console_type: db "Console"
 n_console_type_len equ $-n_console_type
 n_console: db "console"
 n_console_len equ $-n_console
+n_scan: db "scan"
+n_scan_len equ $-n_scan
 n_empty: db "empty"
 n_empty_len equ $-n_empty
 n_from_byte: db "fromByte"
@@ -188,6 +190,16 @@ call_console_publish_int: db '    mov rdi, rax',10,'    call nebo_runtime_consol
 call_console_publish_int_len equ $-call_console_publish_int
 call_console_publish_bool: db '    mov rdi, rax',10,'    call nebo_runtime_console_publish_bool',10
 call_console_publish_bool_len equ $-call_console_publish_bool
+scan_mov_esi: db '    mov esi, '
+scan_mov_esi_len equ $-scan_mov_esi
+scan_mov_edx: db '    mov edx, '
+scan_mov_edx_len equ $-scan_mov_edx
+scan_mov_ecx: db '    mov ecx, '
+scan_mov_ecx_len equ $-scan_mov_ecx
+call_scan_stdin: db '    mov rdi, rax',10,'    call nebo_runtime_scan_stdin_text',10
+call_scan_stdin_len equ $-call_scan_stdin
+call_scan_console_handle: db '    mov rdi, rax',10,'    call nebo_runtime_scan_console_handle',10
+call_scan_console_handle_len equ $-call_scan_console_handle
 binary_restore: db '    mov rcx, rax',10,'    pop rax',10
 binary_restore_len equ $-binary_restore
 binary_add: db '    add rax, rcx',10,'    jo .nebo_trap_overflow',10
@@ -212,6 +224,8 @@ not_rax: db '    test rax, rax',10,'    sete al',10,'    movzx eax, al',10
 not_rax_len equ $-not_rax
 cmp_prefix: db '    push rax',10
 cmp_prefix_len equ $-cmp_prefix
+text_equal_call: db '    mov rsi, rax',10,'    pop rdi',10,'    call nebo_runtime_text_equal',10
+text_equal_call_len equ $-text_equal_call
 cmp_suffix: db '    mov rcx, rax',10,'    pop rax',10,'    cmp rax, rcx',10,'    sete al',10,'    movzx eax, al',10
 cmp_suffix_len equ $-cmp_suffix
 cmp_ne_suffix: db '    mov rcx, rax',10,'    pop rax',10,'    cmp rax, rcx',10,'    setne al',10,'    movzx eax, al',10
@@ -224,6 +238,22 @@ cmp_gt_suffix: db '    mov rcx, rax',10,'    pop rax',10,'    cmp rax, rcx',10,'
 cmp_gt_suffix_len equ $-cmp_gt_suffix
 cmp_ge_suffix: db '    mov rcx, rax',10,'    pop rax',10,'    cmp rax, rcx',10,'    setge al',10,'    movzx eax, al',10
 cmp_ge_suffix_len equ $-cmp_ge_suffix
+logical_and_branch: db '    test rax, rax',10,'    jz .nebo_binding_bool_false_'
+logical_and_branch_len equ $-logical_and_branch
+logical_or_branch: db '    test rax, rax',10,'    jnz .nebo_binding_bool_true_'
+logical_or_branch_len equ $-logical_or_branch
+logical_bool_canon_done: db '    test rax, rax',10,'    setne al',10,'    movzx eax, al',10,'    jmp .nebo_binding_bool_end_'
+logical_bool_canon_done_len equ $-logical_bool_canon_done
+logical_false_label: db 10,'.nebo_binding_bool_false_'
+logical_false_label_len equ $-logical_false_label
+logical_false_body: db ':',10,'    xor eax, eax',10,'.nebo_binding_bool_end_'
+logical_false_body_len equ $-logical_false_body
+logical_true_label: db 10,'.nebo_binding_bool_true_'
+logical_true_label_len equ $-logical_true_label
+logical_true_body: db ':',10,'    mov eax, 1',10,'.nebo_binding_bool_end_'
+logical_true_body_len equ $-logical_true_body
+logical_label_end: db ':',10
+logical_label_end_len equ $-logical_label_end
 
 section .text
 NEBOC_ABI_FUNCTION neboc_binding_codegen_emit_start
@@ -246,6 +276,8 @@ NEBOC_ABI_FUNCTION neboc_binding_codegen_emit_start
  mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_ERROR_CODE_OFFSET],0
  mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_ERROR_NODE_OFFSET],0
  mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_DEPTH_OFFSET],0
+ mov qword [r12+NEBOC_CODEGEN_BRANCH_INDEX_OFFSET],0
+ mov qword [r12+NEBOC_CODEGEN_LOOP_INDEX_OFFSET],0
  cmp qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_MAX_DEPTH_OFFSET],0
  jne .depth_ready
  mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_MAX_DEPTH_OFFSET],neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_MAX_DEPTH_DEFAULT
@@ -526,7 +558,7 @@ g05c_emit_loop:
  push r13
  push r14
  push r15
- sub rsp,48
+ sub rsp,80
  mov r12,rdi
  mov r13,rsi
  mov r14,rdx
@@ -543,6 +575,23 @@ g05c_emit_loop:
  cmp rax,NEBOC_AST_LOOP_STMT
  jne .ast
 .shape:
+ mov rax,[r12+NEBOC_CODEGEN_LOOP_INDEX_OFFSET]
+ cmp rax,[r12+NEBOC_CODEGEN_LOOP_SNAPSHOT_COUNT_OFFSET]
+ jae .ast
+ mov [rsp+16],rax
+ inc qword [r12+NEBOC_CODEGEN_LOOP_INDEX_OFFSET]
+ mov rax,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_SYMBOLS_OFFSET]
+ mov [rsp+24],rax
+ mov rax,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_SYMBOL_COUNT_OFFSET]
+ mov [rsp+32],rax
+ mov rax,NEBOC_VERTICAL_LOOP_SNAPSHOT_BYTES
+ imul rax,[rsp+16]
+ add rax,[r12+NEBOC_CODEGEN_LOOP_BODIES_OFFSET]
+ mov [rsp+40],rax
+ mov rax,[r12+NEBOC_CODEGEN_LOOP_BODY_COUNTS_OFFSET]
+ mov rcx,[rsp+16]
+ mov rax,[rax+rcx*8]
+ mov [rsp+48],rax
  mov rax,[r12+NEBOC_CODEGEN_LOOP_DEPTH_OFFSET]
  cmp rax,NEBOC_CODEGEN_MAX_LOOP_DEPTH
  jae .unsupported
@@ -610,6 +659,10 @@ g05c_emit_loop:
  test rbx,rbx
  jz .ast_pop
 .emit_body:
+ mov rax,[rsp+40]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_SYMBOLS_OFFSET],rax
+ mov rax,[rsp+48]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_SYMBOL_COUNT_OFFSET],rax
  mov rdi,r12
  mov rsi,rbx
  lea rdx,[r14+1]
@@ -654,6 +707,10 @@ g05c_emit_loop:
  xor eax,eax
 .pop_done:
  mov [rsp+8],rax
+ mov rax,[rsp+24]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_SYMBOLS_OFFSET],rax
+ mov rax,[rsp+32]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_SYMBOL_COUNT_OFFSET],rax
  dec qword [r12+NEBOC_CODEGEN_LOOP_DEPTH_OFFSET]
  mov rax,[rsp+8]
  jmp .done
@@ -673,7 +730,7 @@ g05c_emit_loop:
  mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_ERROR_CODE_OFFSET],neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_ERROR_AST
  mov eax,NEBOC_STATUS_INVALID_SOURCE
 .done:
- add rsp,48
+ add rsp,80
  pop r15
  pop r14
  pop r13
@@ -952,6 +1009,38 @@ g05c_emit_if:
  mov r12,rdi
  mov r13,rsi
  mov r14,rdx
+ mov rax,[r12+NEBOC_CODEGEN_BRANCH_INDEX_OFFSET]
+ cmp rax,[r12+NEBOC_CODEGEN_BRANCH_SNAPSHOT_COUNT_OFFSET]
+ jae .ast
+ mov [rsp+56],rax
+ inc qword [r12+NEBOC_CODEGEN_BRANCH_INDEX_OFFSET]
+ mov rcx,NEBOC_VERTICAL_BRANCH_SNAPSHOT_BYTES
+ imul rcx,rax
+ mov rdx,[r12+NEBOC_CODEGEN_BRANCH_A_OFFSET]
+ add rdx,rcx
+ mov [rsp+24],rdx
+ mov rdx,[r12+NEBOC_CODEGEN_BRANCH_B_OFFSET]
+ add rdx,rcx
+ mov [rsp+40],rdx
+ mov rdx,[r12+NEBOC_CODEGEN_BRANCH_A_COUNTS_OFFSET]
+ test rdx,rdx
+ jz .legacy_counts
+ mov rcx,[rdx+rax*8]
+ mov [rsp+32],rcx
+ mov rdx,[r12+NEBOC_CODEGEN_BRANCH_B_COUNTS_OFFSET]
+ test rdx,rdx
+ jz .legacy_counts
+ mov rcx,[rdx+rax*8]
+ mov [rsp+48],rcx
+ jmp .snapshots_ready
+.legacy_counts:
+ cmp qword [rsp+56],0
+ jne .ast
+ mov rax,[r12+NEBOC_CODEGEN_BRANCH_A_COUNT_OFFSET]
+ mov [rsp+32],rax
+ mov rax,[r12+NEBOC_CODEGEN_BRANCH_B_COUNT_OFFSET]
+ mov [rsp+48],rax
+.snapshots_ready:
  mov rax,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_SYMBOLS_OFFSET]
  mov [rsp],rax
  mov rax,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_SYMBOL_COUNT_OFFSET]
@@ -998,9 +1087,9 @@ g05c_emit_if:
  mov rdi,r12
  mov rsi,rbx
  lea rdx,[r14+1]
- mov rax,[r12+NEBOC_CODEGEN_BRANCH_A_OFFSET]
+ mov rax,[rsp+24]
  mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_SYMBOLS_OFFSET],rax
- mov rax,[r12+NEBOC_CODEGEN_BRANCH_A_COUNT_OFFSET]
+ mov rax,[rsp+32]
  mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_SYMBOL_COUNT_OFFSET],rax
  call g05c_emit_block
  mov [rsp+16],rax
@@ -1055,12 +1144,32 @@ g05c_emit_if:
  jz .no_else
  mov rdi,r12
  mov rsi,rbx
- lea rdx,[r14+1]
- mov rax,[r12+NEBOC_CODEGEN_BRANCH_B_OFFSET]
+ call g05c_node_ptr
+ test rax,rax
+ jz .ast
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_BLOCK
+ je .else_block
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IF_STMT
+ jne .ast
+ mov rax,[rsp+40]
  mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_SYMBOLS_OFFSET],rax
- mov rax,[r12+NEBOC_CODEGEN_BRANCH_B_COUNT_OFFSET]
+ mov rax,[rsp+48]
  mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_SYMBOL_COUNT_OFFSET],rax
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[r14+1]
+ call g05c_emit_if
+ jmp .else_emitted
+.else_block:
+ mov rax,[rsp+40]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_SYMBOLS_OFFSET],rax
+ mov rax,[rsp+48]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_SYMBOL_COUNT_OFFSET],rax
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[r14+1]
  call g05c_emit_block
+.else_emitted:
  mov [rsp+16],rax
  mov rax,[rsp]
  mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_SYMBOLS_OFFSET],rax
@@ -1304,6 +1413,10 @@ g05c_emit_expr:
  jmp .done
 .binary:
  mov rax,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ cmp rax,NEBOC_TOKEN_AND_AND
+ je .logical_and
+ cmp rax,NEBOC_TOKEN_OR_OR
+ je .logical_or
  cmp rax,NEBOC_TOKEN_PLUS
  je .binary_supported
  cmp rax,NEBOC_TOKEN_MINUS
@@ -1315,9 +1428,9 @@ g05c_emit_expr:
  cmp rax,NEBOC_TOKEN_PERCENT
  je .binary_supported
  cmp rax,NEBOC_TOKEN_EQUAL_EQUAL
- je .binary_supported
+ je .binary_equality_probe
  cmp rax,NEBOC_TOKEN_BANG_EQUAL
- je .binary_supported
+ je .binary_equality_probe
  cmp rax,NEBOC_TOKEN_LESS
  je .binary_supported
  cmp rax,NEBOC_TOKEN_LESS_EQUAL
@@ -1326,6 +1439,221 @@ g05c_emit_expr:
  je .binary_supported
  cmp rax,NEBOC_TOKEN_GREATER_EQUAL
  jne .unsupported
+ jmp .binary_supported
+.logical_and:
+ mov rbx,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rbx,rbx
+ jz .ast
+ mov rdi,r12
+ mov rsi,rbx
+ call g05c_node_ptr
+ test rax,rax
+ jz .ast
+ mov rax,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rax,rax
+ jz .ast
+ mov [rsp+8],rax
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[r14+1]
+ call g05c_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel logical_and_branch]
+ mov edx,logical_and_branch_len
+ call g05c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_WRITER_OFFSET]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel newline]
+ mov edx,newline_len
+ call g05c_append
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ mov rsi,[rsp+8]
+ lea rdx,[r14+1]
+ call g05c_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel logical_bool_canon_done]
+ mov edx,logical_bool_canon_done_len
+ call g05c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_WRITER_OFFSET]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel logical_false_label]
+ mov edx,logical_false_label_len
+ call g05c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_WRITER_OFFSET]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel logical_false_body]
+ mov edx,logical_false_body_len
+ call g05c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_WRITER_OFFSET]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel logical_label_end]
+ mov edx,logical_label_end_len
+ call g05c_append
+ jmp .done
+.logical_or:
+ mov rbx,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rbx,rbx
+ jz .ast
+ mov rdi,r12
+ mov rsi,rbx
+ call g05c_node_ptr
+ test rax,rax
+ jz .ast
+ mov rax,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rax,rax
+ jz .ast
+ mov [rsp+8],rax
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[r14+1]
+ call g05c_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel logical_or_branch]
+ mov edx,logical_or_branch_len
+ call g05c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_WRITER_OFFSET]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel newline]
+ mov edx,newline_len
+ call g05c_append
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ mov rsi,[rsp+8]
+ lea rdx,[r14+1]
+ call g05c_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel logical_bool_canon_done]
+ mov edx,logical_bool_canon_done_len
+ call g05c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_WRITER_OFFSET]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel logical_true_label]
+ mov edx,logical_true_label_len
+ call g05c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_WRITER_OFFSET]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel logical_true_body]
+ mov edx,logical_true_body_len
+ call g05c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_WRITER_OFFSET]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,r12
+ lea rsi,[rel logical_label_end]
+ mov edx,logical_label_end_len
+ call g05c_append
+ jmp .done
+.binary_equality_probe:
+ mov [rsp],rax
+ mov rbx,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rbx,rbx
+ jz .ast
+ mov rdi,r12
+ mov rsi,rbx
+ call g05c_receiver_type
+ cmp eax,NEBOC_BIND_TYPE_TEXT
+ jne .binary_supported
+ mov rdi,r12
+ mov rsi,rbx
+ call g05c_node_ptr
+ test rax,rax
+ jz .ast
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rsi,rsi
+ jz .ast
+ mov [rsp+8],rsi
+ mov rdi,r12
+ call g05c_receiver_type
+ cmp eax,NEBOC_BIND_TYPE_TEXT
+ jne .unsupported
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[r14+1]
+ call g05c_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel cmp_prefix]
+ mov edx,cmp_prefix_len
+ call g05c_append
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ mov rsi,[rsp+8]
+ lea rdx,[r14+1]
+ call g05c_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel text_equal_call]
+ mov edx,text_equal_call_len
+ call g05c_append
+ test eax,eax
+ jnz .done
+ cmp qword [rsp],NEBOC_TOKEN_BANG_EQUAL
+ jne .done
+ mov rdi,r12
+ lea rsi,[rel not_rax]
+ mov edx,not_rax_len
+ call g05c_append
+ jmp .done
 .binary_supported:
  mov rbx,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  test rbx,rbx
@@ -1507,6 +1835,13 @@ g05c_emit_expr:
  jnz .method_console
  mov rdi,r12
  mov rsi,rbx
+ lea rdx,[rel n_scan]
+ mov ecx,n_scan_len
+ call g05c_token_match
+ test eax,eax
+ jnz .method_scan
+ mov rdi,r12
+ mov rsi,rbx
  lea rdx,[rel n_from_byte]
  mov ecx,n_from_byte_len
  call g05c_token_match
@@ -1670,6 +2005,42 @@ g05c_emit_expr:
  lea rsi,[rel call_console_publish_int]
  mov edx,call_console_publish_int_len
 .method_console_emit:
+ call g05c_append
+ jmp .done
+.method_scan:
+ mov rdi,r12
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g05c_receiver_type
+ cmp eax,NEBOC_BIND_TYPE_TEXT
+ je .method_scan_stdin
+ cmp eax,NEBOC_BIND_TYPE_CONSOLE
+ jne .unsupported
+ mov ebx,2
+ jmp .method_scan_receiver
+.method_scan_stdin:
+ mov ebx,1
+.method_scan_receiver:
+ mov rdi,r12
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ lea rdx,[r14+1]
+ call g05c_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ mov rsi,r13
+ call g05c_emit_scan_ids
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ cmp ebx,1
+ jne .method_scan_console_emit
+ lea rsi,[rel call_scan_stdin]
+ mov edx,call_scan_stdin_len
+ call g05c_append
+ jmp .done
+.method_scan_console_emit:
+ lea rsi,[rel call_scan_console_handle]
+ mov edx,call_scan_console_handle_len
  call g05c_append
  jmp .done
 .method_bytes_constructor:
@@ -2271,6 +2642,8 @@ g05c_receiver_type:
  je .text
  cmp rcx,NEBOC_AST_IDENTIFIER_EXPR
  je .identifier
+ cmp rcx,NEBOC_AST_CALL_EXPR
+ je .call
  cmp rcx,NEBOC_AST_BINARY_EXPR
  jne .none
  mov rcx,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
@@ -2295,15 +2668,92 @@ g05c_receiver_type:
  jz .none
  mov rax,[rax+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SYMBOL_TYPE_OFFSET]
  jmp .done
+.call:
+ test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
+ jz .call_method
+ ; Semantic validation has already proved constructor arity and argument type.
+ ; Preserve that type through codegen receiver classification for the public
+ ; Text(...).console() composition route without widening other constructors.
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ lea rdx,[rel n_text]
+ mov ecx,n_text_len
+ call g05c_token_match
+ test eax,eax
+ jnz .text
+ jmp .none
+.call_method:
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ lea rdx,[rel n_console]
+ mov ecx,n_console_len
+ call g05c_token_match
+ test eax,eax
+ jnz .console
+ jmp .none
 .int: mov eax,NEBOC_BIND_TYPE_INT
  jmp .done
 .bool: mov eax,NEBOC_BIND_TYPE_BOOL
  jmp .done
 .text: mov eax,NEBOC_BIND_TYPE_TEXT
  jmp .done
+.console: mov eax,NEBOC_BIND_TYPE_CONSOLE
+ jmp .done
 .none: xor eax,eax
 .done:
  add rsp,8
+ pop r12
+ pop rbx
+ ret
+
+; request*, stable AST node id -> deterministic nonzero BindingId, PendingId,
+; and source order for the canonical Scan route.  The local emitter aligns its
+; nested writer calls explicitly; the outer frame is aligned before each call.
+g05c_emit_scan_ids:
+ push rbx
+ push r12
+ push r13
+ mov r12,rdi
+ mov r13,rsi
+ test r13,r13
+ jz .bad
+ lea rbx,[rel scan_mov_esi]
+ mov edx,scan_mov_esi_len
+ call .emit_one
+ test eax,eax
+ jnz .done
+ lea rbx,[rel scan_mov_edx]
+ mov edx,scan_mov_edx_len
+ call .emit_one
+ test eax,eax
+ jnz .done
+ lea rbx,[rel scan_mov_ecx]
+ mov edx,scan_mov_ecx_len
+ call .emit_one
+ jmp .done
+.emit_one:
+ sub rsp,8
+ mov rdi,r12
+ mov rsi,rbx
+ call g05c_append
+ test eax,eax
+ jnz .emit_done
+ mov rdi,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_WRITER_OFFSET]
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .emit_done
+ mov rdi,r12
+ lea rsi,[rel newline]
+ mov edx,newline_len
+ call g05c_append
+.emit_done:
+ add rsp,8
+ ret
+.bad:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.done:
+ pop r13
  pop r12
  pop rbx
  ret

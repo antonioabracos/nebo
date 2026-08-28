@@ -1,0 +1,51 @@
+%ifndef NEBO_TENSOR_I64_PUBLIC_INC
+%define NEBO_TENSOR_I64_PUBLIC_INC 1
+
+%include "compiler/semantic/tensor/tensor_contract.inc"
+
+%define NEBO_TENSOR_I64_PUBLIC_MAX_RANK 3
+%define NEBO_TENSOR_I64_PUBLIC_MAX_DIMENSION 8
+%define NEBO_TENSOR_I64_PUBLIC_MAX_ELEMENTS 64
+%define NEBO_TENSOR_I64_PUBLIC_MAX_BYTES 512
+%define NEBO_TENSOR_I64_NBT1_HEADER_BYTES 144
+%define NEBO_TENSOR_I64_NBT1_MAX_BYTES 656
+%define NEBO_TENSOR_I64_PUBLIC_OWNER_FLAGS (NEBO_TENSOR_FLAG_OWNED|NEBO_TENSOR_FLAG_CONTIGUOUS)
+
+%ifndef NEBO_TENSOR_I64_PUBLIC_IMPLEMENTATION
+extern nebo_tensor_i64_owner_init
+extern nebo_tensor_i64_owner_validate
+extern nebo_tensor_i64_owner_invalidate
+extern nebo_tensor_i64_rank
+extern nebo_tensor_i64_dimension
+extern nebo_tensor_i64_element_count
+extern nebo_tensor_i64_stride
+extern nebo_tensor_i64_is_contiguous
+extern nebo_tensor_i64_zeros
+extern nebo_tensor_i64_filled
+extern nebo_tensor_i64_from_buffer
+extern nebo_tensor_i64_at
+extern nebo_tensor_i64_set
+extern nebo_tensor_i64_narrow_view
+extern nebo_tensor_i64_select_view
+extern nebo_tensor_i64_view_validate_owner
+extern nebo_tensor_i64_view_at
+extern nebo_tensor_i64_reshape_view
+extern nebo_tensor_i64_permute_view
+extern nebo_tensor_i64_transpose_view
+extern nebo_tensor_i64_broadcast_view
+extern nebo_tensor_i64_add
+extern nebo_tensor_i64_multiply
+extern nebo_tensor_i64_sum_axes
+extern nebo_tensor_i64_sum_all
+extern nebo_tensor_i64_min
+extern nebo_tensor_i64_max
+extern nebo_tensor_i64_contiguous
+extern nebo_tensor_i64_borrow_sum
+extern nebo_tensor_i64_sret_filled
+extern nebo_tensor_i64_serialized_size
+extern nebo_tensor_i64_serialize
+extern nebo_tensor_i64_deserialize
+extern nebo_tensor_i64_headless_shape
+%endif
+
+%endif

@@ -1,0 +1,4 @@
+start() {
+    Pattern<Int> 19.pattern;
+    pattern.value();
+}

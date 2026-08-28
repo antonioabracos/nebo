@@ -49,8 +49,14 @@
 %define NEBOC_ABI_CALLER_SAVED_MASK_V0 2047
 %define NEBOC_ABI_CALLEE_SAVED_MASK_V0 63
 %define NEBOC_ABI_MAX_PARAMETERS 16
-%define NEBOC_ABI_MAX_LOCAL_SLOTS 32
-%define NEBOC_ABI_MAX_RUNTIME_CALLS 8
+; C13-PRC-A3 compiler-private whole-program start-frame bound.  A composed
+; atlas may retain one scalar slot per authenticated public value while the
+; emitted System V calling convention and signature record layout remain
+; unchanged.  Match the selected bounded 256-owner architecture.
+%define NEBOC_ABI_MAX_LOCAL_SLOTS 256
+; C13-PRC-A3 compiler-private per-owner call-plan ceiling.  This does not
+; alter the System V call ABI or the frozen signature record layout.
+%define NEBOC_ABI_MAX_RUNTIME_CALLS 256
 %define NEBOC_ABI_REGISTER_PARAMETER_COUNT 6
 
 %define NEBOC_ABI_RETURN_VOID 0

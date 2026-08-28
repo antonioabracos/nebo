@@ -32,10 +32,15 @@
 %define NEBOC_CLI_STATE_QWORDS 8
 
 %define NEBOC_CLI_SOURCE_CAPACITY 1048576
-%define NEBOC_CLI_TOKEN_CAPACITY 4096
-%define NEBOC_CLI_AST_CAPACITY 4096
+; C13-PRC-A3: these are compiler-private whole-program arenas.  The old 4096
+; ceilings were inherited from single-owner fixtures and rejected the public
+; callable atlas at owner prefix 42.  Keep the already-public 1 MiB source
+; bound and use finite arenas large enough for the selected 256-owner program
+; composition contract.  Public source syntax and emitted ABI are unchanged.
+%define NEBOC_CLI_TOKEN_CAPACITY 16384
+%define NEBOC_CLI_AST_CAPACITY 32768
 %define NEBOC_CLI_LITERAL_CAPACITY 65536
-%define NEBOC_CLI_ASM_CAPACITY 65536
+%define NEBOC_CLI_ASM_CAPACITY 1048576
 %define NEBOC_CLI_PATH_CAPACITY 4096
 %define NEBOC_CLI_MAX_ARGUMENTS 64
 

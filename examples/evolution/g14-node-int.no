@@ -1,0 +1,4 @@
+start() {
+    Node<Int> 14.node;
+    node.value();
+}

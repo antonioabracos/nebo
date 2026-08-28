@@ -1,0 +1,4 @@
+start() {
+    Task<Int> 20.task;
+    task.value();
+}

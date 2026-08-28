@@ -492,11 +492,19 @@ nom_parse_enum:
 ; R15 is first token after declaration. Scan bounded construction/observer.
 nom_scan_operations:
  mov r14,r15
+ xor r13d,r13d                         ; exact owner-chain active in statement
  mov qword [r12+NEBOC_NOM_PAYLOAD_TYPE_OFFSET],0
  mov qword [r12+NEBOC_NOM_PAYLOAD_VALUE_OFFSET],0
 .scan:
  cmp r14,[r12+NEBOC_NOM_TOKEN_COUNT_OFFSET]
  jae .finish
+ mov rax,r14
+ mov edi,NEBOC_TOKEN_SEMICOLON
+ call nom_kind_is
+ test eax,eax
+ jz .statement_active_ready
+ xor r13d,r13d
+.statement_active_ready:
  mov rax,r14
  lea rsi,[rel n_reflection]
  mov edx,n_reflection_len
@@ -515,6 +523,8 @@ nom_scan_operations:
  call nom_token_match
  test eax,eax
  jz .unwrap
+ test r13,r13
+ jz .unwrap
  or qword [r12+NEBOC_NOM_FLAGS_OFFSET],NEBOC_NOM_FLAG_OP_SIZEOF
 .unwrap:
  mov rax,r14
@@ -523,6 +533,10 @@ nom_scan_operations:
  call nom_token_match
  test eax,eax
  jz .discriminant
+ test r13,r13
+ jz .discriminant
+ cmp qword [r12+NEBOC_NOM_KIND_OFFSET],NEBOC_NOM_KIND_ENUM
+ je .discriminant
  or qword [r12+NEBOC_NOM_FLAGS_OFFSET],NEBOC_NOM_FLAG_OP_UNWRAP
 .discriminant:
  mov rax,r14
@@ -531,6 +545,10 @@ nom_scan_operations:
  call nom_token_match
  test eax,eax
  jz .match
+ test r13,r13
+ jz .match
+ cmp qword [r12+NEBOC_NOM_KIND_OFFSET],NEBOC_NOM_KIND_ENUM
+ jne .match
  or qword [r12+NEBOC_NOM_FLAGS_OFFSET],NEBOC_NOM_FLAG_OP_DISCRIMINANT
 .match:
  mov rax,r14
@@ -538,16 +556,13 @@ nom_scan_operations:
  call nom_kind_is
  test eax,eax
  jz .literal
+ cmp qword [r12+NEBOC_NOM_KIND_OFFSET],NEBOC_NOM_KIND_ENUM
+ jne .literal
  or qword [r12+NEBOC_NOM_FLAGS_OFFSET],NEBOC_NOM_FLAG_OP_MATCH
 .literal:
- cmp qword [r12+NEBOC_NOM_PAYLOAD_TYPE_OFFSET],0
- jne .construction
- mov rax,r14
- call nom_literal_at
- test eax,eax
- jz .construction
- mov [r12+NEBOC_NOM_PAYLOAD_TYPE_OFFSET],rax
- mov [r12+NEBOC_NOM_PAYLOAD_VALUE_OFFSET],rdx
+ ; Payload evidence is accepted only from the exact nominal construction
+ ; below.  An unrelated literal elsewhere in a multi-owner Program cannot
+ ; define this owner's value identity.
 .construction:
  mov rax,r14
  call nom_token_hash
@@ -565,11 +580,24 @@ nom_scan_operations:
  call nom_kind_is
  test eax,eax
  jz .next
+ mov r13d,1
  or qword [r12+NEBOC_NOM_FLAGS_OFFSET],NEBOC_NOM_FLAG_CONSTRUCTED
+ cmp qword [r12+NEBOC_NOM_PAYLOAD_TYPE_OFFSET],0
+ jne .next
+ lea rax,[r14+2]
+ call nom_literal_at
+ test eax,eax
+ jz .next
+ mov [r12+NEBOC_NOM_PAYLOAD_TYPE_OFFSET],rax
+ mov [r12+NEBOC_NOM_PAYLOAD_VALUE_OFFSET],rdx
  jmp .next
 .enum_construct:
  cmp qword [r12+NEBOC_NOM_KIND_OFFSET],NEBOC_NOM_KIND_ENUM
- jne .next
+ je .enum_owner_construct
+ mov r13d,1
+ jmp .next
+.enum_owner_construct:
+ mov r13d,1
  lea rax,[r14+2]
  lea rsi,[rel n_sizeof]
  mov edx,n_sizeof_len

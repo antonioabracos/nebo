@@ -1,0 +1,26 @@
+start(){
+    // CALLABLE-000005-V001
+    Buffer.zeroed(1).atlasV000017Buffer;
+        atlasV000017Buffer.at(0).atlasObserved000017;
+    // CALLABLE-000006-V001
+    Buffer.zeroed(0).atlasV000018Buffer;
+        atlasV000018Buffer.capacity().atlasObserved000018;
+    // CALLABLE-000007-V001
+    Buffer.zeroed(4).atlasV000019Buffer;
+        atlasV000019Buffer.set(0, 77).atlasV000019Previous;
+        atlasV000019Buffer.clear().atlasV000019Cleared;
+        atlasV000019Buffer.length().atlasObserved000019;
+    // CALLABLE-000007-V002
+    Buffer.zeroed(4).atlasV000020Buffer;
+        atlasV000020Buffer.clear().atlasObserved000020;
+    // CALLABLE-000008-V001
+    Buffer.zeroed(4).atlasV000021Buffer;
+        atlasV000021Buffer.drop().atlasV000021Done;
+        0.atlasObserved000021;
+    // CALLABLE-000009-V001
+    Buffer.zeroed(4).atlasV000022Buffer;
+        atlasV000022Buffer.set(3, 99).atlasV000022Previous;
+        atlasV000022Buffer.freeze().atlasV000022Bytes;
+        atlasV000022Bytes.at(3).atlasObserved000022;
+    0.return;
+}

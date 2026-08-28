@@ -127,6 +127,16 @@ NEBOC_ABI_FUNCTION neboc_lexer_scan
  jb .emit
  cmp r10d,NEBOC_TOKEN_KW_GENERIC
  ja .emit
+ cmp r10d,NEBOC_TOKEN_KW_FOR
+ je .emit
+ cmp r10d,NEBOC_TOKEN_KW_WHILE
+ je .emit
+ cmp r10d,NEBOC_TOKEN_KW_LOOP
+ je .emit
+ cmp r10d,NEBOC_TOKEN_KW_BREAK
+ je .emit
+ cmp r10d,NEBOC_TOKEN_KW_CONTINUE
+ je .emit
  mov r9d,NEBOC_TOKEN_FLAG_DEFERRED
  jmp .emit
 

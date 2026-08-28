@@ -1,0 +1,17 @@
+{
+  "format": "NEBO-TOOLING-CONFIG-SCHEMAS-v1",
+  "formatter": {
+    "write": {
+      "default": false,
+      "type": "boolean"
+    }
+  },
+  "linter": {
+    "machine": "JSON"
+  },
+  "network": false,
+  "refactor": {
+    "preview_default": true,
+    "transactional_apply": true
+  }
+}

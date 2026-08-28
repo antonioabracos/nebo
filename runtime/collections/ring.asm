@@ -68,6 +68,8 @@ NEBOC_ABI_FUNCTION neboc_ring_init
 NEBOC_ABI_FUNCTION neboc_ring_validate
  test rdi,rdi
  jz .validate_invalid
+ test rdi,7
+ jnz .validate_invalid
  mov rax,[rdi+NEBOC_LIST_FLAGS_OFFSET]
  mov rcx,NEBOC_RING_QUEUE_MAGIC
  cmp rax,rcx
@@ -91,6 +93,10 @@ NEBOC_ABI_FUNCTION neboc_ring_validate
  je .validate_source
  cmp qword [rdi+NEBOC_LIST_ELEMENT_SIZE_OFFSET],0
  je .validate_source
+ mov rax,[rdi+NEBOC_LIST_GENERATION_OFFSET]
+ mov rdx,rax
+ btr rdx,63
+ jz .validate_source
  xor eax,eax
  ret
 .validate_source:
@@ -111,6 +117,11 @@ NEBOC_ABI_FUNCTION neboc_ring_push_back
  call neboc_ring_validate
  test eax,eax
  jnz .pb_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .pb_borrow
+ mov rax,NEBOC_LIST_GENERATION_MASK
+ cmp [r12+NEBOC_LIST_GENERATION_OFFSET],rax
+ jae .pb_full
  mov rax,[r12+NEBOC_LIST_LENGTH_OFFSET]
  cmp rax,[r12+NEBOC_LIST_CAPACITY_OFFSET]
  jae .pb_full
@@ -134,6 +145,10 @@ NEBOC_ABI_FUNCTION neboc_ring_push_back
  jmp .pb_done
 .pb_full:
  mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+.pb_borrow:
+ test eax,eax
+ jnz .pb_done
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
 .pb_done:
  pop r13
  pop r12
@@ -153,6 +168,11 @@ NEBOC_ABI_FUNCTION neboc_ring_push_front
  call neboc_ring_validate
  test eax,eax
  jnz .pf_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .pf_borrow
+ mov rax,NEBOC_LIST_GENERATION_MASK
+ cmp [r12+NEBOC_LIST_GENERATION_OFFSET],rax
+ jae .pf_full
  mov rax,NEBOC_RING_DEQUE_MAGIC
  cmp [r12+NEBOC_LIST_FLAGS_OFFSET],rax
  jne .pf_invalid_source
@@ -181,6 +201,10 @@ NEBOC_ABI_FUNCTION neboc_ring_push_front
  jmp .pf_done
 .pf_invalid_source:
  mov eax,NEBOC_STATUS_INVALID_SOURCE
+.pf_borrow:
+ test eax,eax
+ jnz .pf_done
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
 .pf_done:
  pop r13
  pop r12
@@ -201,12 +225,16 @@ NEBOC_ABI_FUNCTION neboc_ring_pop_front
  mov r12,rdi
  mov r13,rsi
  mov r14,rdx
- mov qword [r14],0
  call neboc_ring_validate
  test eax,eax
  jnz .popf_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .popf_borrow
  cmp qword [r12+NEBOC_LIST_LENGTH_OFFSET],0
- je .popf_ok
+ je .popf_empty
+ mov rax,NEBOC_LIST_GENERATION_MASK
+ cmp [r12+NEBOC_LIST_GENERATION_OFFSET],rax
+ jae .popf_limit
  mov rax,[r12+NEBOC_RING_HEAD_OFFSET]
  imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
  mov rsi,[r12+NEBOC_LIST_DATA_OFFSET]
@@ -232,6 +260,17 @@ NEBOC_ABI_FUNCTION neboc_ring_pop_front
  mov qword [r14],1
 .popf_ok:
  xor eax,eax
+ jmp .popf_done
+.popf_empty:
+ mov qword [r14],0
+ jmp .popf_ok
+.popf_borrow:
+ test eax,eax
+ jnz .popf_done
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .popf_done
+.popf_limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
 .popf_done:
  pop r14
  pop r13
@@ -253,15 +292,19 @@ NEBOC_ABI_FUNCTION neboc_ring_pop_back
  mov r12,rdi
  mov r13,rsi
  mov r14,rdx
- mov qword [r14],0
  call neboc_ring_validate
  test eax,eax
  jnz .popb_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .popb_borrow
  mov rax,NEBOC_RING_DEQUE_MAGIC
  cmp [r12+NEBOC_LIST_FLAGS_OFFSET],rax
  jne .popb_source
  cmp qword [r12+NEBOC_LIST_LENGTH_OFFSET],0
- je .popb_ok
+ je .popb_empty
+ mov rax,NEBOC_LIST_GENERATION_MASK
+ cmp [r12+NEBOC_LIST_GENERATION_OFFSET],rax
+ jae .popb_limit
  mov rax,[r12+NEBOC_RING_TAIL_OFFSET]
  test rax,rax
  jnz .popb_dec
@@ -287,8 +330,18 @@ NEBOC_ABI_FUNCTION neboc_ring_pop_back
 .popb_ok:
  xor eax,eax
  jmp .popb_done
+.popb_empty:
+ mov qword [r14],0
+ jmp .popb_ok
 .popb_source:
  mov eax,NEBOC_STATUS_INVALID_SOURCE
+.popb_borrow:
+ test eax,eax
+ jnz .popb_done
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .popb_done
+.popb_limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
 .popb_done:
  pop r14
  pop r13
@@ -317,10 +370,10 @@ ring_peek:
  mov r13,rsi
  mov r14,rdx
  mov r15,rcx
- mov qword [r14],0
  call neboc_ring_validate
  test eax,eax
  jnz .peek_done
+ mov qword [r14],0
  cmp qword [r12+NEBOC_LIST_LENGTH_OFFSET],0
  je .peek_ok
  test r15,r15
@@ -360,6 +413,8 @@ NEBOC_ABI_FUNCTION neboc_ring_clear
  call neboc_ring_validate
  test eax,eax
  jnz .clear_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .clear_borrow
  mov rcx,[r12+NEBOC_LIST_CAPACITY_OFFSET]
  imul rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
  mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
@@ -367,6 +422,9 @@ NEBOC_ABI_FUNCTION neboc_ring_clear
  rep stosb
  cmp qword [r12+NEBOC_LIST_LENGTH_OFFSET],0
  je .clear_reset
+ mov rax,NEBOC_LIST_GENERATION_MASK
+ cmp [r12+NEBOC_LIST_GENERATION_OFFSET],rax
+ jae .clear_limit
  inc qword [r12+NEBOC_LIST_GENERATION_OFFSET]
 .clear_reset:
  mov qword [r12+NEBOC_LIST_LENGTH_OFFSET],0
@@ -376,4 +434,91 @@ NEBOC_ABI_FUNCTION neboc_ring_clear
 .clear_done:
  pop r12
  ret
+.clear_borrow:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .clear_done
+.clear_limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ jmp .clear_done
+
+; Validated scalar queries shared by Queue and Deque facades.
+NEBOC_ABI_FUNCTION neboc_ring_length
+ test rsi,rsi
+ jz .length_invalid
+ push r12
+ mov r12,rsi
+ call neboc_ring_validate
+ test eax,eax
+ jnz .length_done
+ mov rax,[rdi+NEBOC_LIST_LENGTH_OFFSET]
+ mov [r12],rax
+ xor eax,eax
+.length_done:
+ pop r12
+ ret
+.length_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+NEBOC_ABI_FUNCTION neboc_ring_is_empty
+ test rsi,rsi
+ jz .empty_invalid
+ push r12
+ mov r12,rsi
+ call neboc_ring_validate
+ test eax,eax
+ jnz .empty_done
+ xor eax,eax
+ cmp qword [rdi+NEBOC_LIST_LENGTH_OFFSET],0
+ sete al
+ mov [r12],rax
+ xor eax,eax
+.empty_done:
+ pop r12
+ ret
+.empty_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+; Queue is a closed FIFO facade; it introduces no storage or ownership layer.
+NEBOC_ABI_FUNCTION neboc_queue_init
+ mov r9d,NEBOC_RING_KIND_QUEUE
+ jmp neboc_ring_init
+NEBOC_ABI_FUNCTION neboc_queue_enqueue
+ jmp neboc_ring_push_back
+NEBOC_ABI_FUNCTION neboc_queue_dequeue
+ jmp neboc_ring_pop_front
+NEBOC_ABI_FUNCTION neboc_queue_front
+ jmp neboc_ring_peek_front
+NEBOC_ABI_FUNCTION neboc_queue_back
+ jmp neboc_ring_peek_back
+NEBOC_ABI_FUNCTION neboc_queue_length
+ jmp neboc_ring_length
+NEBOC_ABI_FUNCTION neboc_queue_is_empty
+ jmp neboc_ring_is_empty
+NEBOC_ABI_FUNCTION neboc_queue_clear
+ jmp neboc_ring_clear
+
+; Deque is the same bounded ring with both ends enabled.
+NEBOC_ABI_FUNCTION neboc_deque_init
+ mov r9d,NEBOC_RING_KIND_DEQUE
+ jmp neboc_ring_init
+NEBOC_ABI_FUNCTION neboc_deque_push_front
+ jmp neboc_ring_push_front
+NEBOC_ABI_FUNCTION neboc_deque_push_back
+ jmp neboc_ring_push_back
+NEBOC_ABI_FUNCTION neboc_deque_pop_front
+ jmp neboc_ring_pop_front
+NEBOC_ABI_FUNCTION neboc_deque_pop_back
+ jmp neboc_ring_pop_back
+NEBOC_ABI_FUNCTION neboc_deque_front
+ jmp neboc_ring_peek_front
+NEBOC_ABI_FUNCTION neboc_deque_back
+ jmp neboc_ring_peek_back
+NEBOC_ABI_FUNCTION neboc_deque_length
+ jmp neboc_ring_length
+NEBOC_ABI_FUNCTION neboc_deque_is_empty
+ jmp neboc_ring_is_empty
+NEBOC_ABI_FUNCTION neboc_deque_clear
+ jmp neboc_ring_clear
 section .note.GNU-stack noalloc noexec nowrite progbits

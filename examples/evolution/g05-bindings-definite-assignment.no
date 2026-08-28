@@ -1,0 +1,19 @@
+start() {
+    Int.answer;
+    if (true) {
+        Int(42).answer;
+    } else {
+        42.answer;
+    }
+    answer;
+
+    Bool.ready;
+    true.ready;
+    ready;
+
+    Float.ratio;
+    1.5.ratio;
+    ratio;
+
+    0;
+}

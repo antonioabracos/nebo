@@ -12,9 +12,93 @@ rule nasm
   description = NASM $in
   restat = 1
 
+rule nasm_practical
+  command = mkdir -p $$(dirname $out) && $nasm $nasm_flags -DNEBO_RUNTIME_PRACTICAL_IO=1 -o $out $in
+  description = NASM-PRACTICAL $in
+  restat = 1
+
+rule nasm_typography_baseline
+  command = mkdir -p $$(dirname $out) && $nasm $nasm_flags -DNEBO_LIVE_TYPOGRAPHY_PROFILE=0 -o $out $in
+  description = NASM-TYPOGRAPHY-BASELINE $in
+  restat = 1
+
+rule nasm_typography_compact
+  command = mkdir -p $$(dirname $out) && $nasm $nasm_flags -DNEBO_LIVE_TYPOGRAPHY_PROFILE=1 -o $out $in
+  description = NASM-TYPOGRAPHY-A $in
+  restat = 1
+
+rule nasm_typography_balanced
+  command = mkdir -p $$(dirname $out) && $nasm $nasm_flags -DNEBO_LIVE_TYPOGRAPHY_PROFILE=2 -o $out $in
+  description = NASM-TYPOGRAPHY-B $in
+  restat = 1
+
+rule nasm_typography_crisp
+  command = mkdir -p $$(dirname $out) && $nasm $nasm_flags -DNEBO_LIVE_TYPOGRAPHY_PROFILE=3 -o $out $in
+  description = NASM-TYPOGRAPHY-C $in
+  restat = 1
+
+rule nasm_typography_professional
+  command = mkdir -p $$(dirname $out) && $nasm $nasm_flags -DNEBO_LIVE_TYPOGRAPHY_PROFILE=4 -o $out $in
+  description = NASM-TYPOGRAPHY-D $in
+  restat = 1
+
+rule nasm_typography_professional_d1
+  command = mkdir -p $$(dirname $out) && $nasm $nasm_flags -DNEBO_LIVE_TYPOGRAPHY_PROFILE=5 -o $out $in
+  description = NASM-TYPOGRAPHY-D1 $in
+  restat = 1
+
+rule nasm_typography_professional_d2
+  command = mkdir -p $$(dirname $out) && $nasm $nasm_flags -DNEBO_LIVE_TYPOGRAPHY_PROFILE=6 -o $out $in
+  description = NASM-TYPOGRAPHY-D2 $in
+  restat = 1
+
+rule nasm_typography_palette_a
+  command = mkdir -p $$(dirname $out) && $nasm $nasm_flags -DNEBO_LIVE_TYPOGRAPHY_PROFILE=6 -DNEBO_LIVE_CONTENT_BACKGROUND_COLOR=0xff151a20 -o $out $in
+  description = NASM-PALETTE-A $in
+  restat = 1
+
+rule nasm_typography_palette_b
+  command = mkdir -p $$(dirname $out) && $nasm $nasm_flags -DNEBO_LIVE_TYPOGRAPHY_PROFILE=6 -DNEBO_LIVE_CONTENT_BACKGROUND_COLOR=0xff1b1e23 -o $out $in
+  description = NASM-PALETTE-B $in
+  restat = 1
+
+rule nasm_typography_palette_c
+  command = mkdir -p $$(dirname $out) && $nasm $nasm_flags -DNEBO_LIVE_TYPOGRAPHY_PROFILE=6 -DNEBO_LIVE_CONTENT_BACKGROUND_COLOR=0xff20242a -o $out $in
+  description = NASM-PALETTE-C $in
+  restat = 1
+
+rule nasm_typography_palette_d
+  command = mkdir -p $$(dirname $out) && $nasm $nasm_flags -DNEBO_LIVE_TYPOGRAPHY_PROFILE=6 -DNEBO_LIVE_CONTENT_BACKGROUND_COLOR=0xff18212c -o $out $in
+  description = NASM-PALETTE-D $in
+  restat = 1
+
+rule nasm_visual_unified
+  command = mkdir -p $$(dirname $out) && $nasm $nasm_flags -DNEBO_LIVE_TYPOGRAPHY_PROFILE=7 -DNEBO_LIVE_CONTENT_BACKGROUND_COLOR=0xff1b1e23 -o $out $in
+  description = NASM-VISUAL-UNIFIED $in
+  restat = 1
+
+rule verify_professional_atlas
+  command = mkdir -p $$(dirname $out) && python3 -B scripts/console-visual-polish/generate-professional-atlas.py --font third_party/fonts/adobe-source-code-pro/SourceCodePro-Regular.ttf --license third_party/fonts/adobe-source-code-pro/LICENSE.md --output runtime/console/live/nebo_console_mono_atlas.inc --check > $out
+  description = VERIFY-NEBO-CONSOLE-MONO-ATLAS
+  restat = 1
+
+rule relocatable_link
+  command = mkdir -p $$(dirname $out) && $ld -m elf_x86_64 -r -z noexecstack --build-id=none -o $out $in
+  description = LD-RELOC $out
+  restat = 1
+
 rule link
   command = mkdir -p $$(dirname $out) && $ld $ld_flags -o $out $in
   description = LD $out
+  restat = 1
+
+rule c04_f07_cli_validation
+  command = bash tests/c04/f07/validate-cli.sh > $out
+  description = C04-F07-CLI-VALIDATION
+
+rule false_green_buffer_route_regression
+  command = mkdir -p $$(dirname $out) && bash tests/regressions/false-green-buffer-route/validate.sh > $out
+  description = FALSE-GREEN-BUFFER-ROUTE-REGRESSION
   restat = 1
 
 rule rf148_conformance
@@ -24,6 +108,10 @@ rule rf148_conformance
 
 build $builddir/obj/entry.o: nasm compiler/driver/bootstrap/entry.asm
 build $builddir/obj/cli_driver.o: nasm compiler/driver/cli/linux-x86_64/cli_driver.asm | compiler/diagnostics/recovery.inc compiler/diagnostics/observability.inc compiler/driver/cli/linux-x86_64/probabilistic_report_cli.inc compiler/driver/cli/linux-x86_64/firmware_cli.inc compiler/driver/cli/linux-x86_64/simulation_cli.inc compiler/parser/mutable_assignment_parser.inc compiler/parser/parameters_parser.inc compiler/lowering/functions/parameters_plan.inc compiler/codegen/functions/x86_64/parameters_codegen.inc compiler/parser/module_parser.inc compiler/lowering/modules/module_plan.inc compiler/codegen/modules/x86_64/module_graph_codegen.inc compiler/parser/generic_parser.inc compiler/lowering/generics/generic_plan.inc compiler/codegen/generics/x86_64/generic_instance_codegen.inc compiler/parser/nominal_types.inc compiler/lowering/aggregates/nominal_plan.inc compiler/codegen/aggregates/x86_64/nominal_codegen.inc compiler/parser/buffer_parser.inc compiler/lowering/textual/buffer_plan.inc compiler/codegen/textual/x86_64/buffer_codegen.inc compiler/parser/option_result_parser.inc compiler/lowering/scalars/option_result_plan.inc compiler/codegen/scalars/x86_64/option_layout_codegen.inc compiler/semantic/types/numeric_safety_vertical.inc compiler/codegen/scalars/x86_64/numeric_safety_codegen.inc compiler/semantic/types/text_char_bytes_vertical.inc compiler/codegen/textual/x86_64/text_char_bytes_codegen.inc compiler/parser/binding_definite_assignment_contract.inc compiler/semantic/bindings/binding_vertical.inc compiler/lowering/bindings/loop_plan.inc compiler/codegen/bindings/x86_64/binding_codegen.inc compiler/parser/option_result_vertical_parser.inc compiler/semantic/types/option_result_vertical.inc compiler/codegen/scalars/x86_64/option_result_codegen.inc compiler/semantic/generics/generic_vertical.inc compiler/codegen/generics/x86_64/generic_codegen.inc compiler/semantic/types/domain_refinement_vertical.inc compiler/codegen/domain/x86_64/domain_refinement_codegen.inc compiler/semantic/types/programmer_type_vertical.inc compiler/codegen/aggregates/x86_64/programmer_type_codegen.inc compiler/semantic/types/struct_tuple.inc compiler/lowering/aggregates/struct_tuple_plan.inc compiler/codegen/aggregates/x86_64/struct_tuple_codegen.inc compiler/semantic/collections/array_vertical.inc compiler/codegen/collections/x86_64/array_codegen.inc compiler/semantic/collections/array_range.inc compiler/semantic/collections/slice_view.inc compiler/lowering/collections/array_range_plan.inc compiler/lowering/collections/slice_view_plan.inc compiler/codegen/collections/x86_64/array_range_codegen.inc compiler/codegen/collections/x86_64/slice_view_codegen.inc compiler/semantic/collections/vector_vertical.inc compiler/codegen/collections/x86_64/vector_codegen.inc compiler/semantic/collections/column_vertical.inc compiler/codegen/collections/x86_64/column_codegen.inc compiler/parser/policy_contract.inc compiler/parser/privacy_contract.inc compiler/parser/quality_contract.inc compiler/semantic/memory/move_copy_clone.inc compiler/lowering/memory/move_copy_clone_plan.inc compiler/codegen/memory/x86_64/move_copy_clone_codegen.inc runtime/memory/ownership_runtime.inc compiler/codegen/memory/x86_64/ownership_codegen.inc runtime/modules/module_runtime.inc compiler/codegen/modules/x86_64/module_codegen.inc runtime/package/package_runtime.inc compiler/codegen/package/x86_64/package_codegen.inc runtime/stdlib/std_math_runtime.inc compiler/codegen/stdlib/x86_64/std_math_codegen.inc compiler/semantic/quality/quality_semantic.inc compiler/lowering/quality/quality_ir.inc compiler/lowering/quality/quality_native.inc runtime/quality/quality_runtime.inc compiler/codegen/quality/x86_64/quality_codegen.inc compiler/semantic/privacy/privacy_policy.inc compiler/semantic/privacy/privacy_semantic.inc compiler/lowering/privacy/privacy_ir.inc compiler/lowering/privacy/privacy_native.inc runtime/privacy/privacy_runtime.inc compiler/codegen/privacy/x86_64/privacy_codegen.inc compiler/semantic/types/type_table.inc compiler/diagnostics/catalog.inc compiler/semantic/effect/effect_policy.inc compiler/semantic/effect/effect_policy_semantic.inc compiler/lowering/effects/effect_policy_ir.inc compiler/lowering/effects/effect_policy_native.inc runtime/effects/effect_policy_runtime.inc compiler/codegen/effects/x86_64/effect_policy_codegen.inc
+build $builddir/obj/target_manifest.o: nasm compiler/parser/target_manifest.asm | compiler/parser/target_manifest.inc compiler/semantic/modules/target_path.inc compiler/semantic/modules/entrypoint_resolver.inc
+build $builddir/obj/c03_target_registry.o: nasm compiler/semantic/modules/target_registry.asm | compiler/semantic/modules/target_registry.inc compiler/parser/target_manifest.inc
+build $builddir/obj/target_path.o: nasm compiler/semantic/modules/target_path.asm | compiler/semantic/modules/target_path.inc compiler/parser/target_manifest.inc
+build $builddir/obj/test_runner_plan.o: nasm compiler/semantic/modules/test_runner_plan.asm | compiler/semantic/modules/test_runner_plan.inc compiler/ast/ast_node.inc compiler/tokens/token.inc
 build $builddir/obj/process_exit.o: nasm compiler/host/linux-x86_64/process_exit.asm
 build $builddir/obj/abi_contract.o: nasm compiler/abi/internal/x86_64/abi_contract.asm
 build $builddir/obj/host_client.o: nasm compiler/host/core/host_client.asm
@@ -48,16 +136,23 @@ build $builddir/obj/source_map.o: nasm compiler/source/source_map.asm | compiler
 build $builddir/obj/snippet.o: nasm compiler/source/snippet/snippet.asm
 build $builddir/obj/diagnostic_catalog.o: nasm compiler/diagnostics/catalog.asm | compiler/diagnostics/catalog.inc compiler/diagnostics/diagnostic.inc
 build $builddir/obj/diagnostic_registry.o: nasm compiler/diagnostics/registry.asm | compiler/diagnostics/registry.inc compiler/diagnostics/diagnostic.inc
+build $builddir/obj/warning_registry.o: nasm compiler/diagnostics/warning_registry.asm | compiler/diagnostics/warning_registry.inc compiler/diagnostics/registry.inc compiler/diagnostics/warning_policy.inc compiler/diagnostics/explain.inc
 build $builddir/obj/diagnostic_store.o: nasm compiler/diagnostics/store.asm | compiler/diagnostics/diagnostic.inc compiler/diagnostics/registry.inc
 build $builddir/obj/diagnostic_renderer.o: nasm compiler/diagnostics/renderer.asm
 build $builddir/obj/diagnostics_source_diagnostic_renderer.o: nasm compiler/diagnostics/source_diagnostic_renderer.asm | compiler/diagnostics/renderer.inc compiler/diagnostics/diagnostic.inc
-build $builddir/obj/warning_policy.o: nasm compiler/diagnostics/warning_policy.asm | compiler/diagnostics/warning_policy.inc compiler/diagnostics/diagnostic.inc
+build $builddir/obj/warning_policy.o: nasm compiler/diagnostics/warning_policy.asm | compiler/diagnostics/warning_policy.inc compiler/diagnostics/warning_registry.inc compiler/diagnostics/diagnostic.inc
+build $builddir/obj/warning_config.o: nasm compiler/diagnostics/warning_config.asm | compiler/diagnostics/warning_config.inc compiler/diagnostics/warning_policy.inc compiler/diagnostics/warning_registry.inc compiler/diagnostics/diagnostic.inc
+build $builddir/obj/warning_cli_policy.o: nasm compiler/diagnostics/warning_cli_policy.asm | compiler/diagnostics/warning_cli_policy.inc compiler/diagnostics/warning_policy.inc compiler/driver/cli/linux-x86_64/cli_driver.inc
+build $builddir/obj/warning_guidance.o: nasm compiler/diagnostics/warning_guidance.asm | compiler/diagnostics/warning_guidance.inc compiler/diagnostics/warning_policy.inc compiler/diagnostics/warning_registry.inc compiler/diagnostics/explain.inc compiler/diagnostics/diagnostic.inc
+build $builddir/obj/warning_human.o: nasm compiler/diagnostics/warning_human.asm | compiler/diagnostics/warning_human.inc compiler/diagnostics/warning_registry.inc compiler/diagnostics/diagnostic.inc compiler/diagnostics/renderer.inc compiler/diagnostics/explain.inc compiler/source/source_map.inc compiler/source/span/source_span.inc
 build $builddir/obj/diagnostic_recovery.o: nasm compiler/diagnostics/recovery.asm | compiler/diagnostics/recovery.inc compiler/diagnostics/diagnostic.inc compiler/source/span/source_span.inc
 build $builddir/obj/diagnostic_machine.o: nasm compiler/diagnostics/machine.asm | compiler/diagnostics/machine.inc compiler/diagnostics/renderer.inc compiler/diagnostics/diagnostic.inc compiler/source/source_map.inc
 build $builddir/obj/diagnostic_explain.o: nasm compiler/diagnostics/explain.asm | compiler/diagnostics/explain.inc compiler/diagnostics/renderer.inc compiler/source/source_map.inc compiler/source/span/source_span.inc
 build $builddir/obj/diagnostic_ice.o: nasm compiler/diagnostics/ice.asm | compiler/diagnostics/ice.inc compiler/diagnostics/renderer.inc
 build $builddir/obj/diagnostic_observability.o: nasm compiler/diagnostics/observability.asm | compiler/diagnostics/observability.inc compiler/diagnostics/renderer.inc
 build $builddir/obj/analysis.o: nasm compiler/analysis/analysis.asm | compiler/analysis/analysis.inc
+build $builddir/obj/warning_liveness.o: nasm compiler/analysis/warning_liveness.asm | compiler/analysis/warning_liveness.inc compiler/analysis/analysis.inc
+build $builddir/obj/unused_bindings.o: nasm compiler/lint/unused_bindings.asm | compiler/lint/unused_bindings.inc compiler/analysis/warning_liveness.inc compiler/analysis/analysis.inc
 build $builddir/obj/correctness_lints.o: nasm compiler/lint/correctness.asm | compiler/lint/correctness.inc compiler/analysis/analysis.inc
 build $builddir/obj/performance_lints.o: nasm compiler/lint/performance.asm | compiler/lint/performance.inc compiler/lint/correctness.inc compiler/analysis/analysis.inc
 build $builddir/obj/security_portability_lints.o: nasm compiler/lint/security_portability.asm | compiler/lint/security_portability.inc compiler/lint/correctness.inc compiler/analysis/analysis.inc
@@ -274,6 +369,7 @@ build $builddir/obj/legacy_source_verticals.o: nasm compiler/semantic/structural
 build $builddir/obj/g09_programmer_type_codegen.o: nasm compiler/codegen/aggregates/x86_64/programmer_type_codegen.asm | compiler/codegen/aggregates/x86_64/programmer_type_codegen.inc compiler/semantic/types/programmer_type_vertical.inc
 build $builddir/obj/struct_tuple.o: nasm compiler/semantic/types/struct_tuple.asm | compiler/semantic/types/struct_tuple.inc
 build $builddir/obj/product_layout.o: nasm compiler/lowering/aggregates/product_layout.asm | compiler/lowering/aggregates/product_layout.inc compiler/semantic/types/struct_tuple.inc
+build $builddir/obj/tuple_function_abi.o: nasm compiler/lowering/functions/tuple_function_abi.asm | compiler/lowering/functions/tuple_function_abi.inc
 build $builddir/obj/struct_tuple_plan.o: nasm compiler/lowering/aggregates/struct_tuple_plan.asm | compiler/lowering/aggregates/struct_tuple_plan.inc compiler/semantic/types/struct_tuple.inc
 build $builddir/obj/struct_tuple_codegen.o: nasm compiler/codegen/aggregates/x86_64/struct_tuple_codegen.asm | compiler/codegen/aggregates/x86_64/struct_tuple_codegen.inc compiler/lowering/aggregates/struct_tuple_plan.inc
 build $builddir/obj/array_range.o: nasm compiler/semantic/collections/array_range.asm | compiler/semantic/collections/array_range.inc
@@ -392,6 +488,243 @@ build $builddir/obj/abi_adapter.o: nasm compiler/codegen/abi/x86_64/abi_adapter.
 build $builddir/obj/abi_diagnostics.o: nasm compiler/codegen/abi/diagnostics/abi_diagnostics.asm
 build $builddir/obj/format_adapter.o: nasm compiler/format/elf64/format_adapter.asm
 build $builddir/obj/runtime_core.o: nasm runtime/core/runtime_core.asm | compiler/abi/internal/x86_64/neboc_internal_abi.inc runtime/core/runtime_core.inc runtime/textual/text-char-bytes/text_char_bytes_runtime.inc runtime/scalars/option_result_runtime.inc runtime/console/handles/console_handle.inc runtime/console/handles/console_handle.asm runtime/console/manager/console_manager.inc runtime/console/manager/console_manager.asm runtime/console/queues/console_queue.inc runtime/console/queues/console_queue.asm runtime/console/domain/console_domain.inc runtime/console/domain/console_domain.asm runtime/console/platform/fake/fake_platform.inc runtime/console/platform/fake/fake_platform.asm runtime/console/document/console_document.inc runtime/console/document/console_document.asm runtime/console/renderers/basic/basic_renderer.inc runtime/console/renderers/basic/basic_renderer.asm runtime/console/layout/console_layout.inc runtime/console/layout/console_layout.asm runtime/console/render/fake_glyph_provider.inc runtime/console/render/fake_glyph_provider.asm runtime/console/render/render_tree.inc runtime/console/render/render_tree.asm runtime/console/render/draw_command.inc runtime/console/render/draw_command.asm runtime/console/render/software_surface.inc runtime/console/render/software_surface.asm runtime/console/behavior/console_behavior.inc runtime/console/behavior/console_behavior.asm runtime/console/renderer-registry/renderer_registry.inc runtime/console/renderer-registry/renderer_registry.asm runtime/console/render/output_conformance.inc runtime/console/render/output_conformance.asm runtime/console/dependency-bridge/dependency_bridge.inc runtime/console/dependency-bridge/dependency_bridge.asm runtime/console/input/submission/input_submission.inc runtime/console/input/submission/input_submission.asm
+build $builddir/obj/runtime_practical_core.o: nasm_practical runtime/core/runtime_core.asm | $builddir/obj/runtime_core.o runtime/console/live/live_console.inc runtime/console/chrome/window_chrome.inc runtime/textual/scan_plan.inc
+build $builddir/obj/runtime/console/live/live_console.o: nasm runtime/console/live/live_console.asm | runtime/console/live/live_console.inc runtime/console/chrome/window_chrome.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_protocol.inc
+build $builddir/obj/runtime/console/live/live_visual.o: nasm runtime/console/live/live_visual.asm | runtime/console/live/live_console.inc runtime/console/live/live_typography.inc runtime/console/live/nebo_console_mono_atlas.inc runtime/console/chrome/window_chrome.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_protocol.inc $builddir/obj/runtime/console/live/nebo_console_mono_atlas.verified
+build $builddir/obj/runtime/console/live/live_visual_baseline.o: nasm_typography_baseline runtime/console/live/live_visual.asm | runtime/console/live/live_console.inc runtime/console/live/live_typography.inc runtime/console/live/nebo_console_mono_atlas.inc runtime/console/chrome/window_chrome.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_protocol.inc
+build $builddir/obj/runtime/console/live/live_visual_typography_a.o: nasm_typography_compact runtime/console/live/live_visual.asm | runtime/console/live/live_console.inc runtime/console/live/live_typography.inc runtime/console/chrome/window_chrome.inc
+build $builddir/obj/runtime/console/live/live_visual_typography_b.o: nasm_typography_balanced runtime/console/live/live_visual.asm | runtime/console/live/live_console.inc runtime/console/live/live_typography.inc runtime/console/live/live_glyph_smooth_atlas.inc runtime/console/chrome/window_chrome.inc
+build $builddir/obj/runtime/console/live/live_visual_typography_c.o: nasm_typography_crisp runtime/console/live/live_visual.asm | runtime/console/live/live_console.inc runtime/console/live/live_typography.inc runtime/console/live/live_glyph_crisp_atlas.inc runtime/console/chrome/window_chrome.inc
+build $builddir/obj/runtime/console/live/nebo_console_mono_atlas.verified: verify_professional_atlas scripts/console-visual-polish/generate-professional-atlas.py third_party/fonts/adobe-source-code-pro/SourceCodePro-Regular.ttf third_party/fonts/adobe-source-code-pro/LICENSE.md runtime/console/live/nebo_console_mono_atlas.inc
+build $builddir/obj/runtime/console/live/live_visual_typography_d.o: nasm_typography_professional runtime/console/live/live_visual.asm | runtime/console/live/live_console.inc runtime/console/live/live_typography.inc runtime/console/live/nebo_console_mono_atlas.inc runtime/console/chrome/window_chrome.inc $builddir/obj/runtime/console/live/nebo_console_mono_atlas.verified
+build $builddir/obj/runtime/console/live/live_visual_typography_d1.o: nasm_typography_professional_d1 runtime/console/live/live_visual.asm | runtime/console/live/live_console.inc runtime/console/live/live_typography.inc runtime/console/live/nebo_console_mono_atlas.inc runtime/console/chrome/window_chrome.inc $builddir/obj/runtime/console/live/nebo_console_mono_atlas.verified
+build $builddir/obj/runtime/console/live/live_visual_typography_d2.o: nasm_typography_professional_d2 runtime/console/live/live_visual.asm | runtime/console/live/live_console.inc runtime/console/live/live_typography.inc runtime/console/live/nebo_console_mono_atlas.inc runtime/console/chrome/window_chrome.inc $builddir/obj/runtime/console/live/nebo_console_mono_atlas.verified
+build $builddir/obj/runtime/console/live/live_visual_palette_a.o: nasm_typography_palette_a runtime/console/live/live_visual.asm | runtime/console/live/live_console.inc runtime/console/live/live_typography.inc runtime/console/live/nebo_console_mono_atlas.inc runtime/console/chrome/window_chrome.inc $builddir/obj/runtime/console/live/nebo_console_mono_atlas.verified
+build $builddir/obj/runtime/console/live/live_visual_palette_b.o: nasm_typography_palette_b runtime/console/live/live_visual.asm | runtime/console/live/live_console.inc runtime/console/live/live_typography.inc runtime/console/live/nebo_console_mono_atlas.inc runtime/console/chrome/window_chrome.inc $builddir/obj/runtime/console/live/nebo_console_mono_atlas.verified
+build $builddir/obj/runtime/console/live/live_visual_palette_c.o: nasm_typography_palette_c runtime/console/live/live_visual.asm | runtime/console/live/live_console.inc runtime/console/live/live_typography.inc runtime/console/live/nebo_console_mono_atlas.inc runtime/console/chrome/window_chrome.inc $builddir/obj/runtime/console/live/nebo_console_mono_atlas.verified
+build $builddir/obj/runtime/console/live/live_visual_palette_d.o: nasm_typography_palette_d runtime/console/live/live_visual.asm | runtime/console/live/live_console.inc runtime/console/live/live_typography.inc runtime/console/live/nebo_console_mono_atlas.inc runtime/console/chrome/window_chrome.inc $builddir/obj/runtime/console/live/nebo_console_mono_atlas.verified
+build $builddir/obj/runtime/console/live/live_visual_unified.o: nasm_visual_unified runtime/console/live/live_visual.asm | runtime/console/live/live_console.inc runtime/console/live/live_typography.inc runtime/console/live/nebo_console_mono_atlas.inc runtime/console/chrome/window_chrome.inc $builddir/obj/runtime/console/live/nebo_console_mono_atlas.verified
+build $builddir/obj/runtime/textual/scan_plan.o: nasm runtime/textual/scan_plan.asm | runtime/textual/scan_plan.inc
+build $builddir/obj/runtime_practical_io.o: relocatable_link $
+  $builddir/obj/runtime_practical_core.o $
+  $builddir/obj/matrix_contract.o $
+  $builddir/obj/matrix_i64.o $
+  $builddir/obj/tensor_contract.o $
+  $builddir/obj/tensor_i64_public.o $
+  $builddir/obj/runtime/console/live/live_console.o $
+  $builddir/obj/runtime/console/live/live_visual.o $
+  $builddir/obj/runtime/console/chrome/window_chrome.o $
+  $builddir/obj/runtime/textual/scan_plan.o $
+  $builddir/obj/runtime/console/platform/input/native_input_bridge.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+build $builddir/obj/runtime_practical_io_typography_baseline.o: relocatable_link $
+  $builddir/obj/runtime_practical_core.o $
+  $builddir/obj/runtime/console/live/live_console.o $
+  $builddir/obj/runtime/console/live/live_visual_baseline.o $
+  $builddir/obj/runtime/console/chrome/window_chrome.o $
+  $builddir/obj/runtime/textual/scan_plan.o $
+  $builddir/obj/runtime/console/platform/input/native_input_bridge.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+build $builddir/obj/runtime_practical_io_typography_a.o: relocatable_link $
+  $builddir/obj/runtime_practical_core.o $
+  $builddir/obj/runtime/console/live/live_console.o $
+  $builddir/obj/runtime/console/live/live_visual_typography_a.o $
+  $builddir/obj/runtime/console/chrome/window_chrome.o $
+  $builddir/obj/runtime/textual/scan_plan.o $
+  $builddir/obj/runtime/console/platform/input/native_input_bridge.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+build $builddir/obj/runtime_practical_io_typography_b.o: relocatable_link $
+  $builddir/obj/runtime_practical_core.o $
+  $builddir/obj/runtime/console/live/live_console.o $
+  $builddir/obj/runtime/console/live/live_visual_typography_b.o $
+  $builddir/obj/runtime/console/chrome/window_chrome.o $
+  $builddir/obj/runtime/textual/scan_plan.o $
+  $builddir/obj/runtime/console/platform/input/native_input_bridge.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+build $builddir/obj/runtime_practical_io_typography_c.o: relocatable_link $
+  $builddir/obj/runtime_practical_core.o $
+  $builddir/obj/runtime/console/live/live_console.o $
+  $builddir/obj/runtime/console/live/live_visual_typography_c.o $
+  $builddir/obj/runtime/console/chrome/window_chrome.o $
+  $builddir/obj/runtime/textual/scan_plan.o $
+  $builddir/obj/runtime/console/platform/input/native_input_bridge.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+build $builddir/obj/runtime_practical_io_typography_d.o: relocatable_link $
+  $builddir/obj/runtime_practical_core.o $
+  $builddir/obj/runtime/console/live/live_console.o $
+  $builddir/obj/runtime/console/live/live_visual_typography_d.o $
+  $builddir/obj/runtime/console/chrome/window_chrome.o $
+  $builddir/obj/runtime/textual/scan_plan.o $
+  $builddir/obj/runtime/console/platform/input/native_input_bridge.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+build $builddir/obj/runtime_practical_io_typography_d1.o: relocatable_link $
+  $builddir/obj/runtime_practical_core.o $
+  $builddir/obj/runtime/console/live/live_console.o $
+  $builddir/obj/runtime/console/live/live_visual_typography_d1.o $
+  $builddir/obj/runtime/console/chrome/window_chrome.o $
+  $builddir/obj/runtime/textual/scan_plan.o $
+  $builddir/obj/runtime/console/platform/input/native_input_bridge.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+build $builddir/obj/runtime_practical_io_typography_d2.o: relocatable_link $
+  $builddir/obj/runtime_practical_core.o $
+  $builddir/obj/runtime/console/live/live_console.o $
+  $builddir/obj/runtime/console/live/live_visual_typography_d2.o $
+  $builddir/obj/runtime/console/chrome/window_chrome.o $
+  $builddir/obj/runtime/textual/scan_plan.o $
+  $builddir/obj/runtime/console/platform/input/native_input_bridge.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+build $builddir/obj/runtime_practical_io_palette_a.o: relocatable_link $
+  $builddir/obj/runtime_practical_core.o $
+  $builddir/obj/runtime/console/live/live_console.o $
+  $builddir/obj/runtime/console/live/live_visual_palette_a.o $
+  $builddir/obj/runtime/console/chrome/window_chrome.o $
+  $builddir/obj/runtime/textual/scan_plan.o $
+  $builddir/obj/runtime/console/platform/input/native_input_bridge.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+build $builddir/obj/runtime_practical_io_palette_b.o: relocatable_link $
+  $builddir/obj/runtime_practical_core.o $
+  $builddir/obj/runtime/console/live/live_console.o $
+  $builddir/obj/runtime/console/live/live_visual_palette_b.o $
+  $builddir/obj/runtime/console/chrome/window_chrome.o $
+  $builddir/obj/runtime/textual/scan_plan.o $
+  $builddir/obj/runtime/console/platform/input/native_input_bridge.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+build $builddir/obj/runtime_practical_io_palette_c.o: relocatable_link $
+  $builddir/obj/runtime_practical_core.o $
+  $builddir/obj/runtime/console/live/live_console.o $
+  $builddir/obj/runtime/console/live/live_visual_palette_c.o $
+  $builddir/obj/runtime/console/chrome/window_chrome.o $
+  $builddir/obj/runtime/textual/scan_plan.o $
+  $builddir/obj/runtime/console/platform/input/native_input_bridge.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+build $builddir/obj/runtime_practical_io_palette_d.o: relocatable_link $
+  $builddir/obj/runtime_practical_core.o $
+  $builddir/obj/runtime/console/live/live_console.o $
+  $builddir/obj/runtime/console/live/live_visual_palette_d.o $
+  $builddir/obj/runtime/console/chrome/window_chrome.o $
+  $builddir/obj/runtime/textual/scan_plan.o $
+  $builddir/obj/runtime/console/platform/input/native_input_bridge.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+build $builddir/obj/runtime_practical_io_visual_unified.o: relocatable_link $
+  $builddir/obj/runtime_practical_core.o $
+  $builddir/obj/runtime/console/live/live_console.o $
+  $builddir/obj/runtime/console/live/live_visual_unified.o $
+  $builddir/obj/runtime/console/chrome/window_chrome.o $
+  $builddir/obj/runtime/textual/scan_plan.o $
+  $builddir/obj/runtime/console/platform/input/native_input_bridge.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+build $builddir/obj/tests/practical-io/x11_event_driver.o: nasm tests/practical-io/x11_event_driver.asm | runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_protocol.inc
+build $builddir/tests/practical-io/x11_event_driver: link $
+  $builddir/obj/tests/practical-io/x11_event_driver.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+build $builddir/obj/tests/console-ux-ui/ux_metadata_live_test.o: nasm tests/console-ux-ui/ux_metadata_live_test.asm | runtime/console/live/live_console.inc runtime/console/chrome/window_chrome.inc
+build $builddir/tests/console-ux-ui/ux_metadata_live_test: link $
+  $builddir/obj/tests/console-ux-ui/ux_metadata_live_test.o $
+  $builddir/obj/runtime_practical_io.o
+build console-ux-ui-test: phony $builddir/tests/console-ux-ui/ux_metadata_live_test $builddir/tests/practical-io/x11_event_driver
+
+# R4 bounded live typography candidates and pixel/metrics oracles.
+build $builddir/obj/tests/console-visual-polish/typography_metrics_baseline.o: nasm_typography_baseline tests/console-visual-polish/typography_metrics_test.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc
+build $builddir/obj/tests/console-visual-polish/typography_metrics_a.o: nasm_typography_compact tests/console-visual-polish/typography_metrics_test.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc
+build $builddir/obj/tests/console-visual-polish/typography_metrics_b.o: nasm_typography_balanced tests/console-visual-polish/typography_metrics_test.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc
+build $builddir/obj/tests/console-visual-polish/typography_metrics_c.o: nasm_typography_crisp tests/console-visual-polish/typography_metrics_test.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc
+build $builddir/obj/tests/console-visual-polish/typography_metrics_d.o: nasm_typography_professional tests/console-visual-polish/typography_metrics_test.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc runtime/console/live/nebo_console_mono_atlas.inc
+build $builddir/obj/tests/console-visual-polish/typography_metrics_d1.o: nasm_typography_professional_d1 tests/console-visual-polish/typography_metrics_test.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc runtime/console/live/nebo_console_mono_atlas.inc
+build $builddir/obj/tests/console-visual-polish/typography_metrics_d2.o: nasm_typography_professional_d2 tests/console-visual-polish/typography_metrics_test.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc runtime/console/live/nebo_console_mono_atlas.inc
+build $builddir/obj/tests/console-visual-polish/typography_metrics_pa.o: nasm_typography_palette_a tests/console-visual-polish/typography_metrics_test.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc runtime/console/live/nebo_console_mono_atlas.inc
+build $builddir/obj/tests/console-visual-polish/typography_metrics_pb.o: nasm_typography_palette_b tests/console-visual-polish/typography_metrics_test.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc runtime/console/live/nebo_console_mono_atlas.inc
+build $builddir/obj/tests/console-visual-polish/typography_metrics_pc.o: nasm_typography_palette_c tests/console-visual-polish/typography_metrics_test.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc runtime/console/live/nebo_console_mono_atlas.inc
+build $builddir/obj/tests/console-visual-polish/typography_metrics_pd.o: nasm_typography_palette_d tests/console-visual-polish/typography_metrics_test.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc runtime/console/live/nebo_console_mono_atlas.inc
+build $builddir/obj/tests/console-visual-polish/typography_metrics_u.o: nasm_visual_unified tests/console-visual-polish/typography_metrics_test.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc runtime/console/live/nebo_console_mono_atlas.inc
+build $builddir/obj/tests/console-visual-polish/typography_frame_baseline.o: nasm_typography_baseline tests/console-visual-polish/typography_frame_dump.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc
+build $builddir/obj/tests/console-visual-polish/typography_frame_a.o: nasm_typography_compact tests/console-visual-polish/typography_frame_dump.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc
+build $builddir/obj/tests/console-visual-polish/typography_frame_b.o: nasm_typography_balanced tests/console-visual-polish/typography_frame_dump.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc
+build $builddir/obj/tests/console-visual-polish/typography_frame_c.o: nasm_typography_crisp tests/console-visual-polish/typography_frame_dump.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc
+build $builddir/obj/tests/console-visual-polish/typography_frame_d.o: nasm_typography_professional tests/console-visual-polish/typography_frame_dump.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc runtime/console/live/nebo_console_mono_atlas.inc
+build $builddir/obj/tests/console-visual-polish/typography_frame_d1.o: nasm_typography_professional_d1 tests/console-visual-polish/typography_frame_dump.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc runtime/console/live/nebo_console_mono_atlas.inc
+build $builddir/obj/tests/console-visual-polish/typography_frame_d2.o: nasm_typography_professional_d2 tests/console-visual-polish/typography_frame_dump.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc runtime/console/live/nebo_console_mono_atlas.inc
+build $builddir/obj/tests/console-visual-polish/typography_frame_pa.o: nasm_typography_palette_a tests/console-visual-polish/typography_frame_dump.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc runtime/console/live/nebo_console_mono_atlas.inc
+build $builddir/obj/tests/console-visual-polish/typography_frame_pb.o: nasm_typography_palette_b tests/console-visual-polish/typography_frame_dump.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc runtime/console/live/nebo_console_mono_atlas.inc
+build $builddir/obj/tests/console-visual-polish/typography_frame_pc.o: nasm_typography_palette_c tests/console-visual-polish/typography_frame_dump.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc runtime/console/live/nebo_console_mono_atlas.inc
+build $builddir/obj/tests/console-visual-polish/typography_frame_pd.o: nasm_typography_palette_d tests/console-visual-polish/typography_frame_dump.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc runtime/console/live/nebo_console_mono_atlas.inc
+build $builddir/obj/tests/console-visual-polish/typography_frame_u.o: nasm_visual_unified tests/console-visual-polish/typography_frame_dump.asm | runtime/console/live/live_typography.inc runtime/console/live/live_console.inc runtime/console/live/nebo_console_mono_atlas.inc
+
+build $builddir/tests/console-visual-polish/typography_metrics_baseline: link $builddir/obj/tests/console-visual-polish/typography_metrics_baseline.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_baseline.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_metrics_a: link $builddir/obj/tests/console-visual-polish/typography_metrics_a.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_typography_a.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_metrics_b: link $builddir/obj/tests/console-visual-polish/typography_metrics_b.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_typography_b.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_metrics_c: link $builddir/obj/tests/console-visual-polish/typography_metrics_c.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_typography_c.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_metrics_d: link $builddir/obj/tests/console-visual-polish/typography_metrics_d.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_typography_d.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_metrics_d1: link $builddir/obj/tests/console-visual-polish/typography_metrics_d1.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_typography_d1.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_metrics_d2: link $builddir/obj/tests/console-visual-polish/typography_metrics_d2.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_typography_d2.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_metrics_pa: link $builddir/obj/tests/console-visual-polish/typography_metrics_pa.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_palette_a.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_metrics_pb: link $builddir/obj/tests/console-visual-polish/typography_metrics_pb.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_palette_b.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_metrics_pc: link $builddir/obj/tests/console-visual-polish/typography_metrics_pc.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_palette_c.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_metrics_pd: link $builddir/obj/tests/console-visual-polish/typography_metrics_pd.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_palette_d.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_metrics_u: link $builddir/obj/tests/console-visual-polish/typography_metrics_u.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_unified.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_frame_baseline: link $builddir/obj/tests/console-visual-polish/typography_frame_baseline.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_baseline.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_frame_a: link $builddir/obj/tests/console-visual-polish/typography_frame_a.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_typography_a.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_frame_b: link $builddir/obj/tests/console-visual-polish/typography_frame_b.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_typography_b.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_frame_c: link $builddir/obj/tests/console-visual-polish/typography_frame_c.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_typography_c.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_frame_d: link $builddir/obj/tests/console-visual-polish/typography_frame_d.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_typography_d.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_frame_d1: link $builddir/obj/tests/console-visual-polish/typography_frame_d1.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_typography_d1.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_frame_d2: link $builddir/obj/tests/console-visual-polish/typography_frame_d2.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_typography_d2.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_frame_pa: link $builddir/obj/tests/console-visual-polish/typography_frame_pa.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_palette_a.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_frame_pb: link $builddir/obj/tests/console-visual-polish/typography_frame_pb.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_palette_b.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_frame_pc: link $builddir/obj/tests/console-visual-polish/typography_frame_pc.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_palette_c.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_frame_pd: link $builddir/obj/tests/console-visual-polish/typography_frame_pd.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_palette_d.o $builddir/obj/runtime/console/chrome/window_chrome.o
+build $builddir/tests/console-visual-polish/typography_frame_u: link $builddir/obj/tests/console-visual-polish/typography_frame_u.o $builddir/obj/runtime_core.o $builddir/obj/runtime/console/live/live_visual_unified.o $builddir/obj/runtime/console/chrome/window_chrome.o
+
+build console-visual-polish-test: phony $
+  $builddir/tests/console-visual-polish/typography_metrics_baseline $
+  $builddir/tests/console-visual-polish/typography_metrics_a $
+  $builddir/tests/console-visual-polish/typography_metrics_b $
+  $builddir/tests/console-visual-polish/typography_metrics_c $
+  $builddir/tests/console-visual-polish/typography_metrics_d $
+  $builddir/tests/console-visual-polish/typography_metrics_d1 $
+  $builddir/tests/console-visual-polish/typography_metrics_d2 $
+  $builddir/tests/console-visual-polish/typography_metrics_pa $
+  $builddir/tests/console-visual-polish/typography_metrics_pb $
+  $builddir/tests/console-visual-polish/typography_metrics_pc $
+  $builddir/tests/console-visual-polish/typography_metrics_pd $
+  $builddir/tests/console-visual-polish/typography_metrics_u $
+  $builddir/tests/console-visual-polish/typography_frame_baseline $
+  $builddir/tests/console-visual-polish/typography_frame_a $
+  $builddir/tests/console-visual-polish/typography_frame_b $
+  $builddir/tests/console-visual-polish/typography_frame_c $
+  $builddir/tests/console-visual-polish/typography_frame_d $
+  $builddir/tests/console-visual-polish/typography_frame_d1 $
+  $builddir/tests/console-visual-polish/typography_frame_d2 $
+  $builddir/tests/console-visual-polish/typography_frame_pa $
+  $builddir/tests/console-visual-polish/typography_frame_pb $
+  $builddir/tests/console-visual-polish/typography_frame_pc $
+  $builddir/tests/console-visual-polish/typography_frame_pd $
+  $builddir/tests/console-visual-polish/typography_frame_u $
+  $builddir/obj/runtime_practical_io_typography_baseline.o $
+  $builddir/obj/runtime_practical_io_typography_a.o $
+  $builddir/obj/runtime_practical_io_typography_b.o $
+  $builddir/obj/runtime_practical_io_typography_c.o $
+  $builddir/obj/runtime_practical_io_typography_d.o $
+  $builddir/obj/runtime_practical_io_typography_d1.o $
+  $builddir/obj/runtime_practical_io_typography_d2.o $
+  $builddir/obj/runtime_practical_io_palette_a.o $
+  $builddir/obj/runtime_practical_io_palette_b.o $
+  $builddir/obj/runtime_practical_io_palette_c.o $
+  $builddir/obj/runtime_practical_io_palette_d.o $
+  $builddir/obj/runtime_practical_io_visual_unified.o
 build $builddir/obj/runtime_lowering.o: nasm compiler/codegen/runtime/runtime_lowering.asm
 
 # RF27-G11-F02 bounded lexical Path runtime.
@@ -830,8 +1163,74 @@ build rf27-g15-f06-tests: phony $builddir/tests/rf27-g15/f06/matrix_factor_test 
 # RF27-G15-F07 closeout aggregate (the independent oracle runs via validate.sh).
 build rf27-g15-f07-tests: phony rf27-g15-f06-tests
 
+# C11 bounded public Matrix<Int> constructor/storage implementation.
+build $builddir/obj/matrix_i64.o: nasm runtime/matrix/matrix_i64.asm | runtime/matrix/matrix_i64.inc compiler/semantic/matrix/matrix_contract.inc
+build $builddir/obj/tests/c11/f02/matrix_i64_construction_test.o: nasm tests/c11/f02/matrix_i64_construction_test.asm | runtime/matrix/matrix_i64.inc
+build $builddir/tests/c11/f02/matrix_i64_construction_test: link $builddir/obj/tests/c11/f02/matrix_i64_construction_test.o $builddir/obj/matrix_i64.o $builddir/obj/matrix_contract.o
+build $builddir/obj/tests/c11/f03/matrix_i64_metadata_test.o: nasm tests/c11/f03/matrix_i64_metadata_test.asm | runtime/matrix/matrix_i64.inc
+build $builddir/tests/c11/f03/matrix_i64_metadata_test: link $builddir/obj/tests/c11/f03/matrix_i64_metadata_test.o $builddir/obj/matrix_i64.o $builddir/obj/matrix_contract.o
+build $builddir/obj/tests/c11/f04/matrix_i64_index_test.o: nasm tests/c11/f04/matrix_i64_index_test.asm | runtime/matrix/matrix_i64.inc
+build $builddir/tests/c11/f04/matrix_i64_index_test: link $builddir/obj/tests/c11/f04/matrix_i64_index_test.o $builddir/obj/matrix_i64.o $builddir/obj/matrix_contract.o
+build $builddir/obj/tests/c11/f05/matrix_i64_views_test.o: nasm tests/c11/f05/matrix_i64_views_test.asm | runtime/matrix/matrix_i64.inc
+build $builddir/tests/c11/f05/matrix_i64_views_test: link $builddir/obj/tests/c11/f05/matrix_i64_views_test.o $builddir/obj/matrix_i64.o $builddir/obj/matrix_contract.o
+build $builddir/obj/tests/c11/f06/matrix_i64_transform_test.o: nasm tests/c11/f06/matrix_i64_transform_test.asm | runtime/matrix/matrix_i64.inc
+build $builddir/tests/c11/f06/matrix_i64_transform_test: link $builddir/obj/tests/c11/f06/matrix_i64_transform_test.o $builddir/obj/matrix_i64.o $builddir/obj/matrix_contract.o
+build $builddir/obj/tests/c11/f07/matrix_i64_elementwise_test.o: nasm tests/c11/f07/matrix_i64_elementwise_test.asm | runtime/matrix/matrix_i64.inc
+build $builddir/tests/c11/f07/matrix_i64_elementwise_test: link $builddir/obj/tests/c11/f07/matrix_i64_elementwise_test.o $builddir/obj/matrix_i64.o $builddir/obj/matrix_contract.o
+build $builddir/obj/tests/c11/f08/matrix_i64_reduction_test.o: nasm tests/c11/f08/matrix_i64_reduction_test.asm | runtime/matrix/matrix_i64.inc
+build $builddir/tests/c11/f08/matrix_i64_reduction_test: link $builddir/obj/tests/c11/f08/matrix_i64_reduction_test.o $builddir/obj/matrix_i64.o $builddir/obj/matrix_contract.o
+build $builddir/obj/tests/c11/f09/matrix_i64_matmul_test.o: nasm tests/c11/f09/matrix_i64_matmul_test.asm | runtime/matrix/matrix_i64.inc
+build $builddir/tests/c11/f09/matrix_i64_matmul_test: link $builddir/obj/tests/c11/f09/matrix_i64_matmul_test.o $builddir/obj/matrix_i64.o $builddir/obj/matrix_contract.o
+build $builddir/obj/tests/c11/f11/matrix_i64_abi_test.o: nasm tests/c11/f11/matrix_i64_abi_test.asm | runtime/matrix/matrix_i64.inc
+build $builddir/tests/c11/f11/matrix_i64_abi_test: link $builddir/obj/tests/c11/f11/matrix_i64_abi_test.o $builddir/obj/matrix_i64.o $builddir/obj/matrix_contract.o
+build $builddir/obj/tests/c11/f12/matrix_i64_adapter_test.o: nasm tests/c11/f12/matrix_i64_adapter_test.asm | runtime/matrix/matrix_i64.inc
+build $builddir/tests/c11/f12/matrix_i64_adapter_test: link $builddir/obj/tests/c11/f12/matrix_i64_adapter_test.o $builddir/obj/matrix_i64.o $builddir/obj/matrix_contract.o
+
 # RF27-G16-F01 bounded CPU Tensor descriptor contract.
 build $builddir/obj/tensor_contract.o: nasm compiler/semantic/tensor/tensor_contract.asm | compiler/semantic/tensor/tensor_contract.inc
+build $builddir/obj/tensor_i64_public.o: nasm runtime/tensor/tensor_i64_public.asm | runtime/tensor/tensor_i64_public.inc compiler/semantic/tensor/tensor_contract.inc
+build $builddir/obj/tests/c12/f02/tensor_i64_storage_test.o: nasm tests/c12/f02/tensor_i64_storage_test.asm | runtime/tensor/tensor_i64_public.inc
+build $builddir/tests/c12/f02/tensor_i64_storage_test: link $builddir/obj/tests/c12/f02/tensor_i64_storage_test.o $builddir/obj/tensor_i64_public.o $builddir/obj/tensor_contract.o
+build c12-f02-tests: phony $builddir/tests/c12/f02/tensor_i64_storage_test rf27-g16-f01-tests
+build $builddir/obj/tests/c12/f03/tensor_i64_shape_rank_test.o: nasm tests/c12/f03/tensor_i64_shape_rank_test.asm | runtime/tensor/tensor_i64_public.inc
+build $builddir/tests/c12/f03/tensor_i64_shape_rank_test: link $builddir/obj/tests/c12/f03/tensor_i64_shape_rank_test.o $builddir/obj/tensor_i64_public.o $builddir/obj/tensor_contract.o
+build c12-f03-tests: phony $builddir/tests/c12/f03/tensor_i64_shape_rank_test c12-f02-tests
+build $builddir/obj/tests/c12/f04/tensor_i64_layout_test.o: nasm tests/c12/f04/tensor_i64_layout_test.asm | runtime/tensor/tensor_i64_public.inc
+build $builddir/tests/c12/f04/tensor_i64_layout_test: link $builddir/obj/tests/c12/f04/tensor_i64_layout_test.o $builddir/obj/tensor_i64_public.o $builddir/obj/tensor_contract.o
+build c12-f04-tests: phony $builddir/tests/c12/f04/tensor_i64_layout_test c12-f03-tests
+build $builddir/obj/tests/c12/f05/tensor_i64_constructors_test.o: nasm tests/c12/f05/tensor_i64_constructors_test.asm | runtime/tensor/tensor_i64_public.inc
+build $builddir/tests/c12/f05/tensor_i64_constructors_test: link $builddir/obj/tests/c12/f05/tensor_i64_constructors_test.o $builddir/obj/tensor_i64_public.o $builddir/obj/tensor_contract.o
+build c12-f05-tests: phony $builddir/tests/c12/f05/tensor_i64_constructors_test c12-f04-tests
+build $builddir/obj/tests/c12/f06/tensor_i64_index_mutation_test.o: nasm tests/c12/f06/tensor_i64_index_mutation_test.asm | runtime/tensor/tensor_i64_public.inc
+build $builddir/tests/c12/f06/tensor_i64_index_mutation_test: link $builddir/obj/tests/c12/f06/tensor_i64_index_mutation_test.o $builddir/obj/tensor_i64_public.o $builddir/obj/tensor_contract.o
+build c12-f06-tests: phony $builddir/tests/c12/f06/tensor_i64_index_mutation_test c12-f05-tests
+build $builddir/obj/tests/c12/f07/tensor_i64_views_test.o: nasm tests/c12/f07/tensor_i64_views_test.asm | runtime/tensor/tensor_i64_public.inc
+build $builddir/tests/c12/f07/tensor_i64_views_test: link $builddir/obj/tests/c12/f07/tensor_i64_views_test.o $builddir/obj/tensor_i64_public.o $builddir/obj/tensor_contract.o
+build c12-f07-tests: phony $builddir/tests/c12/f07/tensor_i64_views_test c12-f06-tests
+build $builddir/obj/tests/c12/f08/tensor_i64_transforms_test.o: nasm tests/c12/f08/tensor_i64_transforms_test.asm | runtime/tensor/tensor_i64_public.inc
+build $builddir/tests/c12/f08/tensor_i64_transforms_test: link $builddir/obj/tests/c12/f08/tensor_i64_transforms_test.o $builddir/obj/tensor_i64_public.o $builddir/obj/tensor_contract.o
+build c12-f08-tests: phony $builddir/tests/c12/f08/tensor_i64_transforms_test c12-f07-tests
+build $builddir/obj/tests/c12/f09/tensor_i64_broadcast_test.o: nasm tests/c12/f09/tensor_i64_broadcast_test.asm | runtime/tensor/tensor_i64_public.inc
+build $builddir/tests/c12/f09/tensor_i64_broadcast_test: link $builddir/obj/tests/c12/f09/tensor_i64_broadcast_test.o $builddir/obj/tensor_i64_public.o $builddir/obj/tensor_contract.o
+build c12-f09-tests: phony $builddir/tests/c12/f09/tensor_i64_broadcast_test c12-f08-tests
+build $builddir/obj/tests/c12/f10/tensor_i64_elementwise_test.o: nasm tests/c12/f10/tensor_i64_elementwise_test.asm | runtime/tensor/tensor_i64_public.inc
+build $builddir/tests/c12/f10/tensor_i64_elementwise_test: link $builddir/obj/tests/c12/f10/tensor_i64_elementwise_test.o $builddir/obj/tensor_i64_public.o $builddir/obj/tensor_contract.o
+build c12-f10-tests: phony $builddir/tests/c12/f10/tensor_i64_elementwise_test c12-f09-tests
+build $builddir/obj/tests/c12/f11/tensor_i64_reductions_test.o: nasm tests/c12/f11/tensor_i64_reductions_test.asm | runtime/tensor/tensor_i64_public.inc
+build $builddir/tests/c12/f11/tensor_i64_reductions_test: link $builddir/obj/tests/c12/f11/tensor_i64_reductions_test.o $builddir/obj/tensor_i64_public.o $builddir/obj/tensor_contract.o
+build c12-f11-tests: phony $builddir/tests/c12/f11/tensor_i64_reductions_test c12-f10-tests
+build $builddir/obj/tests/c12/f12/tensor_i64_alias_failure_test.o: nasm tests/c12/f12/tensor_i64_alias_failure_test.asm | runtime/tensor/tensor_i64_public.inc
+build $builddir/tests/c12/f12/tensor_i64_alias_failure_test: link $builddir/obj/tests/c12/f12/tensor_i64_alias_failure_test.o $builddir/obj/tensor_i64_public.o $builddir/obj/tensor_contract.o
+build c12-f12-tests: phony $builddir/tests/c12/f12/tensor_i64_alias_failure_test c12-f11-tests
+build $builddir/obj/tests/c12/f13/tensor_i64_abi_test.o: nasm tests/c12/f13/tensor_i64_abi_test.asm | runtime/tensor/tensor_i64_public.inc
+build $builddir/tests/c12/f13/tensor_i64_abi_test: link $builddir/obj/tests/c12/f13/tensor_i64_abi_test.o $builddir/obj/tensor_i64_public.o $builddir/obj/tensor_contract.o
+build c12-f13-tests: phony $builddir/tests/c12/f13/tensor_i64_abi_test c12-f12-tests build/bin/neboc
+build $builddir/obj/tests/c12/f14/tensor_i64_adapter_test.o: nasm tests/c12/f14/tensor_i64_adapter_test.asm | runtime/tensor/tensor_i64_public.inc
+build $builddir/tests/c12/f14/tensor_i64_adapter_test: link $builddir/obj/tests/c12/f14/tensor_i64_adapter_test.o $builddir/obj/tensor_i64_public.o $builddir/obj/tensor_contract.o
+build c12-f14-tests: phony $builddir/tests/c12/f14/tensor_i64_adapter_test c12-f13-tests
+build $builddir/obj/tests/c12/f15/tensor_i64_differential_test.o: nasm tests/c12/f15/tensor_i64_differential_test.asm | runtime/tensor/tensor_i64_public.inc
+build $builddir/tests/c12/f15/tensor_i64_differential_test: link $builddir/obj/tests/c12/f15/tensor_i64_differential_test.o $builddir/obj/tensor_i64_public.o $builddir/obj/tensor_contract.o
+build c12-f15-tests: phony $builddir/tests/c12/f15/tensor_i64_differential_test c12-f14-tests
 build $builddir/obj/tests/rf27-g16/f01/tensor_contract_test.o: nasm tests/rf27-g16/f01/tensor_contract_test.asm | compiler/semantic/tensor/tensor_contract.inc
 build $builddir/tests/rf27-g16/f01/tensor_contract_test: link $builddir/obj/tests/rf27-g16/f01/tensor_contract_test.o $builddir/obj/tensor_contract.o
 build rf27-g16-f01-tests: phony $builddir/tests/rf27-g16/f01/tensor_contract_test rf27-g15-f07-tests
@@ -937,13 +1336,13 @@ build rf27-g18-f04-tests: phony $builddir/tests/rf27-g18/f04/headless_window_tes
 
 # RF27-G18-F05 bounded direct-X11 Window backend and typed input routing.
 build $builddir/obj/x11_window.o: nasm runtime/window/x11/x11_window.asm | runtime/window/x11/x11_window.inc runtime/window/headless/headless_window.inc runtime/window/window_contract.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_protocol.inc runtime/console/platform/adapter_contract.inc
-build $builddir/obj/tests/rf27-g18/f05/x11_window_test.o: nasm tests/rf27-g18/f05/x11_window_test.asm | runtime/window/x11/x11_window.inc
+build $builddir/obj/tests/rf27-g18/f05/x11_window_test.o: nasm tests/rf27-g18/f05/x11_window_test.asm | runtime/window/x11/x11_window.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.inc
 build $builddir/tests/rf27-g18/f05/x11_window_test: link $builddir/obj/tests/rf27-g18/f05/x11_window_test.o $builddir/obj/x11_window.o $builddir/obj/headless_window.o $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o $builddir/obj/runtime/console/platform/adapter_contract.o $builddir/obj/task.o $builddir/obj/cancel.o
   ldflags = -z noexecstack
-build $builddir/obj/tests/rf27-g18/f05/x11_live_test.o: nasm tests/rf27-g18/f05/x11_live_test.asm | runtime/window/x11/x11_window.inc
+build $builddir/obj/tests/rf27-g18/f05/x11_live_test.o: nasm tests/rf27-g18/f05/x11_live_test.asm | runtime/window/x11/x11_window.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.inc
 build $builddir/tests/rf27-g18/f05/x11_live_test: link $builddir/obj/tests/rf27-g18/f05/x11_live_test.o $builddir/obj/x11_window.o $builddir/obj/headless_window.o $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o $builddir/obj/runtime/console/platform/adapter_contract.o $builddir/obj/task.o $builddir/obj/cancel.o
   ldflags = -z noexecstack
-build $builddir/obj/examples/rf27-g18/x11-window.o: nasm examples/native/rf27-g18/x11-window.asm | runtime/window/x11/x11_window.inc
+build $builddir/obj/examples/rf27-g18/x11-window.o: nasm examples/native/rf27-g18/x11-window.asm | runtime/window/x11/x11_window.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.inc
 build $builddir/examples/rf27-g18/x11-window: link $builddir/obj/examples/rf27-g18/x11-window.o $builddir/obj/x11_window.o $builddir/obj/headless_window.o $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o $builddir/obj/runtime/console/platform/adapter_contract.o $builddir/obj/task.o $builddir/obj/cancel.o
   ldflags = -z noexecstack
 build rf27-g18-f05-tests: phony $builddir/tests/rf27-g18/f05/x11_window_test $builddir/tests/rf27-g18/f05/x11_live_test $builddir/examples/rf27-g18/x11-window rf27-g18-f04-tests mf053-native-input-tests
@@ -985,15 +1384,22 @@ build $builddir/bin/neboc: link $
   $builddir/obj/snippet.o $
   $builddir/obj/diagnostic_catalog.o $
   $builddir/obj/diagnostic_registry.o $
+  $builddir/obj/warning_registry.o $
   $builddir/obj/diagnostic_store.o $
   $builddir/obj/diagnostic_renderer.o $
   $builddir/obj/diagnostics_source_diagnostic_renderer.o $
   $builddir/obj/warning_policy.o $
+  $builddir/obj/warning_config.o $
+  $builddir/obj/warning_cli_policy.o $
+  $builddir/obj/warning_guidance.o $
   $builddir/obj/diagnostic_recovery.o $
   $builddir/obj/diagnostic_machine.o $
   $builddir/obj/diagnostic_explain.o $
   $builddir/obj/diagnostic_ice.o $
   $builddir/obj/diagnostic_observability.o $
+  $builddir/obj/analysis.o $
+  $builddir/obj/warning_liveness.o $
+  $builddir/obj/unused_bindings.o $
   $builddir/obj/token_kind.o $
   $builddir/obj/lexer.o $
   $builddir/obj/numeric_literal_contract.o $
@@ -1003,6 +1409,10 @@ build $builddir/bin/neboc: link $
   $builddir/obj/ast_store.o $
   $builddir/obj/ast_dump.o $
   $builddir/obj/parser.o $
+  $builddir/obj/target_manifest.o $
+  $builddir/obj/c03_target_registry.o $
+  $builddir/obj/target_path.o $
+  $builddir/obj/test_runner_plan.o $
   $builddir/obj/expression_pratt.o $
   $builddir/obj/statement_parser.o $
   $builddir/obj/mutable_assignment_parser.o $
@@ -1077,6 +1487,7 @@ build $builddir/bin/neboc: link $
   $builddir/obj/g09_programmer_type_codegen.o $
   $builddir/obj/struct_tuple.o $
   $builddir/obj/product_layout.o $
+  $builddir/obj/tuple_function_abi.o $
   $builddir/obj/struct_tuple_plan.o $
   $builddir/obj/struct_tuple_codegen.o $
   $builddir/obj/array_range.o $
@@ -1209,12 +1620,37 @@ build $builddir/bin/neboc: link $
   $builddir/obj/abi_adapter.o $
   $builddir/obj/abi_diagnostics.o $
   $builddir/obj/format_adapter.o $
+  $builddir/obj/interface_reader.o $
   $builddir/obj/runtime_core.o $
   $builddir/obj/runtime_lowering.o $
   $builddir/obj/toolchain_descriptor.o $
-  $builddir/obj/toolchain_diagnostics.o
+  $builddir/obj/toolchain_diagnostics.o | $builddir/obj/runtime_practical_io.o
 
 build neboc: phony $builddir/bin/neboc
+
+# Post-1.0 regression: a bounded Buffer owner cannot replace a mixed start()
+# body or make check/build green while observable statements are omitted.
+build $builddir/tests/regressions/false-green-buffer-route.stamp: false_green_buffer_route_regression $
+  tests/regressions/false-green-buffer-route/validate.sh $
+  tests/regressions/false-green-buffer-route/r-a-one-scan-explicit-return.no $
+  tests/regressions/false-green-buffer-route/r-b-two-interleaved-scans.no $
+  tests/regressions/false-green-buffer-route/r-c-two-consecutive-scans.no $
+  tests/regressions/false-green-buffer-route/r-d-console-before-buffer.no $
+  tests/regressions/false-green-buffer-route/r-e-scan-before-buffer.no $
+  tests/regressions/false-green-buffer-route/r-f-transition-prefix.no $
+  tests/regressions/false-green-buffer-route/r-f-transition-prefix-exact.no $
+  tests/regressions/false-green-buffer-route/NEBO-v1.0-INVENTARIO-PRATICO.no | $builddir/bin/neboc
+build false-green-buffer-route-test: phony $builddir/tests/regressions/false-green-buffer-route.stamp
+
+# C03-F07 strict manifest/TargetId/private synthetic runner recovery.
+build $builddir/obj/tests/c03/f07/manifest_target_test.o: nasm tests/c03/f07/manifest_target_test.asm | compiler/parser/target_manifest.inc compiler/semantic/modules/target_path.inc
+build $builddir/tests/c03/f07/manifest_target_test: link $
+  $builddir/obj/tests/c03/f07/manifest_target_test.o $
+  $builddir/obj/target_manifest.o $
+  $builddir/obj/c03_target_registry.o $
+  $builddir/obj/target_path.o $
+  $builddir/obj/process_exit.o
+build c03-f07-tests: phony $builddir/tests/c03/f07/manifest_target_test $builddir/bin/neboc
 
 build $builddir/obj/tests/abi/internal/mf004_contract_test.o: nasm tests/abi/internal/mf004_contract_test.asm
 
@@ -1457,8 +1893,94 @@ build rf52-g47-f03-example: phony $builddir/examples/rf52-g47/diagnostic_rendere
 
 # RF52-G47-F04 warning levels, groups and monotonic forbid.
 build $builddir/obj/tests/rf52-g47/f04/warning_policy_test.o: nasm tests/rf52-g47/f04/warning_policy_test.asm | compiler/diagnostics/warning_policy.inc compiler/diagnostics/diagnostic.inc
-build $builddir/tests/rf52-g47/f04/warning_policy_test: link $builddir/obj/tests/rf52-g47/f04/warning_policy_test.o $builddir/obj/warning_policy.o $builddir/obj/diagnostic_registry.o $builddir/obj/diagnostic_store.o $builddir/obj/process_exit.o
+build $builddir/tests/rf52-g47/f04/warning_policy_test: link $builddir/obj/tests/rf52-g47/f04/warning_policy_test.o $builddir/obj/warning_policy.o $builddir/obj/warning_registry.o $builddir/obj/diagnostic_registry.o $builddir/obj/diagnostic_store.o $builddir/obj/process_exit.o
 build rf52-g47-f04-tests: phony $builddir/tests/rf52-g47/f04/warning_policy_test rf52-g47-f03-tests
+
+# C04-F01 canonical Warning schema and exact registry.
+build $builddir/obj/tests/c04/f01/warning_registry_test.o: nasm tests/c04/f01/warning_registry_test.asm | compiler/diagnostics/warning_registry.inc compiler/diagnostics/warning_policy.inc compiler/diagnostics/explain.inc compiler/diagnostics/diagnostic.inc
+build $builddir/tests/c04/f01/warning_registry_test: link $builddir/obj/tests/c04/f01/warning_registry_test.o $builddir/obj/warning_registry.o $builddir/obj/diagnostic_registry.o $builddir/obj/process_exit.o
+build c04-f01-tests: phony $builddir/tests/c04/f01/warning_registry_test rf52-g47-f04-tests
+
+# C04-F02 severity lattice, exact selectors, inheritance and monotonic forbid.
+build $builddir/obj/tests/c04/f02/warning_severity_policy_test.o: nasm tests/c04/f02/warning_severity_policy_test.asm | compiler/diagnostics/warning_policy.inc compiler/diagnostics/diagnostic.inc
+build $builddir/tests/c04/f02/warning_severity_policy_test: link $builddir/obj/tests/c04/f02/warning_severity_policy_test.o $builddir/obj/warning_policy.o $builddir/obj/warning_registry.o $builddir/obj/diagnostic_registry.o $builddir/obj/diagnostic_store.o $builddir/obj/process_exit.o
+build c04-f02-tests: phony $builddir/tests/c04/f02/warning_severity_policy_test c04-f01-tests
+
+# C04-F03 deterministic workspace/package/module/source/CLI precedence.
+build $builddir/obj/tests/c04/f03/warning_config_precedence_test.o: nasm tests/c04/f03/warning_config_precedence_test.asm | compiler/diagnostics/warning_config.inc compiler/diagnostics/warning_policy.inc compiler/diagnostics/diagnostic.inc
+build $builddir/tests/c04/f03/warning_config_precedence_test: link $builddir/obj/tests/c04/f03/warning_config_precedence_test.o $builddir/obj/warning_config.o $builddir/obj/warning_policy.o $builddir/obj/warning_registry.o $builddir/obj/diagnostic_registry.o $builddir/obj/diagnostic_store.o $builddir/obj/process_exit.o
+build c04-f03-tests: phony $builddir/tests/c04/f03/warning_config_precedence_test c04-f02-tests
+
+# C04-F04 causal SourceMap provenance, semantic deduplication and stable order.
+build $builddir/obj/tests/c04/f04/warning_span_order_test.o: nasm tests/c04/f04/warning_span_order_test.asm | compiler/source/source_map.inc compiler/diagnostics/recovery.inc compiler/diagnostics/diagnostic.inc
+build $builddir/tests/c04/f04/warning_span_order_test: link $builddir/obj/tests/c04/f04/warning_span_order_test.o $builddir/obj/diagnostic_recovery.o $builddir/obj/source_map.o $builddir/obj/process_exit.o
+build c04-f04-tests: phony $builddir/tests/c04/f04/warning_span_order_test c04-f03-tests rf52-g47-f05-tests
+
+# C04-F05 canonical human warning rendering with color-independent semantics.
+build $builddir/obj/tests/c04/f05/warning_human_renderer_test.o: nasm tests/c04/f05/warning_human_renderer_test.asm | compiler/diagnostics/warning_human.inc compiler/diagnostics/warning_registry.inc compiler/diagnostics/diagnostic.inc compiler/diagnostics/renderer.inc compiler/diagnostics/explain.inc compiler/source/source_map.inc
+build $builddir/tests/c04/f05/warning_human_renderer_test: link $builddir/obj/tests/c04/f05/warning_human_renderer_test.o $builddir/obj/warning_human.o $builddir/obj/warning_registry.o $builddir/obj/diagnostic_explain.o $builddir/obj/source_map.o $builddir/obj/diagnostic_registry.o $builddir/obj/diagnostic_store.o $builddir/obj/diagnostics_source_diagnostic_renderer.o $builddir/obj/process_exit.o
+build c04-f05-tests: phony $builddir/tests/c04/f05/warning_human_renderer_test c04-f04-tests rf52-g47-f07-tests
+
+# C04-F06 exact JSON/JSONL/SARIF/LSP warning semantic parity.
+build $builddir/obj/tests/c04/f06/warning_machine_parity_test.o: nasm tests/c04/f06/warning_machine_parity_test.asm | compiler/diagnostics/machine.inc compiler/diagnostics/diagnostic.inc compiler/source/source_map.inc
+build $builddir/tests/c04/f06/warning_machine_parity_test: link $builddir/obj/tests/c04/f06/warning_machine_parity_test.o $builddir/obj/diagnostic_machine.o $builddir/obj/source_map.o $builddir/obj/diagnostic_registry.o $builddir/obj/diagnostic_store.o $builddir/obj/process_exit.o
+build c04-f06-tests: phony $builddir/tests/c04/f06/warning_machine_parity_test c04-f05-tests rf52-g47-f06-tests
+
+# C04-F07 warning exit status, warnings-as-errors, cap-lints and exact baselines.
+build $builddir/obj/tests/c04/f07/warning_cli_policy_test.o: nasm tests/c04/f07/warning_cli_policy_test.asm | compiler/diagnostics/warning_cli_policy.inc compiler/diagnostics/warning_policy.inc compiler/driver/cli/linux-x86_64/cli_driver.inc
+build $builddir/tests/c04/f07/warning_cli_policy_test: link $builddir/obj/tests/c04/f07/warning_cli_policy_test.o $builddir/obj/warning_cli_policy.o $builddir/obj/process_exit.o
+build $builddir/tests/c04/f07/cli-validation.ok: c04_f07_cli_validation build/bin/neboc | tests/c04/f07/validate-cli.sh
+build c04-f07-tests: phony $builddir/tests/c04/f07/warning_cli_policy_test $builddir/tests/c04/f07/cli-validation.ok c04-f06-tests
+
+# C04-F08 explicit suppressions, offline explanations and nonmutating fix preview.
+build $builddir/obj/tests/c04/f08/warning_guidance_test.o: nasm tests/c04/f08/warning_guidance_test.asm | compiler/diagnostics/warning_guidance.inc compiler/diagnostics/warning_policy.inc compiler/diagnostics/warning_registry.inc compiler/diagnostics/explain.inc compiler/diagnostics/diagnostic.inc compiler/source/source_map.inc
+build $builddir/tests/c04/f08/warning_guidance_test: link $builddir/obj/tests/c04/f08/warning_guidance_test.o $builddir/obj/warning_guidance.o $builddir/obj/warning_policy.o $builddir/obj/warning_registry.o $builddir/obj/diagnostic_explain.o $builddir/obj/source_map.o $builddir/obj/diagnostic_registry.o $builddir/obj/diagnostic_store.o $builddir/obj/process_exit.o
+build c04-f08-tests: phony $builddir/tests/c04/f08/warning_guidance_test c04-f07-tests rf52-g47-f07-tests
+
+# C05-F01 bounded CFG/data-flow/liveness substrate for unused warnings.
+build $builddir/obj/tests/c05/f01/warning_liveness_substrate_test.o: nasm tests/c05/f01/warning_liveness_substrate_test.asm | compiler/analysis/warning_liveness.inc compiler/analysis/analysis.inc
+build $builddir/tests/c05/f01/warning_liveness_substrate_test: link $builddir/obj/tests/c05/f01/warning_liveness_substrate_test.o $builddir/obj/warning_liveness.o $builddir/obj/analysis.o $builddir/obj/process_exit.o
+build c05-f01-tests: phony $builddir/tests/c05/f01/warning_liveness_substrate_test c04-f08-tests rf52-g48-f01-tests
+
+# C05-F02 resolved-identity unused immutable local warnings.
+build $builddir/obj/tests/c05/f02/unused_immutable_local_test.o: nasm tests/c05/f02/unused_immutable_local_test.asm | compiler/lint/unused_bindings.inc compiler/analysis/warning_liveness.inc compiler/analysis/analysis.inc
+build $builddir/tests/c05/f02/unused_immutable_local_test: link $builddir/obj/tests/c05/f02/unused_immutable_local_test.o $builddir/obj/unused_bindings.o $builddir/obj/warning_liveness.o $builddir/obj/analysis.o $builddir/obj/process_exit.o
+build c05-f02-tests: phony $builddir/tests/c05/f02/unused_immutable_local_test c05-f01-tests rf52-g48-f02-tests
+
+# C05-F03 unused mutable bindings; writes alone are not reads.
+build $builddir/obj/tests/c05/f03/unused_mutable_binding_test.o: nasm tests/c05/f03/unused_mutable_binding_test.asm | compiler/lint/unused_bindings.inc compiler/analysis/warning_liveness.inc compiler/analysis/analysis.inc
+build $builddir/tests/c05/f03/unused_mutable_binding_test: link $builddir/obj/tests/c05/f03/unused_mutable_binding_test.o $builddir/obj/unused_bindings.o $builddir/obj/warning_liveness.o $builddir/obj/analysis.o $builddir/obj/process_exit.o
+build c05-f03-tests: phony $builddir/tests/c05/f03/unused_mutable_binding_test c05-f02-tests
+
+# C05-F04 conservative dead stores and assigned-but-never-read values.
+build $builddir/obj/tests/c05/f04/dead_store_warning_test.o: nasm tests/c05/f04/dead_store_warning_test.asm | compiler/lint/unused_bindings.inc compiler/analysis/warning_liveness.inc compiler/analysis/analysis.inc
+build $builddir/tests/c05/f04/dead_store_warning_test: link $builddir/obj/tests/c05/f04/dead_store_warning_test.o $builddir/obj/unused_bindings.o $builddir/obj/warning_liveness.o $builddir/obj/analysis.o $builddir/obj/process_exit.o
+build c05-f04-tests: phony $builddir/tests/c05/f04/dead_store_warning_test c05-f03-tests
+
+# C05-F05 unused parameters, receiver and captures.
+build $builddir/obj/tests/c05/f05/unused_callable_inputs_test.o: nasm tests/c05/f05/unused_callable_inputs_test.asm | compiler/lint/unused_bindings.inc compiler/analysis/warning_liveness.inc compiler/analysis/analysis.inc
+build $builddir/tests/c05/f05/unused_callable_inputs_test: link $builddir/obj/tests/c05/f05/unused_callable_inputs_test.o $builddir/obj/unused_bindings.o $builddir/obj/warning_liveness.o $builddir/obj/analysis.o $builddir/obj/process_exit.o
+build c05-f05-tests: phony $builddir/tests/c05/f05/unused_callable_inputs_test c05-f04-tests
+
+# C05-F06 unused imports, aliases and reexports.
+build $builddir/obj/tests/c05/f06/unused_module_bindings_test.o: nasm tests/c05/f06/unused_module_bindings_test.asm | compiler/lint/unused_bindings.inc compiler/analysis/warning_liveness.inc compiler/analysis/analysis.inc
+build $builddir/tests/c05/f06/unused_module_bindings_test: link $builddir/obj/tests/c05/f06/unused_module_bindings_test.o $builddir/obj/unused_bindings.o $builddir/obj/warning_liveness.o $builddir/obj/analysis.o $builddir/obj/process_exit.o
+build c05-f06-tests: phony $builddir/tests/c05/f06/unused_module_bindings_test c05-f05-tests
+
+# C05-F07 unused private functions, constants and types.
+build $builddir/obj/tests/c05/f07/unused_private_symbols_test.o: nasm tests/c05/f07/unused_private_symbols_test.asm | compiler/lint/unused_bindings.inc compiler/analysis/warning_liveness.inc compiler/analysis/analysis.inc
+build $builddir/tests/c05/f07/unused_private_symbols_test: link $builddir/obj/tests/c05/f07/unused_private_symbols_test.o $builddir/obj/unused_bindings.o $builddir/obj/warning_liveness.o $builddir/obj/analysis.o $builddir/obj/process_exit.o
+build c05-f07-tests: phony $builddir/tests/c05/f07/unused_private_symbols_test c05-f06-tests
+
+# C05-F08 intentional-unused naming and scoped suppression policy.
+build $builddir/obj/tests/c05/f08/intentional_unused_policy_test.o: nasm tests/c05/f08/intentional_unused_policy_test.asm | compiler/lint/unused_bindings.inc compiler/analysis/analysis.inc
+build $builddir/tests/c05/f08/intentional_unused_policy_test: link $builddir/obj/tests/c05/f08/intentional_unused_policy_test.o $builddir/obj/unused_bindings.o $builddir/obj/warning_liveness.o $builddir/obj/analysis.o $builddir/obj/process_exit.o
+build c05-f08-tests: phony $builddir/tests/c05/f08/intentional_unused_policy_test c05-f07-tests c04-f08-tests
+
+# C05-F09 nonmutating fix previews, false-positive corpus and incremental parity.
+build $builddir/obj/tests/c05/f09/unused_fix_incremental_test.o: nasm tests/c05/f09/unused_fix_incremental_test.asm | compiler/lint/unused_bindings.inc compiler/analysis/warning_liveness.inc compiler/analysis/analysis.inc
+build $builddir/tests/c05/f09/unused_fix_incremental_test: link $builddir/obj/tests/c05/f09/unused_fix_incremental_test.o $builddir/obj/unused_bindings.o $builddir/obj/warning_liveness.o $builddir/obj/analysis.o $builddir/obj/process_exit.o
+build c05-f09-tests: phony $builddir/tests/c05/f09/unused_fix_incremental_test c05-f08-tests rf52-g48-f06-tests
 
 # RF52-G47-F05 bounded diagnostic recovery and cascade control.
 build $builddir/obj/tests/rf52-g47/f05/recovery_cascade_test.o: nasm tests/rf52-g47/f05/recovery_cascade_test.asm | compiler/diagnostics/recovery.inc compiler/parser/source_span_recovery.inc compiler/diagnostics/diagnostic.inc
@@ -2290,6 +2812,16 @@ build $builddir/tests/mf051/platform_adapter_test: link $
 
 build mf051-platform-adapter-tests: phony $builddir/tests/mf051/platform_adapter_test
 
+build $builddir/obj/tests/platform/linux-x11-ewmh-direct-v0/pid_metadata_protocol_test.o: nasm tests/platform/linux-x11-ewmh-direct-v0/pid_metadata_protocol_test.asm | runtime/console/platform/adapter_contract.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_protocol.inc
+
+build $builddir/tests/mf051/pid_metadata_protocol_test: link $
+  $builddir/obj/tests/platform/linux-x11-ewmh-direct-v0/pid_metadata_protocol_test.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o $
+  $builddir/obj/process_exit.o
+
+build x11-pid-metadata-protocol-test: phony $builddir/tests/mf051/pid_metadata_protocol_test
+
 # MF052 — native Nebo chrome, EWMH lifecycle actions and controlled resize
 build $builddir/obj/runtime/console/chrome/window_chrome.o: nasm runtime/console/chrome/window_chrome.asm | runtime/console/chrome/window_chrome.inc runtime/console/render/software_surface.inc
 
@@ -2318,6 +2850,89 @@ build $builddir/tests/mf053/native_input_test: link $
   $builddir/obj/process_exit.o
 
 build mf053-native-input-tests: phony $builddir/tests/mf053/native_input_test $builddir/tests/mf052/native_window_test
+
+# P1 Console drag/resize direct-X11 ordering and bounded lifecycle recovery.
+build $builddir/obj/tests/console-drag-lifecycle/moveresize_protocol_test.o: nasm tests/console-drag-lifecycle/moveresize_protocol_test.asm | runtime/console/platform/adapter_contract.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_protocol.inc
+
+build $builddir/tests/console-drag-lifecycle/moveresize_protocol_test: link $
+  $builddir/obj/tests/console-drag-lifecycle/moveresize_protocol_test.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+
+build console-drag-lifecycle-test: phony $builddir/tests/console-drag-lifecycle/moveresize_protocol_test
+
+# P1 recovery — maximize/restore EWMH encoding, geometry and state lifecycle.
+build $builddir/obj/tests/console-restore-lifecycle/restore_protocol_test.o: nasm tests/console-restore-lifecycle/restore_protocol_test.asm | runtime/console/platform/adapter_contract.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_protocol.inc
+
+build $builddir/tests/console-restore-lifecycle/restore_protocol_test: link $
+  $builddir/obj/tests/console-restore-lifecycle/restore_protocol_test.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+
+build console-restore-lifecycle-test: phony $builddir/tests/console-restore-lifecycle/restore_protocol_test
+
+# R2 Console resize hitbox, direction, geometry and event-state recovery.
+build $builddir/obj/tests/console-resize-lifecycle/resize_protocol_test.o: nasm tests/console-resize-lifecycle/resize_protocol_test.asm | runtime/console/chrome/window_chrome.inc runtime/console/platform/adapter_contract.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_protocol.inc
+
+build $builddir/obj/tests/console-resize-lifecycle/cursor_live_test.o: nasm tests/console-resize-lifecycle/cursor_live_test.asm | runtime/console/chrome/window_chrome.inc runtime/console/platform/adapter_contract.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_protocol.inc
+
+build $builddir/obj/tests/console-resize-lifecycle/top_boundary_layout_test.o: nasm tests/console-resize-lifecycle/top_boundary_layout_test.asm | runtime/core/runtime_core.inc runtime/console/document/console_document.inc runtime/console/layout/console_layout.inc runtime/console/render/fake_glyph_provider.inc
+
+build $builddir/obj/tests/console-resize-lifecycle/repaint_protocol_test.o: nasm tests/console-resize-lifecycle/repaint_protocol_test.asm | runtime/console/platform/adapter_contract.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_protocol.inc runtime/console/render/software_surface.inc
+
+build $builddir/obj/tests/console-resize-lifecycle/repaint_frame_dump.o: nasm tests/console-resize-lifecycle/repaint_frame_dump.asm | runtime/core/runtime_core.inc runtime/console/live/live_console.inc runtime/console/chrome/window_chrome.inc runtime/console/render/software_surface.inc
+
+build $builddir/obj/tests/console-resize-lifecycle/jitter_geometry_test.o: nasm tests/console-resize-lifecycle/jitter_geometry_test.asm | runtime/console/chrome/window_chrome.inc runtime/console/platform/adapter_contract.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_protocol.inc
+
+build $builddir/obj/tests/console-resize-lifecycle/jitter_frame_test.o: nasm tests/console-resize-lifecycle/jitter_frame_test.asm | runtime/core/runtime_core.inc runtime/console/live/live_console.inc runtime/console/chrome/window_chrome.inc runtime/console/render/software_surface.inc
+
+build $builddir/tests/console-resize-lifecycle/resize_protocol_test: link $
+  $builddir/obj/tests/console-resize-lifecycle/resize_protocol_test.o $
+  $builddir/obj/runtime/console/chrome/window_chrome.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+
+build $builddir/tests/console-resize-lifecycle/cursor_live_test: link $
+  $builddir/obj/tests/console-resize-lifecycle/cursor_live_test.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+
+build $builddir/tests/console-resize-lifecycle/top_boundary_layout_test: link $
+  $builddir/obj/tests/console-resize-lifecycle/top_boundary_layout_test.o $
+  $builddir/obj/runtime_core.o
+
+build $builddir/tests/console-resize-lifecycle/repaint_protocol_test: link $
+  $builddir/obj/tests/console-resize-lifecycle/repaint_protocol_test.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+
+build $builddir/tests/console-resize-lifecycle/repaint_frame_dump: link $
+  $builddir/obj/tests/console-resize-lifecycle/repaint_frame_dump.o $
+  $builddir/obj/runtime/console/live/live_visual.o $
+  $builddir/obj/runtime/console/chrome/window_chrome.o $
+  $builddir/obj/runtime_core.o
+
+build $builddir/tests/console-resize-lifecycle/jitter_geometry_test: link $
+  $builddir/obj/tests/console-resize-lifecycle/jitter_geometry_test.o $
+  $builddir/obj/runtime/console/platform/adapter_contract.o $
+  $builddir/obj/runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.o
+
+build $builddir/tests/console-resize-lifecycle/jitter_frame_test: link $
+  $builddir/obj/tests/console-resize-lifecycle/jitter_frame_test.o $
+  $builddir/obj/runtime/console/live/live_visual.o $
+  $builddir/obj/runtime/console/chrome/window_chrome.o $
+  $builddir/obj/runtime_core.o
+
+build console-resize-lifecycle-test: phony $builddir/tests/console-resize-lifecycle/resize_protocol_test $builddir/tests/console-resize-lifecycle/cursor_live_test $builddir/tests/console-resize-lifecycle/top_boundary_layout_test $builddir/tests/console-resize-lifecycle/repaint_protocol_test $builddir/tests/console-resize-lifecycle/repaint_frame_dump $builddir/tests/console-resize-lifecycle/jitter_geometry_test $builddir/tests/console-resize-lifecycle/jitter_frame_test
+
+# P1 pending Scan close cancellation/unwind.
+build $builddir/obj/tests/console-scan-close/scan_close_state_test.o: nasm tests/console-scan-close/scan_close_state_test.asm | runtime/core/runtime_core.inc runtime/console/manager/console_manager.inc runtime/console/input/routing/scan_routing.inc runtime/console/input/registry/input_registry.inc runtime/console/pending/pending_registry.inc
+
+build $builddir/tests/console-scan-close/scan_close_state_test: link $
+  $builddir/obj/tests/console-scan-close/scan_close_state_test.o $
+  $builddir/obj/runtime_core.o
+
+build console-scan-close-test: phony $builddir/tests/console-scan-close/scan_close_state_test
 
 # MF054 — visual Console output conformance through the real direct-X11 adapter
 build $builddir/obj/tests/e2e/console-output/mf054_visual_console_test.o: nasm tests/e2e/console-output/mf054_visual_console_test.asm | runtime/core/runtime_core.inc runtime/console/document/console_document.inc runtime/console/layout/console_layout.inc runtime/console/behavior/console_behavior.inc runtime/console/renderer-registry/renderer_registry.inc runtime/console/render/fake_glyph_provider.inc runtime/console/render/render_tree.inc runtime/console/render/draw_command.inc runtime/console/render/software_surface.inc runtime/console/render/output_conformance.inc runtime/console/platform/adapter_contract.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_adapter.inc runtime/console/platform/linux-x11-ewmh-direct-v0/x11_protocol.inc
@@ -3335,7 +3950,7 @@ build g23-pf002-quality-contract-tests: phony $builddir/tests/g23-pf002/quality_
 # G22-PF006 tooling/docs/release evidence; no product semantic change.
 build g22-pf006-privacy-tooling-docs-evidence: phony g22-pf005-privacy-public
 
-# Final local-only checksum-program closeout; no release, tag, commit or remote.
+# Final checksum-program closeout for the offline build graph.
 build g10-g20-program-closeout: phony g20-pf006-tooling-docs-evidence
 
 # G27-PF006 tooling/docs/release evidence; no product semantic change.
@@ -3623,7 +4238,7 @@ build $builddir/tests/rf27-g07/f05/ring_test: link $builddir/obj/tests/rf27-g07/
 build rf27-g07-f05: phony $builddir/tests/rf27-g07/f05/ring_test rf27-g07-f04
 
 # RF27-G07-F06 bounded sequential iterators.
-build $builddir/obj/iterator.o: nasm runtime/collections/iterator.asm | compiler/semantic/collections/iterator.inc compiler/semantic/collections/ring_core.inc compiler/semantic/collections/public_slice.inc
+build $builddir/obj/iterator.o: nasm runtime/collections/iterator.asm | compiler/semantic/collections/iterator.inc compiler/semantic/collections/ring_core.inc compiler/semantic/collections/list_core.inc compiler/semantic/collections/public_slice.inc
 build $builddir/obj/tests/rf27-g07/f06/iterator_test.o: nasm tests/rf27-g07/f06/iterator_test.asm | compiler/semantic/collections/iterator.inc compiler/semantic/collections/ring_core.inc
 build $builddir/tests/rf27-g07/f06/iterator_test: link $builddir/obj/tests/rf27-g07/f06/iterator_test.o $builddir/obj/iterator.o $builddir/obj/list_runtime.o $builddir/obj/list_semantic.o $builddir/obj/ring.o
 build rf27-g07-f06: phony $builddir/tests/rf27-g07/f06/iterator_test rf27-g07-f05
@@ -3631,11 +4246,93 @@ build rf27-g07-f06: phony $builddir/tests/rf27-g07/f06/iterator_test rf27-g07-f0
 # RF27-G07-F07 sequential collections integration closeout.
 build rf27-g07-f07: phony rf27-g07-f06
 
+# C08-F02 bounded List construction over explicit caller storage.
+build $builddir/obj/tests/c08/f02/list_construction_test.o: nasm tests/c08/f02/list_construction_test.asm | compiler/semantic/collections/list_core.inc compiler/semantic/collections/list_construction.inc
+build $builddir/tests/c08/f02/list_construction_test: link $builddir/obj/tests/c08/f02/list_construction_test.o $builddir/obj/list_runtime.o $builddir/obj/list_semantic.o
+build c08-f02-tests: phony $builddir/tests/c08/f02/list_construction_test
+
+# C08-F03 checked capacity planning and explicit-storage reserve.
+build $builddir/obj/tests/c08/f03/list_capacity_test.o: nasm tests/c08/f03/list_capacity_test.asm | compiler/semantic/collections/list_core.inc
+build $builddir/tests/c08/f03/list_capacity_test: link $builddir/obj/tests/c08/f03/list_capacity_test.o $builddir/obj/list_runtime.o $builddir/obj/list_semantic.o
+build c08-f03-tests: phony $builddir/tests/c08/f03/list_capacity_test c08-f02-tests
+
+# C08-F04 checked scalar and endpoint access.
+build $builddir/obj/tests/c08/f04/list_access_test.o: nasm tests/c08/f04/list_access_test.asm | compiler/semantic/collections/list_core.inc
+build $builddir/tests/c08/f04/list_access_test: link $builddir/obj/tests/c08/f04/list_access_test.o $builddir/obj/list_runtime.o $builddir/obj/list_semantic.o
+build c08-f04-tests: phony $builddir/tests/c08/f04/list_access_test c08-f03-tests
+
+# C08-F05 bounded List mutation and trivial-element lifecycle.
+build $builddir/obj/tests/c08/f05/list_mutation_test.o: nasm tests/c08/f05/list_mutation_test.asm | compiler/semantic/collections/list_core.inc
+build $builddir/tests/c08/f05/list_mutation_test: link $builddir/obj/tests/c08/f05/list_mutation_test.o $builddir/obj/list_runtime.o $builddir/obj/list_semantic.o
+build c08-f05-tests: phony $builddir/tests/c08/f05/list_mutation_test c08-f04-tests
+
+build $builddir/obj/tests/c08/f06/list_algorithms_test.o: nasm tests/c08/f06/list_algorithms_test.asm | compiler/semantic/collections/list_core.inc
+build $builddir/tests/c08/f06/list_algorithms_test: link $builddir/obj/tests/c08/f06/list_algorithms_test.o $builddir/obj/list_algorithms.o $builddir/obj/list_runtime.o $builddir/obj/list_semantic.o
+build c08-f06-tests: phony $builddir/tests/c08/f06/list_algorithms_test rf27-g07-f03 c08-f05-tests
+
+build $builddir/obj/tests/c08/f07/iterator_borrow_test.o: nasm tests/c08/f07/iterator_borrow_test.asm | compiler/semantic/collections/iterator.inc compiler/semantic/collections/ring_core.inc compiler/semantic/collections/list_core.inc
+build $builddir/tests/c08/f07/iterator_borrow_test: link $builddir/obj/tests/c08/f07/iterator_borrow_test.o $builddir/obj/iterator.o $builddir/obj/list_algorithms.o $builddir/obj/list_runtime.o $builddir/obj/list_semantic.o $builddir/obj/ring.o
+build c08-f07-tests: phony $builddir/tests/c08/f07/iterator_borrow_test rf27-g07-f06 c08-f06-tests
+
+build $builddir/obj/tests/c08/f08/stack_semantics_test.o: nasm tests/c08/f08/stack_semantics_test.asm | compiler/semantic/collections/list_core.inc compiler/semantic/collections/iterator.inc
+build $builddir/tests/c08/f08/stack_semantics_test: link $builddir/obj/tests/c08/f08/stack_semantics_test.o $builddir/obj/stack.o $builddir/obj/iterator.o $builddir/obj/list_runtime.o $builddir/obj/list_semantic.o $builddir/obj/ring.o
+build c08-f08-tests: phony $builddir/tests/c08/f08/stack_semantics_test c08-f07-tests
+
+build $builddir/obj/tests/c08/f09/queue_semantics_test.o: nasm tests/c08/f09/queue_semantics_test.asm | compiler/semantic/collections/ring_core.inc compiler/semantic/collections/iterator.inc
+build $builddir/tests/c08/f09/queue_semantics_test: link $builddir/obj/tests/c08/f09/queue_semantics_test.o $builddir/obj/iterator.o $builddir/obj/ring.o $builddir/obj/list_semantic.o
+build c08-f09-tests: phony $builddir/tests/c08/f09/queue_semantics_test c08-f08-tests
+
+build $builddir/obj/tests/c08/f10/deque_semantics_test.o: nasm tests/c08/f10/deque_semantics_test.asm | compiler/semantic/collections/ring_core.inc compiler/semantic/collections/iterator.inc
+build $builddir/tests/c08/f10/deque_semantics_test: link $builddir/obj/tests/c08/f10/deque_semantics_test.o $builddir/obj/iterator.o $builddir/obj/ring.o $builddir/obj/list_semantic.o
+build c08-f10-tests: phony $builddir/tests/c08/f10/deque_semantics_test c08-f09-tests
+
+build $builddir/obj/tests/c08/f11/function_boundary_test.o: nasm tests/c08/f11/function_boundary_test.asm | compiler/semantic/collections/list_core.inc compiler/semantic/collections/list_construction.inc
+build $builddir/tests/c08/f11/function_boundary_test: link $builddir/obj/tests/c08/f11/function_boundary_test.o $builddir/obj/list_runtime.o $builddir/obj/list_semantic.o
+build c08-f11-tests: phony $builddir/tests/c08/f11/function_boundary_test c08-f10-tests
+
+build $builddir/obj/tests/c08/f12/failure_safety_test.o: nasm tests/c08/f12/failure_safety_test.asm | compiler/semantic/collections/list_core.inc compiler/semantic/collections/ring_core.inc compiler/semantic/collections/iterator.inc
+build $builddir/tests/c08/f12/failure_safety_test: link $builddir/obj/tests/c08/f12/failure_safety_test.o $builddir/obj/iterator.o $builddir/obj/ring.o $builddir/obj/list_runtime.o $builddir/obj/list_semantic.o
+build c08-f12-tests: phony $builddir/tests/c08/f12/failure_safety_test c08-f11-tests
+build c08-f13-tests: phony c08-f12-tests
+
 # RF27-G08-F02 bounded explicit-mode hasher.
 build $builddir/obj/hasher.o: nasm runtime/collections/hasher.asm | compiler/semantic/collections/hash_map_contract.inc
 build $builddir/obj/tests/rf27-g08/f02/hasher_test.o: nasm tests/rf27-g08/f02/hasher_test.asm | compiler/semantic/collections/hash_map_contract.inc
 build $builddir/tests/rf27-g08/f02/hasher_test: link $builddir/obj/tests/rf27-g08/f02/hasher_test.o $builddir/obj/hasher.o
 build rf27-g08-f02: phony $builddir/tests/rf27-g08/f02/hasher_test
+
+build $builddir/obj/tests/c09/f03/hasher_vectors_test.o: nasm tests/c09/f03/hasher_vectors_test.asm | compiler/semantic/collections/hash_map_contract.inc
+build $builddir/tests/c09/f03/hasher_vectors_test: link $builddir/obj/tests/c09/f03/hasher_vectors_test.o $builddir/obj/hasher.o
+build c09-f03-tests: phony $builddir/tests/c09/f03/hasher_vectors_test rf27-g08-f02
+
+build $builddir/obj/tests/c09/f04/dict_construction_test.o: nasm tests/c09/f04/dict_construction_test.asm | compiler/semantic/collections/hash_map_contract.inc
+build $builddir/tests/c09/f04/dict_construction_test: link $builddir/obj/tests/c09/f04/dict_construction_test.o $builddir/obj/dict.o $builddir/obj/hasher.o
+build c09-f04-tests: phony $builddir/tests/c09/f04/dict_construction_test c09-f03-tests rf27-g08-f03
+
+build $builddir/obj/tests/c09/f05/dict_lookup_test.o: nasm tests/c09/f05/dict_lookup_test.asm | compiler/semantic/collections/hash_map_contract.inc
+build $builddir/tests/c09/f05/dict_lookup_test: link $builddir/obj/tests/c09/f05/dict_lookup_test.o $builddir/obj/dict.o $builddir/obj/hasher.o
+build c09-f05-tests: phony $builddir/tests/c09/f05/dict_lookup_test c09-f04-tests
+
+build $builddir/obj/tests/c09/f06/dict_mutation_test.o: nasm tests/c09/f06/dict_mutation_test.asm | compiler/semantic/collections/hash_map_contract.inc
+build $builddir/tests/c09/f06/dict_mutation_test: link $builddir/obj/tests/c09/f06/dict_mutation_test.o $builddir/obj/dict_view.o $builddir/obj/dict.o $builddir/obj/hasher.o
+build c09-f06-tests: phony $builddir/tests/c09/f06/dict_mutation_test c09-f05-tests rf27-g08-f04
+
+build $builddir/obj/tests/c09/f07/dict_views_iteration_test.o: nasm tests/c09/f07/dict_views_iteration_test.asm | compiler/semantic/collections/hash_map_contract.inc
+build $builddir/tests/c09/f07/dict_views_iteration_test: link $builddir/obj/tests/c09/f07/dict_views_iteration_test.o $builddir/obj/dict_view.o $builddir/obj/dict.o $builddir/obj/hasher.o
+build c09-f07-tests: phony $builddir/tests/c09/f07/dict_views_iteration_test c09-f06-tests
+
+build $builddir/obj/tests/c09/f08/set_conformance_test.o: nasm tests/c09/f08/set_conformance_test.asm | compiler/semantic/collections/hash_map_contract.inc
+build $builddir/tests/c09/f08/set_conformance_test: link $builddir/obj/tests/c09/f08/set_conformance_test.o $builddir/obj/set.o $builddir/obj/dict.o $builddir/obj/hasher.o
+build c09-f08-tests: phony $builddir/tests/c09/f08/set_conformance_test c09-f07-tests rf27-g08-f05
+
+build $builddir/obj/tests/c09/f09/dict_set_boundary_test.o: nasm tests/c09/f09/dict_set_boundary_test.asm | compiler/semantic/collections/hash_map_contract.inc
+build $builddir/tests/c09/f09/dict_set_boundary_test: link $builddir/obj/tests/c09/f09/dict_set_boundary_test.o $builddir/obj/set.o $builddir/obj/dict_view.o $builddir/obj/dict.o $builddir/obj/hasher.o
+build c09-f09-tests: phony $builddir/tests/c09/f09/dict_set_boundary_test c09-f08-tests
+
+build $builddir/obj/tests/c09/f10/dict_set_adversarial_test.o: nasm tests/c09/f10/dict_set_adversarial_test.asm | compiler/semantic/collections/hash_map_contract.inc
+build $builddir/tests/c09/f10/dict_set_adversarial_test: link $builddir/obj/tests/c09/f10/dict_set_adversarial_test.o $builddir/obj/dict_security.o $builddir/obj/set.o $builddir/obj/dict.o $builddir/obj/hasher.o
+build c09-f10-tests: phony $builddir/tests/c09/f10/dict_set_adversarial_test c09-f09-tests rf27-g08-f06
+build c09-f11-tests: phony c09-f10-tests
 
 # RF27-G08-F03 bounded u64 Dict substrate.
 build $builddir/obj/dict.o: nasm runtime/collections/dict.asm | compiler/semantic/collections/hash_map_contract.inc
@@ -5157,6 +5854,18 @@ build $builddir/obj/tests/rf166/g150/module_graph_test.o: nasm tests/rf166/g150/
 build $builddir/tests/rf166/g150/module_graph_test: link $builddir/obj/tests/rf166/g150/module_graph_test.o $builddir/obj/module_identity.o $builddir/obj/module_root.o $builddir/obj/source_unit.o $builddir/obj/module_graph.o $builddir/obj/module_path_security.o $builddir/obj/module_diagnostics.o $builddir/obj/module_graph_cache.o
 build rf166-g150-tests: phony $builddir/tests/rf166/g150/module_graph_test
 
+# C03-F04 bounded whole-target entrypoint resolution.
+build $builddir/obj/entrypoint_resolver.o: nasm compiler/semantic/modules/entrypoint_resolver.asm | compiler/semantic/modules/entrypoint_resolver.inc compiler/support/status/status_codes.inc compiler/abi/internal/x86_64/neboc_internal_abi.inc
+build $builddir/obj/tests/c03/f04/entrypoint_resolver_test.o: nasm tests/c03/f04/entrypoint_resolver_test.asm | compiler/semantic/modules/entrypoint_resolver.inc
+build $builddir/tests/c03/f04/entrypoint_resolver_test: link $builddir/obj/tests/c03/f04/entrypoint_resolver_test.o $builddir/obj/entrypoint_resolver.o
+build c03-f04-entrypoint-tests: phony $builddir/tests/c03/f04/entrypoint_resolver_test
+
+# C03-F05 stable entrypoint diagnostics with cross-format context.
+build $builddir/obj/entrypoint_diagnostic.o: nasm compiler/semantic/modules/entrypoint_diagnostic.asm | compiler/semantic/modules/entrypoint_diagnostic.inc compiler/semantic/modules/entrypoint_resolver.inc compiler/diagnostics/diagnostic.inc compiler/diagnostics/catalog.inc
+build $builddir/obj/tests/c03/f05/entrypoint_diagnostic_test.o: nasm tests/c03/f05/entrypoint_diagnostic_test.asm | compiler/semantic/modules/entrypoint_resolver.inc compiler/diagnostics/diagnostic.inc compiler/diagnostics/catalog.inc compiler/diagnostics/machine.inc compiler/source/source_map.inc
+build $builddir/tests/c03/f05/entrypoint_diagnostic_test: link $builddir/obj/tests/c03/f05/entrypoint_diagnostic_test.o $builddir/obj/entrypoint_diagnostic.o $builddir/obj/diagnostic_catalog.o $builddir/obj/diagnostic_machine.o $builddir/obj/source_map.o
+build c03-f05-entrypoint-diagnostic-tests: phony $builddir/tests/c03/f05/entrypoint_diagnostic_test
+
 # RF166 G151 canonical imports and capsules.
 build $builddir/obj/import_parser.o: nasm compiler/parser/import_parser.asm | compiler/parser/import_parser.inc
 build $builddir/obj/import_resolver.o: nasm compiler/semantic/modules/import_resolver.asm | compiler/parser/import_parser.inc
@@ -5353,3 +6062,16 @@ build $builddir/obj/tests/rf166/g166/rf166_closeout_test.o: nasm tests/rf166/g16
 build $builddir/tests/rf166/g166/rf166_closeout_test: link $builddir/obj/tests/rf166/g166/rf166_closeout_test.o $builddir/obj/tests/rf166/g166/reconciliation_closeout.o $builddir/obj/tests/rf166/g166/multipackage_imports_e2e.o $builddir/obj/tests/rf166/g166/public_module_examples.o $builddir/obj/tests/rf166/g166/public_semantic_doc_examples.o $builddir/obj/tests/rf166/g166/prelude_reachability_e2e.o $builddir/obj/tests/rf166/g166/lsp_tooling_e2e.o $builddir/obj/tests/rf166/g166/comment_tooling_e2e.o $builddir/obj/tests/rf166/g166/offline_sdk_integration.o $builddir/obj/tests/rf166/g166/independent_audit_probe.o
 build rf166-g166-tests: phony $builddir/tests/rf166/g166/rf166_closeout_test rf166-g165-tests
 build rf166-p04-tests: phony rf166-g166-tests
+
+# C07-F02 canonical bounded Tuple constructor/type representation.
+build c07-f02-tests: phony build/bin/neboc
+build c07-f04-tests: phony build/bin/neboc
+build c07-f05-tests: phony build/bin/neboc
+build $builddir/obj/tests/c07/f06/tuple_ownership_test.o: nasm tests/c07/f06/tuple_ownership_test.asm
+build $builddir/tests/c07/f06/tuple_ownership_test: link $builddir/obj/tests/c07/f06/tuple_ownership_test.o $builddir/obj/product_layout.o $builddir/obj/process_exit.o
+build c07-f06-tests: phony $builddir/tests/c07/f06/tuple_ownership_test build/bin/neboc
+build $builddir/obj/tests/c07/f07/tuple_function_abi_test.o: nasm tests/c07/f07/tuple_function_abi_test.asm
+build $builddir/tests/c07/f07/tuple_function_abi_test: link $builddir/obj/tests/c07/f07/tuple_function_abi_test.o $builddir/obj/tuple_function_abi.o $builddir/obj/process_exit.o
+build c07-f07-tests: phony $builddir/tests/c07/f07/tuple_function_abi_test build/bin/neboc
+build c07-f08-tests: phony build/bin/neboc
+build c07-f09-tests: phony c07-f06-tests c07-f07-tests build/bin/neboc

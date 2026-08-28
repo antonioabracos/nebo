@@ -15,8 +15,16 @@ seguranca_numerica_conversoes_e_overflow_n_bool: db 'Bool'
 seguranca_numerica_conversoes_e_overflow_n_bool_len equ $-seguranca_numerica_conversoes_e_overflow_n_bool
 seguranca_numerica_conversoes_e_overflow_n_char: db 'Char'
 seguranca_numerica_conversoes_e_overflow_n_char_len equ $-seguranca_numerica_conversoes_e_overflow_n_char
+parameters_parser_n_console: db 'console'
+parameters_parser_n_console_len equ $-parameters_parser_n_console
+parameters_parser_n_scan: db 'scan'
+parameters_parser_n_scan_len equ $-parameters_parser_n_scan
 parameters_parser_n_tuple: db 'Tuple'
 n_tuple_len equ $-parameters_parser_n_tuple
+n_of: db 'of'
+n_of_len equ $-n_of
+n_at: db 'at'
+n_at_len equ $-n_at
 n_overload: db 'overload'
 n_overload_len equ $-n_overload
 n_self: db 'self'
@@ -216,6 +224,208 @@ match_current:
  mov rax,[r12+NEBOC_PARAM_CURSOR_OFFSET]
  jmp seguranca_numerica_conversoes_e_overflow_token_match
 
+; RDI token index -> EAX canonical scalar type or zero without consuming it.
+scan_signature_type_at:
+ push rbx
+ mov rbx,rdi
+ mov rax,rbx
+ lea rsi,[rel seguranca_numerica_conversoes_e_overflow_n_int]
+ mov edx,seguranca_numerica_conversoes_e_overflow_n_int_len
+ call seguranca_numerica_conversoes_e_overflow_token_match
+ test eax,eax
+ jnz .int
+ mov rax,rbx
+ lea rsi,[rel seguranca_numerica_conversoes_e_overflow_n_bool]
+ mov edx,seguranca_numerica_conversoes_e_overflow_n_bool_len
+ call seguranca_numerica_conversoes_e_overflow_token_match
+ test eax,eax
+ jnz .bool
+ mov rax,rbx
+ lea rsi,[rel seguranca_numerica_conversoes_e_overflow_n_char]
+ mov edx,seguranca_numerica_conversoes_e_overflow_n_char_len
+ call seguranca_numerica_conversoes_e_overflow_token_match
+ test eax,eax
+ jnz .char
+ xor eax,eax
+ pop rbx
+ ret
+.int:
+ mov eax,neboc_seguranca_numerica_conversoes_e_overflow_TYPE_INT
+ pop rbx
+ ret
+.bool:
+ mov eax,neboc_seguranca_numerica_conversoes_e_overflow_TYPE_BOOL
+ pop rbx
+ ret
+.char:
+ mov eax,neboc_seguranca_numerica_conversoes_e_overflow_TYPE_CHAR
+ pop rbx
+ ret
+
+; Claim only a complete markerless scalar signature containing a public Char
+; receiver or parameter.  This keeps markerless Int/Bool functions on the
+; historical receiver-function route and does not treat an arbitrary Char
+; token in a body or call as an F02 ownership marker.
+scan_markerless_char_signature:
+ push rbx
+ push r13
+ push r14
+ xor r13d,r13d
+ xor ebx,ebx
+ mov edi,ebx
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_LPAREN
+ jne .no
+ inc ebx
+ mov edi,ebx
+ call scan_signature_type_at
+ test eax,eax
+ jz .no
+ cmp eax,neboc_seguranca_numerica_conversoes_e_overflow_TYPE_CHAR
+ jne .receiver_type_ready
+ mov r13d,1
+.receiver_type_ready:
+ inc ebx
+ mov edi,ebx
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_DOT
+ jne .no
+ inc ebx
+ mov edi,ebx
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .no
+ inc ebx
+ mov edi,ebx
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_RPAREN
+ jne .no
+ inc ebx
+ mov edi,ebx
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .no
+ inc ebx
+ mov edi,ebx
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_LPAREN
+ jne .no
+ inc ebx
+.parameter_or_end:
+ mov edi,ebx
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_RPAREN
+ je .parameters_done
+ mov edi,ebx
+ call scan_signature_type_at
+ test eax,eax
+ jz .no
+ cmp eax,neboc_seguranca_numerica_conversoes_e_overflow_TYPE_CHAR
+ jne .parameter_type_ready
+ mov r13d,1
+.parameter_type_ready:
+ inc ebx
+ mov edi,ebx
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_DOT
+ jne .no
+ inc ebx
+ mov edi,ebx
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .no
+ inc ebx
+ mov edi,ebx
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_COMMA
+ je .next_parameter
+ cmp eax,NEBOC_TOKEN_RPAREN
+ jne .no
+ jmp .parameters_done
+.next_parameter:
+ inc ebx
+ jmp .parameter_or_end
+.parameters_done:
+ inc ebx
+ mov edi,ebx
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_LBRACE
+ jne .no
+ test r13d,r13d
+ jz .no
+ ; Bounded if/else exit flow is owned by the shared statement AST and function
+ ; backend.  Keep the legacy markerless Char fast path for its established
+ ; straight-line slice, but decline a Char function whose body contains `if`
+ ; or the already-public `console()` intrinsic so the shared function backend
+ ; owns path-sensitive exits and NPT-LANG-11 Console composition uniformly.
+ mov r14d,1
+ inc ebx
+.body_scan:
+ cmp rbx,[r12+NEBOC_PARAM_TOKEN_COUNT_OFFSET]
+ jae .no
+ mov edi,ebx
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_KW_IF
+ je .no
+ mov rax,rbx
+ lea rsi,[rel parameters_parser_n_console]
+ mov edx,parameters_parser_n_console_len
+ call seguranca_numerica_conversoes_e_overflow_token_match
+ test eax,eax
+ jz .body_kind
+ test ebx,ebx
+ jz .body_kind
+ lea edi,[ebx-1]
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_DOT
+ jne .body_kind
+ lea edi,[ebx+1]
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_LPAREN
+ je .no
+.body_kind:
+ mov rax,rbx
+ lea rsi,[rel parameters_parser_n_scan]
+ mov edx,parameters_parser_n_scan_len
+ call seguranca_numerica_conversoes_e_overflow_token_match
+ test eax,eax
+ jz .body_structure
+ test ebx,ebx
+ jz .body_structure
+ lea edi,[ebx-1]
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_DOT
+ jne .body_structure
+ lea edi,[ebx+1]
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_LPAREN
+ je .no
+.body_structure:
+ mov edi,ebx
+ call seguranca_numerica_conversoes_e_overflow_kind_at
+ cmp eax,NEBOC_TOKEN_LBRACE
+ jne .body_close
+ inc r14d
+ jmp .body_next
+.body_close:
+ cmp eax,NEBOC_TOKEN_RBRACE
+ jne .body_next
+ dec r14d
+ jz .yes
+.body_next:
+ inc ebx
+ jmp .body_scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r14
+ pop r13
+ pop rbx
+ ret
+
 scan_marker:
  push rbx
  xor edi,edi
@@ -225,7 +435,7 @@ scan_marker:
  xor ebx,ebx
 .loop:
  cmp rbx,[r12+NEBOC_PARAM_TOKEN_COUNT_OFFSET]
- jae .no
+ jae .markerless_char
  mov rdi,rbx
  call seguranca_numerica_conversoes_e_overflow_kind_at
  cmp eax,NEBOC_TOKEN_RESERVED_EQUAL
@@ -240,6 +450,10 @@ scan_marker:
  jnz .yes
  inc rbx
  jmp .loop
+.markerless_char:
+ call scan_markerless_char_signature
+ pop rbx
+ ret
 .yes:
  mov eax,1
  pop rbx
@@ -334,6 +548,43 @@ param_ptr:
  add rax,[r12+NEBOC_PARAM_RECORDS_OFFSET]
  ret
 .bad:
+ xor eax,eax
+ ret
+
+; EAX is true only for the markerless Char compatibility slice.  Defaults,
+; named arguments and Tuple projection keep their existing explicit-marker
+; grammar and therefore cannot use the historical terminal shorthand.
+markerless_char_signature_selected:
+ cmp qword [r12+NEBOC_PARAM_NAMED_COUNT_OFFSET],0
+ jne .no
+ cmp qword [r12+NEBOC_PARAM_TUPLE_SELECTOR_OFFSET],-1
+ jne .no
+ xor r8d,r8d
+ cmp qword [r12+NEBOC_PARAM_RECEIVER_TYPE_OFFSET],neboc_seguranca_numerica_conversoes_e_overflow_TYPE_CHAR
+ jne .parameters
+ mov r8d,1
+.parameters:
+ xor ecx,ecx
+.parameter_loop:
+ cmp rcx,[r12+NEBOC_PARAM_COUNT_OFFSET]
+ jae .done
+ mov rax,rcx
+ imul rax,NEBOC_PARAM_RECORD_SIZE
+ add rax,[r12+NEBOC_PARAM_RECORDS_OFFSET]
+ cmp qword [rax+NEBOC_PARAM_HAS_DEFAULT_OFFSET],0
+ jne .no
+ cmp qword [rax+NEBOC_PARAM_TYPE_OFFSET],neboc_seguranca_numerica_conversoes_e_overflow_TYPE_CHAR
+ jne .next
+ mov r8d,1
+.next:
+ inc rcx
+ jmp .parameter_loop
+.done:
+ test r8d,r8d
+ jz .no
+ mov eax,1
+ ret
+.no:
  xor eax,eax
  ret
 
@@ -650,7 +901,43 @@ parse_call:
  inc rdi
  call seguranca_numerica_conversoes_e_overflow_kind_at
  cmp eax,NEBOC_TOKEN_INTEGER
+ je .legacy_selector
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
  jne .after_selector
+ mov rax,[r12+NEBOC_PARAM_CURSOR_OFFSET]
+ inc rax
+ lea rsi,[rel n_at]
+ mov edx,n_at_len
+ call seguranca_numerica_conversoes_e_overflow_token_match
+ test eax,eax
+ jz .after_selector
+ add qword [r12+NEBOC_PARAM_CURSOR_OFFSET],2
+ mov edi,NEBOC_TOKEN_LESS
+ call expect
+ test eax,eax
+ jnz .done
+ call peek_kind
+ cmp eax,NEBOC_TOKEN_INTEGER
+ jne .syntax
+ mov rax,[r12+NEBOC_PARAM_CURSOR_OFFSET]
+ call seguranca_numerica_conversoes_e_overflow_token_ptr
+ mov rax,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ mov [r12+NEBOC_PARAM_TUPLE_SELECTOR_OFFSET],rax
+ inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_GREATER
+ call expect
+ test eax,eax
+ jnz .done
+ mov edi,NEBOC_TOKEN_LPAREN
+ call expect
+ test eax,eax
+ jnz .done
+ mov edi,NEBOC_TOKEN_RPAREN
+ call expect
+ test eax,eax
+ jnz .done
+ jmp .after_selector
+.legacy_selector:
  inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
  mov rax,[r12+NEBOC_PARAM_CURSOR_OFFSET]
  call seguranca_numerica_conversoes_e_overflow_token_ptr
@@ -658,6 +945,14 @@ parse_call:
  mov [r12+NEBOC_PARAM_TUPLE_SELECTOR_OFFSET],rax
  inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
 .after_selector:
+ call peek_kind
+ cmp eax,NEBOC_TOKEN_SEMICOLON
+ jne .project_return
+ call markerless_char_signature_selected
+ test eax,eax
+ jz .syntax
+ jmp .call_tail
+.project_return:
  mov edi,NEBOC_TOKEN_DOT
  call expect
  test eax,eax
@@ -666,6 +961,7 @@ parse_call:
  call expect
  test eax,eax
  jnz .done
+.call_tail:
  mov edi,NEBOC_TOKEN_SEMICOLON
  call expect
  test eax,eax
@@ -755,6 +1051,22 @@ eval_body:
  jnz .tuple
  cmp qword [r12+NEBOC_PARAM_TUPLE_SELECTOR_OFFSET],-1
  jne .return_bad
+ call peek_kind
+ cmp eax,NEBOC_TOKEN_LPAREN
+ je .parenthesized
+ call markerless_char_signature_selected
+ test eax,eax
+ jz .return_bad
+ call eval_atom
+ test ecx,ecx
+ jnz .return_bad
+ cmp rax,neboc_seguranca_numerica_conversoes_e_overflow_TYPE_CHAR
+ jne .return_bad
+ mov [r12+NEBOC_PARAM_OUTPUT_TYPE_OFFSET],rax
+ mov [r12+NEBOC_PARAM_OUTPUT_VALUE_OFFSET],rdx
+ mov qword [r12+NEBOC_PARAM_RETURN_ARITY_OFFSET],1
+ jmp .return_tail
+.parenthesized:
  mov edi,NEBOC_TOKEN_LPAREN
  call expect
  test eax,eax
@@ -790,6 +1102,17 @@ eval_body:
  jmp .return_tail
 .tuple:
  inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
+ call peek_kind
+ cmp eax,NEBOC_TOKEN_DOT
+ jne .tuple_constructor_ready
+ inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
+ lea rsi,[rel n_of]
+ mov edx,n_of_len
+ call match_current
+ test eax,eax
+ jz .return_bad
+ inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
+.tuple_constructor_ready:
  mov edi,NEBOC_TOKEN_LPAREN
  call expect
  test eax,eax

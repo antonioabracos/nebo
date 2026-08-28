@@ -36,6 +36,10 @@ asm_global_function: db 'global nebo_fn_'
 asm_global_function_length equ $-asm_global_function
 asm_function_label: db 'nebo_fn_'
 asm_function_label_length equ $-asm_function_label
+asm_nested_function_label: db 'nebo_nested_fn_'
+asm_nested_function_label_length equ $-asm_nested_function_label
+asm_nested_separator: db '_'
+asm_nested_separator_length equ $-asm_nested_separator
 asm_int_align: db 'align 8',10
 asm_int_align_length equ $-asm_int_align
 asm_int_label: db 'nebo_int_'
@@ -417,6 +421,112 @@ NEBOC_ABI_FUNCTION neboc_arch_backend_begin_function
 .invalid_return:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
 .done:
+ add rsp,16
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; arch_backend_begin_private_nested_function(backend*, outer_function_id,
+;                                             lexical_ordinal, internal_id)
+; Emit the selected deterministic non-global label.  internal_id exists only
+; so the unchanged ABI adapter can validate its frozen private signature.
+NEBOC_ABI_FUNCTION neboc_arch_backend_begin_private_nested_function
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,16
+ mov rbx,rdi
+ mov r12,rsi
+ mov r13,rdx
+ mov r14,rcx
+ test rbx,rbx
+ jz .nested_invalid_return
+ mov rdi,rbx
+ call neboc_arch_backend_validate
+ test eax,eax
+ jnz .nested_done
+ cmp qword [rbx+NEBOC_ARCH_BACKEND_STATE_OFFSET],NEBOC_ARCH_BACKEND_STATE_MODULE
+ jne .nested_state
+ test r12,r12
+ jz .nested_label
+ cmp r13,1
+ jne .nested_label
+ test r14,r14
+ jz .nested_label
+ mov r15,[rbx+NEBOC_ARCH_BACKEND_WRITER_OFFSET]
+ mov rax,[r15+NEBOC_ASSEMBLY_WRITER_LENGTH_OFFSET]
+ mov [rsp],rax
+ mov rax,[rbx+NEBOC_ARCH_BACKEND_SYMBOL_COUNT_OFFSET]
+ mov [rsp+8],rax
+ mov rdi,rbx
+ mov esi,NEBOC_ARCH_BACKEND_SECTION_TEXT
+ call backend_switch_section
+ test eax,eax
+ jnz .nested_restore
+ mov rdi,r15
+ lea rsi,[rel asm_nested_function_label]
+ mov edx,asm_nested_function_label_length
+ call neboc_assembly_writer_append_bytes
+ test eax,eax
+ jnz .nested_restore
+ mov rdi,r15
+ mov rsi,r12
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .nested_restore
+ mov rdi,r15
+ lea rsi,[rel asm_nested_separator]
+ mov edx,asm_nested_separator_length
+ call neboc_assembly_writer_append_bytes
+ test eax,eax
+ jnz .nested_restore
+ mov rdi,r15
+ mov rsi,r13
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .nested_restore
+ mov rdi,r15
+ lea rsi,[rel asm_colon_newline]
+ mov edx,asm_colon_newline_length
+ call neboc_assembly_writer_append_bytes
+ test eax,eax
+ jnz .nested_restore
+ mov [rbx+NEBOC_ARCH_BACKEND_CURRENT_FUNCTION_ID_OFFSET],r14
+ inc qword [rbx+NEBOC_ARCH_BACKEND_SYMBOL_COUNT_OFFSET]
+ inc qword [r15+NEBOC_ASSEMBLY_WRITER_LABEL_COUNT_OFFSET]
+ mov qword [rbx+NEBOC_ARCH_BACKEND_LAST_ERROR_OFFSET],NEBOC_CODEGEN_ERROR_NONE
+ xor eax,eax
+ jmp .nested_done
+.nested_restore:
+ mov r11d,eax
+ mov rax,[rsp]
+ mov [r15+NEBOC_ASSEMBLY_WRITER_LENGTH_OFFSET],rax
+ mov rax,[rsp+8]
+ mov [rbx+NEBOC_ARCH_BACKEND_SYMBOL_COUNT_OFFSET],rax
+ mov eax,r11d
+ cmp eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ jne .nested_writer_state
+ mov qword [rbx+NEBOC_ARCH_BACKEND_LAST_ERROR_OFFSET],NEBOC_CODEGEN_ERROR_WRITER_LIMIT
+ jmp .nested_done
+.nested_writer_state:
+ mov qword [rbx+NEBOC_ARCH_BACKEND_LAST_ERROR_OFFSET],NEBOC_CODEGEN_ERROR_WRITER_NOT_READY
+ jmp .nested_done
+.nested_label:
+ mov qword [rbx+NEBOC_ARCH_BACKEND_LAST_ERROR_OFFSET],NEBOC_CODEGEN_ERROR_INVALID_LABEL_ID
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ jmp .nested_done
+.nested_state:
+ mov qword [rbx+NEBOC_ARCH_BACKEND_LAST_ERROR_OFFSET],NEBOC_CODEGEN_ERROR_BAD_MODULE_STATE
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ jmp .nested_done
+.nested_invalid_return:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+.nested_done:
  add rsp,16
  pop r15
  pop r14

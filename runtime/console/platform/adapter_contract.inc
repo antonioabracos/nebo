@@ -47,6 +47,7 @@
 %define NEBO_PLATFORM_STATUS_UNSUPPORTED_FORMAT 260
 %define NEBO_PLATFORM_STATUS_TIMEOUT 261
 %define NEBO_PLATFORM_STATUS_NO_EVENT 262
+%define NEBO_PLATFORM_STATUS_STALE_GEOMETRY 263
 
 ; Opaque window handles preserve the Console generational shape but never expose
 ; native protocol resource IDs. Slot 0 is reserved as invalid.

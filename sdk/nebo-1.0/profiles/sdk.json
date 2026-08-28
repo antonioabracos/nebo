@@ -1,0 +1,14 @@
+{
+  "components": [
+    "compiler",
+    "runtime",
+    "interfaces",
+    "diagnostics",
+    "docs",
+    "examples",
+    "sdk-metadata"
+  ],
+  "network_required": false,
+  "profile": "sdk",
+  "target": "linux-x86_64-systemv-elf-static"
+}

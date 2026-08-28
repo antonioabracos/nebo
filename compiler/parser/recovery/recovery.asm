@@ -344,6 +344,10 @@ NEBOC_ABI_FUNCTION neboc_parser_recovery_parse_statement
  je .diag_ready
  cmp rbx,NEBOC_PARSE_DIAG_NONASSOCIATIVE_CHAIN
  je .diag_ready
+ cmp rbx,NEBOC_PARSE_DIAG_CONTROL_HEADER_PARENS_REQUIRED
+ je .diag_ready
+ cmp rbx,NEBOC_PARSE_DIAG_CONTROL_HEADER_RPAREN_REQUIRED
+ je .diag_ready
 .unexpected_token:
  mov ebx,NEBOC_PARSE_DIAG_UNEXPECTED_TOKEN
  jmp .diag_ready

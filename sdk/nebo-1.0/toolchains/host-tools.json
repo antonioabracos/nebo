@@ -1,0 +1,17 @@
+{
+  "bounded_internal_tools": [],
+  "external_tools": [
+    {
+      "bundled": false,
+      "discovery": "PATH",
+      "name": "nasm"
+    },
+    {
+      "bundled": false,
+      "discovery": "PATH",
+      "name": "ld"
+    }
+  ],
+  "format": "NEBO-TOOLCHAIN-TCB-v1",
+  "network_required": false
+}

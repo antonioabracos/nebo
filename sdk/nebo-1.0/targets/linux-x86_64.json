@@ -1,0 +1,10 @@
+{
+  "abi": "System V AMD64",
+  "availability": "CURRENT_HOST_PROVEN",
+  "id": "linux-x86_64-systemv-elf-static",
+  "libc": false,
+  "link": "static",
+  "object": "ELF64-little-endian",
+  "other_targets": "NOT_CLAIMED",
+  "stack_alignment": 16
+}

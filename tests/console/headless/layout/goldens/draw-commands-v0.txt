@@ -1,0 +1,9 @@
+MF044 Draw Commands v0
+pixel-format=BGRA8_PREMULTIPLIED
+palette.background=FF000000
+palette.border=FF6B6B6B
+palette.chrome-background=FF202020
+palette.foreground=FFFFFFFF
+order=CLEAR,FILL_RECT(CHROME),STROKE_RECT,PUSH_CLIP,DRAW_GLYPH_RUN*,POP_CLIP
+software-raster=deterministic-headless
+fake-glyph-provider=synthetic-no-external-font-asset

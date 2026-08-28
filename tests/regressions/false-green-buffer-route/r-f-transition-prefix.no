@@ -1,0 +1,44 @@
+start() {
+    "============================================================".console();
+    "NEBO 1.0 — INVENTÁRIO PRÁTICO DE PRÉ-PUBLICAÇÃO".console();
+    "============================================================".console();
+    "Este programa usa a janela própria da Nebo Console.".console();
+    "Preenche os dois campos e observa o relatório completo.".console();
+
+    // ---------------------------------------------------------------------
+    // 1. Console + Scan + Text Unicode
+    // ---------------------------------------------------------------------
+
+    "Nome do operador: ".console().scan().operatorName;
+    "Etiqueta da sessão: ".console().scan().sessionLabel;
+
+    "Operador recebido:".console();
+    operatorName.console();
+
+    "Etiqueta recebida:".console();
+    sessionLabel.console();
+
+    operatorName.byteLength().operatorNameBytes;
+    operatorName.codepointCount().operatorNameCodepoints;
+    sessionLabel.byteLength().sessionLabelBytes;
+    sessionLabel.codepointCount().sessionLabelCodepoints;
+
+    "Bytes UTF-8 do nome:".console();
+    operatorNameBytes.console();
+    "Codepoints do nome:".console();
+    operatorNameCodepoints.console();
+    "Bytes UTF-8 da etiqueta:".console();
+    sessionLabelBytes.console();
+    "Codepoints da etiqueta:".console();
+    sessionLabelCodepoints.console();
+
+    // ---------------------------------------------------------------------
+    // 2. Lista bounded mutável: Buffer com capacidade 4
+    // ---------------------------------------------------------------------
+
+    "------------------------------------------------------------".console();
+    "LISTA BOUNDED — quantidades de quatro produtos".console();
+
+    Buffer.withCapacity(4).stockList;
+    0.return;
+}

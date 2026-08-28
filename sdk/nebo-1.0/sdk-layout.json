@@ -1,0 +1,15 @@
+{
+  "directories": [
+    "bin",
+    "libexec/nebo",
+    "share/nebo/freeze",
+    "share/nebo/sdk",
+    "share/doc/nebo",
+    "share/examples"
+  ],
+  "format": "NEBO-SDK-LAYOUT-v1",
+  "manifest": "MANIFEST.json",
+  "path_policy": "relative-posix-no-symlink",
+  "root": ".",
+  "version": "1.0.1"
+}

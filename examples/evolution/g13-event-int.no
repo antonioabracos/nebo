@@ -1,0 +1,4 @@
+start() {
+    Event<Int> 13.event;
+    event.value();
+}

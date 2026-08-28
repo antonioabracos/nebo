@@ -1,0 +1,14 @@
+start() {
+    Float(3.5).explicit_value;
+    3.5.implicit_value;
+
+    (1.5 + 2.5).sum;
+    (8.0 - 3.0).difference;
+    (2.0 * 4.0).product;
+    (9.0 / 3.0).quotient;
+
+    (((1.0 + 2.0) * (8.0 - 3.0)) / 5.0).nested;
+    (1.0 / 0.0).positive_infinity;
+    (0.0 / 0.0).nan;
+    (-0.0).negative_zero;
+}

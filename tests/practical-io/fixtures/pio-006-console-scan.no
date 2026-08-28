@@ -1,0 +1,4 @@
+start() {
+    "Nome: ".console().scan().nome;
+    nome.console();
+}

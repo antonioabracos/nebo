@@ -24,12 +24,14 @@ global nebo_x11_adapter_maximize_window
 global nebo_x11_adapter_restore_window
 global nebo_x11_adapter_begin_window_drag
 global nebo_x11_adapter_begin_window_resize
+global nebo_x11_adapter_set_resize_cursor
 global nebo_x11_adapter_set_window_size
 global nebo_x11_adapter_request_close
 global nebo_x11_adapter_poll_raw
 global nebo_x11_adapter_map_window
 global nebo_x11_adapter_unmap_window
 global nebo_x11_adapter_set_window_title
+global nebo_x11_adapter_set_window_minimum_size
 global nebo_x11_adapter_configure_window_bounded
 
 section .rodata align=8
@@ -37,12 +39,17 @@ x11_atom_motif_hints: db "_MOTIF_WM_HINTS"
 x11_atom_wm_protocols: db "WM_PROTOCOLS"
 x11_atom_wm_delete_window: db "WM_DELETE_WINDOW"
 x11_atom_wm_change_state: db "WM_CHANGE_STATE"
+x11_atom_wm_state: db "WM_STATE"
 x11_atom_net_wm_state: db "_NET_WM_STATE"
 x11_atom_net_wm_state_max_horz: db "_NET_WM_STATE_MAXIMIZED_HORZ"
 x11_atom_net_wm_state_max_vert: db "_NET_WM_STATE_MAXIMIZED_VERT"
+x11_atom_net_wm_state_hidden: db "_NET_WM_STATE_HIDDEN"
 x11_atom_net_wm_moveresize: db "_NET_WM_MOVERESIZE"
 x11_atom_utf8_string: db "UTF8_STRING"
 x11_atom_net_wm_name: db "_NET_WM_NAME"
+x11_atom_net_wm_pid: db "_NET_WM_PID"
+x11_cursor_font_name: db "cursor"
+x11_cursor_glyphs: dw NEBO_X11_CURSOR_GLYPH_HORIZONTAL, NEBO_X11_CURSOR_GLYPH_VERTICAL, NEBO_X11_CURSOR_GLYPH_NWSE, NEBO_X11_CURSOR_GLYPH_NESW
 
 section .text
 
@@ -138,6 +145,196 @@ x11_allocate_xid_internal:
     xor eax, eax
     ret
 
+; Lazily create four reusable core cursor-font resources. No allocation occurs
+; on subsequent pointer motion. A failed initialization is sticky until the
+; adapter connection is closed, preventing repeated resource allocation.
+x11_cursor_resources_init_internal:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+    sub rsp, 32
+    mov r12, rdi
+    cmp dword [r12+NEBO_X11_ADAPTER_CURSOR_RESOURCE_STATE_OFFSET], NEBO_X11_CURSOR_RESOURCE_STATE_READY
+    je .cursor_init_ok
+    cmp dword [r12+NEBO_X11_ADAPTER_CURSOR_RESOURCE_STATE_OFFSET], NEBO_X11_CURSOR_RESOURCE_STATE_FAILED
+    je .cursor_init_state
+    mov rdi, r12
+    call x11_allocate_xid_internal
+    test eax, eax
+    jz .cursor_init_limit
+    mov [rsp], eax
+    mov ebx, 0
+.cursor_allocate_loop:
+    mov rdi, r12
+    call x11_allocate_xid_internal
+    test eax, eax
+    jz .cursor_init_limit
+    mov [rsp+4+rbx*4], eax
+    inc ebx
+    cmp ebx, 4
+    jb .cursor_allocate_loop
+
+    mov r13, [r12+NEBO_X11_ADAPTER_SCRATCH_PTR_OFFSET]
+    mov rdi, r13
+    xor eax, eax
+    mov ecx, 32
+    cld
+    rep stosb
+    mov byte [r13], NEBO_X11_OP_OPEN_FONT
+    mov word [r13+2], 5
+    mov eax, [rsp]
+    mov [r13+4], eax
+    mov word [r13+8], NEBO_X11_CURSOR_FONT_NAME_LENGTH
+    mov eax, [rel x11_cursor_font_name]
+    mov [r13+12], eax
+    mov ax, [rel x11_cursor_font_name+4]
+    mov [r13+16], ax
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    mov rsi, r13
+    mov edx, 20
+    call x11_write_all_internal
+    test eax, eax
+    jnz .cursor_init_request
+    inc qword [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+
+    lea r14, [rel x11_cursor_glyphs]
+    xor ebx, ebx
+.cursor_create_loop:
+    mov rdi, r13
+    xor eax, eax
+    mov ecx, 32
+    cld
+    rep stosb
+    mov byte [r13], NEBO_X11_OP_CREATE_GLYPH_CURSOR
+    mov word [r13+2], 8
+    mov eax, [rsp+4+rbx*4]
+    mov [r13+4], eax
+    mov eax, [rsp]
+    mov [r13+8], eax
+    mov [r13+12], eax
+    movzx eax, word [r14+rbx*2]
+    mov [r13+16], ax
+    inc eax
+    mov [r13+18], ax
+    mov word [r13+26], 0xffff
+    mov word [r13+28], 0xffff
+    mov word [r13+30], 0xffff
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    mov rsi, r13
+    mov edx, 32
+    call x11_write_all_internal
+    test eax, eax
+    jnz .cursor_init_request
+    inc qword [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+    inc ebx
+    cmp ebx, 4
+    jb .cursor_create_loop
+
+    mov rdi, r13
+    xor eax, eax
+    mov ecx, 8
+    cld
+    rep stosb
+    mov byte [r13], NEBO_X11_OP_CLOSE_FONT
+    mov word [r13+2], 2
+    mov eax, [rsp]
+    mov [r13+4], eax
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    mov rsi, r13
+    mov edx, 8
+    call x11_write_all_internal
+    test eax, eax
+    jnz .cursor_init_request
+    inc qword [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+
+    mov eax, [rsp+4]
+    mov [r12+NEBO_X11_ADAPTER_CURSOR_HORIZONTAL_XID_OFFSET], eax
+    mov eax, [rsp+8]
+    mov [r12+NEBO_X11_ADAPTER_CURSOR_VERTICAL_XID_OFFSET], eax
+    mov eax, [rsp+12]
+    mov [r12+NEBO_X11_ADAPTER_CURSOR_NWSE_XID_OFFSET], eax
+    mov eax, [rsp+16]
+    mov [r12+NEBO_X11_ADAPTER_CURSOR_NESW_XID_OFFSET], eax
+    mov dword [r12+NEBO_X11_ADAPTER_CURSOR_RESOURCE_STATE_OFFSET], NEBO_X11_CURSOR_RESOURCE_STATE_READY
+.cursor_init_ok:
+    xor eax, eax
+    jmp .cursor_init_done
+.cursor_init_limit:
+    mov eax, NEBO_PLATFORM_STATUS_CAPABILITY_MISSING
+    jmp .cursor_init_fail
+.cursor_init_request:
+    mov r15d, eax
+    mov eax, r15d
+.cursor_init_fail:
+    mov dword [r12+NEBO_X11_ADAPTER_CURSOR_HORIZONTAL_XID_OFFSET], 0
+    mov dword [r12+NEBO_X11_ADAPTER_CURSOR_VERTICAL_XID_OFFSET], 0
+    mov dword [r12+NEBO_X11_ADAPTER_CURSOR_NWSE_XID_OFFSET], 0
+    mov dword [r12+NEBO_X11_ADAPTER_CURSOR_NESW_XID_OFFSET], 0
+    mov dword [r12+NEBO_X11_ADAPTER_CURSOR_RESOURCE_STATE_OFFSET], NEBO_X11_CURSOR_RESOURCE_STATE_FAILED
+    jmp .cursor_init_done
+.cursor_init_state:
+    mov eax, NEBO_PLATFORM_STATUS_BAD_STATE
+.cursor_init_done:
+    add rsp, 32
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+; Free each adapter-owned cursor once. Closing the X11 connection remains the
+; server-side fallback for a failed write, so logical state is always cleared.
+x11_cursor_resources_free_internal:
+    push rbx
+    push r12
+    push r13
+    mov r12, rdi
+    xor r13d, r13d
+    cmp dword [r12+NEBO_X11_ADAPTER_CURSOR_RESOURCE_STATE_OFFSET], NEBO_X11_CURSOR_RESOURCE_STATE_READY
+    jne .cursor_free_clear
+    xor ebx, ebx
+.cursor_free_loop:
+    mov r10d, [r12+NEBO_X11_ADAPTER_CURSOR_HORIZONTAL_XID_OFFSET+rbx*4]
+    test r10d, r10d
+    jz .cursor_free_next
+    mov r11, [r12+NEBO_X11_ADAPTER_SCRATCH_PTR_OFFSET]
+    mov rdi, r11
+    xor eax, eax
+    mov ecx, 8
+    cld
+    rep stosb
+    mov byte [r11], NEBO_X11_OP_FREE_CURSOR
+    mov word [r11+2], 2
+    mov [r11+4], r10d
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    mov rsi, r11
+    mov edx, 8
+    call x11_write_all_internal
+    test eax, eax
+    jnz .cursor_free_failure
+    inc qword [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+.cursor_free_next:
+    inc ebx
+    cmp ebx, 4
+    jb .cursor_free_loop
+    jmp .cursor_free_clear
+.cursor_free_failure:
+    mov r13d, eax
+.cursor_free_clear:
+    mov dword [r12+NEBO_X11_ADAPTER_CURSOR_HORIZONTAL_XID_OFFSET], 0
+    mov dword [r12+NEBO_X11_ADAPTER_CURSOR_VERTICAL_XID_OFFSET], 0
+    mov dword [r12+NEBO_X11_ADAPTER_CURSOR_NWSE_XID_OFFSET], 0
+    mov dword [r12+NEBO_X11_ADAPTER_CURSOR_NESW_XID_OFFSET], 0
+    mov dword [r12+NEBO_X11_ADAPTER_CURSOR_RESOURCE_STATE_OFFSET], NEBO_X11_CURSOR_RESOURCE_STATE_EMPTY
+    mov eax, r13d
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
 ; Validate a bound canonical software surface without importing renderer code.
 ; RDI=surface*, RSI=expected width, RDX=expected height.
 x11_surface_validate_internal:
@@ -169,6 +366,149 @@ x11_surface_validate_internal:
     ret
 .surface_invalid:
     mov eax, NEBO_PLATFORM_STATUS_INVALID_ARGUMENT
+    ret
+
+; Ensure one retained server pixmap can hold the current frame. Growth creates
+; a replacement before freeing the old resource; shrink reuses capacity.
+; RDI=adapter*, RSI=window*, RDX=width, RCX=height.
+x11_window_backbuffer_ensure_internal:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+    sub rsp, 16
+    mov r12, rdi
+    mov r13, rsi
+    mov r14, rdx
+    mov r15, rcx
+    test r12, r12
+    jz .backbuffer_invalid
+    test r13, r13
+    jz .backbuffer_invalid
+    test r14, r14
+    jz .backbuffer_invalid
+    test r15, r15
+    jz .backbuffer_invalid
+    cmp r14, 65535
+    ja .backbuffer_limit
+    cmp r15, 65535
+    ja .backbuffer_limit
+    cmp dword [r13+NEBO_X11_WINDOW_BACKBUFFER_XID_OFFSET], 0
+    je .backbuffer_grow
+    mov eax, [r13+NEBO_X11_WINDOW_BACKBUFFER_WIDTH_OFFSET]
+    cmp rax, r14
+    jb .backbuffer_grow
+    mov eax, [r13+NEBO_X11_WINDOW_BACKBUFFER_HEIGHT_OFFSET]
+    cmp rax, r15
+    jb .backbuffer_grow
+    xor eax, eax
+    jmp .backbuffer_done
+.backbuffer_grow:
+    ; Grow geometrically so an interactive edge drag does not allocate one
+    ; server resource per ConfigureNotify. Both capacities remain <= u16.
+    mov eax, [r13+NEBO_X11_WINDOW_BACKBUFFER_WIDTH_OFFSET]
+    test eax, eax
+    jz .backbuffer_width_requested
+    cmp rax, r14
+    jae .backbuffer_width_ready
+    shl rax, 1
+    cmp rax, 65535
+    jbe .backbuffer_width_compare
+    mov eax, 65535
+.backbuffer_width_compare:
+    cmp rax, r14
+    jae .backbuffer_width_ready
+.backbuffer_width_requested:
+    mov rax, r14
+.backbuffer_width_ready:
+    mov [rsp], rax
+    mov eax, [r13+NEBO_X11_WINDOW_BACKBUFFER_HEIGHT_OFFSET]
+    test eax, eax
+    jz .backbuffer_height_requested
+    cmp rax, r15
+    jae .backbuffer_height_ready
+    shl rax, 1
+    cmp rax, 65535
+    jbe .backbuffer_height_compare
+    mov eax, 65535
+.backbuffer_height_compare:
+    cmp rax, r15
+    jae .backbuffer_height_ready
+.backbuffer_height_requested:
+    mov rax, r15
+.backbuffer_height_ready:
+    mov [rsp+8], rax
+    mov rdi, r12
+    call x11_allocate_xid_internal
+    test eax, eax
+    jz .backbuffer_limit
+    mov ebx, eax
+    mov r10, [r12+NEBO_X11_ADAPTER_SCRATCH_PTR_OFFSET]
+    mov rdi, r10
+    xor eax, eax
+    mov ecx, 16
+    cld
+    rep stosb
+    mov byte [r10], NEBO_X11_OP_CREATE_PIXMAP
+    mov al, [r12+NEBO_X11_ADAPTER_ROOT_DEPTH_OFFSET]
+    mov [r10+1], al
+    mov word [r10+2], 4
+    mov [r10+4], ebx
+    mov eax, [r13+NEBO_X11_WINDOW_XID_OFFSET]
+    mov [r10+8], eax
+    mov rax, [rsp]
+    mov [r10+12], ax
+    mov rax, [rsp+8]
+    mov [r10+14], ax
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    mov rsi, r10
+    mov edx, 16
+    call x11_write_all_internal
+    test eax, eax
+    jnz .backbuffer_done
+    inc qword [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+    mov eax, [r13+NEBO_X11_WINDOW_BACKBUFFER_XID_OFFSET]
+    test eax, eax
+    jz .backbuffer_store
+    mov rdi, r10
+    xor ecx, ecx
+    mov ecx, 8
+    xor eax, eax
+    cld
+    rep stosb
+    mov byte [r10], NEBO_X11_OP_FREE_PIXMAP
+    mov word [r10+2], 2
+    mov eax, [r13+NEBO_X11_WINDOW_BACKBUFFER_XID_OFFSET]
+    mov [r10+4], eax
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    mov rsi, r10
+    mov edx, 8
+    call x11_write_all_internal
+    test eax, eax
+    jnz .backbuffer_done
+    inc qword [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+.backbuffer_store:
+    mov [r13+NEBO_X11_WINDOW_BACKBUFFER_XID_OFFSET], ebx
+    mov rax, [rsp]
+    mov [r13+NEBO_X11_WINDOW_BACKBUFFER_WIDTH_OFFSET], eax
+    mov rax, [rsp+8]
+    mov [r13+NEBO_X11_WINDOW_BACKBUFFER_HEIGHT_OFFSET], eax
+    inc qword [r13+NEBO_X11_WINDOW_BACKBUFFER_ALLOCATION_COUNT_OFFSET]
+    xor eax, eax
+    jmp .backbuffer_done
+.backbuffer_limit:
+    mov eax, NEBO_PLATFORM_STATUS_CAPABILITY_MISSING
+    jmp .backbuffer_done
+.backbuffer_invalid:
+    mov eax, NEBO_PLATFORM_STATUS_INVALID_ARGUMENT
+.backbuffer_done:
+    add rsp, 16
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbx
     ret
 
 ; Emit one normalized PlatformEventDescriptor.
@@ -592,6 +932,323 @@ x11_intern_atom_internal:
     pop rbx
     ret
 
+; Preserve a complete 32-byte native event received while synchronously
+; waiting for a bounded property reply. RDI=adapter*, RSI=raw event*.
+x11_deferred_event_push_internal:
+    test rdi, rdi
+    jz .deferred_push_invalid
+    test rsi, rsi
+    jz .deferred_push_invalid
+    mov rax, [rdi+NEBO_X11_ADAPTER_DEFERRED_EVENT_COUNT_OFFSET]
+    cmp rax, NEBO_X11_ADAPTER_DEFERRED_EVENT_CAPACITY
+    jae .deferred_push_full
+    mov rax, [rdi+NEBO_X11_ADAPTER_DEFERRED_EVENT_TAIL_OFFSET]
+    and eax, (NEBO_X11_ADAPTER_DEFERRED_EVENT_CAPACITY-1)
+    shl rax, 5
+    lea r8, [rdi+NEBO_X11_ADAPTER_DEFERRED_EVENT_BUFFER_OFFSET+rax]
+    mov r9, rdi
+    mov rdi, r8
+    mov rcx, (NEBO_X11_EVENT_SIZE/8)
+    cld
+    rep movsq
+    mov rax, [r9+NEBO_X11_ADAPTER_DEFERRED_EVENT_TAIL_OFFSET]
+    inc rax
+    and eax, (NEBO_X11_ADAPTER_DEFERRED_EVENT_CAPACITY-1)
+    mov [r9+NEBO_X11_ADAPTER_DEFERRED_EVENT_TAIL_OFFSET], rax
+    inc qword [r9+NEBO_X11_ADAPTER_DEFERRED_EVENT_COUNT_OFFSET]
+    xor eax, eax
+    ret
+.deferred_push_full:
+    mov eax, NEBO_PLATFORM_STATUS_CAPABILITY_MISSING
+    ret
+.deferred_push_invalid:
+    mov eax, NEBO_PLATFORM_STATUS_INVALID_ARGUMENT
+    ret
+
+; Drain one deferred native event before touching the socket.
+; RDI=adapter*, RSI=out raw event*.
+x11_deferred_event_pop_internal:
+    test rdi, rdi
+    jz .deferred_pop_invalid
+    test rsi, rsi
+    jz .deferred_pop_invalid
+    cmp qword [rdi+NEBO_X11_ADAPTER_DEFERRED_EVENT_COUNT_OFFSET], 0
+    je .deferred_pop_empty
+    mov rax, [rdi+NEBO_X11_ADAPTER_DEFERRED_EVENT_HEAD_OFFSET]
+    and eax, (NEBO_X11_ADAPTER_DEFERRED_EVENT_CAPACITY-1)
+    shl rax, 5
+    lea r8, [rdi+NEBO_X11_ADAPTER_DEFERRED_EVENT_BUFFER_OFFSET+rax]
+    mov r9, rdi
+    mov rdi, rsi
+    mov rsi, r8
+    mov rcx, (NEBO_X11_EVENT_SIZE/8)
+    cld
+    rep movsq
+    mov rax, [r9+NEBO_X11_ADAPTER_DEFERRED_EVENT_HEAD_OFFSET]
+    inc rax
+    and eax, (NEBO_X11_ADAPTER_DEFERRED_EVENT_CAPACITY-1)
+    mov [r9+NEBO_X11_ADAPTER_DEFERRED_EVENT_HEAD_OFFSET], rax
+    dec qword [r9+NEBO_X11_ADAPTER_DEFERRED_EVENT_COUNT_OFFSET]
+    xor eax, eax
+    ret
+.deferred_pop_empty:
+    mov eax, NEBO_PLATFORM_STATUS_NO_EVENT
+    ret
+.deferred_pop_invalid:
+    mov eax, NEBO_PLATFORM_STATUS_INVALID_ARGUMENT
+    ret
+
+; Bounded synchronous GetProperty for 32-bit values. Events that precede the
+; matching reply are preserved in the adapter FIFO and replayed by poll_raw.
+; RDI=adapter*, ESI=xid, EDX=property, ECX=expected type (or Any),
+; R8=out dwords*, R9=capacity. Returns EAX=status, EDX=item count,
+; ECX=actual type.
+x11_get_property32_internal:
+    push rbx
+    push rbp
+    push r12
+    push r13
+    push r14
+    push r15
+    sub rsp, 8
+    mov r12, rdi
+    mov r13d, esi
+    mov r14d, edx
+    mov r15d, ecx
+    mov rbp, r8
+    mov rbx, r9
+    xor edx, edx
+    xor ecx, ecx
+    test r12, r12
+    jz .get_property_invalid
+    test r13d, r13d
+    jz .get_property_invalid
+    test r14d, r14d
+    jz .get_property_invalid
+    test rbp, rbp
+    jz .get_property_invalid
+    test rbx, rbx
+    jz .get_property_invalid
+    cmp rbx, NEBO_X11_GET_PROPERTY_MAX_ITEMS
+    ja .get_property_limit
+    mov r10, rbx
+    shl r10, 2
+    add r10, NEBO_X11_EVENT_SIZE
+    cmp r10, [r12+NEBO_X11_ADAPTER_SCRATCH_CAPACITY_OFFSET]
+    ja .get_property_limit
+    mov r11, [r12+NEBO_X11_ADAPTER_SCRATCH_PTR_OFFSET]
+    mov rdi, r11
+    xor eax, eax
+    mov ecx, (NEBO_X11_GET_PROPERTY_REQUEST_BYTES/8)
+    cld
+    rep stosq
+    mov byte [r11], NEBO_X11_OP_GET_PROPERTY
+    mov byte [r11+1], 0
+    mov word [r11+2], NEBO_X11_GET_PROPERTY_REQUEST_UNITS
+    mov [r11+4], r13d
+    mov [r11+8], r14d
+    mov [r11+12], r15d
+    mov dword [r11+16], 0
+    mov [r11+20], ebx
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    mov rsi, r11
+    mov edx, NEBO_X11_GET_PROPERTY_REQUEST_BYTES
+    call x11_write_all_internal
+    test eax, eax
+    jnz .get_property_done
+    inc qword [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+    inc qword [r12+NEBO_X11_ADAPTER_STATE_QUERY_COUNT_OFFSET]
+    mov rax, [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+    mov [r12+NEBO_X11_ADAPTER_STATE_QUERY_SEQUENCE_OFFSET], rax
+    mov r13w, ax
+.get_property_read:
+    mov r11, [r12+NEBO_X11_ADAPTER_SCRATCH_PTR_OFFSET]
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    mov rsi, r11
+    mov edx, NEBO_X11_EVENT_SIZE
+    call x11_read_exact_internal
+    test eax, eax
+    jnz .get_property_done
+    mov r11, [r12+NEBO_X11_ADAPTER_SCRATCH_PTR_OFFSET]
+    cmp byte [r11], NEBO_X11_REPLY
+    je .get_property_reply
+    cmp byte [r11], NEBO_X11_EVENT_ERROR
+    jne .get_property_defer
+    cmp word [r11+2], r13w
+    je .get_property_protocol
+.get_property_defer:
+    mov rdi, r12
+    mov rsi, r11
+    call x11_deferred_event_push_internal
+    test eax, eax
+    jnz .get_property_done
+    jmp .get_property_read
+.get_property_reply:
+    cmp word [r11+2], r13w
+    jne .get_property_unexpected_reply
+    mov r10d, [r11+4]
+    cmp r10, rbx
+    ja .get_property_limit
+    mov eax, [r11+16]
+    cmp rax, rbx
+    ja .get_property_limit
+    cmp rax, r10
+    ja .get_property_protocol
+    cmp dword [r11+12], 0
+    jne .get_property_limit
+    mov ecx, [r11+8]
+    test ecx, ecx
+    jnz .get_property_present
+    cmp byte [r11+1], 0
+    jne .get_property_protocol
+    test r10d, r10d
+    jnz .get_property_protocol
+    cmp dword [r11+16], 0
+    jne .get_property_protocol
+    xor edx, edx
+    xor ecx, ecx
+    xor eax, eax
+    jmp .get_property_done
+.get_property_present:
+    test r15d, r15d
+    jz .get_property_format
+    cmp ecx, r15d
+    jne .get_property_protocol
+.get_property_format:
+    cmp byte [r11+1], 32
+    jne .get_property_protocol
+    mov eax, r10d
+    shl eax, 2
+    test eax, eax
+    jz .get_property_copy
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    lea rsi, [r11+NEBO_X11_EVENT_SIZE]
+    mov edx, eax
+    call x11_read_exact_internal
+    test eax, eax
+    jnz .get_property_done
+    mov r11, [r12+NEBO_X11_ADAPTER_SCRATCH_PTR_OFFSET]
+.get_property_copy:
+    mov edx, [r11+16]
+    mov rdi, rbp
+    lea rsi, [r11+NEBO_X11_EVENT_SIZE]
+    mov ecx, edx
+    cld
+    rep movsd
+    mov ecx, [r11+8]
+    xor eax, eax
+    jmp .get_property_done
+.get_property_unexpected_reply:
+    mov r10d, [r11+4]
+    mov rax, r10
+    shl rax, 2
+    add rax, NEBO_X11_EVENT_SIZE
+    cmp rax, [r12+NEBO_X11_ADAPTER_SCRATCH_CAPACITY_OFFSET]
+    ja .get_property_limit
+    test r10d, r10d
+    jz .get_property_protocol
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    lea rsi, [r11+NEBO_X11_EVENT_SIZE]
+    mov edx, r10d
+    shl edx, 2
+    call x11_read_exact_internal
+    test eax, eax
+    jnz .get_property_done
+.get_property_protocol:
+    mov eax, NEBO_PLATFORM_STATUS_PROTOCOL_FAILURE
+    jmp .get_property_done
+.get_property_limit:
+    mov eax, NEBO_PLATFORM_STATUS_CAPABILITY_MISSING
+    jmp .get_property_done
+.get_property_invalid:
+    mov eax, NEBO_PLATFORM_STATUS_INVALID_ARGUMENT
+.get_property_done:
+    add rsp, 8
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbp
+    pop rbx
+    ret
+
+; Query and cache the exact EWMH/ICCCM state for one owned window.
+; Returns EAX=status, EDX=NEBO_X11_WINDOW_EWMH_FLAG_*, ECX=WM_STATE.
+x11_query_window_state_internal:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+    sub rsp, 272
+    mov r12, rdi
+    mov r13, rsi
+    mov dword [rsp+256], 0
+    mov dword [rsp+260], -1
+    mov rdi, r12
+    mov esi, [r13+NEBO_X11_WINDOW_XID_OFFSET]
+    mov edx, [r12+NEBO_X11_ADAPTER_NET_WM_STATE_ATOM_OFFSET]
+    mov ecx, NEBO_X11_ATOM_ATOM
+    mov r8, rsp
+    mov r9d, NEBO_X11_GET_PROPERTY_MAX_ITEMS
+    call x11_get_property32_internal
+    test eax, eax
+    jnz .query_state_done
+    mov r14d, edx
+    xor ebx, ebx
+    xor r15d, r15d
+.query_state_scan:
+    cmp r15d, r14d
+    jae .query_wm_state
+    mov eax, [rsp+r15*4]
+    cmp eax, [r12+NEBO_X11_ADAPTER_NET_WM_STATE_HIDDEN_ATOM_OFFSET]
+    jne .query_state_horz
+    or ebx, NEBO_X11_WINDOW_EWMH_FLAG_HIDDEN
+.query_state_horz:
+    cmp eax, [r12+NEBO_X11_ADAPTER_NET_WM_STATE_MAX_HORZ_ATOM_OFFSET]
+    jne .query_state_vert
+    or ebx, NEBO_X11_WINDOW_EWMH_FLAG_MAX_HORZ
+.query_state_vert:
+    cmp eax, [r12+NEBO_X11_ADAPTER_NET_WM_STATE_MAX_VERT_ATOM_OFFSET]
+    jne .query_state_next
+    or ebx, NEBO_X11_WINDOW_EWMH_FLAG_MAX_VERT
+.query_state_next:
+    inc r15d
+    jmp .query_state_scan
+.query_wm_state:
+    mov [rsp+256], ebx
+    mov rdi, r12
+    mov esi, [r13+NEBO_X11_WINDOW_XID_OFFSET]
+    mov edx, [r12+NEBO_X11_ADAPTER_WM_STATE_ATOM_OFFSET]
+    mov ecx, edx
+    mov r8, rsp
+    mov r9d, 2
+    call x11_get_property32_internal
+    test eax, eax
+    jnz .query_state_done
+    test edx, edx
+    jz .query_state_store
+    mov eax, [rsp]
+    mov [rsp+260], eax
+.query_state_store:
+    mov eax, [rsp+256]
+    mov [r13+NEBO_X11_WINDOW_EWMH_STATE_FLAGS_OFFSET], eax
+    mov ecx, [rsp+260]
+    mov [r13+NEBO_X11_WINDOW_WM_STATE_OFFSET], ecx
+    mov rax, [r12+NEBO_X11_ADAPTER_STATE_QUERY_SEQUENCE_OFFSET]
+    mov [r13+NEBO_X11_WINDOW_STATE_SYNC_SEQUENCE_OFFSET], rax
+    inc qword [r13+NEBO_X11_WINDOW_STATE_SYNC_COUNT_OFFSET]
+    mov edx, [rsp+256]
+    xor eax, eax
+.query_state_done:
+    add rsp, 272
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
 ; Validate an adapter-owned live window for native actions.
 ; RDI=adapter*, RSI=window*.
 x11_window_action_validate_internal:
@@ -691,6 +1348,97 @@ x11_send_client_message_internal:
     pop r13
     pop r12
     pop rbx
+    ret
+
+; Clear only private moveresize transaction state.  Generation and diagnostic
+; detail remain available to bounded tests and post-failure inspection.
+; RDI=window*.
+x11_moveresize_clear_internal:
+    test rdi, rdi
+    jz .moveresize_clear_done
+    mov dword [rdi+NEBO_X11_WINDOW_MOVERESIZE_ACTIVE_OFFSET], 0
+    mov dword [rdi+NEBO_X11_WINDOW_MOVERESIZE_BUTTON_OFFSET], 0
+    mov dword [rdi+NEBO_X11_WINDOW_MOVERESIZE_DIRECTION_OFFSET], 0
+    mov dword [rdi+NEBO_X11_WINDOW_MOVERESIZE_FLAGS_OFFSET], 0
+    mov dword [rdi+NEBO_X11_WINDOW_MOVERESIZE_ROOT_X_OFFSET], 0
+    mov dword [rdi+NEBO_X11_WINDOW_MOVERESIZE_ROOT_Y_OFFSET], 0
+    mov eax, [rdi+NEBO_X11_WINDOW_PENDING_ACTION_OFFSET]
+    cmp eax, NEBO_X11_WINDOW_ACTION_DRAG
+    je .moveresize_clear_pending
+    cmp eax, NEBO_X11_WINDOW_ACTION_RESIZE
+    jne .moveresize_clear_done
+.moveresize_clear_pending:
+    mov dword [rdi+NEBO_X11_WINDOW_PENDING_ACTION_OFFSET], NEBO_X11_WINDOW_ACTION_NONE
+.moveresize_clear_done:
+    ret
+
+; Send core UngrabPointer(CurrentTime) on the same ordered X11 byte stream used
+; by the immediately following _NET_WM_MOVERESIZE ClientMessage.
+; RDI=adapter*.
+x11_ungrab_pointer_internal:
+    push rbx
+    push r12
+    push r13
+    mov r12, rdi
+    mov rbx, [r12+NEBO_X11_ADAPTER_SCRATCH_PTR_OFFSET]
+    mov rdi, rbx
+    xor eax, eax
+    mov ecx, 8
+    cld
+    rep stosb
+    mov byte [rbx], NEBO_X11_OP_UNGRAB_POINTER
+    mov word [rbx+2], 2
+    mov dword [rbx+4], NEBO_X11_CURRENT_TIME
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    mov rsi, rbx
+    mov edx, 8
+    call x11_write_all_internal
+    test eax, eax
+    jnz .ungrab_done
+    inc qword [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+    mov eax, NEBO_PLATFORM_STATUS_OK
+.ungrab_done:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+; Cancel an active EWMH moveresize transaction and clear it on every outcome.
+; RDI=adapter*, RSI=window*.
+x11_moveresize_cancel_internal:
+    push r12
+    push r13
+    push r14
+    sub rsp, 32
+    mov r12, rdi
+    mov r13, rsi
+    cmp dword [r13+NEBO_X11_WINDOW_MOVERESIZE_ACTIVE_OFFSET], 0
+    je .moveresize_cancel_ok
+    mov eax, [r13+NEBO_X11_WINDOW_MOVERESIZE_ROOT_X_OFFSET]
+    mov [rsp], eax
+    mov eax, [r13+NEBO_X11_WINDOW_MOVERESIZE_ROOT_Y_OFFSET]
+    mov [rsp+4], eax
+    mov dword [rsp+8], NEBO_X11_NET_WM_MOVERESIZE_CANCEL
+    mov eax, [r13+NEBO_X11_WINDOW_MOVERESIZE_BUTTON_OFFSET]
+    mov [rsp+12], eax
+    mov dword [rsp+16], NEBO_X11_NET_WM_SOURCE_APPLICATION
+    mov rdi, r12
+    mov rsi, r13
+    mov edx, [r12+NEBO_X11_ADAPTER_NET_WM_MOVERESIZE_ATOM_OFFSET]
+    mov rcx, rsp
+    call x11_send_client_message_internal
+    mov r14d, eax
+    mov rdi, r13
+    call x11_moveresize_clear_internal
+    mov eax, r14d
+    jmp .moveresize_cancel_done
+.moveresize_cancel_ok:
+    mov eax, NEBO_PLATFORM_STATUS_OK
+.moveresize_cancel_done:
+    add rsp, 32
+    pop r14
+    pop r13
+    pop r12
     ret
 
 ; Perform X11 connection setup and parse the first screen/pixmap format.
@@ -982,6 +1730,13 @@ nebo_x11_adapter_init:
     test eax, eax
     jnz .init_atom_failure
     mov rdi, r12
+    lea rsi, [rel x11_atom_wm_state]
+    mov edx, 8
+    lea rcx, [r12+NEBO_X11_ADAPTER_WM_STATE_ATOM_OFFSET]
+    call x11_intern_atom_internal
+    test eax, eax
+    jnz .init_atom_failure
+    mov rdi, r12
     lea rsi, [rel x11_atom_net_wm_state]
     mov edx, 13
     lea rcx, [r12+NEBO_X11_ADAPTER_NET_WM_STATE_ATOM_OFFSET]
@@ -1003,6 +1758,13 @@ nebo_x11_adapter_init:
     test eax, eax
     jnz .init_atom_failure
     mov rdi, r12
+    lea rsi, [rel x11_atom_net_wm_state_hidden]
+    mov edx, 20
+    lea rcx, [r12+NEBO_X11_ADAPTER_NET_WM_STATE_HIDDEN_ATOM_OFFSET]
+    call x11_intern_atom_internal
+    test eax, eax
+    jnz .init_atom_failure
+    mov rdi, r12
     lea rsi, [rel x11_atom_net_wm_moveresize]
     mov edx, 18
     lea rcx, [r12+NEBO_X11_ADAPTER_NET_WM_MOVERESIZE_ATOM_OFFSET]
@@ -1020,6 +1782,13 @@ nebo_x11_adapter_init:
     lea rsi, [rel x11_atom_net_wm_name]
     mov edx, 12
     lea rcx, [r12+NEBO_X11_ADAPTER_NET_WM_NAME_ATOM_OFFSET]
+    call x11_intern_atom_internal
+    test eax, eax
+    jnz .init_atom_failure
+    mov rdi, r12
+    lea rsi, [rel x11_atom_net_wm_pid]
+    mov edx, 11
+    lea rcx, [r12+NEBO_X11_ADAPTER_NET_WM_PID_ATOM_OFFSET]
     call x11_intern_atom_internal
     test eax, eax
     jnz .init_atom_failure
@@ -1154,12 +1923,17 @@ nebo_x11_adapter_report:
 
 nebo_x11_adapter_shutdown:
     push r12
+    push r13
+    push r14
     mov r12, rdi
     call nebo_x11_adapter_validate
     test eax, eax
     jnz .shutdown_done
     cmp qword [r12+NEBO_X11_ADAPTER_ACTIVE_WINDOWS_OFFSET], 0
     jne .shutdown_state
+    mov rdi, r12
+    call x11_cursor_resources_free_internal
+    mov r13d, eax
     mov eax, NEBO_LINUX_SYS_CLOSE
     mov rdi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
     syscall
@@ -1167,8 +1941,8 @@ nebo_x11_adapter_shutdown:
     js .shutdown_io
     mov qword [r12+NEBO_X11_ADAPTER_FD_OFFSET], -1
     mov dword [r12+NEBO_X11_ADAPTER_STATE_OFFSET], NEBO_PLATFORM_ADAPTER_STATE_SHUTDOWN
-    mov qword [r12+NEBO_X11_ADAPTER_LAST_STATUS_OFFSET], NEBO_PLATFORM_STATUS_OK
-    mov eax, NEBO_PLATFORM_STATUS_OK
+    mov [r12+NEBO_X11_ADAPTER_LAST_STATUS_OFFSET], r13
+    mov eax, r13d
     jmp .shutdown_done
 .shutdown_io:
     mov eax, NEBO_PLATFORM_STATUS_IO_FAILURE
@@ -1176,6 +1950,8 @@ nebo_x11_adapter_shutdown:
 .shutdown_state:
     mov eax, NEBO_PLATFORM_STATUS_BAD_STATE
 .shutdown_done:
+    pop r14
+    pop r13
     pop r12
     ret
 
@@ -1284,13 +2060,13 @@ nebo_x11_adapter_create_window:
     ; CreateWindow: managed InputOutput child of root, no override-redirect.
     mov rdi, r10
     xor eax, eax
-    mov ecx, 40
+    mov ecx, 44
     cld
     rep stosb
     mov byte [r10], NEBO_X11_OP_CREATE_WINDOW
     mov al, [r12+NEBO_X11_ADAPTER_ROOT_DEPTH_OFFSET]
     mov [r10+1], al
-    mov word [r10+2], 10
+    mov word [r10+2], 11
     mov eax, [r13+NEBO_X11_WINDOW_XID_OFFSET]
     mov [r10+4], eax
     mov eax, [r12+NEBO_X11_ADAPTER_ROOT_WINDOW_OFFSET]
@@ -1303,17 +2079,32 @@ nebo_x11_adapter_create_window:
     mov word [r10+22], NEBO_X11_WINDOW_CLASS_INPUT_OUTPUT
     mov eax, [r12+NEBO_X11_ADAPTER_ROOT_VISUAL_OFFSET]
     mov [r10+24], eax
-    mov dword [r10+28], (NEBO_X11_CW_BACK_PIXEL | NEBO_X11_CW_EVENT_MASK)
-    mov eax, [r12+NEBO_X11_ADAPTER_BLACK_PIXEL_OFFSET]
-    mov [r10+32], eax
-    mov dword [r10+36], NEBO_X11_MF053_EVENT_MASK
+    ; The client commits a complete private-pixmap frame after every accepted
+    ; geometry. ForgetGravity prevents the server from retaining pixels from
+    ; the previous window drawable during the geometry-to-CopyArea interval.
+    mov dword [r10+28], (NEBO_X11_CW_BACK_PIXEL | NEBO_X11_CW_BIT_GRAVITY | NEBO_X11_CW_EVENT_MASK)
+    mov dword [r10+32], NEBO_X11_WINDOW_FALLBACK_BACKGROUND_PIXEL
+    mov dword [r10+36], NEBO_X11_BIT_GRAVITY_FORGET
+    mov dword [r10+40], NEBO_X11_MF053_EVENT_MASK
     mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
     mov rsi, r10
-    mov edx, 40
+    mov edx, 44
     call x11_write_all_internal
     test eax, eax
     jnz .create_request
     inc qword [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+    ; Surface windows retain one private server pixmap. Chunked PutImage
+    ; requests update it invisibly; CopyArea is the sole visible commit.
+    test dword [r14+NEBO_X11_WINDOW_CONFIG_FLAGS_OFFSET], NEBO_X11_WINDOW_CONFIG_FLAG_NO_SURFACE
+    jnz .create_gc
+    mov rdi, r12
+    mov rsi, r13
+    mov rdx, r15
+    mov rcx, rbx
+    call x11_window_backbuffer_ensure_internal
+    test eax, eax
+    jnz .create_request
+.create_gc:
     ; CreateGC.
     mov rdi, r10
     xor eax, eax
@@ -1324,7 +2115,11 @@ nebo_x11_adapter_create_window:
     mov word [r10+2], 4
     mov eax, [r13+NEBO_X11_WINDOW_GC_XID_OFFSET]
     mov [r10+4], eax
+    mov eax, [r13+NEBO_X11_WINDOW_BACKBUFFER_XID_OFFSET]
+    test eax, eax
+    jnz .create_gc_drawable_ready
     mov eax, [r13+NEBO_X11_WINDOW_XID_OFFSET]
+.create_gc_drawable_ready:
     mov [r10+8], eax
     mov dword [r10+12], 0
     mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
@@ -1382,6 +2177,33 @@ nebo_x11_adapter_create_window:
     mov byte [r10+16], 32
     mov dword [r10+20], 1
     mov eax, [r12+NEBO_X11_ADAPTER_WM_DELETE_WINDOW_ATOM_OFFSET]
+    mov [r10+24], eax
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    mov rsi, r10
+    mov edx, 28
+    call x11_write_all_internal
+    test eax, eax
+    jnz .create_request
+    inc qword [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+    ; EWMH process ownership metadata. The 32-bit CARDINAL is the exact PID of
+    ; this ELF process and is published before either immediate or deferred map.
+    mov rdi, r10
+    xor eax, eax
+    mov ecx, 28
+    cld
+    rep stosb
+    mov byte [r10], NEBO_X11_OP_CHANGE_PROPERTY
+    mov byte [r10+1], NEBO_X11_PROP_MODE_REPLACE
+    mov word [r10+2], 7
+    mov eax, [r13+NEBO_X11_WINDOW_XID_OFFSET]
+    mov [r10+4], eax
+    mov eax, [r12+NEBO_X11_ADAPTER_NET_WM_PID_ATOM_OFFSET]
+    mov [r10+8], eax
+    mov dword [r10+12], NEBO_X11_ATOM_CARDINAL
+    mov byte [r10+16], 32
+    mov dword [r10+20], 1
+    mov eax, NEBO_LINUX_SYS_GETPID
+    syscall
     mov [r10+24], eax
     mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
     mov rsi, r10
@@ -1492,6 +2314,8 @@ nebo_x11_adapter_normalize_event:
     je .event_focus_in
     cmp ebx, NEBO_X11_EVENT_FOCUS_OUT
     je .event_focus_out
+    cmp ebx, NEBO_X11_EVENT_PROPERTY_NOTIFY
+    je .event_property
     cmp ebx, NEBO_X11_EVENT_CLIENT_MESSAGE
     je .event_client
     cmp ebx, NEBO_X11_EVENT_UNMAP_NOTIFY
@@ -1504,8 +2328,33 @@ nebo_x11_adapter_normalize_event:
     mov eax, [r14+8]
     cmp eax, [r13+NEBO_X11_WINDOW_XID_OFFSET]
     jne .event_no_event
+    ; MapNotify alone does not say whether activation restored a normal or a
+    ; maximized window. Read the actual WM properties before publishing state.
+    cmp qword [r12+NEBO_X11_ADAPTER_SCRATCH_PTR_OFFSET], 0
+    je .event_map_cached_state
+    cmp dword [r12+NEBO_X11_ADAPTER_NET_WM_STATE_ATOM_OFFSET], 0
+    je .event_map_cached_state
+    cmp dword [r12+NEBO_X11_ADAPTER_WM_STATE_ATOM_OFFSET], 0
+    je .event_map_cached_state
+    mov rdi, r12
+    mov rsi, r13
+    call x11_query_window_state_internal
+    test eax, eax
+    jnz .event_state_sync_error
+.event_map_cached_state:
+    mov r10d, [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET]
     mov dword [r13+NEBO_X11_WINDOW_STATE_OFFSET], NEBO_X11_WINDOW_STATE_MAPPED
     or dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], NEBO_X11_WINDOW_NATIVE_FLAG_MAPPED
+    and dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], ~NEBO_X11_WINDOW_NATIVE_FLAG_MINIMIZED
+    mov eax, [r13+NEBO_X11_WINDOW_EWMH_STATE_FLAGS_OFFSET]
+    and eax, NEBO_X11_WINDOW_EWMH_FLAG_MAXIMIZED
+    cmp eax, NEBO_X11_WINDOW_EWMH_FLAG_MAXIMIZED
+    jne .event_map_not_maximized
+    or dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], NEBO_X11_WINDOW_NATIVE_FLAG_MAXIMIZED
+    jmp .event_map_state_ready
+.event_map_not_maximized:
+    and dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], ~NEBO_X11_WINDOW_NATIVE_FLAG_MAXIMIZED
+.event_map_state_ready:
     mov eax, [r13+NEBO_X11_WINDOW_PENDING_ACTION_OFFSET]
     cmp eax, NEBO_X11_WINDOW_ACTION_SHOW
     jne .event_map_not_show
@@ -1514,16 +2363,21 @@ nebo_x11_adapter_normalize_event:
     jmp .event_map_emit
 .event_map_not_show:
     cmp eax, NEBO_X11_WINDOW_ACTION_RESTORE
-    je .event_map_restored
-    test dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], NEBO_X11_WINDOW_NATIVE_FLAG_MINIMIZED
-    jnz .event_map_restored
+    je .event_map_activated
+    test r10d, NEBO_X11_WINDOW_NATIVE_FLAG_MINIMIZED
+    jnz .event_map_activated
+    test dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], NEBO_X11_WINDOW_NATIVE_FLAG_MAXIMIZED
+    jnz .event_map_maximized
     mov ecx, NEBO_CONSOLE_EVENT_WINDOW_MOUNTED
     jmp .event_map_emit
-.event_map_restored:
-    and dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], ~(NEBO_X11_WINDOW_NATIVE_FLAG_MINIMIZED | NEBO_X11_WINDOW_NATIVE_FLAG_MAXIMIZED)
-    or dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], NEBO_X11_WINDOW_NATIVE_FLAG_MAPPED
+.event_map_activated:
     mov dword [r13+NEBO_X11_WINDOW_PENDING_ACTION_OFFSET], NEBO_X11_WINDOW_ACTION_NONE
+    test dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], NEBO_X11_WINDOW_NATIVE_FLAG_MAXIMIZED
+    jnz .event_map_maximized
     mov ecx, NEBO_CONSOLE_EVENT_WINDOW_RESTORED
+    jmp .event_map_emit
+.event_map_maximized:
+    mov ecx, NEBO_CONSOLE_EVENT_WINDOW_MAXIMIZED
 .event_map_emit:
     mov rdi, r12
     mov rsi, r13
@@ -1536,44 +2390,74 @@ nebo_x11_adapter_normalize_event:
     mov eax, [r14+8]
     cmp eax, [r13+NEBO_X11_WINDOW_XID_OFFSET]
     jne .event_no_event
-    movsx rax, word [r14+16]
-    mov [r13+NEBO_X11_WINDOW_X_OFFSET], rax
-    movsx rax, word [r14+18]
-    mov [r13+NEBO_X11_WINDOW_Y_OFFSET], rax
+    movsx r10, word [r14+16]
+    movsx r11, word [r14+18]
     movzx r8d, word [r14+20]
     movzx r9d, word [r14+22]
+    ; A managed window may publish an ICCCM minimum. Clamp the same contract
+    ; before ConfigureNotify becomes authoritative so a transient or
+    ; nonconforming below-minimum event can never poison live rendering.
+    mov rax, [r13+NEBO_X11_WINDOW_MINIMUM_WIDTH_OFFSET]
+    test rax, rax
+    jz .event_configure_height
+    cmp r8, rax
+    jae .event_configure_height
+    cmp dword [r13+NEBO_X11_WINDOW_MOVERESIZE_ACTIVE_OFFSET], 0
+    je .event_configure_width_clamp
+    mov edx, [r13+NEBO_X11_WINDOW_MOVERESIZE_DIRECTION_OFFSET]
+    cmp edx, NEBO_X11_NET_WM_MOVERESIZE_SIZE_LEFT
+    je .event_configure_left_clamp
+    cmp edx, NEBO_X11_NET_WM_MOVERESIZE_SIZE_TOPLEFT
+    je .event_configure_left_clamp
+    cmp edx, NEBO_X11_NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT
+    jne .event_configure_width_clamp
+.event_configure_left_clamp:
+    add r10, r8
+    sub r10, rax
+.event_configure_width_clamp:
+    mov r8, rax
+.event_configure_height:
+    mov rax, [r13+NEBO_X11_WINDOW_MINIMUM_HEIGHT_OFFSET]
+    test rax, rax
+    jz .event_configure_store
+    cmp r9, rax
+    jae .event_configure_store
+    cmp dword [r13+NEBO_X11_WINDOW_MOVERESIZE_ACTIVE_OFFSET], 0
+    je .event_configure_height_clamp
+    mov edx, [r13+NEBO_X11_WINDOW_MOVERESIZE_DIRECTION_OFFSET]
+    cmp edx, NEBO_X11_NET_WM_MOVERESIZE_SIZE_TOP
+    je .event_configure_top_clamp
+    cmp edx, NEBO_X11_NET_WM_MOVERESIZE_SIZE_TOPLEFT
+    je .event_configure_top_clamp
+    cmp edx, NEBO_X11_NET_WM_MOVERESIZE_SIZE_TOPRIGHT
+    jne .event_configure_height_clamp
+.event_configure_top_clamp:
+    add r11, r9
+    sub r11, rax
+.event_configure_height_clamp:
+    mov r9, rax
+.event_configure_store:
+    mov [r13+NEBO_X11_WINDOW_X_OFFSET], r10
+    mov [r13+NEBO_X11_WINDOW_Y_OFFSET], r11
     mov [r13+NEBO_X11_WINDOW_WIDTH_OFFSET], r8
     mov [r13+NEBO_X11_WINDOW_HEIGHT_OFFSET], r9
+    mov qword [r13+NEBO_X11_WINDOW_PRESENT_GEOMETRY_GUARD_OFFSET], 1
+    inc qword [r13+NEBO_X11_WINDOW_GEOMETRY_GENERATION_OFFSET]
+    cmp dword [r13+NEBO_X11_WINDOW_MOVERESIZE_ACTIVE_OFFSET], 0
+    je .event_configure_action
+    or dword [r13+NEBO_X11_WINDOW_MOVERESIZE_FLAGS_OFFSET], NEBO_X11_WINDOW_MOVERESIZE_FLAG_WM_PROGRESS
+.event_configure_action:
     mov eax, [r13+NEBO_X11_WINDOW_PENDING_ACTION_OFFSET]
-    cmp eax, NEBO_X11_WINDOW_ACTION_MAXIMIZE
-    je .event_configure_check_sequence
-    cmp eax, NEBO_X11_WINDOW_ACTION_RESTORE
-    je .event_configure_check_sequence
     cmp eax, NEBO_X11_WINDOW_ACTION_RESIZE
     jne .event_configure_resized
 .event_configure_check_sequence:
     movzx edx, word [r14+2]
     cmp dx, word [r13+NEBO_X11_WINDOW_PENDING_PROTOCOL_SEQUENCE_OFFSET]
     jne .event_configure_resized
-    cmp eax, NEBO_X11_WINDOW_ACTION_MAXIMIZE
-    je .event_configure_maximized
-    cmp eax, NEBO_X11_WINDOW_ACTION_RESTORE
-    je .event_configure_restored
     mov dword [r13+NEBO_X11_WINDOW_PENDING_ACTION_OFFSET], NEBO_X11_WINDOW_ACTION_NONE
 .event_configure_resized:
     mov ecx, NEBO_CONSOLE_EVENT_WINDOW_RESIZED
     jmp .event_configure_emit
-.event_configure_maximized:
-    and dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], ~NEBO_X11_WINDOW_NATIVE_FLAG_MINIMIZED
-    or dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], (NEBO_X11_WINDOW_NATIVE_FLAG_MAPPED | NEBO_X11_WINDOW_NATIVE_FLAG_MAXIMIZED)
-    mov dword [r13+NEBO_X11_WINDOW_PENDING_ACTION_OFFSET], NEBO_X11_WINDOW_ACTION_NONE
-    mov ecx, NEBO_CONSOLE_EVENT_WINDOW_MAXIMIZED
-    jmp .event_configure_emit
-.event_configure_restored:
-    and dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], ~(NEBO_X11_WINDOW_NATIVE_FLAG_MINIMIZED | NEBO_X11_WINDOW_NATIVE_FLAG_MAXIMIZED)
-    or dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], NEBO_X11_WINDOW_NATIVE_FLAG_MAPPED
-    mov dword [r13+NEBO_X11_WINDOW_PENDING_ACTION_OFFSET], NEBO_X11_WINDOW_ACTION_NONE
-    mov ecx, NEBO_CONSOLE_EVENT_WINDOW_RESTORED
 .event_configure_emit:
     mov rdi, r12
     mov rsi, r13
@@ -1603,9 +2487,42 @@ nebo_x11_adapter_normalize_event:
     call x11_emit_event_internal
     jmp .event_done
 .event_button_press:
+    mov eax, [r14+12]
+    cmp eax, [r13+NEBO_X11_WINDOW_XID_OFFSET]
+    jne .event_no_event
+    ; Delivery of a new physical press proves that any prior WM pointer grab
+    ; ended even when the WM consumed its release without a geometry change.
+    cmp dword [r13+NEBO_X11_WINDOW_MOVERESIZE_ACTIVE_OFFSET], 0
+    je .event_button_press_ready
+    movzx eax, byte [r14+1]
+    cmp eax, [r13+NEBO_X11_WINDOW_MOVERESIZE_BUTTON_OFFSET]
+    jne .event_button_press_ready
+    mov rdi, r13
+    call x11_moveresize_clear_internal
+.event_button_press_ready:
     mov r11d, NEBO_CONSOLE_EVENT_POINTER_DOWN
     jmp .event_button_common
 .event_button_release:
+    mov eax, [r14+12]
+    cmp eax, [r13+NEBO_X11_WINDOW_XID_OFFSET]
+    jne .event_no_event
+    cmp dword [r13+NEBO_X11_WINDOW_MOVERESIZE_ACTIVE_OFFSET], 0
+    je .event_button_release_ready
+    movzx eax, byte [r14+1]
+    cmp eax, [r13+NEBO_X11_WINDOW_MOVERESIZE_BUTTON_OFFSET]
+    jne .event_button_release_ready
+    test dword [r13+NEBO_X11_WINDOW_MOVERESIZE_FLAGS_OFFSET], NEBO_X11_WINDOW_MOVERESIZE_FLAG_WM_PROGRESS
+    jnz .event_button_release_complete
+    mov rdi, r12
+    mov rsi, r13
+    call x11_moveresize_cancel_internal
+    test eax, eax
+    jnz .event_transaction_error
+    jmp .event_button_release_ready
+.event_button_release_complete:
+    mov rdi, r13
+    call x11_moveresize_clear_internal
+.event_button_release_ready:
     mov r11d, NEBO_CONSOLE_EVENT_POINTER_UP
 .event_button_common:
     mov eax, [r14+12]
@@ -1703,6 +2620,112 @@ nebo_x11_adapter_normalize_event:
     xor r9d, r9d
     call x11_emit_event_internal
     jmp .event_done
+.event_property:
+    mov eax, [r14+4]
+    cmp eax, [r13+NEBO_X11_WINDOW_XID_OFFSET]
+    jne .event_no_event
+    mov eax, [r14+8]
+    cmp eax, [r12+NEBO_X11_ADAPTER_NET_WM_STATE_ATOM_OFFSET]
+    je .event_property_kind
+    cmp eax, [r12+NEBO_X11_ADAPTER_WM_STATE_ATOM_OFFSET]
+    jne .event_no_event
+.event_property_kind:
+    movzx edx, byte [r14+16]
+    cmp edx, NEBO_X11_PROPERTY_NEW_VALUE
+    je .event_property_query
+    cmp edx, NEBO_X11_PROPERTY_DELETE
+    jne .event_no_event
+.event_property_query:
+    mov r10d, [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET]
+    mov rdi, r12
+    mov rsi, r13
+    call x11_query_window_state_internal
+    test eax, eax
+    jnz .event_state_sync_error
+    mov r11d, [r13+NEBO_X11_WINDOW_EWMH_STATE_FLAGS_OFFSET]
+    mov eax, r11d
+    and eax, NEBO_X11_WINDOW_EWMH_FLAG_MAXIMIZED
+    cmp eax, NEBO_X11_WINDOW_EWMH_FLAG_MAXIMIZED
+    jne .event_property_not_maximized
+    or dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], NEBO_X11_WINDOW_NATIVE_FLAG_MAXIMIZED
+    jmp .event_property_visibility
+.event_property_not_maximized:
+    and dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], ~NEBO_X11_WINDOW_NATIVE_FLAG_MAXIMIZED
+.event_property_visibility:
+    test r11d, NEBO_X11_WINDOW_EWMH_FLAG_HIDDEN
+    jnz .event_property_hidden
+    cmp dword [r13+NEBO_X11_WINDOW_WM_STATE_OFFSET], NEBO_X11_ICCCM_ICONIC_STATE
+    je .event_property_hidden
+    cmp dword [r13+NEBO_X11_WINDOW_STATE_OFFSET], NEBO_X11_WINDOW_STATE_MAPPED
+    jne .event_property_pending
+    and dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], ~NEBO_X11_WINDOW_NATIVE_FLAG_MINIMIZED
+    or dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], NEBO_X11_WINDOW_NATIVE_FLAG_MAPPED
+    jmp .event_property_pending
+.event_property_hidden:
+    ; PropertyNotify may publish HIDDEN/Iconic before the corresponding
+    ; UnmapNotify.  Cache the queried EWMH/ICCCM values above, but keep the
+    ; native window presentable until UnmapNotify is the canonical visibility
+    ; completion point.  Publishing MINIMIZED here makes a legitimate
+    ; intervening FocusOut repaint fail with BAD_STATE.
+.event_property_pending:
+    ; A property update may precede MapNotify while an Iconic window is being
+    ; activated. Cache it, but MapNotify remains the visibility/lifecycle
+    ; completion point and must emit the first restored/maximized event.
+    cmp dword [r13+NEBO_X11_WINDOW_STATE_OFFSET], NEBO_X11_WINDOW_STATE_MAPPED
+    jne .event_no_event
+    mov eax, [r13+NEBO_X11_WINDOW_PENDING_ACTION_OFFSET]
+    cmp eax, NEBO_X11_WINDOW_ACTION_MAXIMIZE
+    je .event_property_pending_maximize
+    cmp eax, NEBO_X11_WINDOW_ACTION_RESTORE
+    je .event_property_pending_restore
+    test r11d, NEBO_X11_WINDOW_EWMH_FLAG_HIDDEN
+    jnz .event_no_event
+    cmp dword [r13+NEBO_X11_WINDOW_WM_STATE_OFFSET], NEBO_X11_ICCCM_ICONIC_STATE
+    je .event_no_event
+    mov eax, r10d
+    xor eax, [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET]
+    test eax, NEBO_X11_WINDOW_NATIVE_FLAG_MAXIMIZED
+    jz .event_no_event
+    test dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], NEBO_X11_WINDOW_NATIVE_FLAG_MAXIMIZED
+    jnz .event_property_emit_maximized
+    mov ecx, NEBO_CONSOLE_EVENT_WINDOW_RESTORED
+    jmp .event_property_emit
+.event_property_pending_maximize:
+    test r11d, NEBO_X11_WINDOW_EWMH_FLAG_HIDDEN
+    jnz .event_no_event
+    cmp dword [r13+NEBO_X11_WINDOW_WM_STATE_OFFSET], NEBO_X11_ICCCM_ICONIC_STATE
+    je .event_no_event
+    mov eax, r11d
+    and eax, NEBO_X11_WINDOW_EWMH_FLAG_MAXIMIZED
+    cmp eax, NEBO_X11_WINDOW_EWMH_FLAG_MAXIMIZED
+    jne .event_no_event
+    mov dword [r13+NEBO_X11_WINDOW_PENDING_ACTION_OFFSET], NEBO_X11_WINDOW_ACTION_NONE
+.event_property_emit_maximized:
+    mov ecx, NEBO_CONSOLE_EVENT_WINDOW_MAXIMIZED
+    jmp .event_property_emit
+.event_property_pending_restore:
+    test r11d, NEBO_X11_WINDOW_EWMH_FLAG_HIDDEN
+    jnz .event_no_event
+    cmp dword [r13+NEBO_X11_WINDOW_WM_STATE_OFFSET], NEBO_X11_ICCCM_ICONIC_STATE
+    je .event_no_event
+    test r11d, NEBO_X11_WINDOW_EWMH_FLAG_MAXIMIZED
+    jnz .event_no_event
+    mov dword [r13+NEBO_X11_WINDOW_PENDING_ACTION_OFFSET], NEBO_X11_WINDOW_ACTION_NONE
+    mov ecx, NEBO_CONSOLE_EVENT_WINDOW_RESTORED
+.event_property_emit:
+    mov rdi, r12
+    mov rsi, r13
+    mov rdx, r15
+    mov r8, [r13+NEBO_X11_WINDOW_WIDTH_OFFSET]
+    mov r9, [r13+NEBO_X11_WINDOW_HEIGHT_OFFSET]
+    call x11_emit_event_internal
+    jmp .event_done
+.event_state_sync_error:
+    mov qword [r13+NEBO_X11_WINDOW_LAST_ERROR_OFFSET], NEBO_X11_ERROR_EVENT
+    mov [r13+NEBO_X11_WINDOW_LAST_STATUS_OFFSET], rax
+    mov qword [r12+NEBO_X11_ADAPTER_LAST_ERROR_OFFSET], NEBO_X11_ERROR_EVENT
+    mov [r12+NEBO_X11_ADAPTER_LAST_STATUS_OFFSET], rax
+    jmp .event_done
 .event_client:
     cmp byte [r14+1], 32
     jne .event_no_event
@@ -1715,6 +2738,14 @@ nebo_x11_adapter_normalize_event:
     mov eax, [r14+12]
     cmp eax, [r12+NEBO_X11_ADAPTER_WM_DELETE_WINDOW_ATOM_OFFSET]
     jne .event_no_event
+    cmp dword [r13+NEBO_X11_WINDOW_MOVERESIZE_ACTIVE_OFFSET], 0
+    je .event_client_close
+    mov rdi, r12
+    mov rsi, r13
+    call x11_moveresize_cancel_internal
+    test eax, eax
+    jnz .event_transaction_error
+.event_client_close:
     or dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], NEBO_X11_WINDOW_NATIVE_FLAG_CLOSE_REQUESTED
     mov dword [r13+NEBO_X11_WINDOW_PENDING_ACTION_OFFSET], NEBO_X11_WINDOW_ACTION_CLOSE
     mov rdi, r12
@@ -1731,8 +2762,12 @@ nebo_x11_adapter_normalize_event:
     jne .event_no_event
     and dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], ~NEBO_X11_WINDOW_NATIVE_FLAG_MAPPED
     or dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], NEBO_X11_WINDOW_NATIVE_FLAG_MINIMIZED
+    or dword [r13+NEBO_X11_WINDOW_EWMH_STATE_FLAGS_OFFSET], NEBO_X11_WINDOW_EWMH_FLAG_HIDDEN
+    mov dword [r13+NEBO_X11_WINDOW_WM_STATE_OFFSET], NEBO_X11_ICCCM_ICONIC_STATE
     mov dword [r13+NEBO_X11_WINDOW_STATE_OFFSET], NEBO_X11_WINDOW_STATE_UNMAPPED
     mov dword [r13+NEBO_X11_WINDOW_PENDING_ACTION_OFFSET], NEBO_X11_WINDOW_ACTION_NONE
+    mov rdi, r13
+    call x11_moveresize_clear_internal
     mov rdi, r12
     mov rsi, r13
     mov rdx, r15
@@ -1745,6 +2780,8 @@ nebo_x11_adapter_normalize_event:
     mov eax, [r14+8]
     cmp eax, [r13+NEBO_X11_WINDOW_XID_OFFSET]
     jne .event_no_event
+    mov rdi, r13
+    call x11_moveresize_clear_internal
     mov dword [r13+NEBO_X11_WINDOW_STATE_OFFSET], NEBO_X11_WINDOW_STATE_DESTROYED
     cmp qword [r12+NEBO_X11_ADAPTER_ACTIVE_WINDOWS_OFFSET], 0
     je .event_destroy_emit
@@ -1759,9 +2796,36 @@ nebo_x11_adapter_normalize_event:
     call x11_emit_event_internal
     jmp .event_done
 .event_protocol_error:
+    cmp dword [r13+NEBO_X11_WINDOW_MOVERESIZE_ACTIVE_OFFSET], 0
+    je .event_protocol_error_detail
+    mov rdi, r12
+    mov rsi, r13
+    call x11_moveresize_cancel_internal
+.event_protocol_error_detail:
+    movzx eax, byte [r14+1]
+    movzx ecx, word [r14+2]
+    shl rcx, 8
+    or rax, rcx
+    movzx ecx, word [r14+8]
+    shl rcx, 24
+    or rax, rcx
+    movzx ecx, byte [r14+10]
+    shl rcx, 40
+    or rax, rcx
+    mov [r13+NEBO_X11_WINDOW_LAST_PROTOCOL_ERROR_DETAIL_OFFSET], rax
     mov dword [r13+NEBO_X11_WINDOW_STATE_OFFSET], NEBO_X11_WINDOW_STATE_FAILED
     mov qword [r13+NEBO_X11_WINDOW_LAST_ERROR_OFFSET], NEBO_X11_ERROR_EVENT
+    mov qword [r13+NEBO_X11_WINDOW_LAST_STATUS_OFFSET], NEBO_PLATFORM_STATUS_PROTOCOL_FAILURE
+    mov qword [r12+NEBO_X11_ADAPTER_LAST_ERROR_OFFSET], NEBO_X11_ERROR_EVENT
+    mov qword [r12+NEBO_X11_ADAPTER_LAST_STATUS_OFFSET], NEBO_PLATFORM_STATUS_PROTOCOL_FAILURE
     mov eax, NEBO_PLATFORM_STATUS_PROTOCOL_FAILURE
+    jmp .event_done
+.event_transaction_error:
+    mov dword [r13+NEBO_X11_WINDOW_STATE_OFFSET], NEBO_X11_WINDOW_STATE_FAILED
+    mov qword [r13+NEBO_X11_WINDOW_LAST_ERROR_OFFSET], NEBO_X11_ERROR_REQUEST
+    mov [r13+NEBO_X11_WINDOW_LAST_STATUS_OFFSET], rax
+    mov qword [r12+NEBO_X11_ADAPTER_LAST_ERROR_OFFSET], NEBO_X11_ERROR_REQUEST
+    mov [r12+NEBO_X11_ADAPTER_LAST_STATUS_OFFSET], rax
     jmp .event_done
 .event_no_event:
     mov eax, NEBO_PLATFORM_STATUS_NO_EVENT
@@ -1817,6 +2881,14 @@ nebo_x11_adapter_poll_event:
     call x11_emit_event_internal
     jmp .poll_done
 .poll_native_socket:
+    mov rbx, [r12+NEBO_X11_ADAPTER_SCRATCH_PTR_OFFSET]
+    mov rdi, r12
+    mov rsi, rbx
+    call x11_deferred_event_pop_internal
+    test eax, eax
+    jz .poll_normalize_raw
+    cmp eax, NEBO_PLATFORM_STATUS_NO_EVENT
+    jne .poll_done
     mov eax, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
     mov [rsp], eax
     mov word [rsp+4], NEBO_LINUX_POLLIN
@@ -1831,13 +2903,13 @@ nebo_x11_adapter_poll_event:
     js .poll_io
     test word [rsp+6], NEBO_LINUX_POLLIN
     jz .poll_timeout
-    mov rbx, [r12+NEBO_X11_ADAPTER_SCRATCH_PTR_OFFSET]
     mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
     mov rsi, rbx
     mov edx, NEBO_X11_EVENT_SIZE
     call x11_read_exact_internal
     test eax, eax
     jnz .poll_done
+.poll_normalize_raw:
     mov rdi, r12
     mov rsi, r13
     mov rdx, rbx
@@ -1880,6 +2952,13 @@ nebo_x11_adapter_poll_raw:
     jnz .raw_done
     test rbx, rbx
     jz .raw_invalid
+    mov rdi, r12
+    mov rsi, rbx
+    call x11_deferred_event_pop_internal
+    test eax, eax
+    jz .raw_done
+    cmp eax, NEBO_PLATFORM_STATUS_NO_EVENT
+    jne .raw_done
     mov eax, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
     mov [rsp], eax
     mov word [rsp+4], NEBO_LINUX_POLLIN
@@ -2106,6 +3185,96 @@ nebo_x11_adapter_configure_window_bounded:
     pop rbx
     ret
 
+; set_window_minimum_size(adapter*, window*, width, height) -> status.
+; Publish the ICCCM PMinSize contract before a deferred MapWindow. Predefined
+; WM_NORMAL_HINTS/WM_SIZE_HINTS atoms avoid an extra InternAtom round trip.
+nebo_x11_adapter_set_window_minimum_size:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+    mov r12, rdi
+    mov r13, rsi
+    mov r14, rdx
+    mov r15, rcx
+    mov rdi, r12
+    call nebo_x11_adapter_validate
+    test eax, eax
+    jnz .minimum_done
+    test r13, r13
+    jz .minimum_invalid
+    cmp [r13+NEBO_X11_WINDOW_ADAPTER_PTR_OFFSET], r12
+    jne .minimum_invalid
+    cmp dword [r13+NEBO_X11_WINDOW_XID_OFFSET], 0
+    je .minimum_invalid
+    test r14, r14
+    jz .minimum_limit
+    test r15, r15
+    jz .minimum_limit
+    cmp r14, 65535
+    ja .minimum_limit
+    cmp r15, 65535
+    ja .minimum_limit
+    mov eax, [r13+NEBO_X11_WINDOW_STATE_OFFSET]
+    cmp eax, NEBO_X11_WINDOW_STATE_UNMAPPED
+    je .minimum_state_ready
+    cmp eax, NEBO_X11_WINDOW_STATE_MAPPING
+    je .minimum_state_ready
+    cmp eax, NEBO_X11_WINDOW_STATE_MAPPED
+    jne .minimum_state
+.minimum_state_ready:
+    mov rbx, [r12+NEBO_X11_ADAPTER_SCRATCH_PTR_OFFSET]
+    mov rdi, rbx
+    xor eax, eax
+    mov ecx, NEBO_X11_ICCCM_SIZE_HINT_REQUEST_BYTES
+    cld
+    rep stosb
+    mov byte [rbx], NEBO_X11_OP_CHANGE_PROPERTY
+    mov byte [rbx+1], NEBO_X11_PROP_MODE_REPLACE
+    mov word [rbx+2], NEBO_X11_ICCCM_SIZE_HINT_REQUEST_UNITS
+    mov eax, [r13+NEBO_X11_WINDOW_XID_OFFSET]
+    mov [rbx+4], eax
+    mov dword [rbx+8], NEBO_X11_ATOM_WM_NORMAL_HINTS
+    mov dword [rbx+12], NEBO_X11_ATOM_WM_SIZE_HINTS
+    mov byte [rbx+16], 32
+    mov dword [rbx+20], NEBO_X11_ICCCM_SIZE_HINT_ELEMENT_COUNT
+    mov dword [rbx+24], NEBO_X11_ICCCM_SIZE_HINT_P_MIN_SIZE
+    mov [rbx+44], r14d
+    mov [rbx+48], r15d
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    mov rsi, rbx
+    mov edx, NEBO_X11_ICCCM_SIZE_HINT_REQUEST_BYTES
+    call x11_write_all_internal
+    test eax, eax
+    jnz .minimum_request
+    inc qword [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+    mov [r13+NEBO_X11_WINDOW_MINIMUM_WIDTH_OFFSET], r14
+    mov [r13+NEBO_X11_WINDOW_MINIMUM_HEIGHT_OFFSET], r15
+    mov qword [r13+NEBO_X11_WINDOW_LAST_STATUS_OFFSET], NEBO_PLATFORM_STATUS_OK
+    mov qword [r13+NEBO_X11_WINDOW_LAST_ERROR_OFFSET], NEBO_X11_ERROR_NONE
+    xor eax, eax
+    jmp .minimum_done
+.minimum_request:
+    mov qword [r13+NEBO_X11_WINDOW_LAST_ERROR_OFFSET], NEBO_X11_ERROR_REQUEST
+    mov [r13+NEBO_X11_WINDOW_LAST_STATUS_OFFSET], rax
+    jmp .minimum_done
+.minimum_limit:
+    mov eax, NEBO_PLATFORM_STATUS_INVALID_ARGUMENT
+    jmp .minimum_done
+.minimum_state:
+    mov eax, NEBO_PLATFORM_STATUS_BAD_STATE
+    jmp .minimum_done
+.minimum_invalid:
+    mov eax, NEBO_PLATFORM_STATUS_INVALID_ARGUMENT
+.minimum_done:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
 ; set_window_title(adapter*, window*, utf8*, byte_length) -> platform status.
 ; The canonical runtime validates UTF-8. This layer sends exactly one bounded
 ; _NET_WM_NAME/UTF8_STRING Replace request, avoiding a partially updated pair
@@ -2206,6 +3375,99 @@ nebo_x11_adapter_set_window_title:
     pop rbx
     ret
 
+; Query the actual drawable geometry after private-pixmap upload. Events that
+; precede the matching reply are retained in the existing deferred FIFO.
+; RDI=adapter*, RSI=window*. Returns a platform status and records bounded
+; actual/pending geometry diagnostics in the private window owner.
+x11_query_window_geometry_internal:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+    mov r12, rdi
+    mov r13, rsi
+    mov r14, [r12+NEBO_X11_ADAPTER_SCRATCH_PTR_OFFSET]
+    mov qword [r13+NEBO_X11_WINDOW_PENDING_CONFIGURE_COUNT_OFFSET], 0
+    mov qword [r13+NEBO_X11_WINDOW_LATEST_PENDING_X_OFFSET], 0
+    mov qword [r13+NEBO_X11_WINDOW_LATEST_PENDING_Y_OFFSET], 0
+    mov qword [r13+NEBO_X11_WINDOW_LATEST_PENDING_WIDTH_OFFSET], 0
+    mov qword [r13+NEBO_X11_WINDOW_LATEST_PENDING_HEIGHT_OFFSET], 0
+    mov rdi, r14
+    xor eax, eax
+    mov ecx, 8
+    cld
+    rep stosb
+    mov byte [r14], NEBO_X11_OP_GET_GEOMETRY
+    mov word [r14+2], 2
+    mov eax, [r13+NEBO_X11_WINDOW_XID_OFFSET]
+    mov [r14+4], eax
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    mov rsi, r14
+    mov edx, 8
+    call x11_write_all_internal
+    test eax, eax
+    jnz .geometry_query_done
+    inc qword [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+    mov r15w, word [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+.geometry_query_read:
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    mov rsi, r14
+    mov edx, NEBO_X11_EVENT_SIZE
+    call x11_read_exact_internal
+    test eax, eax
+    jnz .geometry_query_done
+    movzx ebx, byte [r14]
+    and ebx, 0x7f
+    cmp ebx, NEBO_X11_REPLY
+    je .geometry_query_reply
+    cmp ebx, NEBO_X11_EVENT_ERROR
+    je .geometry_query_protocol
+    cmp ebx, NEBO_X11_EVENT_CONFIGURE_NOTIFY
+    jne .geometry_query_defer
+    mov eax, [r14+8]
+    cmp eax, [r13+NEBO_X11_WINDOW_XID_OFFSET]
+    jne .geometry_query_defer
+    inc qword [r13+NEBO_X11_WINDOW_PENDING_CONFIGURE_COUNT_OFFSET]
+    movsx rax, word [r14+16]
+    mov [r13+NEBO_X11_WINDOW_LATEST_PENDING_X_OFFSET], rax
+    movsx rax, word [r14+18]
+    mov [r13+NEBO_X11_WINDOW_LATEST_PENDING_Y_OFFSET], rax
+    movzx eax, word [r14+20]
+    mov [r13+NEBO_X11_WINDOW_LATEST_PENDING_WIDTH_OFFSET], rax
+    movzx eax, word [r14+22]
+    mov [r13+NEBO_X11_WINDOW_LATEST_PENDING_HEIGHT_OFFSET], rax
+.geometry_query_defer:
+    mov rdi, r12
+    mov rsi, r14
+    call x11_deferred_event_push_internal
+    test eax, eax
+    jnz .geometry_query_done
+    jmp .geometry_query_read
+.geometry_query_reply:
+    cmp word [r14+2], r15w
+    jne .geometry_query_protocol
+    movzx eax, word [r14+16]
+    test eax, eax
+    jz .geometry_query_protocol
+    mov [r13+NEBO_X11_WINDOW_LAST_ACTUAL_WIDTH_OFFSET], rax
+    movzx eax, word [r14+18]
+    test eax, eax
+    jz .geometry_query_protocol
+    mov [r13+NEBO_X11_WINDOW_LAST_ACTUAL_HEIGHT_OFFSET], rax
+    inc qword [r13+NEBO_X11_WINDOW_GEOMETRY_QUERY_COUNT_OFFSET]
+    xor eax, eax
+    jmp .geometry_query_done
+.geometry_query_protocol:
+    mov eax, NEBO_PLATFORM_STATUS_PROTOCOL_FAILURE
+.geometry_query_done:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
 ; present(adapter*, window*, surface*, out_event*)
 nebo_x11_adapter_present:
     push rbx
@@ -2240,6 +3502,13 @@ nebo_x11_adapter_present:
     call x11_surface_validate_internal
     test eax, eax
     jnz .present_surface
+    mov rdi, r12
+    mov rsi, r13
+    mov rdx, [r13+NEBO_X11_WINDOW_WIDTH_OFFSET]
+    mov rcx, [r13+NEBO_X11_WINDOW_HEIGHT_OFFSET]
+    call x11_window_backbuffer_ensure_internal
+    test eax, eax
+    jnz .present_request
     movzx rax, word [r12+NEBO_X11_ADAPTER_MAX_REQUEST_UNITS_OFFSET]
     shl rax, 2
     sub rax, 24
@@ -2282,7 +3551,7 @@ nebo_x11_adapter_present:
     add rcx, 24
     shr rcx, 2
     mov [r10+2], cx
-    mov ecx, [r13+NEBO_X11_WINDOW_XID_OFFSET]
+    mov ecx, [r13+NEBO_X11_WINDOW_BACKBUFFER_XID_OFFSET]
     mov [r10+4], ecx
     mov ecx, [r13+NEBO_X11_WINDOW_GC_XID_OFFSET]
     mov [r10+8], ecx
@@ -2318,6 +3587,59 @@ nebo_x11_adapter_present:
     add [rsp], rax
     jmp .present_loop
 .present_success:
+    ; A ConfigureNotify marks the geometry generation uncommitted. Query the
+    ; server only after the final private upload, keeping the check adjacent to
+    ; visible CopyArea. A mismatch is a nonfatal stale frame, never a commit.
+    cmp qword [r13+NEBO_X11_WINDOW_PRESENT_GEOMETRY_GUARD_OFFSET], 0
+    je .present_commit
+    mov rdi, r12
+    mov rsi, r13
+    call x11_query_window_geometry_internal
+    test eax, eax
+    jnz .present_request
+    mov rax, [r13+NEBO_X11_WINDOW_LAST_ACTUAL_WIDTH_OFFSET]
+    cmp rax, [r13+NEBO_X11_WINDOW_WIDTH_OFFSET]
+    jne .present_stale_geometry
+    mov rax, [r13+NEBO_X11_WINDOW_LAST_ACTUAL_HEIGHT_OFFSET]
+    cmp rax, [r13+NEBO_X11_WINDOW_HEIGHT_OFFSET]
+    jne .present_stale_geometry
+    mov qword [r13+NEBO_X11_WINDOW_PRESENT_GEOMETRY_GUARD_OFFSET], 0
+.present_commit:
+    ; Commit the completed pixmap in one visible server request. The visible
+    ; window is never the target of an intermediate row upload.
+    mov r10, [r12+NEBO_X11_ADAPTER_SCRATCH_PTR_OFFSET]
+    mov rdi, r10
+    xor eax, eax
+    mov ecx, 28
+    cld
+    rep stosb
+    mov byte [r10], NEBO_X11_OP_COPY_AREA
+    mov word [r10+2], 7
+    mov eax, [r13+NEBO_X11_WINDOW_BACKBUFFER_XID_OFFSET]
+    mov [r10+4], eax
+    mov eax, [r13+NEBO_X11_WINDOW_XID_OFFSET]
+    mov [r10+8], eax
+    mov eax, [r13+NEBO_X11_WINDOW_GC_XID_OFFSET]
+    mov [r10+12], eax
+    mov ax, [r13+NEBO_X11_WINDOW_WIDTH_OFFSET]
+    mov [r10+24], ax
+    mov ax, [r13+NEBO_X11_WINDOW_HEIGHT_OFFSET]
+    mov [r10+26], ax
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    mov rsi, r10
+    mov edx, 28
+    call x11_write_all_internal
+    test eax, eax
+    jnz .present_request
+    inc qword [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+    mov rax, [r14+NEBO_SOFTWARE_SURFACE_GENERATION_OFFSET]
+    mov [r13+NEBO_X11_WINDOW_LAST_PRESENT_SURFACE_GENERATION_OFFSET], rax
+    mov rax, [r13+NEBO_X11_WINDOW_WIDTH_OFFSET]
+    mov [r13+NEBO_X11_WINDOW_LAST_PRESENT_WIDTH_OFFSET], rax
+    mov rax, [r13+NEBO_X11_WINDOW_HEIGHT_OFFSET]
+    mov [r13+NEBO_X11_WINDOW_LAST_PRESENT_HEIGHT_OFFSET], rax
+    mov rax, [r13+NEBO_X11_WINDOW_GEOMETRY_GENERATION_OFFSET]
+    mov [r13+NEBO_X11_WINDOW_LAST_PRESENT_GEOMETRY_GENERATION_OFFSET], rax
     inc qword [r12+NEBO_X11_ADAPTER_PRESENT_SEQUENCE_OFFSET]
     inc qword [r13+NEBO_X11_WINDOW_PRESENT_COUNT_OFFSET]
     mov rdi, r12
@@ -2327,6 +3649,11 @@ nebo_x11_adapter_present:
     mov r8, [r12+NEBO_X11_ADAPTER_PRESENT_SEQUENCE_OFFSET]
     xor r9d, r9d
     call x11_emit_event_internal
+    jmp .present_done
+.present_stale_geometry:
+    inc qword [r13+NEBO_X11_WINDOW_PRESENT_GEOMETRY_MISMATCH_COUNT_OFFSET]
+    inc qword [r13+NEBO_X11_WINDOW_STALE_PRESENT_SKIPPED_COUNT_OFFSET]
+    mov eax, NEBO_PLATFORM_STATUS_STALE_GEOMETRY
     jmp .present_done
 .present_request:
     mov qword [r13+NEBO_X11_WINDOW_LAST_ERROR_OFFSET], NEBO_X11_ERROR_REQUEST
@@ -2564,8 +3891,18 @@ nebo_x11_adapter_begin_window_drag:
     call x11_window_action_validate_internal
     test eax, eax
     jnz .drag_done
-    test ebx, ebx
-    jz .drag_invalid
+    cmp ebx, 1
+    jne .drag_invalid
+    test dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], NEBO_X11_WINDOW_NATIVE_FLAG_CLOSE_REQUESTED
+    jnz .drag_state
+    cmp dword [r13+NEBO_X11_WINDOW_MOVERESIZE_ACTIVE_OFFSET], 0
+    jne .drag_state
+    cmp qword [r13+NEBO_X11_WINDOW_MOVERESIZE_GENERATION_OFFSET], -1
+    je .drag_state
+    mov rdi, r12
+    call x11_ungrab_pointer_internal
+    test eax, eax
+    jnz .drag_request
     mov [rsp], r14d
     mov [rsp+4], r15d
     mov dword [rsp+8], NEBO_X11_NET_WM_MOVERESIZE_MOVE
@@ -2577,9 +3914,29 @@ nebo_x11_adapter_begin_window_drag:
     mov rcx, rsp
     call x11_send_client_message_internal
     test eax, eax
-    jnz .drag_done
+    jnz .drag_request
+    mov dword [r13+NEBO_X11_WINDOW_MOVERESIZE_BUTTON_OFFSET], 1
+    mov dword [r13+NEBO_X11_WINDOW_MOVERESIZE_DIRECTION_OFFSET], NEBO_X11_NET_WM_MOVERESIZE_MOVE
+    mov dword [r13+NEBO_X11_WINDOW_MOVERESIZE_FLAGS_OFFSET], 0
+    mov [r13+NEBO_X11_WINDOW_MOVERESIZE_ROOT_X_OFFSET], r14d
+    mov [r13+NEBO_X11_WINDOW_MOVERESIZE_ROOT_Y_OFFSET], r15d
+    inc qword [r13+NEBO_X11_WINDOW_MOVERESIZE_GENERATION_OFFSET]
+    mov dword [r13+NEBO_X11_WINDOW_MOVERESIZE_ACTIVE_OFFSET], 1
     mov dword [r13+NEBO_X11_WINDOW_PENDING_ACTION_OFFSET], NEBO_X11_WINDOW_ACTION_DRAG
+    mov qword [r13+NEBO_X11_WINDOW_LAST_STATUS_OFFSET], NEBO_PLATFORM_STATUS_OK
+    mov qword [r13+NEBO_X11_WINDOW_LAST_ERROR_OFFSET], NEBO_X11_ERROR_NONE
     xor eax, eax
+    jmp .drag_done
+.drag_request:
+    mov r14d, eax
+    mov rdi, r13
+    call x11_moveresize_clear_internal
+    mov qword [r13+NEBO_X11_WINDOW_LAST_ERROR_OFFSET], NEBO_X11_ERROR_REQUEST
+    mov [r13+NEBO_X11_WINDOW_LAST_STATUS_OFFSET], r14
+    mov eax, r14d
+    jmp .drag_done
+.drag_state:
+    mov eax, NEBO_PLATFORM_STATUS_BAD_STATE
     jmp .drag_done
 .drag_invalid:
     mov eax, NEBO_PLATFORM_STATUS_INVALID_ARGUMENT
@@ -2614,8 +3971,19 @@ nebo_x11_adapter_begin_window_resize:
     cmp ebx, NEBO_X11_NET_WM_MOVERESIZE_SIZE_LEFT
     ja .begin_resize_invalid
     mov r10d, [rsp+20]
-    test r10d, r10d
-    jz .begin_resize_invalid
+    cmp r10d, 1
+    jne .begin_resize_invalid
+    test dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], NEBO_X11_WINDOW_NATIVE_FLAG_CLOSE_REQUESTED
+    jnz .begin_resize_state
+    cmp dword [r13+NEBO_X11_WINDOW_MOVERESIZE_ACTIVE_OFFSET], 0
+    jne .begin_resize_state
+    cmp qword [r13+NEBO_X11_WINDOW_MOVERESIZE_GENERATION_OFFSET], -1
+    je .begin_resize_state
+    mov rdi, r12
+    call x11_ungrab_pointer_internal
+    test eax, eax
+    jnz .begin_resize_request
+    mov r10d, [rsp+20]
     mov [rsp], r14d
     mov [rsp+4], r15d
     mov [rsp+8], ebx
@@ -2627,14 +3995,125 @@ nebo_x11_adapter_begin_window_resize:
     mov rcx, rsp
     call x11_send_client_message_internal
     test eax, eax
-    jnz .begin_resize_done
+    jnz .begin_resize_request
+    mov dword [r13+NEBO_X11_WINDOW_MOVERESIZE_BUTTON_OFFSET], 1
+    mov [r13+NEBO_X11_WINDOW_MOVERESIZE_DIRECTION_OFFSET], ebx
+    mov dword [r13+NEBO_X11_WINDOW_MOVERESIZE_FLAGS_OFFSET], 0
+    mov [r13+NEBO_X11_WINDOW_MOVERESIZE_ROOT_X_OFFSET], r14d
+    mov [r13+NEBO_X11_WINDOW_MOVERESIZE_ROOT_Y_OFFSET], r15d
+    inc qword [r13+NEBO_X11_WINDOW_MOVERESIZE_GENERATION_OFFSET]
+    mov dword [r13+NEBO_X11_WINDOW_MOVERESIZE_ACTIVE_OFFSET], 1
     mov dword [r13+NEBO_X11_WINDOW_PENDING_ACTION_OFFSET], NEBO_X11_WINDOW_ACTION_RESIZE
+    mov qword [r13+NEBO_X11_WINDOW_LAST_STATUS_OFFSET], NEBO_PLATFORM_STATUS_OK
+    mov qword [r13+NEBO_X11_WINDOW_LAST_ERROR_OFFSET], NEBO_X11_ERROR_NONE
     xor eax, eax
+    jmp .begin_resize_done
+.begin_resize_request:
+    mov r14d, eax
+    mov rdi, r13
+    call x11_moveresize_clear_internal
+    mov qword [r13+NEBO_X11_WINDOW_LAST_ERROR_OFFSET], NEBO_X11_ERROR_REQUEST
+    mov [r13+NEBO_X11_WINDOW_LAST_STATUS_OFFSET], r14
+    mov eax, r14d
+    jmp .begin_resize_done
+.begin_resize_state:
+    mov eax, NEBO_PLATFORM_STATUS_BAD_STATE
     jmp .begin_resize_done
 .begin_resize_invalid:
     mov eax, NEBO_PLATFORM_STATUS_INVALID_ARGUMENT
 .begin_resize_done:
     add rsp, 32
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+; set_resize_cursor(adapter*, window*, cursor_kind)
+; Kinds are bounded internal semantics. Four server resources are initialized
+; lazily once per adapter and reused; kind DEFAULT restores the inherited
+; cursor. Repeating the current kind emits no request.
+nebo_x11_adapter_set_resize_cursor:
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+    mov r12, rdi
+    mov r13, rsi
+    mov ebx, edx
+    cmp ebx, NEBO_X11_CURSOR_KIND_MAX
+    ja .set_cursor_invalid
+    mov rdi, r12
+    mov rsi, r13
+    call x11_window_action_validate_internal
+    test eax, eax
+    jnz .set_cursor_done
+    cmp ebx, [r13+NEBO_X11_WINDOW_CURSOR_KIND_OFFSET]
+    je .set_cursor_ok
+    xor r14d, r14d
+    test ebx, ebx
+    jz .set_cursor_send
+    mov rdi, r12
+    call x11_cursor_resources_init_internal
+    test eax, eax
+    jnz .set_cursor_request
+    cmp ebx, NEBO_X11_CURSOR_KIND_HORIZONTAL
+    je .set_cursor_horizontal
+    cmp ebx, NEBO_X11_CURSOR_KIND_VERTICAL
+    je .set_cursor_vertical
+    cmp ebx, NEBO_X11_CURSOR_KIND_NWSE
+    je .set_cursor_nwse
+    mov r14d, [r12+NEBO_X11_ADAPTER_CURSOR_NESW_XID_OFFSET]
+    jmp .set_cursor_resource_ready
+.set_cursor_horizontal:
+    mov r14d, [r12+NEBO_X11_ADAPTER_CURSOR_HORIZONTAL_XID_OFFSET]
+    jmp .set_cursor_resource_ready
+.set_cursor_vertical:
+    mov r14d, [r12+NEBO_X11_ADAPTER_CURSOR_VERTICAL_XID_OFFSET]
+    jmp .set_cursor_resource_ready
+.set_cursor_nwse:
+    mov r14d, [r12+NEBO_X11_ADAPTER_CURSOR_NWSE_XID_OFFSET]
+.set_cursor_resource_ready:
+    test r14d, r14d
+    jz .set_cursor_state
+.set_cursor_send:
+    mov r15, [r12+NEBO_X11_ADAPTER_SCRATCH_PTR_OFFSET]
+    mov rdi, r15
+    xor eax, eax
+    mov ecx, 16
+    cld
+    rep stosb
+    mov byte [r15], NEBO_X11_OP_CHANGE_WINDOW_ATTRIBUTES
+    mov word [r15+2], 4
+    mov eax, [r13+NEBO_X11_WINDOW_XID_OFFSET]
+    mov [r15+4], eax
+    mov dword [r15+8], NEBO_X11_CW_CURSOR
+    mov [r15+12], r14d
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    mov rsi, r15
+    mov edx, 16
+    call x11_write_all_internal
+    test eax, eax
+    jnz .set_cursor_request
+    inc qword [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+    mov [r13+NEBO_X11_WINDOW_CURSOR_KIND_OFFSET], ebx
+.set_cursor_ok:
+    mov qword [r13+NEBO_X11_WINDOW_LAST_STATUS_OFFSET], NEBO_PLATFORM_STATUS_OK
+    mov qword [r13+NEBO_X11_WINDOW_LAST_ERROR_OFFSET], NEBO_X11_ERROR_NONE
+    xor eax, eax
+    jmp .set_cursor_done
+.set_cursor_request:
+    mov qword [r13+NEBO_X11_WINDOW_LAST_ERROR_OFFSET], NEBO_X11_ERROR_REQUEST
+    mov [r13+NEBO_X11_WINDOW_LAST_STATUS_OFFSET], rax
+    jmp .set_cursor_done
+.set_cursor_state:
+    mov eax, NEBO_PLATFORM_STATUS_BAD_STATE
+    jmp .set_cursor_done
+.set_cursor_invalid:
+    mov eax, NEBO_PLATFORM_STATUS_INVALID_ARGUMENT
+.set_cursor_done:
     pop r15
     pop r14
     pop r13
@@ -2722,6 +4201,14 @@ nebo_x11_adapter_request_close:
     jnz .request_close_done
     test dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], NEBO_X11_WINDOW_NATIVE_FLAG_CLOSE_REQUESTED
     jnz .request_close_state
+    cmp dword [r13+NEBO_X11_WINDOW_MOVERESIZE_ACTIVE_OFFSET], 0
+    je .request_close_emit
+    mov rdi, r12
+    mov rsi, r13
+    call x11_moveresize_cancel_internal
+    test eax, eax
+    jnz .request_close_error
+.request_close_emit:
     or dword [r13+NEBO_X11_WINDOW_NATIVE_FLAGS_OFFSET], NEBO_X11_WINDOW_NATIVE_FLAG_CLOSE_REQUESTED
     mov dword [r13+NEBO_X11_WINDOW_PENDING_ACTION_OFFSET], NEBO_X11_WINDOW_ACTION_CLOSE
     mov rdi, r12
@@ -2731,6 +4218,10 @@ nebo_x11_adapter_request_close:
     xor r8d, r8d
     xor r9d, r9d
     call x11_emit_event_internal
+    jmp .request_close_done
+.request_close_error:
+    mov qword [r13+NEBO_X11_WINDOW_LAST_ERROR_OFFSET], NEBO_X11_ERROR_REQUEST
+    mov [r13+NEBO_X11_WINDOW_LAST_STATUS_OFFSET], rax
     jmp .request_close_done
 .request_close_state:
     mov eax, NEBO_PLATFORM_STATUS_BAD_STATE
@@ -2769,7 +4260,34 @@ nebo_x11_adapter_destroy_window:
     cmp dword [r13+NEBO_X11_WINDOW_STATE_OFFSET], NEBO_X11_WINDOW_STATE_UNMAPPING
     jne .destroy_state
 .destroy_send:
+    cmp dword [r13+NEBO_X11_WINDOW_MOVERESIZE_ACTIVE_OFFSET], 0
+    je .destroy_resources
+    mov rdi, r12
+    mov rsi, r13
+    call x11_moveresize_cancel_internal
+    test eax, eax
+    jnz .destroy_request
+.destroy_resources:
     mov r14, [r12+NEBO_X11_ADAPTER_SCRATCH_PTR_OFFSET]
+    cmp dword [r13+NEBO_X11_WINDOW_BACKBUFFER_XID_OFFSET], 0
+    je .destroy_gc
+    mov rdi, r14
+    xor eax, eax
+    mov ecx, 8
+    cld
+    rep stosb
+    mov byte [r14], NEBO_X11_OP_FREE_PIXMAP
+    mov word [r14+2], 2
+    mov eax, [r13+NEBO_X11_WINDOW_BACKBUFFER_XID_OFFSET]
+    mov [r14+4], eax
+    mov edi, [r12+NEBO_X11_ADAPTER_FD_OFFSET]
+    mov rsi, r14
+    mov edx, 8
+    call x11_write_all_internal
+    test eax, eax
+    jnz .destroy_request
+    inc qword [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
+.destroy_gc:
     mov rdi, r14
     xor eax, eax
     mov ecx, 8
@@ -2803,8 +4321,13 @@ nebo_x11_adapter_destroy_window:
     jnz .destroy_request
     inc qword [r12+NEBO_X11_ADAPTER_PROTOCOL_SEQUENCE_OFFSET]
     mov dword [r13+NEBO_X11_WINDOW_STATE_OFFSET], NEBO_X11_WINDOW_STATE_DESTROYED
+    mov rdi, r13
+    call x11_moveresize_clear_internal
     mov dword [r13+NEBO_X11_WINDOW_XID_OFFSET], 0
     mov dword [r13+NEBO_X11_WINDOW_GC_XID_OFFSET], 0
+    mov dword [r13+NEBO_X11_WINDOW_BACKBUFFER_XID_OFFSET], 0
+    mov dword [r13+NEBO_X11_WINDOW_BACKBUFFER_WIDTH_OFFSET], 0
+    mov dword [r13+NEBO_X11_WINDOW_BACKBUFFER_HEIGHT_OFFSET], 0
     cmp qword [r12+NEBO_X11_ADAPTER_ACTIVE_WINDOWS_OFFSET], 0
     je .destroy_ok
     dec qword [r12+NEBO_X11_ADAPTER_ACTIVE_WINDOWS_OFFSET]

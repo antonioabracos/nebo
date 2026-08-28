@@ -1,0 +1,22 @@
+{
+  "capabilities_granted_by_import": false,
+  "edition": "1.0",
+  "graph_order": [
+    "lib",
+    "app"
+  ],
+  "packages": [
+    {
+      "dependencies": [
+        "lib"
+      ],
+      "edition": "1.0",
+      "id": "app"
+    },
+    {
+      "boundary": "MIGRATION_REQUIRED",
+      "edition": "0.2",
+      "id": "lib"
+    }
+  ]
+}

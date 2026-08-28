@@ -1,0 +1,3 @@
+start() {
+    Policy(effects(console_write), capabilities(console_write), allow(console_write), deny(), budget(1), trust(public), audit(21)).permit(21);
+}

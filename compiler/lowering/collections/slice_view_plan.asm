@@ -51,6 +51,11 @@ NEBOC_ABI_FUNCTION neboc_slice_lower
  add rax,[r12+NEBOC_AR_BINDINGS_OFFSET]
  cmp qword [rax+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_SLICE
  jne .next
+ ; NPT-LANG-32 B01: an authenticated S04-derived record is a compiler-only
+ ; borrowed provenance fact. It is lowered by the function sret path and is
+ ; not a callee-owned local Array view requiring release in this legacy plan.
+ test qword [rax+NEBOC_AR_BIND_FLAGS_OFFSET],NEBOC_AR_SLICE_S04_DERIVED
+ jnz .next
  cmp qword [rax+NEBOC_AR_BIND_FLAGS_OFFSET],NEBOC_AR_SLICE_RELEASED
  jne .source
  mov rcx,[rax+NEBOC_AR_BIND_START_OFFSET]

@@ -1,0 +1,4 @@
+start() {
+    Bytes.fromValues(170, 204, 1, 2).byteLength().length;
+    Bytes.fromValues(170, 204, 1, 2).slice(0, 2).at(0).bitAnd(204).shiftRight(3).return;
+}

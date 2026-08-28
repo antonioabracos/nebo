@@ -139,6 +139,22 @@ buffer_semantic_scan_freeze:
  inc r14
  jmp .find
 .found:
+ ; The spelling belongs to this request only when the receiver is the exact
+ ; owner token captured by its constructor.  Whole-program suffixes can hold
+ ; many Buffer owners and method spelling alone carries no owner authority.
+ cmp r14,2
+ jb .next_candidate
+ mov rax,r14
+ sub rax,2
+ mov rbx,[r12+NEBOC_BUFFER_NAME_TOKEN_OFFSET]
+ call buffer_semantic_token_equal
+ test eax,eax
+ jz .next_candidate
+ mov rax,r14
+ dec rax
+ call buffer_semantic_token_kind
+ cmp eax,NEBOC_TOKEN_DOT
+ jne .next_candidate
  mov rax,r14
  inc rax
  call buffer_semantic_token_kind
@@ -185,6 +201,10 @@ buffer_semantic_scan_freeze:
  mov [r12+NEBOC_BUFFER_FROZEN_NAME_TOKEN_OFFSET],r13
  or qword [r12+NEBOC_BUFFER_FLAGS_OFFSET],NEBOC_BUFFER_FLAG_FREEZE
  add r14,5
+ jmp .scan_use
+.next_candidate:
+ inc r14
+ jmp .find
 .scan_use:
  cmp r14,[r12+NEBOC_BUFFER_TOKEN_COUNT_OFFSET]
  jae .ok

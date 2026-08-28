@@ -1,0 +1,5 @@
+start() {
+    Buffer.zeroed(4).buffer;
+    buffer.drop().done;
+    0.return;
+}

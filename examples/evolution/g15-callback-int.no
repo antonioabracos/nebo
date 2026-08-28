@@ -1,0 +1,4 @@
+start() {
+    Callback<Int> 15.callback;
+    callback.value();
+}

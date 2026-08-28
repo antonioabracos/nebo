@@ -1,0 +1,4 @@
+start() {
+    Buffer.zeroed(3).buffer;
+    buffer.freeze().bytes;
+}

@@ -1,0 +1,55 @@
+%ifndef NEBO_MATRIX_I64_INC
+%define NEBO_MATRIX_I64_INC 1
+
+%include "compiler/semantic/matrix/matrix_contract.inc"
+
+%define NEBO_MATRIX_I64_MAX_DIMENSION 8
+%define NEBO_MATRIX_I64_MAX_ELEMENTS 64
+%define NEBO_MATRIX_I64_MAX_BYTES 512
+%define NEBO_MATRIX_I64_MAX_VIEW_DEPTH 8
+%define NEBO_MATRIX_I64_VIEW_DEPTH_SHIFT 8
+%define NEBO_MATRIX_I64_VIEW_DEPTH_MASK 0xff00
+%define NEBO_MATRIX_I64_NBM1_HEADER_BYTES 48
+%define NEBO_MATRIX_I64_NBM1_MAX_BYTES 560
+
+%ifndef NEBO_MATRIX_I64_IMPLEMENTATION
+extern nebo_matrix_i64_zeros
+extern nebo_matrix_i64_filled
+extern nebo_matrix_i64_from_rows
+extern nebo_matrix_i64_from_buffer
+extern nebo_matrix_i64_release
+extern nebo_matrix_i64_validate
+extern nebo_matrix_i64_rows
+extern nebo_matrix_i64_columns
+extern nebo_matrix_i64_element_count
+extern nebo_matrix_i64_layout
+extern nebo_matrix_i64_storage_id
+extern nebo_matrix_i64_is_contiguous
+extern nebo_matrix_i64_at
+extern nebo_matrix_i64_set
+extern nebo_matrix_i64_row_view
+extern nebo_matrix_i64_column_view
+extern nebo_matrix_i64_slice_view
+extern nebo_matrix_i64_transpose_view
+extern nebo_matrix_i64_validate_view_owner
+extern nebo_matrix_i64_contiguous
+extern nebo_matrix_i64_add
+extern nebo_matrix_i64_subtract
+extern nebo_matrix_i64_multiply_elements
+extern nebo_matrix_i64_scale
+extern nebo_matrix_i64_sum
+extern nebo_matrix_i64_min
+extern nebo_matrix_i64_max
+extern nebo_matrix_i64_trace
+extern nebo_matrix_i64_is_square
+extern nebo_matrix_i64_matmul
+extern nebo_matrix_i64_matmul_into
+extern nebo_matrix_i64_borrow_sum
+extern nebo_matrix_i64_sret_scale
+extern nebo_matrix_i64_serialized_size
+extern nebo_matrix_i64_serialize
+extern nebo_matrix_i64_deserialize
+extern nebo_matrix_i64_headless_shape
+%endif
+
+%endif

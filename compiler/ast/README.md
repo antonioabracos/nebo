@@ -1,19 +1,18 @@
-# MF016 provisional AST base
+# Nebo structural AST
 
 `AstNode` is a compact 80-byte record with 1-based `NodeId` values. `0` is
 invalid. The builder is caller-backed and mutable only during parsing.
 
-MF016 node kinds are limited to:
+The stable structural set includes the declaration base plus expression and
+statement nodes. Control nodes relevant to Nebo 1.0 are:
 
 ```txt
-Program
-StartDecl
-FunctionDecl
-Receiver
-Parameter
-Block
+IfStmt(condition, thenBlock, optionalElse)
+WhileStmt(condition, body)
+LoopStmt(body)
+RangeForStmt(binding, iterable, body)
 ```
 
-Block bodies retain a token interval (`payload0 = first token index`,
-`payload1 = token count`) and are intentionally opaque. Expressions,
-statements, semantic types and immutable final storage remain MF017–MF020.
+Parentheses are parser delimiters and do not add AST nodes. Consequently the
+C02 canonical control-header migration preserves node kinds, child order,
+source ownership, CFG inputs, runtime behavior, and the public ABI.

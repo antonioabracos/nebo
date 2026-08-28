@@ -119,6 +119,8 @@ NEBOC_ABI_FUNCTION neboc_list_map
  call neboc_list_validate
  test eax,eax
  jnz .map_done
+ bt qword [r13+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .map_borrow
  cmp qword [r13+NEBOC_LIST_LENGTH_OFFSET],0
  jne .map_profile
  mov rax,[r12+NEBOC_LIST_LENGTH_OFFSET]
@@ -160,6 +162,10 @@ NEBOC_ABI_FUNCTION neboc_list_map
  jmp .map_done
 .map_profile:
  mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+.map_borrow:
+ test eax,eax
+ jnz .map_done
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
 .map_done:
  add rsp,8
  pop r15
@@ -192,6 +198,8 @@ NEBOC_ABI_FUNCTION neboc_list_filter
  call neboc_list_validate
  test eax,eax
  jnz .filter_done
+ bt qword [r13+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .filter_borrow
  cmp qword [r13+NEBOC_LIST_LENGTH_OFFSET],0
  jne .filter_profile
  mov rax,[r12+NEBOC_LIST_LENGTH_OFFSET]
@@ -250,6 +258,10 @@ NEBOC_ABI_FUNCTION neboc_list_filter
  jmp .filter_done
 .filter_profile:
  mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+.filter_borrow:
+ test eax,eax
+ jnz .filter_done
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
 .filter_done:
  add rsp,16
  pop rbx
@@ -282,6 +294,8 @@ NEBOC_ABI_FUNCTION neboc_list_stable_sort
  call neboc_list_validate
  test eax,eax
  jnz .sort_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .sort_borrow
  mov rax,[r12+NEBOC_LIST_LENGTH_OFFSET]
  imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
  jo .sort_profile
@@ -361,6 +375,10 @@ NEBOC_ABI_FUNCTION neboc_list_stable_sort
  jmp .sort_done
 .sort_profile:
  mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+.sort_borrow:
+ test eax,eax
+ jnz .sort_done
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
 .sort_done:
  add rsp,80
  pop r15

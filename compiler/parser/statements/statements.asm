@@ -31,6 +31,56 @@ NEBOC_ABI_FUNCTION neboc_statement_set_error
 .invalid:
  NEBOC_ABI_RETURN_STATUS NEBOC_STATUS_INVALID_ARGUMENT
 
+; request*, first-header-token-index -> InvalidSource. Publish the stable
+; missing-pair diagnostic plus exact insertion edits at the condition/binding
+; start and the opening brace. If no brace exists, retain the first safe edit.
+statement_control_header_missing_pair:
+ mov qword [rdi+NEBOC_STMT_ERROR_CODE_OFFSET],NEBOC_PARSE_DIAG_CONTROL_HEADER_PARENS_REQUIRED
+ mov [rdi+NEBOC_STMT_ERROR_TOKEN_OFFSET],rsi
+ mov qword [rdi+NEBOC_STMT_FIXIT_COUNT_OFFSET],1
+ mov rax,rsi
+ imul rax,NEBOC_TOKEN_SIZE
+ add rax,[rdi+NEBOC_STMT_TOKENS_OFFSET]
+ mov rdx,[rax+NEBOC_TOKEN_START_OFFSET]
+ mov [rdi+NEBOC_STMT_FIXIT0_START_OFFSET],rdx
+ mov [rdi+NEBOC_STMT_FIXIT0_END_OFFSET],rdx
+ mov qword [rdi+NEBOC_STMT_FIXIT0_KIND_OFFSET],NEBOC_STMT_FIXIT_INSERT_LPAREN
+ mov rcx,rsi
+.scan:
+ cmp rcx,[rdi+NEBOC_STMT_TOKEN_COUNT_OFFSET]
+ jae .done
+ mov rax,rcx
+ imul rax,NEBOC_TOKEN_SIZE
+ add rax,[rdi+NEBOC_STMT_TOKENS_OFFSET]
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LBRACE
+ je .brace
+ inc rcx
+ jmp .scan
+.brace:
+ mov rdx,[rax+NEBOC_TOKEN_START_OFFSET]
+ mov [rdi+NEBOC_STMT_FIXIT1_START_OFFSET],rdx
+ mov [rdi+NEBOC_STMT_FIXIT1_END_OFFSET],rdx
+ mov qword [rdi+NEBOC_STMT_FIXIT1_KIND_OFFSET],NEBOC_STMT_FIXIT_INSERT_RPAREN
+ mov qword [rdi+NEBOC_STMT_FIXIT_COUNT_OFFSET],2
+.done:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ ret
+
+; request*, current-token-index -> InvalidSource with one exact ')' insertion.
+statement_control_header_missing_rparen:
+ mov qword [rdi+NEBOC_STMT_ERROR_CODE_OFFSET],NEBOC_PARSE_DIAG_CONTROL_HEADER_RPAREN_REQUIRED
+ mov [rdi+NEBOC_STMT_ERROR_TOKEN_OFFSET],rsi
+ mov qword [rdi+NEBOC_STMT_FIXIT_COUNT_OFFSET],1
+ mov rax,rsi
+ imul rax,NEBOC_TOKEN_SIZE
+ add rax,[rdi+NEBOC_STMT_TOKENS_OFFSET]
+ mov rdx,[rax+NEBOC_TOKEN_START_OFFSET]
+ mov [rdi+NEBOC_STMT_FIXIT0_START_OFFSET],rdx
+ mov [rdi+NEBOC_STMT_FIXIT0_END_OFFSET],rdx
+ mov qword [rdi+NEBOC_STMT_FIXIT0_KIND_OFFSET],NEBOC_STMT_FIXIT_INSERT_RPAREN
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ ret
+
 ; Internal expression adapter. R12 is StatementRequest*.
 statement_parse_expression:
  push rbx
@@ -116,6 +166,43 @@ NEBOC_ABI_FUNCTION neboc_statement_parse
  jae statement_expected
  STMT_TOKEN_PTR r11,rbx
  mov rax,[r11+NEBOC_TOKEN_KIND_OFFSET]
+ ; NPT-LANG-37 closed-context guard.  Direct depth-zero outer declarations
+ ; are intercepted by the CLI materializer before this dispatcher.  Seeing
+ ; the exact existing receiver-first prefix here therefore proves start,
+ ; branch/loop, or a second lexical depth and must not fall into Pratt.
+ cmp rax,NEBOC_TOKEN_LPAREN
+ jne .npt37_not_nested_prefix
+ lea rcx,[rbx+6]
+ cmp rcx,r14
+ jae .npt37_not_nested_prefix
+ lea rcx,[rbx+1]
+ STMT_TOKEN_PTR r10,rcx
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .npt37_not_nested_prefix
+ lea rcx,[rbx+2]
+ STMT_TOKEN_PTR r10,rcx
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne .npt37_not_nested_prefix
+ lea rcx,[rbx+3]
+ STMT_TOKEN_PTR r10,rcx
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .npt37_not_nested_prefix
+ lea rcx,[rbx+4]
+ STMT_TOKEN_PTR r10,rcx
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
+ jne .npt37_not_nested_prefix
+ lea rcx,[rbx+5]
+ STMT_TOKEN_PTR r10,rcx
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .npt37_not_nested_prefix
+ lea rcx,[rbx+6]
+ STMT_TOKEN_PTR r10,rcx
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ jne .npt37_not_nested_prefix
+ test qword [r12+NEBOC_STMT_FLAGS_OFFSET],NEBOC_STMT_FLAG_NPT37_NESTED_FUNCTION_BODY
+ jnz statement_nested_depth
+ jmp statement_nested_context
+.npt37_not_nested_prefix:
  cmp rax,NEBOC_TOKEN_KW_IF
  je statement_if
  cmp rax,NEBOC_TOKEN_KW_FOR
@@ -164,6 +251,39 @@ NEBOC_ABI_FUNCTION neboc_statement_parse
  cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RESERVED_EQUAL
  je statement_assignment
 .not_assignment:
+ ; NPT-LANG-27 keeps `=` statement-only but permits the existing `.at(...)`
+ ; call expression to be its target. Probe only for an exact top-level `=`;
+ ; the dedicated parser and semantic owner still reject every other target.
+ lea rcx,[rbx+1]
+ xor edx,edx
+.element_assignment_probe:
+ cmp rcx,r14
+ jae statement_expression
+ STMT_TOKEN_PTR r10,rcx
+ mov rax,[r10+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rax,NEBOC_TOKEN_SEMICOLON
+ je .not_element_assignment
+ cmp rax,NEBOC_TOKEN_LPAREN
+ je .element_probe_open
+ cmp rax,NEBOC_TOKEN_RPAREN
+ je .element_probe_close
+ cmp rax,NEBOC_TOKEN_RESERVED_EQUAL
+ jne .element_probe_next
+ test rdx,rdx
+ jz statement_element_assignment
+ jmp .element_probe_next
+.element_probe_open:
+ inc rdx
+ jmp .element_probe_next
+.element_probe_close:
+ test rdx,rdx
+ jz statement_expression
+ dec rdx
+.element_probe_next:
+ inc rcx
+ jmp .element_assignment_probe
+
+.not_element_assignment:
  lea rcx,[rbx+2]
  cmp rcx,r14
  jae statement_expression
@@ -257,6 +377,11 @@ statement_assignment:
  call neboc_statement_parse_assignment
  jmp statement_done
 
+statement_element_assignment:
+ mov rdi,r12
+ call neboc_statement_parse_element_assignment
+ jmp statement_done
+
 statement_loop:
  mov rdi,r12
  call neboc_statement_parse_loop
@@ -288,6 +413,18 @@ statement_unsupported:
 statement_invalid_control_chain:
  mov rdi,r12
  mov esi,NEBOC_PARSE_DIAG_INVALID_CONTROL_CHAIN
+ mov rdx,rbx
+ call neboc_statement_set_error
+ jmp statement_done
+statement_nested_context:
+ mov rdi,r12
+ mov esi,NEBOC_PARSE_DIAG_NESTED_CONTEXT
+ mov rdx,rbx
+ call neboc_statement_set_error
+ jmp statement_done
+statement_nested_depth:
+ mov rdi,r12
+ mov esi,NEBOC_PARSE_DIAG_NESTED_DEPTH
  mov rdx,rbx
  call neboc_statement_set_error
  jmp statement_done
@@ -404,8 +541,7 @@ NEBOC_ABI_FUNCTION neboc_statement_parse_loop
  mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
  jmp .done
 
-; Parse canonical pre-test `while BoolExpression { ... }`. Parentheses are not
-; part of this bounded statement form; the expression parser stops at `{`.
+; Parse the sole canonical public form `while (BoolExpression) { ... }`.
 NEBOC_ABI_FUNCTION neboc_statement_parse_while
  push rbx
  push r12
@@ -437,15 +573,24 @@ NEBOC_ABI_FUNCTION neboc_statement_parse_while
  mov [rsp],rax
  inc rbx
  mov [r12+NEBOC_STMT_INDEX_OFFSET],rbx
- ; Reject the deliberately excluded parenthesized alternative.
  cmp rbx,r14
  jae .expected
  STMT_TOKEN_PTR r11,rbx
  cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
- je .unsupported
+ jne .preview_open_required
+ inc rbx
+ mov [r12+NEBOC_STMT_INDEX_OFFSET],rbx
  call statement_parse_expression
  test eax,eax
  jnz .done
+ mov rbx,[r12+NEBOC_STMT_INDEX_OFFSET]
+ cmp rbx,r14
+ jae .expected
+ STMT_TOKEN_PTR r11,rbx
+ cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
+ jne .preview_close_required
+ inc rbx
+ mov [r12+NEBOC_STMT_INDEX_OFFSET],rbx
  mov rax,[r12+NEBOC_STMT_RESULT_NODE_OFFSET]
  mov [rsp+8],rax
  mov rdi,r12
@@ -493,11 +638,15 @@ NEBOC_ABI_FUNCTION neboc_statement_parse_while
  mov [r12+NEBOC_STMT_RESULT_NODE_OFFSET],rax
  xor eax,eax
  jmp .done
-.unsupported:
+.preview_open_required:
  mov rdi,r12
- mov esi,NEBOC_PARSE_DIAG_UNSUPPORTED_CONTROL
- mov rdx,rbx
- call neboc_statement_set_error
+ mov rsi,rbx
+ call statement_control_header_missing_pair
+ jmp .done
+.preview_close_required:
+ mov rdi,r12
+ mov rsi,rbx
+ call statement_control_header_missing_rparen
  jmp .done
 .expected:
  mov rdi,r12
@@ -526,9 +675,108 @@ NEBOC_ABI_FUNCTION neboc_statement_parse_while
  cld
  ret
 
-; Parse canonical `for item in rangeBinding { ... }`.  The option_result_null_externo_e_erros_tipados collection
+; Parse canonical `for (item in rangeBinding) { ... }`.  The option_result_null_externo_e_erros_tipados collection
 ; vertical authenticates the binding kind and iterator bounds; this structural
 ; parser freezes the shared AST shape for general statement-tree consumers.
+; This helper is also the sole source-header owner used by collection semantic
+; adapters. On success it publishes the binding/iterable token indices in
+; scratch1/scratch2 and leaves request.index immediately after `)`.
+NEBOC_ABI_FUNCTION neboc_statement_parse_for_header
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,8
+ mov r12,rdi
+ test r12,r12
+ jz .invalid
+ mov r13,[r12+NEBOC_STMT_TOKENS_OFFSET]
+ mov r14,[r12+NEBOC_STMT_TOKEN_COUNT_OFFSET]
+ test r13,r13
+ jz .invalid
+ test r14,r14
+ jz .invalid
+ mov rbx,[r12+NEBOC_STMT_INDEX_OFFSET]
+ cmp rbx,r14
+ jae .expected
+ STMT_TOKEN_PTR r11,rbx
+ cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_KW_FOR
+ jne .expected
+ inc rbx
+ cmp rbx,r14
+ jae .expected
+ STMT_TOKEN_PTR r11,rbx
+ cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ jne .missing_pair
+ inc rbx
+ cmp rbx,r14
+ jae .expected
+ STMT_TOKEN_PTR r11,rbx
+ cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .expected
+ mov [r12+NEBOC_STMT_SCRATCH1_OFFSET],rbx
+ inc rbx
+ cmp rbx,r14
+ jae .expected
+ STMT_TOKEN_PTR r11,rbx
+ cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .expected
+ mov rax,[r11+NEBOC_TOKEN_END_OFFSET]
+ sub rax,[r11+NEBOC_TOKEN_START_OFFSET]
+ cmp rax,2
+ jne .expected
+ mov rax,[r12+NEBOC_STMT_SOURCE_DATA_OFFSET]
+ test rax,rax
+ jz .expected
+ add rax,[r11+NEBOC_TOKEN_START_OFFSET]
+ cmp word [rax],0x6e69
+ jne .expected
+ inc rbx
+ cmp rbx,r14
+ jae .expected
+ STMT_TOKEN_PTR r11,rbx
+ cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .expected
+ mov [r12+NEBOC_STMT_SCRATCH2_OFFSET],rbx
+ inc rbx
+ cmp rbx,r14
+ jae .expected
+ STMT_TOKEN_PTR r11,rbx
+ cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
+ jne .missing_rparen
+ inc rbx
+ mov [r12+NEBOC_STMT_INDEX_OFFSET],rbx
+ xor eax,eax
+ jmp .done
+.missing_pair:
+ mov rdi,r12
+ mov rsi,rbx
+ call statement_control_header_missing_pair
+ jmp .done
+.missing_rparen:
+ mov rdi,r12
+ mov rsi,rbx
+ call statement_control_header_missing_rparen
+ jmp .done
+.expected:
+ mov rdi,r12
+ mov esi,NEBOC_PARSE_DIAG_EXPECTED_TOKEN
+ mov rdx,rbx
+ call neboc_statement_set_error
+ jmp .done
+.invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+.done:
+ add rsp,8
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ cld
+ ret
+
 NEBOC_ABI_FUNCTION neboc_statement_parse_for
  push rbx
  push r12
@@ -554,16 +802,14 @@ NEBOC_ABI_FUNCTION neboc_statement_parse_for
  cmp rbx,r14
  jae .expected
  STMT_TOKEN_PTR r11,rbx
- cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_KW_FOR
- jne .expected
  mov rax,[r11+NEBOC_TOKEN_START_OFFSET]
  mov [rsp],rax
- inc rbx
- cmp rbx,r14
- jae .expected
+ mov rdi,r12
+ call neboc_statement_parse_for_header
+ test eax,eax
+ jnz .done
+ mov rbx,[r12+NEBOC_STMT_SCRATCH1_OFFSET]
  STMT_TOKEN_PTR r11,rbx
- cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
- jne .expected
  mov [rsp+8],rbx
  mov rdi,r15
  mov esi,NEBOC_AST_IDENTIFIER_EXPR
@@ -583,29 +829,8 @@ NEBOC_ABI_FUNCTION neboc_statement_parse_for
  mov r10,[rsp+24]
  mov rax,[rsp+8]
  mov [r10+NEBOC_AST_NODE_PAYLOAD0_OFFSET],rax
- inc rbx
- ; `in` is lexed as an identifier: require exactly those two source bytes.
- cmp rbx,r14
- jae .expected
+ mov rbx,[r12+NEBOC_STMT_SCRATCH2_OFFSET]
  STMT_TOKEN_PTR r11,rbx
- cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
- jne .expected
- mov rax,[r11+NEBOC_TOKEN_END_OFFSET]
- sub rax,[r11+NEBOC_TOKEN_START_OFFSET]
- cmp rax,2
- jne .expected
- mov rax,[r12+NEBOC_STMT_SOURCE_DATA_OFFSET]
- test rax,rax
- jz .expected
- add rax,[r11+NEBOC_TOKEN_START_OFFSET]
- cmp word [rax],0x6e69
- jne .expected
- inc rbx
- cmp rbx,r14
- jae .expected
- STMT_TOKEN_PTR r11,rbx
- cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
- jne .expected
  mov [rsp+32],rbx
  mov rdi,r15
  mov esi,NEBOC_AST_IDENTIFIER_EXPR
@@ -625,8 +850,6 @@ NEBOC_ABI_FUNCTION neboc_statement_parse_for
  mov r10,[rsp+48]
  mov rax,[rsp+32]
  mov [r10+NEBOC_AST_NODE_PAYLOAD0_OFFSET],rax
- inc rbx
- mov [r12+NEBOC_STMT_INDEX_OFFSET],rbx
  mov rdi,r12
  call neboc_statement_parse_block
  test eax,eax
@@ -915,6 +1138,117 @@ NEBOC_ABI_FUNCTION neboc_statement_parse_assignment
  cld
  ret
 
+; Parse the bounded existing-token form `receiver.at(index) = expression;`.
+; Target authentication is deliberately deferred to the collection semantic
+; owner/codegen validator; structurally this retains the complete call AST.
+NEBOC_ABI_FUNCTION neboc_statement_parse_element_assignment
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,80
+ mov r12,rdi
+ test r12,r12
+ jz .invalid
+ mov r13,[r12+NEBOC_STMT_TOKENS_OFFSET]
+ mov r14,[r12+NEBOC_STMT_TOKEN_COUNT_OFFSET]
+ mov r15,[r12+NEBOC_STMT_BUILDER_OFFSET]
+ mov rbx,[r12+NEBOC_STMT_INDEX_OFFSET]
+ cmp rbx,r14
+ jae .expected
+ mov [rsp],rbx
+ call statement_parse_expression
+ test eax,eax
+ jnz .done
+ mov rax,[r12+NEBOC_STMT_RESULT_NODE_OFFSET]
+ mov [rsp+8],rax
+ mov rdi,r15
+ mov rsi,rax
+ lea rdx,[rsp+16]
+ call neboc_ast_builder_node
+ test eax,eax
+ jnz .done
+ mov r10,[rsp+16]
+ cmp qword [r10+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .expected
+ mov rax,[r10+NEBOC_AST_NODE_START_OFFSET]
+ mov [rsp+24],rax
+ mov rbx,[r12+NEBOC_STMT_INDEX_OFFSET]
+ cmp rbx,r14
+ jae .expected
+ STMT_TOKEN_PTR r11,rbx
+ cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RESERVED_EQUAL
+ jne .expected
+ inc rbx
+ mov [r12+NEBOC_STMT_INDEX_OFFSET],rbx
+ call statement_parse_expression
+ test eax,eax
+ jnz .done
+ mov rax,[r12+NEBOC_STMT_RESULT_NODE_OFFSET]
+ mov [rsp+32],rax
+ mov rdi,r15
+ mov rsi,[rsp+8]
+ lea rdx,[rsp+16]
+ call neboc_ast_builder_node
+ test eax,eax
+ jnz .done
+ mov r10,[rsp+16]
+ mov rax,[rsp+32]
+ mov [r10+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET],rax
+ mov rbx,[r12+NEBOC_STMT_INDEX_OFFSET]
+ cmp rbx,r14
+ jae .expected
+ STMT_TOKEN_PTR r11,rbx
+ cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_SEMICOLON
+ jne .expected
+ mov r8,[r11+NEBOC_TOKEN_END_OFFSET]
+ mov rdi,r15
+ mov esi,NEBOC_AST_ASSIGNMENT_STMT
+ mov rdx,[r12+NEBOC_STMT_SOURCE_ID_OFFSET]
+ mov rcx,[rsp+24]
+ lea r9,[rsp+40]
+ call neboc_ast_builder_append
+ test eax,eax
+ jnz .done
+ mov rdi,r15
+ mov rsi,[rsp+40]
+ lea rdx,[rsp+48]
+ call neboc_ast_builder_node
+ test eax,eax
+ jnz .done
+ mov r10,[rsp+48]
+ mov rax,[rsp+8]
+ mov [r10+NEBOC_AST_NODE_FIRST_CHILD_OFFSET],rax
+ mov qword [r10+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],2
+ mov rax,[rsp]
+ mov [r10+NEBOC_AST_NODE_PAYLOAD0_OFFSET],rax
+ mov qword [r10+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ or qword [r10+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_COLLECTION_ELEMENT_ASSIGNMENT
+ inc rbx
+ mov [r12+NEBOC_STMT_INDEX_OFFSET],rbx
+ mov rax,[rsp+40]
+ mov [r12+NEBOC_STMT_RESULT_NODE_OFFSET],rax
+ xor eax,eax
+ jmp .done
+.expected:
+ mov rdi,r12
+ mov esi,NEBOC_PARSE_DIAG_EXPECTED_TOKEN
+ mov rdx,rbx
+ call neboc_statement_set_error
+ jmp .done
+.invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+.done:
+ add rsp,80
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ cld
+ ret
+
 ; Parse a lexical block and attach statements in source order.
 NEBOC_ABI_FUNCTION neboc_statement_parse_block
  push rbx
@@ -1024,7 +1358,9 @@ block_done:
  cld
  ret
 
-; Parse if (expr) block [else block|else if...].
+; Parse if [(]expr[)] block [else block|else if...].  Both spellings are
+; public in the v1.0 source corpus; a present opening parenthesis still
+; requires its exact closing mate.
 NEBOC_ABI_FUNCTION neboc_statement_parse_if
  push rbx
  push r12
@@ -1054,9 +1390,17 @@ NEBOC_ABI_FUNCTION neboc_statement_parse_if
  mov [rsp],rax
  inc rbx
  mov [r12+NEBOC_STMT_INDEX_OFFSET],rbx
+ mov qword [rsp+96],0
+ cmp rbx,r14
+ jae if_expected
+ STMT_TOKEN_PTR r11,rbx
+ cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ jne .condition
  call if_require_lparen
  test eax,eax
  jnz if_done_decrement
+ mov qword [rsp+96],1
+.condition:
  call statement_parse_expression
  test eax,eax
  jnz if_done_decrement
@@ -1065,11 +1409,14 @@ NEBOC_ABI_FUNCTION neboc_statement_parse_if
  mov rbx,[r12+NEBOC_STMT_INDEX_OFFSET]
  cmp rbx,r14
  jae if_expected
+ cmp qword [rsp+96],0
+ je .condition_ready
  STMT_TOKEN_PTR r11,rbx
  cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
  jne if_expected
  inc rbx
  mov [r12+NEBOC_STMT_INDEX_OFFSET],rbx
+.condition_ready:
  mov rdi,r12
  call neboc_statement_parse_block
  test eax,eax

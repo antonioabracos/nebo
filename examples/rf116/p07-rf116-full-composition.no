@@ -1,0 +1,9 @@
+// RF116 factual public composition: receiver-first Console and one RenderPlan.
+start() {
+    Color.rgb(255, 128, 0).ACCENT;
+    observation.console(
+        .fg(ACCENT),
+        .dashboard("rf116-headless-conformance"),
+        .cell(0, 0, .plot("line"))
+    );
+}

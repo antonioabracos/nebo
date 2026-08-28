@@ -1,0 +1,7 @@
+start() {
+    42.toFloat().implicit_value;
+    Int(42).toFloat().explicit_value;
+}
+
+// The public foundation also includes isFinite(), isNaN(), isInfinite() and
+// isNegativeZero(); see the conformance fixtures for exceptional values.

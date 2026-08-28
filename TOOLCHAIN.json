@@ -1,10 +1,10 @@
 {
   "c_compiler_required": false,
-  "format": "NEBO-TOOLCHAIN-v1",
   "libc_required": false,
   "linker": "GNU ld (GNU Binutils for Ubuntu) 2.42",
   "nasm": "NASM version 2.16.01",
   "network_required": false,
   "ninja": "1.11.1",
+  "schema": "NEBO-1.0.1-TOOLCHAIN-v1",
   "target": "x86_64-systemv-elf-linux"
 }

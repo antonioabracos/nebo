@@ -1,0 +1,12 @@
+start() {
+    rows = [
+        { name: "alpha", score: 21 },
+        { name: "beta", score: null }
+    ];
+
+    rows.console(
+        Console.table(columns: ["name", "score"], pageSize: 16, freezeHeader: true),
+        Console.headless(),
+        Console.noColor()
+    );
+}

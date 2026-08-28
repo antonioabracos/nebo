@@ -1,0 +1,9 @@
+{
+  "docs": "share/doc/nebo/offline-site.tar",
+  "editor": "share/nebo/sdk/editor",
+  "examples": "share/examples/hello/main.no",
+  "format": "NEBO-OFFLINE-ASSETS-v1",
+  "network_required": false,
+  "symbol_registry": "share/nebo/freeze/SYMBOLID-EXPORT-INVENTORY.tsv",
+  "telemetry": false
+}

@@ -85,13 +85,30 @@ NEBOC_ABI_FUNCTION neboc_diagnostic_bag_new
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
  ret
 
-; diagnosticBag.add(bag*, diagnostic*, payload_bytes, out_id*)
+; Compatibility entry point: source identity is the provenance key.
 NEBOC_ABI_FUNCTION neboc_diagnostic_bag_add
+ test rsi,rsi
+ jz .compat_invalid
+ mov r8,rcx
+ mov rcx,[rsi+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_ID_OFFSET]
+ jmp diagnostic_bag_add_impl
+.compat_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+; diagnosticBag.addWithProvenance(bag*, diagnostic*, payload_bytes,
+;                                 provenance_key, out_id*)
+NEBOC_ABI_FUNCTION neboc_diagnostic_bag_add_with_provenance
+ jmp diagnostic_bag_add_impl
+
+diagnostic_bag_add_impl:
  test rdi,rdi
  jz .invalid
  test rsi,rsi
  jz .invalid
  test rcx,rcx
+ jz .invalid
+ test r8,r8
  jz .invalid
  cmp qword [rdi+NEBOC_DIAG_BAG_ACTIVE_OFFSET],1
  jne .invalid
@@ -99,17 +116,21 @@ NEBOC_ABI_FUNCTION neboc_diagnostic_bag_add
  jne .invalid
  cmp qword [rsi+NEBOC_DIAGNOSTIC_HAS_PRIMARY_OFFSET],1
  jne .invalid
+ push rbx
+ push r12
+ mov rbx,r8
+ mov r12,rcx
  mov r8,[rdi+NEBOC_DIAG_BAG_COUNT_OFFSET]
  cmp r8,[rdi+NEBOC_DIAG_BAG_CAPACITY_OFFSET]
- jae .limit
+ jae .limit_local
  cmp r8,[rdi+NEBOC_DIAG_BAG_MAX_COUNT_OFFSET]
- jae .limit
+ jae .limit_local
  mov r9,[rdi+NEBOC_DIAG_BAG_USED_BYTES_OFFSET]
  mov r10,r9
  add r10,rdx
- jc .limit
+ jc .limit_local
  cmp r10,[rdi+NEBOC_DIAG_BAG_MAX_BYTES_OFFSET]
- ja .limit
+ ja .limit_local
  mov r11,r8
  imul r11,NEBOC_RECOVERY_DIAG_ENTRY_SIZE
  add r11,[rdi+NEBOC_DIAG_BAG_ENTRIES_OFFSET]
@@ -118,15 +139,20 @@ NEBOC_ABI_FUNCTION neboc_diagnostic_bag_add
  mov [r11+NEBOC_DIAG_ENTRY_ID_OFFSET],rax
  mov [r11+NEBOC_DIAG_ENTRY_PAYLOAD_BYTES_OFFSET],rdx
  mov [r11+NEBOC_DIAG_ENTRY_INSERTION_OFFSET],r8
- mov [rcx],rax
+ mov [r11+NEBOC_DIAG_ENTRY_PROVENANCE_KEY_OFFSET],r12
+ mov [rbx],rax
  inc r8
  mov [rdi+NEBOC_DIAG_BAG_COUNT_OFFSET],r8
  mov [rdi+NEBOC_DIAG_BAG_USED_BYTES_OFFSET],r10
  inc qword [rdi+NEBOC_DIAG_BAG_VISIBLE_COUNT_OFFSET]
  xor eax,eax
+ pop r12
+ pop rbx
  ret
-.limit:
+.limit_local:
  mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ pop r12
+ pop rbx
  ret
 .invalid:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
@@ -137,6 +163,9 @@ NEBOC_ABI_FUNCTION neboc_diagnostic_bag_add
 diagnostic_structural_equal:
  push rbx
  push r12
+ push r13
+ push r14
+ push r15
  mov rbx,rdi
  mov r12,rsi
  mov rdi,[rbx+NEBOC_DIAGNOSTIC_PUBLIC_CODE_OFFSET]
@@ -156,17 +185,66 @@ diagnostic_structural_equal:
  cmp rax,[r12+NEBOC_DIAGNOSTIC_PHASE_OFFSET]
  jne .no
  %assign off 0
- %rep 3
+ %rep 4
  mov rax,[rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+off]
  cmp rax,[r12+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+off]
  jne .no
  %assign off off+8
  %endrep
+ mov rdi,[rbx+NEBOC_DIAGNOSTIC_MESSAGE_KEY_OFFSET]
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_MESSAGE_KEY_LENGTH_OFFSET]
+ mov rdx,[r12+NEBOC_DIAGNOSTIC_MESSAGE_KEY_OFFSET]
+ mov rcx,[r12+NEBOC_DIAGNOSTIC_MESSAGE_KEY_LENGTH_OFFSET]
+ call byte_strings_compare
+ test eax,eax
+ jne .no
+ mov r13,[rbx+NEBOC_DIAGNOSTIC_ARGUMENT_COUNT_OFFSET]
+ cmp r13,[r12+NEBOC_DIAGNOSTIC_ARGUMENT_COUNT_OFFSET]
+ jne .no
+ xor r14d,r14d
+.argument_loop:
+ cmp r14,r13
+ jae .yes
+ mov r15,r14
+ imul r15,NEBOC_DIAGNOSTIC_ARGUMENT_SIZE
+ lea r10,[rbx+r15]
+ add r10,NEBOC_DIAGNOSTIC_ARGUMENTS_OFFSET
+ lea r11,[r12+r15]
+ add r11,NEBOC_DIAGNOSTIC_ARGUMENTS_OFFSET
+ mov rax,[r10+NEBOC_DIAGNOSTIC_ARGUMENT_TYPE_OFFSET]
+ cmp rax,[r11+NEBOC_DIAGNOSTIC_ARGUMENT_TYPE_OFFSET]
+ jne .no
+ mov rax,[r10+NEBOC_DIAGNOSTIC_ARGUMENT_LENGTH_OFFSET]
+ cmp rax,[r11+NEBOC_DIAGNOSTIC_ARGUMENT_LENGTH_OFFSET]
+ jne .no
+ mov rax,[r10+NEBOC_DIAGNOSTIC_ARGUMENT_VALUE_OFFSET]
+ cmp rax,[r11+NEBOC_DIAGNOSTIC_ARGUMENT_VALUE_OFFSET]
+ jne .no
+ cmp qword [r10+NEBOC_DIAGNOSTIC_ARGUMENT_TYPE_OFFSET],NEBOC_DIAGNOSTIC_ARGUMENT_TEXT
+ jne .argument_next
+ push r10
+ push r11
+ mov rdi,[r10+NEBOC_DIAGNOSTIC_ARGUMENT_DATA_OFFSET]
+ mov rsi,[r10+NEBOC_DIAGNOSTIC_ARGUMENT_LENGTH_OFFSET]
+ mov rdx,[r11+NEBOC_DIAGNOSTIC_ARGUMENT_DATA_OFFSET]
+ mov rcx,[r11+NEBOC_DIAGNOSTIC_ARGUMENT_LENGTH_OFFSET]
+ call byte_strings_compare
+ pop r11
+ pop r10
+ test eax,eax
+ jne .no
+.argument_next:
+ inc r14
+ jmp .argument_loop
+.yes:
  mov eax,1
  jmp .done
 .no:
  xor eax,eax
 .done:
+ pop r15
+ pop r14
+ pop r13
  pop r12
  pop rbx
  ret
@@ -210,6 +288,9 @@ NEBOC_ABI_FUNCTION neboc_diagnostic_bag_deduplicate
  add r10,[rbx+NEBOC_DIAG_BAG_ENTRIES_OFFSET]
  test qword [r10+NEBOC_DIAG_ENTRY_FLAGS_OFFSET],NEBOC_DIAG_ENTRY_DUPLICATE|NEBOC_DIAG_ENTRY_CASCADE
  jnz .inner_next
+ mov rax,[r14+NEBOC_DIAG_ENTRY_PROVENANCE_KEY_OFFSET]
+ cmp rax,[r10+NEBOC_DIAG_ENTRY_PROVENANCE_KEY_OFFSET]
+ jne .inner_next
  mov rdi,[r14+NEBOC_DIAG_ENTRY_DIAGNOSTIC_OFFSET]
  mov rsi,[r10+NEBOC_DIAG_ENTRY_DIAGNOSTIC_OFFSET]
  push r10
@@ -311,12 +392,16 @@ compare_entry:
  mov r12,rsi
  mov r8,[rbx+NEBOC_DIAG_ENTRY_DIAGNOSTIC_OFFSET]
  mov r9,[r12+NEBOC_DIAG_ENTRY_DIAGNOSTIC_OFFSET]
- mov rax,[r8+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_ID_OFFSET]
- cmp rax,[r9+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_ID_OFFSET]
+ mov rax,[rbx+NEBOC_DIAG_ENTRY_PROVENANCE_KEY_OFFSET]
+ cmp rax,[r12+NEBOC_DIAG_ENTRY_PROVENANCE_KEY_OFFSET]
  jb .less
  ja .greater
  mov rax,[r8+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET]
  cmp rax,[r9+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET]
+ jb .less
+ ja .greater
+ mov rax,[r8+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_END_OFFSET]
+ cmp rax,[r9+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_END_OFFSET]
  jb .less
  ja .greater
  mov rax,[r8+NEBOC_DIAGNOSTIC_SEVERITY_OFFSET]

@@ -1,6 +1,8 @@
-# Nebo 1.0.0
+# Nebo 1.0.1
 
-Nebo 1.0.0 is the first stable public release of the Nebo native compiler and runtime. The compiler and runtime are implemented in x86-64 Assembly and produce static ELF64 executables for the documented Linux System V AMD64 profile. This repository is the sanitized, single-commit source snapshot associated with the `nebo-v1.0.0` release.
+Nebo 1.0.1 is a corrective maintenance release of the Nebo native compiler and runtime. The compiler and runtime are implemented in x86-64 Assembly and produce static ELF64 executables for the documented Linux System V AMD64 profile. This repository is the sanitized public source snapshot associated with the `nebo-v1.0.1` release.
+
+Nebo 1.0.0 remains preserved as the first stable public release. Version 1.0.1 keeps the Edition, target, public API, public ABI and `.ni` surface unchanged.
 
 The 1.0 claim is deliberately narrow: one certified target, an offline source build, explicit integrity material, and factual maturity labels. A source file, Assembly routine, descriptor or documentation page does not by itself promote a feature to the stable language surface.
 
@@ -8,16 +10,24 @@ The 1.0 claim is deliberately narrow: one certified target, an offline source bu
 
 | Field | Value |
 |---|---|
-| Version | `1.0.0` |
+| Version | `1.0.1` |
 | Edition | `1.0` |
 | Public branch | `main` |
-| Release tag | `nebo-v1.0.0` |
-| Source commit | `6955dadca31f9499bc55892a714eb112f12e10d6` |
-| Source tree | `aa83b42e9aba94de776ebea74be860920e7afcba` |
+| Release tag | `nebo-v1.0.1` |
+| Source identity | Resolved by the annotated public release tag |
 | Supported target | `x86_64-systemv-elf-linux` |
-| Release page | [Nebo 1.0.0 release](https://github.com/antonioabracos/nebo/releases/tag/nebo-v1.0.0) |
+| Latest release | [Nebo 1.0.1 release](https://github.com/antonioabracos/nebo/releases/tag/nebo-v1.0.1) |
+| Previous release | [Nebo 1.0.0 release](https://github.com/antonioabracos/nebo/releases/tag/nebo-v1.0.0) |
+| Compare | [Nebo 1.0.0...1.0.1](https://github.com/antonioabracos/nebo/compare/nebo-v1.0.0...nebo-v1.0.1) |
 
-The release is final rather than a prerelease. The annotated tag remains attached to the original public source commit. The repository intentionally exposes one root commit and does not expose private development history or internal tags.
+The release is final rather than a prerelease. The annotated tags remain attached to their respective public source commits. The repository exposes only sanitized public history.
+
+## Fixed in 1.0.1
+
+- Whole-program materialization no longer selects the dedicated Buffer route merely because `Buffer.withCapacity` appears in a mixed source file; this prevents a false-GREEN empty `start()` body.
+- `Console.scan()` now composes correctly with an explicit return in the same program.
+- Seven compiler call sites introduced with the corrective path now satisfy the System V AMD64 pre-call stack-alignment contract.
+- Permanent regression fixtures cover eight false-GREEN scenarios and the seven corrected stack-alignment call sites.
 
 ## Project overview
 
@@ -55,20 +65,20 @@ Versions newer than the recorded tools may work, but they are not silently subst
 Run the following in a clean directory on the supported host:
 
 ```bash
-git clone --branch nebo-v1.0.0 --depth 1 https://github.com/antonioabracos/nebo.git
+git clone --branch nebo-v1.0.1 --depth 1 https://github.com/antonioabracos/nebo.git
 cd nebo
 ./scripts/build-neboc.sh
 ./build/bin/neboc --version
 ```
 
-The expected final line is `neboc 1.0.0`. The build script delegates to the checked-in Ninja graph and does not download dependencies.
+The expected final line is `neboc 1.0.1`. The build script delegates to the checked-in Ninja graph and does not download dependencies.
 
 ## Quick start with the SDK
 
 Download the SDK tar from the release page, place it in an otherwise clean directory, and use a caller-owned prefix:
 
 ```bash
-tar -xf nebo-1.0.0-sdk-linux-x86_64.tar
+tar -xf nebo-1.0.1-sdk-linux-x86_64.tar
 python3 nebo-sdk/install-nebo-sdk.py install nebo-sdk "$PWD/.nebo-sdk"
 python3 nebo-sdk/install-nebo-sdk.py verify "$PWD/.nebo-sdk"
 "$PWD/.nebo-sdk/bin/neboc" --version
@@ -85,7 +95,7 @@ Verify repository files before building:
 sha256sum -c SHA256SUMS
 ```
 
-For downloaded release assets, use the `NEBO-1.0.0-SHA256SUMS` asset associated with this exact release. Do not mix checksum files across archives or releases. The release also publishes source, SDK, documentation and tooling manifests, provenance, an SBOM, compatibility identity and the final candidate seal.
+For downloaded release assets, use the `NEBO-1.0.1-SHA256SUMS` asset associated with this exact release. Do not mix checksum files across archives or releases. The release also publishes source, SDK, documentation and tooling manifests, provenance, an SBOM, compatibility identity and the final public seal.
 
 ## CLI overview and command table
 
@@ -200,25 +210,25 @@ The following table covers every public Standard Library module in the frozen do
 
 | domain | surface | summary | maturity | supported target | required capability | external dependency | documentation source | public source path |
 |---|---|---|---|---|---|---|---|---|
-| Standard Library | `std.collections` | Array, Range and Slice surfaces within target bounds. | TARGET_GATED | `x86_64-systemv-elf-linux` | `NONE_BY_IMPORT` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.concurrency` | Task, future, channel and cancellation contracts. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `Concurrency` | capability-specific local environment | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.core` | Core scalar values, functions and protocol dispatch. | STABLE_1_0 | `x86_64-systemv-elf-linux` | `NONE_BY_IMPORT` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.data` | Dataset, table, row, column and stream descriptors. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `NONE` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.format` | Formatting plans and templates. | TARGET_GATED | `x86_64-systemv-elf-linux` | `NONE` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.formats.toml` | TOML descriptor contract. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `NONE` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.formats` | Bounded CSV, JSON, JSONL, Markdown and TSV descriptors. | TARGET_GATED | `x86_64-systemv-elf-linux` | `NONE` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.net` | Loopback-only network descriptor contracts. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `NETWORK_EXPLICIT` | live loopback environment | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.pattern` | Pattern and regular-expression contracts. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `NONE` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.prelude` | Small implicit prelude profile; import does not grant capabilities. | TARGET_GATED | `x86_64-systemv-elf-linux` | `NONE_BY_IMPORT` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.random` | Bounded random-value contract. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `Random` | capability-specific local environment | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.result` | Option, Result, Error, matching and propagation contracts. | STABLE_1_0 | `x86_64-systemv-elf-linux` | `NONE_BY_IMPORT` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.sync` | Lock and deadline contracts. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `Concurrency` | capability-specific local environment | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.system.fs` | Path queries and bounded filesystem contracts. | TARGET_GATED | `x86_64-systemv-elf-linux` | `FileSystem` | capability-specific local environment | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.system.process` | Bounded process substrate. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `Process` | capability-specific local environment | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.system` | System services behind explicit capabilities. | TARGET_GATED | `x86_64-systemv-elf-linux` | `EXPLICIT` | capability-specific local environment | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.text` | Text, Char, Bytes and bounded UTF-8 behavior. | STABLE_1_0 | `x86_64-systemv-elf-linux` | `NONE_BY_IMPORT` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.time` | Bounded clock contracts. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `Clock` | capability-specific local environment | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
-| Standard Library | `std.validation` | Bounded validation combinators. | TARGET_GATED | `x86_64-systemv-elf-linux` | `NONE` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.collections` | Array, Range and Slice surfaces within target bounds. | TARGET_GATED | `x86_64-systemv-elf-linux` | `NONE_BY_IMPORT` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.concurrency` | Task, future, channel and cancellation contracts. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `Concurrency` | capability-specific local environment | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.core` | Core scalar values, functions and protocol dispatch. | STABLE_1_0 | `x86_64-systemv-elf-linux` | `NONE_BY_IMPORT` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.data` | Dataset, table, row, column and stream descriptors. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `NONE` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.format` | Formatting plans and templates. | TARGET_GATED | `x86_64-systemv-elf-linux` | `NONE` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.formats.toml` | TOML descriptor contract. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `NONE` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.formats` | Bounded CSV, JSON, JSONL, Markdown and TSV descriptors. | TARGET_GATED | `x86_64-systemv-elf-linux` | `NONE` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.net` | Loopback-only network descriptor contracts. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `NETWORK_EXPLICIT` | live loopback environment | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.pattern` | Pattern and regular-expression contracts. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `NONE` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.prelude` | Small implicit prelude profile; import does not grant capabilities. | TARGET_GATED | `x86_64-systemv-elf-linux` | `NONE_BY_IMPORT` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.random` | Bounded random-value contract. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `Random` | capability-specific local environment | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.result` | Option, Result, Error, matching and propagation contracts. | STABLE_1_0 | `x86_64-systemv-elf-linux` | `NONE_BY_IMPORT` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.sync` | Lock and deadline contracts. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `Concurrency` | capability-specific local environment | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.system.fs` | Path queries and bounded filesystem contracts. | TARGET_GATED | `x86_64-systemv-elf-linux` | `FileSystem` | capability-specific local environment | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.system.process` | Bounded process substrate. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `Process` | capability-specific local environment | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.system` | System services behind explicit capabilities. | TARGET_GATED | `x86_64-systemv-elf-linux` | `EXPLICIT` | capability-specific local environment | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.text` | Text, Char, Bytes and bounded UTF-8 behavior. | STABLE_1_0 | `x86_64-systemv-elf-linux` | `NONE_BY_IMPORT` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.time` | Bounded clock contracts. | CONTRACT_ONLY | `x86_64-systemv-elf-linux` | `Clock` | capability-specific local environment | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
+| Standard Library | `std.validation` | Bounded validation combinators. | TARGET_GATED | `x86_64-systemv-elf-linux` | `NONE` | none | [offline 1.0 docs](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar) | [`compiler/stdlib`](compiler/stdlib) |
 
 ### Public Standard Library symbol-family index
 
@@ -297,7 +307,7 @@ Observability follows redaction and bounded-record rules. Diagnostic output may 
 
 The SDK carries the compiler, runtime object, installer, formatter, linter, LSP adapter, project scaffold helper, refactor helper, doctor, completion files, editor metadata, diagnostic catalog, interface inventory and offline documentation. Those files are manifest-bound and can be verified without network access.
 
-Package resolution is offline and lockfile-oriented in the documented tooling model. Nebo 1.0 publishes no package-registry entry and makes no signing-key claim. The complete versioned documentation is available as the [offline documentation asset](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar).
+Package resolution is offline and lockfile-oriented in the documented tooling model. Nebo 1.0 publishes no package-registry entry and makes no signing-key claim. The complete versioned documentation is available as the [offline documentation asset](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar).
 
 ## Compiler architecture and source-to-ELF pipeline
 
@@ -343,13 +353,13 @@ Generated build outputs are not source authorities and should not be committed a
 
 ## Release assets
 
-The release has 19 manifest-bound assets totaling 17,794,034 bytes: compatibility identity, documentation manifest, edition, final seal, final release manifest, SBOM, asset checksums, provenance, SDK manifest, source manifest, stack-alignment report, third-party notices, tooling manifest, verification guide, version, offline docs tar, editor tooling tar, Linux x86-64 SDK tar and source tar.
+The release has 29 assets: four payload archives plus compatibility, lifecycle, upgrade, support, provenance, SBOM, package, checksum and verification metadata. The payload and descriptive metadata are bound by the release checksum manifest, and the public seal binds that manifest to the public source commit, tree and annotated tag.
 
-Use the [release page](https://github.com/antonioabracos/nebo/releases/tag/nebo-v1.0.0) as the asset index. Asset names, sizes and SHA-256 digests belong to this exact release; download counters are not integrity fields.
+Use the [Nebo 1.0.1 release page](https://github.com/antonioabracos/nebo/releases/tag/nebo-v1.0.1) as the current asset index. Asset names, sizes and SHA-256 digests belong to this exact release; download counters are not integrity fields. The [Nebo 1.0.0 release page](https://github.com/antonioabracos/nebo/releases/tag/nebo-v1.0.0) remains available with its original assets.
 
 ## Compatibility, editions and migration
 
-The compiler identifies as 1.0.0. The bounded compatibility model recognizes legacy language edition 1 and current edition 2, with ABI version 0 and runtime version 0. Packages must stay within declared edition and ABI ranges. Unsafe or breaking migrations are reported rather than silently rewritten.
+The compiler identifies as 1.0.1. The bounded compatibility model recognizes legacy language edition 1 and current edition 2, with ABI version 0 and runtime version 0. Packages must stay within declared edition and ABI ranges. Unsafe or breaking migrations are reported rather than silently rewritten.
 
 Before migrating, preserve source, lock data and expected outputs; validate the unchanged project; apply only explicit mechanical steps; then repeat checks, deterministic assembly generation, native build and project tests. The release tag remains the source identity for 1.0 even if `main` later advances for documentation.
 
@@ -386,7 +396,7 @@ The repository is publicly viewable. Usage rights are governed by [LICENSE](LICE
 
 ## Provenance and acknowledgements
 
-[`SOURCE-PROVENANCE.json`](SOURCE-PROVENANCE.json) binds the public snapshot to version 1.0.0, edition 1.0, the supported target and the source-payload digest. [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md) records third-party and host-tool notices. [`SHA256SUMS`](SHA256SUMS) binds the repository files.
+[`SOURCE-PROVENANCE.json`](SOURCE-PROVENANCE.json) identifies the public snapshot as version 1.0.1, edition 1.0, tag `nebo-v1.0.1` and the supported target. [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md) records third-party and host-tool notices. [`SHA256SUMS`](SHA256SUMS) binds the repository files.
 
 Nebo's verified toolchain relies on Python, Ninja, NASM, GNU Binutils and standard ELF inspection utilities. Their presence as external build tools is disclosed and does not turn them into bundled runtime dependencies.
 
@@ -402,7 +412,9 @@ Nebo's verified toolchain relies on Python, Ninja, NASM, GNU Binutils and standa
 - [Third-party notices](THIRD-PARTY-NOTICES.md)
 - [Repository checksums](SHA256SUMS)
 - [License](LICENSE)
-- [Nebo 1.0.0 public release](https://github.com/antonioabracos/nebo/releases/tag/nebo-v1.0.0)
-- [Complete offline 1.0 documentation](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.0/nebo-1.0.0-docs-offline.tar)
+- [Nebo 1.0.1 public release](https://github.com/antonioabracos/nebo/releases/tag/nebo-v1.0.1)
+- [Nebo 1.0.0 preserved release](https://github.com/antonioabracos/nebo/releases/tag/nebo-v1.0.0)
+- [Compare Nebo 1.0.0...1.0.1](https://github.com/antonioabracos/nebo/compare/nebo-v1.0.0...nebo-v1.0.1)
+- [Complete offline 1.0.1 documentation](https://github.com/antonioabracos/nebo/releases/download/nebo-v1.0.1/nebo-1.0.1-docs-offline.tar)
 
 The offline documentation asset contains the complete versioned language, core, prelude, Standard Library, diagnostics, tutorial, cookbook, examples and troubleshooting corpus. The root README remains self-contained enough to build, verify and understand the supported boundary even when the offline asset has not been unpacked.

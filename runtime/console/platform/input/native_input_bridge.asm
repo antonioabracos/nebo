@@ -314,6 +314,7 @@ nebo_native_input_bridge_state_hash:
     jz .hash_invalid
     test rsi, rsi
     jz .hash_invalid
+    sub rsp, 8
     mov eax, NEBO_NATIVE_INPUT_HASH_FNV1A32_OFFSET_BASIS
     mov rdx, [rdi+NEBO_NATIVE_INPUT_BRIDGE_EVENT_COUNT_OFFSET]
     call .mix
@@ -328,6 +329,7 @@ nebo_native_input_bridge_state_hash:
     mov [rsi], rax
     mov [rdi+NEBO_NATIVE_INPUT_BRIDGE_STATE_HASH_OFFSET], rax
     xor eax, eax
+    add rsp, 8
     ret
 .hash_invalid:
     mov eax, NEBO_CONSOLE_STATUS_INVALID_ARGUMENT

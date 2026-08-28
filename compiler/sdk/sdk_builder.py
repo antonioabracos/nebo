@@ -9,7 +9,7 @@ import argparse, hashlib, json, os, shutil, stat, tarfile, tempfile
 from pathlib import Path, PurePosixPath
 
 FORMAT = "NEBO-SDK-MANIFEST-v1"
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 def sha(path: Path) -> str:
     h=hashlib.sha256()
@@ -34,6 +34,7 @@ def component_sources(repo: Path, neboc: Path, profile: str) -> list[tuple[str, 
     if profile in {"sdk", "tooling"}:
         rows.append(("bin/neboc", neboc, 0o755, "compiler"))
         rows.append(("obj/runtime_core.o", repo/"build/obj/runtime_core.o", 0o644, "runtime"))
+        rows.append(("obj/runtime_practical_io.o", repo/"build/obj/runtime_practical_io.o", 0o644, "runtime"))
         rows.append(("share/nebo/version/NEBO-VERSION.json", repo/"version/NEBO-VERSION.json", 0o644, "version"))
     fixed=[
       ("share/nebo/freeze/SYMBOLID-EXPORT-INVENTORY.tsv", repo/"docs/implementation/rf204/freeze/nebo-1.0/SYMBOLID-EXPORT-INVENTORY.tsv",0o644,"interfaces"),

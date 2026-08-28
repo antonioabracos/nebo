@@ -19,6 +19,16 @@ n_text: db "Text"
 n_text_len equ $-n_text
 n_tuple: db "Tuple"
 n_tuple_len equ $-n_tuple
+n_of: db "of"
+n_of_len equ $-n_of
+n_at: db "at"
+n_at_len equ $-n_at
+n_length: db "length"
+n_length_len equ $-n_length
+n_destructure: db "destructure"
+n_destructure_len equ $-n_destructure
+n_wildcard: db "_"
+n_wildcard_len equ $-n_wildcard
 
 section .text
 
@@ -36,7 +46,7 @@ NEBOC_ABI_FUNCTION neboc_struct_tuple_recognize
  push r15
  mov r12,rdi
  lea rdi,[r12+NEBOC_ST_FOUND_OFFSET]
- mov ecx,16
+ mov ecx,18
  xor eax,eax
  rep stosq
  mov r13,[r12+NEBOC_ST_TOKENS_OFFSET]
@@ -92,6 +102,21 @@ NEBOC_ABI_FUNCTION neboc_struct_tuple_recognize
  jz .claim_next
  mov rax,rbx
  inc rax
+ call st_kind_at
+ cmp rax,NEBOC_TOKEN_LPAREN
+ je .claimed
+ cmp rax,NEBOC_TOKEN_DOT
+ jne .claim_next
+ mov rax,rbx
+ add rax,2
+ mov rdi,rax
+ lea rsi,[rel n_of]
+ mov edx,n_of_len
+ call st_token_match
+ test eax,eax
+ jz .claim_next
+ mov rax,rbx
+ add rax,3
  call st_kind_at
  cmp rax,NEBOC_TOKEN_LPAREN
  je .claimed
@@ -470,6 +495,24 @@ st_parse_expr:
  cmp rax,NEBOC_TOKEN_IDENTIFIER
  jne .syntax
  mov r14,[r12+NEBOC_ST_CURSOR_OFFSET]
+ mov rdi,r14
+ lea rsi,[rel n_at]
+ mov edx,n_at_len
+ call st_token_match
+ test eax,eax
+ jnz .tuple_at
+ mov rdi,r14
+ lea rsi,[rel n_length]
+ mov edx,n_length_len
+ call st_token_match
+ test eax,eax
+ jnz .tuple_length
+ mov rdi,r14
+ lea rsi,[rel n_destructure]
+ mov edx,n_destructure_len
+ call st_token_match
+ test eax,eax
+ jnz .tuple_destructure
  mov rax,[r13+NEBOC_VALUE_TYPE_OFFSET]
  cmp rax,NEBOC_TYPE_STRUCT_BASE
  jb .bind
@@ -522,50 +565,158 @@ st_parse_expr:
  mov rsi,r13
  call st_bind_value
  test eax,eax
- jnz .done
+ jz .bind_ready
+ xor eax,eax
+ jmp .done
+.bind_ready:
  jmp .suffix
 .tuple_access:
  mov r14,[r12+NEBOC_ST_CURSOR_OFFSET]
  mov rax,r14
  call st_token_ptr
  mov rbx,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ inc qword [r12+NEBOC_ST_CURSOR_OFFSET]
+ mov rdi,r13
+ mov rsi,rbx
+ mov rdx,r14
+ call st_tuple_project
+ test rax,rax
+ jz .done
+ mov r13,rax
+ jmp .suffix
+.tuple_at:
+ inc qword [r12+NEBOC_ST_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LESS
+ call st_expect
+ test eax,eax
+ jnz .done
+ call st_peek_kind
+ cmp rax,NEBOC_TOKEN_INTEGER
+ jne .syntax
+ mov r14,[r12+NEBOC_ST_CURSOR_OFFSET]
+ mov rax,r14
+ call st_token_ptr
+ mov rbx,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ inc qword [r12+NEBOC_ST_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_GREATER
+ call st_expect
+ test eax,eax
+ jnz .done
+ mov edi,NEBOC_TOKEN_LPAREN
+ call st_expect
+ test eax,eax
+ jnz .done
+ mov edi,NEBOC_TOKEN_RPAREN
+ call st_expect
+ test eax,eax
+ jnz .done
+ mov rdi,r13
+ mov rsi,rbx
+ mov rdx,r14
+ call st_tuple_project
+ test rax,rax
+ jz .done
+ mov r13,rax
+ jmp .suffix
+.tuple_length:
+ inc qword [r12+NEBOC_ST_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call st_expect
+ test eax,eax
+ jnz .done
+ mov edi,NEBOC_TOKEN_RPAREN
+ call st_expect
+ test eax,eax
+ jnz .done
  mov rax,[r13+NEBOC_VALUE_TYPE_OFFSET]
  bt rax,62
- jnc .tuple_bounds
- cmp rbx,[r13+NEBOC_VALUE_MEMBER_COUNT_OFFSET]
- jae .tuple_bounds
- inc qword [r12+NEBOC_ST_CURSOR_OFFSET]
- mov rax,[r13+NEBOC_VALUE_MEMBER_TYPES_OFFSET+rbx*8]
- cmp rax,NEBOC_TYPE_STRUCT_BASE
- jae .tuple_composite
- mov [rsp],rax
- mov r15,[r13+NEBOC_VALUE_MEMBERS_OFFSET+rbx*8]
+ jnc .tuple_type
+ mov rbx,[r13+NEBOC_VALUE_MEMBER_COUNT_OFFSET]
  call st_alloc_value
  test rax,rax
  jz .done
  mov r13,rax
- mov rax,[rsp]
- mov [r13+NEBOC_VALUE_TYPE_OFFSET],rax
- mov [r13+NEBOC_VALUE_MEMBERS_OFFSET],r15
- mov rax,r13
+ mov qword [r13+NEBOC_VALUE_TYPE_OFFSET],neboc_option_result_null_externo_e_erros_tipados_TYPE_INT_semantic_types_native_vertical
+ mov [r13+NEBOC_VALUE_MEMBERS_OFFSET],rbx
  call st_set_scalar_layout
- jmp .tuple_accessed
-.tuple_composite:
- mov r13,[r13+NEBOC_VALUE_MEMBERS_OFFSET+rbx*8]
- test r13,r13
- jz .internal
-.tuple_accessed:
  inc qword [r12+NEBOC_ST_ACCESS_COUNT_OFFSET]
  jmp .suffix
-.terminal_return:
+.tuple_destructure:
  inc qword [r12+NEBOC_ST_CURSOR_OFFSET]
+ mov rax,[r13+NEBOC_VALUE_TYPE_OFFSET]
+ bt rax,62
+ jnc .tuple_type
+ mov edi,NEBOC_TOKEN_LPAREN
+ call st_expect
+ test eax,eax
+ jnz .done
+ mov r15,r13
+ xor ebx,ebx
+.destructure_item:
+ call st_peek_kind
+ cmp rax,NEBOC_TOKEN_RPAREN
+ je .destructure_finish
+ cmp rbx,[r15+NEBOC_VALUE_MEMBER_COUNT_OFFSET]
+ jae .destructure_arity
+ cmp rax,NEBOC_TOKEN_IDENTIFIER
+ jne .syntax
+ mov r14,[r12+NEBOC_ST_CURSOR_OFFSET]
+ mov rdi,r14
+ lea rsi,[rel n_wildcard]
+ mov edx,n_wildcard_len
+ call st_token_match
+ inc qword [r12+NEBOC_ST_CURSOR_OFFSET]
+ test eax,eax
+ jnz .destructure_next
+ mov rdi,r15
+ mov rsi,rbx
+ mov rdx,r14
+ call st_tuple_project
+ test rax,rax
+ jz .done
+ mov r13,rax
+ mov rdi,r14
+ mov rsi,r13
+ call st_bind_value
+ test eax,eax
+ jz .destructure_bound
+ xor eax,eax
+ jmp .done
+.destructure_bound:
+ mov r13,r15
+.destructure_next:
+ inc rbx
+ call st_peek_kind
+ cmp rax,NEBOC_TOKEN_RPAREN
+ je .destructure_finish
+ cmp rax,NEBOC_TOKEN_COMMA
+ jne .syntax
+ inc qword [r12+NEBOC_ST_CURSOR_OFFSET]
+ jmp .destructure_item
+.destructure_finish:
+ cmp rbx,[r15+NEBOC_VALUE_MEMBER_COUNT_OFFSET]
+ jne .destructure_arity
+ mov edi,NEBOC_TOKEN_RPAREN
+ call st_expect
+ test eax,eax
+ jnz .done
+ mov r13,r15
  jmp .suffix
-.tuple_bounds:
- mov esi,NEBOC_DIAG_TUPLE_BOUNDS
+.destructure_arity:
+ mov esi,NEBOC_DIAG_WRONG_ARITY
+ mov rdx,[r12+NEBOC_ST_CURSOR_OFFSET]
+ call st_error
+ xor eax,eax
+ jmp .done
+.tuple_type:
+ mov esi,NEBOC_DIAG_TUPLE_TYPE
  mov rdx,r14
  call st_error
  xor eax,eax
  jmp .done
+.terminal_return:
+ inc qword [r12+NEBOC_ST_CURSOR_OFFSET]
+ jmp .suffix
 .syntax:
  mov esi,neboc_option_result_null_externo_e_erros_tipados_DIAG_SYNTAX
  jmp .error_current
@@ -578,6 +729,65 @@ st_parse_expr:
  jmp .done
 .return:
  mov rax,r13
+.done:
+ add rsp,8
+ pop r15
+ pop r14
+ pop r13
+ pop rbx
+ ret
+
+; Project constant RSI from Tuple value RDI. RDX is the causal index token.
+; The returned record is either the existing composite member or one bounded
+; scalar value record. No constructor or source expression is re-evaluated.
+st_tuple_project:
+ push rbx
+ push r13
+ push r14
+ push r15
+ sub rsp,8
+ mov r13,rdi
+ mov rbx,rsi
+ mov r14,rdx
+ mov rax,[r13+NEBOC_VALUE_TYPE_OFFSET]
+ bt rax,62
+ jnc .bounds
+ cmp rbx,[r13+NEBOC_VALUE_MEMBER_COUNT_OFFSET]
+ jae .bounds
+ mov rax,[r13+NEBOC_VALUE_MEMBER_TYPES_OFFSET+rbx*8]
+ cmp rax,NEBOC_TYPE_STRUCT_BASE
+ jae .composite
+ mov [rsp],rax
+ mov r15,[r13+NEBOC_VALUE_MEMBERS_OFFSET+rbx*8]
+ call st_alloc_value
+ test rax,rax
+ jz .done
+ mov r13,rax
+ mov rax,[rsp]
+ mov [r13+NEBOC_VALUE_TYPE_OFFSET],rax
+ mov [r13+NEBOC_VALUE_MEMBERS_OFFSET],r15
+ mov rax,r13
+ call st_set_scalar_layout
+ mov rax,r13
+ jmp .accessed
+.composite:
+ mov rax,[r13+NEBOC_VALUE_MEMBERS_OFFSET+rbx*8]
+ test rax,rax
+ jz .internal
+.accessed:
+ inc qword [r12+NEBOC_ST_ACCESS_COUNT_OFFSET]
+ jmp .done
+.bounds:
+ mov esi,NEBOC_DIAG_TUPLE_BOUNDS
+ mov rdx,r14
+ call st_error
+ xor eax,eax
+ jmp .done
+.internal:
+ mov esi,neboc_option_result_null_externo_e_erros_tipados_DIAG_INTERNAL_codegen_aggregates_x86_64_native_vertical
+ mov rdx,r14
+ call st_error
+ xor eax,eax
 .done:
  add rsp,8
  pop r15
@@ -831,11 +1041,38 @@ st_parse_tuple:
  push r14
  push r15
  sub rsp,40
+ mov qword [rsp+24],0          ; depth ownership flag
  inc qword [r12+NEBOC_ST_CURSOR_OFFSET]
+ ; C07 canonical spelling is Tuple.of(...). The original Tuple(...) spelling
+ ; remains an exact compatibility route and reaches the same parser state.
+ call st_peek_kind
+ cmp rax,NEBOC_TOKEN_DOT
+ jne .constructor_ready
+ inc qword [r12+NEBOC_ST_CURSOR_OFFSET]
+ call st_peek_kind
+ cmp rax,NEBOC_TOKEN_IDENTIFIER
+ jne .syntax
+ mov rdi,[r12+NEBOC_ST_CURSOR_OFFSET]
+ lea rsi,[rel n_of]
+ mov edx,n_of_len
+ call st_token_match
+ test eax,eax
+ jz .syntax
+ inc qword [r12+NEBOC_ST_CURSOR_OFFSET]
+.constructor_ready:
  mov edi,NEBOC_TOKEN_LPAREN
  call st_expect
  test eax,eax
  jnz .fail
+ inc qword [r12+NEBOC_ST_TUPLE_DEPTH_OFFSET]
+ mov qword [rsp+24],1
+ mov rax,[r12+NEBOC_ST_TUPLE_DEPTH_OFFSET]
+ cmp rax,NEBOC_ST_MAX_TUPLE_DEPTH
+ ja .depth
+ cmp rax,[r12+NEBOC_ST_MAX_OBSERVED_DEPTH_OFFSET]
+ jbe .depth_recorded
+ mov [r12+NEBOC_ST_MAX_OBSERVED_DEPTH_OFFSET],rax
+.depth_recorded:
  call st_alloc_value
  test rax,rax
  jz .fail
@@ -927,6 +1164,12 @@ st_parse_tuple:
 .bounds:
  mov esi,NEBOC_DIAG_WRONG_ARITY
  jmp .error
+.depth:
+ mov esi,NEBOC_DIAG_TUPLE_DEPTH
+ jmp .error
+.syntax:
+ mov esi,neboc_option_result_null_externo_e_erros_tipados_DIAG_SYNTAX
+ jmp .error
 .overflow:
  mov esi,NEBOC_DIAG_LAYOUT_OVERFLOW
 .error:
@@ -935,6 +1178,10 @@ st_parse_tuple:
 .fail:
  xor eax,eax
 .done:
+ cmp qword [rsp+24],0
+ je .depth_done
+ dec qword [r12+NEBOC_ST_TUPLE_DEPTH_OFFSET]
+.depth_done:
  add rsp,40
  pop r15
  pop r14
@@ -992,7 +1239,7 @@ st_bind_value:
  xor eax,eax
  jmp .done
 .duplicate:
- mov esi,neboc_option_result_null_externo_e_erros_tipados_DIAG_SYNTAX
+ mov esi,NEBOC_DIAG_TUPLE_DUPLICATE_BINDING
  jmp .error
 .limit:
  mov esi,NEBOC_DIAG_LAYOUT_OVERFLOW

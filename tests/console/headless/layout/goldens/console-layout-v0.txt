@@ -1,0 +1,12 @@
+MF044 Console Layout v0
+logical-unit=signed-26.6
+viewport-default=640x400 logical px
+border=1
+chrome-height=28
+content-padding=12x10
+line-height=16
+glyph-advance=8
+layout-box-size=96
+layout-tree-size=208
+flow=vertical-lines+inline-runs+wrap+input-row-structural
+scroll-policy=max-scroll-derived-no-user-scroll-command

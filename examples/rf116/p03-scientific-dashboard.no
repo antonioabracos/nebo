@@ -1,0 +1,8 @@
+start() {
+    experiment.console(
+        .dashboard("bounded-science"),
+        .cell(0, 0, .plot("line"), .x("time"), .y("value")),
+        .cell(0, 1, .tensor(.slice(.axis("channel"), .index(0)))),
+        .cell(1, 0, .graph("dependency"))
+    );
+}

@@ -1,0 +1,1 @@
+module empty_app import core import util start core.base + util.delta;

@@ -1,0 +1,8 @@
+// RF116 P05 keeps input, privacy, routing, testability and diagnostics
+// at the native contract layer. This sample reuses established receiver-first Console syntax.
+start() {
+    observation.console(
+        .dashboard("p05-headless-contract"),
+        .cell(0, 0, .plot("line"))
+    );
+}

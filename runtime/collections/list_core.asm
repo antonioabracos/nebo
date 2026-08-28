@@ -5,6 +5,7 @@ default rel
 %include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"
 %include "compiler/support/status/status_codes.inc"
 %include "compiler/semantic/collections/list_core.inc"
+%include "compiler/semantic/collections/list_construction.inc"
 
 extern neboc_list_validate
 
@@ -90,6 +91,177 @@ NEBOC_ABI_FUNCTION neboc_list_init
  pop rbx
  ret
 
+; list_construct(desc*, request*)
+; All request fields are validated before the destination descriptor is touched.
+NEBOC_ABI_FUNCTION neboc_list_construct
+ test rdi,rdi
+ jz .construct_invalid
+ test rsi,rsi
+ jz .construct_invalid
+ mov rax,rdi
+ or rax,rsi
+ test rax,7
+ jnz .construct_invalid
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ mov r12,rdi
+ mov r13,rsi
+ mov rbx,[r13+NEBOC_LIST_CONSTRUCT_MODE_OFFSET]
+ cmp rbx,NEBOC_LIST_CONSTRUCT_FILL
+ ja .construct_invalid_saved
+ cmp qword [r13+NEBOC_LIST_CONSTRUCT_CATEGORY_OFFSET],NEBOC_LIST_ELEMENT_CATEGORY_TRIVIAL_VALUE
+ jne .construct_type
+ mov rax,[r13+NEBOC_LIST_CONSTRUCT_TYPE_ID_OFFSET]
+ cmp rax,NEBOC_LIST_TYPE_INT
+ jb .construct_type
+ cmp rax,NEBOC_LIST_TYPE_CHAR
+ ja .construct_type
+ mov r14,[r13+NEBOC_LIST_CONSTRUCT_ELEMENT_SIZE_OFFSET]
+ test r14,r14
+ jz .construct_invalid_saved
+ cmp r14,NEBOC_LIST_MAX_ELEMENT_SIZE
+ ja .construct_limit
+ mov r15,[r13+NEBOC_LIST_CONSTRUCT_ELEMENT_ALIGN_OFFSET]
+ test r15,r15
+ jz .construct_invalid_saved
+ cmp r15,NEBOC_LIST_MAX_ELEMENT_ALIGN
+ ja .construct_limit
+ lea rax,[r15-1]
+ test r15,rax
+ jnz .construct_invalid_saved
+ cmp qword [r13+NEBOC_LIST_CONSTRUCT_ALLOCATOR_OFFSET],0
+ je .construct_invalid_saved
+ mov rdx,[r13+NEBOC_LIST_CONSTRUCT_CAPACITY_OFFSET]
+ cmp rdx,NEBOC_LIST_MAX_ELEMENTS
+ ja .construct_limit
+ mov rcx,[r13+NEBOC_LIST_CONSTRUCT_COUNT_OFFSET]
+ cmp rcx,rdx
+ ja .construct_limit
+ mov rax,r14
+ imul rax,rdx
+ jo .construct_limit
+ cmp rax,NEBOC_LIST_MAX_BYTES
+ ja .construct_limit
+ test rdx,rdx
+ jz .construct_zero_storage
+ mov rax,[r13+NEBOC_LIST_CONSTRUCT_STORAGE_OFFSET]
+ test rax,rax
+ jz .construct_oom
+ lea rcx,[r15-1]
+ test rax,rcx
+ jnz .construct_invalid_saved
+ jmp .construct_mode
+.construct_zero_storage:
+ cmp qword [r13+NEBOC_LIST_CONSTRUCT_STORAGE_OFFSET],0
+ jne .construct_invalid_saved
+.construct_mode:
+ cmp rbx,NEBOC_LIST_CONSTRUCT_NEW
+ jne .construct_allocated
+ cmp qword [r13+NEBOC_LIST_CONSTRUCT_CAPACITY_OFFSET],0
+ jne .construct_invalid_saved
+ cmp qword [r13+NEBOC_LIST_CONSTRUCT_COUNT_OFFSET],0
+ jne .construct_invalid_saved
+ cmp qword [r13+NEBOC_LIST_CONSTRUCT_SOURCE_OFFSET],0
+ jne .construct_invalid_saved
+ cmp qword [r13+NEBOC_LIST_CONSTRUCT_FILL_OFFSET],0
+ jne .construct_invalid_saved
+ mov rdi,r12
+ mov rsi,r14
+ mov rdx,r15
+ mov rcx,[r13+NEBOC_LIST_CONSTRUCT_ALLOCATOR_OFFSET]
+ call neboc_list_new
+ jmp .construct_done
+.construct_allocated:
+ cmp rbx,NEBOC_LIST_CONSTRUCT_WITH_CAPACITY
+ jne .construct_values
+ cmp qword [r13+NEBOC_LIST_CONSTRUCT_COUNT_OFFSET],0
+ jne .construct_invalid_saved
+ cmp qword [r13+NEBOC_LIST_CONSTRUCT_SOURCE_OFFSET],0
+ jne .construct_invalid_saved
+ cmp qword [r13+NEBOC_LIST_CONSTRUCT_FILL_OFFSET],0
+ jne .construct_invalid_saved
+ jmp .construct_init
+.construct_values:
+ mov rcx,[r13+NEBOC_LIST_CONSTRUCT_COUNT_OFFSET]
+ test rcx,rcx
+ jz .construct_init
+ cmp rbx,NEBOC_LIST_CONSTRUCT_FROM
+ jne .construct_fill_pointer
+ mov rax,[r13+NEBOC_LIST_CONSTRUCT_SOURCE_OFFSET]
+ jmp .construct_value_pointer
+.construct_fill_pointer:
+ mov rax,[r13+NEBOC_LIST_CONSTRUCT_FILL_OFFSET]
+.construct_value_pointer:
+ test rax,rax
+ jz .construct_invalid_saved
+ lea rcx,[r15-1]
+ test rax,rcx
+ jnz .construct_invalid_saved
+.construct_init:
+ mov rdi,r12
+ mov rsi,[r13+NEBOC_LIST_CONSTRUCT_STORAGE_OFFSET]
+ mov rdx,[r13+NEBOC_LIST_CONSTRUCT_CAPACITY_OFFSET]
+ mov rcx,r14
+ mov r8,r15
+ mov r9,[r13+NEBOC_LIST_CONSTRUCT_ALLOCATOR_OFFSET]
+ call neboc_list_init
+ test eax,eax
+ jnz .construct_done
+ mov r15,[r13+NEBOC_LIST_CONSTRUCT_COUNT_OFFSET]
+ test r15,r15
+ jz .construct_ok
+ cmp rbx,NEBOC_LIST_CONSTRUCT_FROM
+ jne .construct_fill
+ mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
+ mov rsi,[r13+NEBOC_LIST_CONSTRUCT_SOURCE_OFFSET]
+ mov rcx,r15
+ imul rcx,r14
+ rep movsb
+ jmp .construct_commit
+.construct_fill:
+ xor ebx,ebx
+.construct_fill_loop:
+ cmp rbx,r15
+ jae .construct_commit
+ mov rax,rbx
+ imul rax,r14
+ mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rdi,rax
+ mov rsi,[r13+NEBOC_LIST_CONSTRUCT_FILL_OFFSET]
+ mov rcx,r14
+ rep movsb
+ inc rbx
+ jmp .construct_fill_loop
+.construct_commit:
+ mov [r12+NEBOC_LIST_LENGTH_OFFSET],r15
+.construct_ok:
+ xor eax,eax
+ jmp .construct_done
+.construct_type:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .construct_done
+.construct_oom:
+ mov eax,NEBOC_STATUS_OUT_OF_MEMORY
+ jmp .construct_done
+.construct_limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ jmp .construct_done
+.construct_invalid_saved:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+.construct_done:
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+.construct_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
 ; list_reserve(desc*, new_storage*, new_capacity)
 NEBOC_ABI_FUNCTION neboc_list_reserve
  push r12
@@ -101,6 +273,8 @@ NEBOC_ABI_FUNCTION neboc_list_reserve
  call neboc_list_validate
  test eax,eax
  jnz .reserve_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .reserve_borrow
  cmp r14,[r12+NEBOC_LIST_LENGTH_OFFSET]
  jb .reserve_limit
  cmp r14,NEBOC_LIST_MAX_ELEMENTS
@@ -109,11 +283,19 @@ NEBOC_ABI_FUNCTION neboc_list_reserve
  jz .reserve_limit
  test r13,r13
  jz .reserve_oom
+ mov rcx,[r12+NEBOC_LIST_ELEMENT_ALIGN_OFFSET]
+ dec rcx
+ test r13,rcx
+ jnz .reserve_limit
  mov rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
  imul rax,r14
  jo .reserve_limit
  cmp rax,NEBOC_LIST_MAX_BYTES
  ja .reserve_limit
+ mov rax,[r12+NEBOC_LIST_GENERATION_OFFSET]
+ mov rcx,0x7fffffffffffffff
+ cmp rax,rcx
+ jae .reserve_limit
  cmp r13,[r12+NEBOC_LIST_DATA_OFFSET]
  jne .reserve_copy
  cmp r14,[r12+NEBOC_LIST_CAPACITY_OFFSET]
@@ -133,12 +315,70 @@ NEBOC_ABI_FUNCTION neboc_list_reserve
 .reserve_oom:
  mov eax,NEBOC_STATUS_OUT_OF_MEMORY
  jmp .reserve_done
+.reserve_borrow:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .reserve_done
 .reserve_limit:
  mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
 .reserve_done:
  pop r14
  pop r13
  pop r12
+ ret
+
+; list_growth_capacity(desc*, required_total, out_capacity*)
+; Computes max(4, old_capacity*2, required_total) without allocating.
+NEBOC_ABI_FUNCTION neboc_list_growth_capacity
+ test rdx,rdx
+ jz .growth_invalid
+ push r12
+ push r13
+ push r14
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ call neboc_list_validate
+ test eax,eax
+ jnz .growth_done
+ cmp r13,[r12+NEBOC_LIST_CAPACITY_OFFSET]
+ ja .growth_expand
+ mov rax,[r12+NEBOC_LIST_CAPACITY_OFFSET]
+ mov [r14],rax
+ xor eax,eax
+ jmp .growth_done
+.growth_expand:
+ cmp r13,NEBOC_LIST_MAX_ELEMENTS
+ ja .growth_limit
+ mov rax,[r12+NEBOC_LIST_CAPACITY_OFFSET]
+ shl rax,1
+ jc .growth_limit
+ cmp rax,4
+ jae .growth_required
+ mov eax,4
+.growth_required:
+ cmp rax,r13
+ jae .growth_bounds
+ mov rax,r13
+.growth_bounds:
+ cmp rax,NEBOC_LIST_MAX_ELEMENTS
+ ja .growth_limit
+ mov rcx,rax
+ imul rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ jo .growth_limit
+ cmp rcx,NEBOC_LIST_MAX_BYTES
+ ja .growth_limit
+ mov [r14],rax
+ xor eax,eax
+ jmp .growth_done
+.growth_limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+.growth_done:
+ pop r14
+ pop r13
+ pop r12
+ ret
+.growth_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
  ret
 
 ; list_push(desc*, value*)
@@ -152,8 +392,13 @@ NEBOC_ABI_FUNCTION neboc_list_push
  call neboc_list_validate
  test eax,eax
  jnz .push_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .push_borrow
  mov rax,[r12+NEBOC_LIST_LENGTH_OFFSET]
  cmp rax,[r12+NEBOC_LIST_CAPACITY_OFFSET]
+ jae .push_full
+ mov rcx,0x7fffffffffffffff
+ cmp [r12+NEBOC_LIST_GENERATION_OFFSET],rcx
  jae .push_full
  imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
  mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
@@ -167,11 +412,98 @@ NEBOC_ABI_FUNCTION neboc_list_push
  jmp .push_done
 .push_full:
  mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+.push_borrow:
+ test eax,eax
+ jnz .push_done
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
 .push_done:
  pop r13
  pop r12
  ret
 .push_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+NEBOC_ABI_FUNCTION neboc_list_append
+ jmp neboc_list_push
+
+; list_insert(desc*, index, value*) preserves the value through alias-safe scratch.
+NEBOC_ABI_FUNCTION neboc_list_insert
+ test rdx,rdx
+ jz .insert_invalid
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,64
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ call neboc_list_validate
+ test eax,eax
+ jnz .insert_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .insert_borrow
+ mov r15,[r12+NEBOC_LIST_LENGTH_OFFSET]
+ cmp r13,r15
+ ja .insert_bounds
+ cmp r15,[r12+NEBOC_LIST_CAPACITY_OFFSET]
+ jae .insert_limit
+ mov rcx,0x7fffffffffffffff
+ cmp [r12+NEBOC_LIST_GENERATION_OFFSET],rcx
+ jae .insert_limit
+ mov rdi,rsp
+ mov rsi,r14
+ mov rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ rep movsb
+ mov rbx,r15
+ sub rbx,r13
+ jz .insert_value
+ imul rbx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rax,r13
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rsi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rsi,rax
+ lea rdi,[rsi+rbx]
+ add rsi,rbx
+ dec rsi
+ add rdi,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ dec rdi
+ mov rcx,rbx
+ std
+ rep movsb
+ cld
+.insert_value:
+ mov rax,r13
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rdi,rax
+ mov rsi,rsp
+ mov rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ rep movsb
+ inc qword [r12+NEBOC_LIST_LENGTH_OFFSET]
+ inc qword [r12+NEBOC_LIST_GENERATION_OFFSET]
+ xor eax,eax
+ jmp .insert_done
+.insert_bounds:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .insert_done
+.insert_limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+.insert_borrow:
+ test eax,eax
+ jnz .insert_done
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.insert_done:
+ add rsp,64
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+.insert_invalid:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
  ret
 
@@ -222,10 +554,10 @@ NEBOC_ABI_FUNCTION neboc_list_get
  mov r13,rsi
  mov r14,rdx
  mov r15,rcx
- mov qword [r15],0
  call neboc_list_validate
  test eax,eax
  jnz .get_done
+ mov qword [r15],0
  cmp r13,[r12+NEBOC_LIST_LENGTH_OFFSET]
  jae .get_ok
  mov rdi,r12
@@ -260,6 +592,8 @@ NEBOC_ABI_FUNCTION neboc_list_set
  call neboc_list_validate
  test eax,eax
  jnz .set_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .set_borrow
  cmp r13,[r12+NEBOC_LIST_LENGTH_OFFSET]
  jae .set_bounds
  mov rax,r13
@@ -273,6 +607,10 @@ NEBOC_ABI_FUNCTION neboc_list_set
  jmp .set_done
 .set_bounds:
  mov eax,NEBOC_STATUS_INVALID_SOURCE
+.set_borrow:
+ test eax,eax
+ jnz .set_done
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
 .set_done:
  pop r14
  pop r13
@@ -282,11 +620,153 @@ NEBOC_ABI_FUNCTION neboc_list_set
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
  ret
 
+; list_remove(desc*, index, out*, found*) preserves order and zeros the old tail.
+NEBOC_ABI_FUNCTION neboc_list_remove
+ test rdx,rdx
+ jz .remove_invalid
+ test rcx,rcx
+ jz .remove_invalid
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ mov r15,rcx
+ call neboc_list_validate
+ test eax,eax
+ jnz .remove_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .remove_borrow
+ mov rbx,[r12+NEBOC_LIST_LENGTH_OFFSET]
+ cmp r13,rbx
+ jae .remove_empty
+ mov rcx,0x7fffffffffffffff
+ cmp [r12+NEBOC_LIST_GENERATION_OFFSET],rcx
+ jae .remove_limit
+ mov rax,r13
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rsi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rsi,rax
+ mov rdi,r14
+ mov rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ rep movsb
+ mov rcx,rbx
+ dec rcx
+ sub rcx,r13
+ jz .remove_zero_tail
+ imul rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rax,r13
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rdi,rax
+ mov rsi,rdi
+ add rsi,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ rep movsb
+.remove_zero_tail:
+ dec rbx
+ mov rax,rbx
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rdi,rax
+ mov rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ xor eax,eax
+ rep stosb
+ mov [r12+NEBOC_LIST_LENGTH_OFFSET],rbx
+ inc qword [r12+NEBOC_LIST_GENERATION_OFFSET]
+ mov qword [r15],1
+ xor eax,eax
+ jmp .remove_done
+.remove_empty:
+ mov qword [r15],0
+ xor eax,eax
+ jmp .remove_done
+.remove_limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+.remove_borrow:
+ test eax,eax
+ jnz .remove_done
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.remove_done:
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+.remove_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+; list_swap(desc*, a, b) is a unique non-structural mutation.
+NEBOC_ABI_FUNCTION neboc_list_swap
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,64
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ call neboc_list_validate
+ test eax,eax
+ jnz .swap_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .swap_borrow
+ mov r15,[r12+NEBOC_LIST_LENGTH_OFFSET]
+ cmp r13,r15
+ jae .swap_bounds
+ cmp r14,r15
+ jae .swap_bounds
+ cmp r13,r14
+ je .swap_ok
+ mov rax,r13
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rsi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rsi,rax
+ mov rdi,rsp
+ mov rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ rep movsb
+ mov rax,r14
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rsi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rsi,rax
+ mov rax,r13
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rdi,rax
+ mov rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ rep movsb
+ mov rax,r14
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rdi,rax
+ mov rsi,rsp
+ mov rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ rep movsb
+.swap_ok:
+ xor eax,eax
+ jmp .swap_done
+.swap_bounds:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.swap_borrow:
+ test eax,eax
+ jnz .swap_done
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.swap_done:
+ add rsp,64
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ ret
+
 ; list_pop(desc*, out*, found*)
 NEBOC_ABI_FUNCTION neboc_list_pop
  test rdx,rdx
  jz .pop_invalid
- mov qword [rdx],0
  push r12
  push r13
  push r14
@@ -296,9 +776,14 @@ NEBOC_ABI_FUNCTION neboc_list_pop
  call neboc_list_validate
  test eax,eax
  jnz .pop_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .pop_borrow
  mov rax,[r12+NEBOC_LIST_LENGTH_OFFSET]
  test rax,rax
  jz .pop_empty
+ mov rcx,0x7fffffffffffffff
+ cmp [r12+NEBOC_LIST_GENERATION_OFFSET],rcx
+ jae .pop_limit
  test r13,r13
  jz .pop_bad_out
  dec rax
@@ -317,11 +802,21 @@ NEBOC_ABI_FUNCTION neboc_list_pop
  rep stosb
  mov qword [r14],1
  inc qword [r12+NEBOC_LIST_GENERATION_OFFSET]
-.pop_empty:
  xor eax,eax
+ jmp .pop_done
+.pop_empty:
+ mov qword [r14],0
+ xor eax,eax
+ jmp .pop_done
+.pop_limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
  jmp .pop_done
 .pop_bad_out:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+.pop_borrow:
+ test eax,eax
+ jnz .pop_done
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
 .pop_done:
  pop r14
  pop r13
@@ -338,9 +833,14 @@ NEBOC_ABI_FUNCTION neboc_list_clear
  call neboc_list_validate
  test eax,eax
  jnz .clear_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .clear_borrow
  mov rcx,[r12+NEBOC_LIST_LENGTH_OFFSET]
  test rcx,rcx
  jz .clear_ok
+ mov rax,0x7fffffffffffffff
+ cmp [r12+NEBOC_LIST_GENERATION_OFFSET],rax
+ jae .clear_limit
  imul rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
  mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
  xor eax,eax
@@ -352,6 +852,12 @@ NEBOC_ABI_FUNCTION neboc_list_clear
 .clear_done:
  pop r12
  ret
+.clear_limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ jmp .clear_done
+.clear_borrow:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .clear_done
 
 ; list_state(desc*, out_length*, out_capacity*)
 NEBOC_ABI_FUNCTION neboc_list_state
@@ -379,6 +885,112 @@ NEBOC_ABI_FUNCTION neboc_list_state
  pop r12
  ret
 .state_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+; Scalar queries validate the complete descriptor before publishing output.
+NEBOC_ABI_FUNCTION neboc_list_length
+ test rsi,rsi
+ jz .length_invalid
+ push r12
+ mov r12,rsi
+ call neboc_list_validate
+ test eax,eax
+ jnz .length_done
+ mov rax,[rdi+NEBOC_LIST_LENGTH_OFFSET]
+ mov [r12],rax
+ xor eax,eax
+.length_done:
+ pop r12
+ ret
+.length_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+NEBOC_ABI_FUNCTION neboc_list_capacity
+ test rsi,rsi
+ jz .capacity_invalid
+ push r12
+ mov r12,rsi
+ call neboc_list_validate
+ test eax,eax
+ jnz .capacity_done
+ mov rax,[rdi+NEBOC_LIST_CAPACITY_OFFSET]
+ mov [r12],rax
+ xor eax,eax
+.capacity_done:
+ pop r12
+ ret
+.capacity_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+NEBOC_ABI_FUNCTION neboc_list_is_empty
+ test rsi,rsi
+ jz .empty_invalid
+ push r12
+ mov r12,rsi
+ call neboc_list_validate
+ test eax,eax
+ jnz .empty_done
+ xor eax,eax
+ cmp qword [rdi+NEBOC_LIST_LENGTH_OFFSET],0
+ sete al
+ mov [r12],rax
+ xor eax,eax
+.empty_done:
+ pop r12
+ ret
+.empty_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+NEBOC_ABI_FUNCTION neboc_list_first
+ xor ecx,ecx
+ jmp list_endpoint
+NEBOC_ABI_FUNCTION neboc_list_last
+ mov ecx,1
+list_endpoint:
+ test rsi,rsi
+ jz .endpoint_invalid
+ test rdx,rdx
+ jz .endpoint_invalid
+ push r12
+ push r13
+ push r14
+ push r15
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ mov r15,rcx
+ call neboc_list_validate
+ test eax,eax
+ jnz .endpoint_done
+ mov qword [r14],0
+ mov rsi,[r12+NEBOC_LIST_LENGTH_OFFSET]
+ test rsi,rsi
+ jz .endpoint_ok
+ test r15,r15
+ jz .endpoint_index
+ dec rsi
+.endpoint_index:
+ mov rax,rsi
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rsi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rsi,rax
+ mov rdi,r13
+ mov rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ rep movsb
+ mov qword [r14],1
+.endpoint_ok:
+ xor eax,eax
+.endpoint_done:
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ ret
+.endpoint_invalid:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
  ret
 

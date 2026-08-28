@@ -1,0 +1,4 @@
+start() {
+    CallBehavior<Int> 16.behavior;
+    behavior.value();
+}

@@ -9,6 +9,7 @@ extern neboc_list_push
 extern neboc_list_pop
 extern neboc_list_at
 extern neboc_list_clear
+extern neboc_list_is_empty
 extern neboc_list_validate
 section .text
 NEBOC_ABI_FUNCTION neboc_stack_init
@@ -19,6 +20,8 @@ NEBOC_ABI_FUNCTION neboc_stack_pop
  jmp neboc_list_pop
 NEBOC_ABI_FUNCTION neboc_stack_clear
  jmp neboc_list_clear
+NEBOC_ABI_FUNCTION neboc_stack_is_empty
+ jmp neboc_list_is_empty
 ; stack_peek(desc*, out*, found*)
 NEBOC_ABI_FUNCTION neboc_stack_peek
  test rsi,rsi

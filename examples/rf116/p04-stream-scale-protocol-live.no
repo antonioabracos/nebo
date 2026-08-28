@@ -1,0 +1,8 @@
+// RF116 P04 keeps new streaming/live work at the native contract layer.
+// This sample reuses the receiver-first Console syntax already established by P03.
+start() {
+    experiment.console(
+        .dashboard("p04-headless-contract"),
+        .cell(0, 0, .plot("line"))
+    );
+}

@@ -23,7 +23,9 @@ fmt_extern_start: db 'extern nebo_runtime_start',10
 fmt_extern_start_len equ $-fmt_extern_start
 fmt_text_start: db 10,'section .text',10,'_start:',10,'    lea rdi, [rel nebo_fn_'
 fmt_text_start_len equ $-fmt_text_start
-fmt_start_tail: db ']',10,'    call nebo_runtime_start',10,'    ud2',10
+fmt_named_text_start: db 10,'section .text',10,'_start:',10,'    lea rdi, [rel '
+fmt_named_text_start_len equ $-fmt_named_text_start
+fmt_start_tail: db ']',10,'    mov rsi, rsp',10,'    call nebo_runtime_start',10,'    ud2',10
 fmt_start_tail_len equ $-fmt_start_tail
 
 section .text
@@ -232,6 +234,102 @@ NEBOC_ABI_FUNCTION neboc_format_adapter_emit_entry_prelude
 .invalid_return:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
 .done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; format_adapter_emit_named_entry_prelude(adapter*, label*, label_len)
+; Internal C03-F07 path: `_start` remains global and the target-derived
+; runner operand remains a local symbol.
+NEBOC_ABI_FUNCTION neboc_format_adapter_emit_named_entry_prelude
+ push rbx
+ push r12
+ push r13
+ mov rbx,rdi
+ mov r12,rsi
+ mov r13,rdx
+ test rbx,rbx
+ jz .named_invalid_return
+ test r12,r12
+ jz .named_invalid
+ test r13,r13
+ jz .named_invalid
+ cmp r13,NEBOC_FORMAT_ADAPTER_MAX_PRIVATE_ENTRY_LABEL
+ ja .named_invalid
+ cmp qword [rbx+NEBOC_FORMAT_ADAPTER_STATE_OFFSET],NEBOC_FORMAT_ADAPTER_STATE_READY
+ jne .named_state
+ xor ecx,ecx
+.named_validate:
+ cmp rcx,r13
+ jae .named_emit
+ movzx eax,byte [r12+rcx]
+ cmp al,'a'
+ jb .named_digit
+ cmp al,'z'
+ jbe .named_next
+.named_digit:
+ cmp al,'0'
+ jb .named_underscore
+ cmp al,'9'
+ jbe .named_next
+.named_underscore:
+ cmp al,'_'
+ jne .named_invalid
+.named_next:
+ inc rcx
+ jmp .named_validate
+.named_emit:
+ mov rdi,[rbx+NEBOC_FORMAT_ADAPTER_WRITER_OFFSET]
+ lea rsi,[rel fmt_global_start]
+ mov edx,fmt_global_start_len
+ call neboc_assembly_writer_append_bytes
+ test eax,eax
+ jnz .named_writer
+ mov rdi,[rbx+NEBOC_FORMAT_ADAPTER_WRITER_OFFSET]
+ lea rsi,[rel fmt_extern_start]
+ mov edx,fmt_extern_start_len
+ call neboc_assembly_writer_append_bytes
+ test eax,eax
+ jnz .named_writer
+ mov rdi,[rbx+NEBOC_FORMAT_ADAPTER_WRITER_OFFSET]
+ lea rsi,[rel fmt_named_text_start]
+ mov edx,fmt_named_text_start_len
+ call neboc_assembly_writer_append_bytes
+ test eax,eax
+ jnz .named_writer
+ mov rdi,[rbx+NEBOC_FORMAT_ADAPTER_WRITER_OFFSET]
+ mov rsi,r12
+ mov rdx,r13
+ call neboc_assembly_writer_append_bytes
+ test eax,eax
+ jnz .named_writer
+ mov rdi,[rbx+NEBOC_FORMAT_ADAPTER_WRITER_OFFSET]
+ lea rsi,[rel fmt_start_tail]
+ mov edx,fmt_start_tail_len
+ call neboc_assembly_writer_append_bytes
+ test eax,eax
+ jnz .named_writer
+ mov qword [rbx+NEBOC_FORMAT_ADAPTER_ENTRY_FUNCTION_ID_OFFSET],1
+ mov qword [rbx+NEBOC_FORMAT_ADAPTER_SECTION_COUNT_OFFSET],1
+ mov qword [rbx+NEBOC_FORMAT_ADAPTER_SYMBOL_COUNT_OFFSET],3
+ mov qword [rbx+NEBOC_FORMAT_ADAPTER_STATE_OFFSET],NEBOC_FORMAT_ADAPTER_STATE_PRELUDE_EMITTED
+ mov qword [rbx+NEBOC_FORMAT_ADAPTER_LAST_ERROR_OFFSET],NEBOC_FORMAT_ERROR_NONE
+ xor eax,eax
+ jmp .named_done
+.named_writer:
+ mov qword [rbx+NEBOC_FORMAT_ADAPTER_LAST_ERROR_OFFSET],NEBOC_FORMAT_ERROR_WRITER_LIMIT
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ jmp .named_done
+.named_state:
+ mov qword [rbx+NEBOC_FORMAT_ADAPTER_LAST_ERROR_OFFSET],NEBOC_FORMAT_ERROR_BAD_STATE
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ jmp .named_done
+.named_invalid:
+ mov qword [rbx+NEBOC_FORMAT_ADAPTER_LAST_ERROR_OFFSET],NEBOC_FORMAT_ERROR_BAD_ARGUMENT
+.named_invalid_return:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+.named_done:
  pop r13
  pop r12
  pop rbx

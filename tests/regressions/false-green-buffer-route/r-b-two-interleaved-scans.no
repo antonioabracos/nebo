@@ -1,0 +1,7 @@
+start() {
+    "Primeiro: ".console().scan().primeiro;
+    primeiro.console();
+    "Segundo: ".console().scan().segundo;
+    segundo.console();
+    0.return;
+}

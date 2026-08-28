@@ -1,0 +1,10 @@
+{
+  "schema": "NEBO_FIRMWARE_MANIFEST-v1",
+  "target_id": "NEBO_REFERENCE_BOARD_SIM_V1",
+  "version": 2,
+  "image_bytes": 248,
+  "image_sha256": "f399cc57d0b1f7cda2add25b92d682266b77fbe75f34afb4d570ee56c8d7bbf3",
+  "rollback_counter": 2,
+  "slots": 2,
+  "signature": "NOT_PRESENT_SIMULATOR_ONLY"
+}

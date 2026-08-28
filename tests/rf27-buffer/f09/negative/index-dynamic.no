@@ -1,0 +1,5 @@
+start() {
+    0.requested;
+    Buffer.zeroed(1).buffer;
+    buffer.get(requested).value;
+}

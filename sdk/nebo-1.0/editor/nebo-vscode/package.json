@@ -1,0 +1,23 @@
+{
+  "contributes": {
+    "languages": [
+      {
+        "configuration": "./language-configuration.json",
+        "extensions": [
+          ".no",
+          ".nebo"
+        ],
+        "id": "nebo"
+      }
+    ]
+  },
+  "displayName": "Nebo Language Offline",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "name": "nebo-language",
+  "network": false,
+  "private": true,
+  "telemetry": false,
+  "version": "1.0.1"
+}

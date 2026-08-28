@@ -27,6 +27,7 @@ NEBOC_ABI_FUNCTION neboc_source_map_new
  ja .new_invalid
  mov r9,rcx
  push rdi
+ mov rdi,rsi
  xor eax,eax
  mov r8,rdx
  shl r8,3
@@ -563,7 +564,7 @@ NEBOC_ABI_FUNCTION neboc_span_related_location
  mov rdi,r8
  add rdi,NEBOC_RELATED_SPAN_OFFSET
  mov rsi,rdx
- mov ecx,NEBOC_SOURCE_SPAN_QWORDS
+ mov ecx,NEBOC_RELATED_SPAN_SIZE/8
  rep movsq
  pop rdi
  inc qword [rdi+NEBOC_SPAN_RELATED_COUNT_OFFSET]
@@ -592,7 +593,7 @@ NEBOC_ABI_FUNCTION neboc_span_add_expansion
  push rdi
  lea rdi,[r8+NEBOC_RELATED_SPAN_OFFSET]
  mov rsi,rdx
- mov ecx,NEBOC_SOURCE_SPAN_QWORDS
+ mov ecx,NEBOC_RELATED_SPAN_SIZE/8
  rep movsq
  pop rdi
  inc qword [rdi+NEBOC_SPAN_EXPANSION_COUNT_OFFSET]

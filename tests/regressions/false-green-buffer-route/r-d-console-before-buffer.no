@@ -1,0 +1,6 @@
+start() {
+    "MARKER_BEFORE_BUFFER".console();
+    Buffer.withCapacity(4).stockList;
+    "MARKER_AFTER_BUFFER".console();
+    0.return;
+}

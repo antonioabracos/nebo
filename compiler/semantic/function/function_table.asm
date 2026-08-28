@@ -116,6 +116,9 @@ NEBOC_ABI_FUNCTION neboc_function_table_append
  mov [rax+NEBOC_FUNCTION_ENTRY_SYMBOL_ID_OFFSET],rdx
  mov rdx,[r13+NEBOC_FUNCTION_DECL_FLAGS_OFFSET]
  mov [rax+NEBOC_FUNCTION_ENTRY_FLAGS_OFFSET],rdx
+ mov qword [rax+NEBOC_FUNCTION_ENTRY_KIND_OFFSET],NEBOC_FUNCTION_ENTRY_KIND_PUBLIC
+ mov qword [rax+NEBOC_FUNCTION_ENTRY_OUTER_FUNCTION_ID_OFFSET],0
+ mov qword [rax+NEBOC_FUNCTION_ENTRY_LEXICAL_ORDINAL_OFFSET],0
  inc rbx
  mov [rax+NEBOC_FUNCTION_ENTRY_ID_OFFSET],rbx
  mov [r12+NEBOC_FUNCTION_TABLE_COUNT_OFFSET],rbx
@@ -135,6 +138,65 @@ NEBOC_ABI_FUNCTION neboc_function_table_append
  pop r12
  pop rbx
  cld
+ ret
+
+; function_table_append_private(table*, declaration*, outer_function_id,
+;                               lexical_ordinal, out_function_id*)
+; The ordinary append remains byte-compatible at its call boundary.  This
+; compiler-internal extension publishes the selected owner/ordinal metadata
+; before freeze and never changes public lookup visibility.
+NEBOC_ABI_FUNCTION neboc_function_table_append_private
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,8
+ mov rbx,rdi
+ mov r12,rsi
+ mov r13,rdx
+ mov r14,rcx
+ mov r15,r8
+ test rbx,rbx
+ jz .private_invalid
+ test r12,r12
+ jz .private_invalid
+ test r13,r13
+ jz .private_invalid
+ cmp r14,NEBOC_FUNCTION_NESTED_MAX_ORDINAL
+ jne .private_invalid
+ test r15,r15
+ jz .private_invalid
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r15
+ call neboc_function_table_append
+ test eax,eax
+ jnz .private_done
+ mov rax,[r15]
+ test rax,rax
+ jz .private_invalid
+ dec rax
+ imul rax,NEBOC_FUNCTION_ENTRY_SIZE
+ add rax,[rbx+NEBOC_FUNCTION_TABLE_DATA_OFFSET]
+ mov qword [rax+NEBOC_FUNCTION_ENTRY_KIND_OFFSET],NEBOC_FUNCTION_ENTRY_KIND_NESTED_PRIVATE
+ mov [rax+NEBOC_FUNCTION_ENTRY_OUTER_FUNCTION_ID_OFFSET],r13
+ mov [rax+NEBOC_FUNCTION_ENTRY_LEXICAL_ORDINAL_OFFSET],r14
+ xor eax,eax
+ jmp .private_done
+.private_invalid:
+ test r15,r15
+ jz .private_invalid_status
+ mov qword [r15],0
+.private_invalid_status:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+.private_done:
+ add rsp,8
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
  ret
 
 ; function_table_get(table*, function_id, out_entry_ptr*)

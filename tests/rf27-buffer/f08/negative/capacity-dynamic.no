@@ -1,0 +1,4 @@
+start() {
+    4.requested;
+    Buffer.withCapacity(requested).buffer;
+}

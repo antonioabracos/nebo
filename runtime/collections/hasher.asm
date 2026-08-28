@@ -16,7 +16,11 @@ NEBOC_ABI_FUNCTION neboc_hasher_init
  test rdi,7
  jnz .invalid
  cmp rdx,NEBO_HASH_MODE_DETERMINISTIC
- je .seed_ok
+ jne .process_mode
+ test rcx,rcx
+ jnz .invalid
+ jmp .seed_ok
+.process_mode:
  cmp rdx,NEBO_HASH_MODE_PROCESS_SEEDED
  jne .invalid
  test rcx,rcx
@@ -29,6 +33,8 @@ NEBOC_ABI_FUNCTION neboc_hasher_init
  mov [rdi+8],rsi
  mov [rdi+16],rdx
  mov qword [rdi+24],0
+ mov rax,NEBO_HASHER_VERSION_TAG
+ mov [rdi+NEBO_HASHER_VERSION_OFFSET],rax
  xor eax,eax
  ret
 .invalid:
@@ -41,7 +47,12 @@ NEBOC_ABI_FUNCTION neboc_hasher_write_bytes
  jz .write_invalid
  test rdi,7
  jnz .write_invalid
+ mov rax,NEBO_HASHER_VERSION_TAG
+ cmp [rdi+NEBO_HASHER_VERSION_OFFSET],rax
+ jne .write_invalid
  cmp qword [rdi+16],NEBO_HASH_MODE_PROCESS_SEEDED
+ ja .write_invalid
+ cmp qword [rdi+24],NEBO_HASH_MAX_STREAM_BYTES
  ja .write_invalid
  test rdx,rdx
  jz .write_ok
@@ -77,6 +88,15 @@ NEBOC_ABI_FUNCTION neboc_hasher_write_bytes
 NEBOC_ABI_FUNCTION neboc_hasher_finish
  test rdi,rdi
  jz .finish_invalid
+ test rdi,7
+ jnz .finish_invalid
+ mov rcx,NEBO_HASHER_VERSION_TAG
+ cmp [rdi+NEBO_HASHER_VERSION_OFFSET],rcx
+ jne .finish_invalid
+ cmp qword [rdi+16],NEBO_HASH_MODE_PROCESS_SEEDED
+ ja .finish_invalid
+ cmp qword [rdi+24],NEBO_HASH_MAX_STREAM_BYTES
+ ja .finish_invalid
  mov rax,[rdi]
  ret
 .finish_invalid:

@@ -1,0 +1,8 @@
+start() {
+    Buffer.zeroed(4).buffer;
+    buffer.set(0, 1).previous;
+    buffer.set(1, 2).previous;
+    buffer.set(2, 3).previous;
+    buffer.view(0, 3).view;
+    view.sum().return;
+}

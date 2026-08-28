@@ -1,0 +1,7 @@
+{
+  "expected": "expected.nebo",
+  "immutable_fixture": true,
+  "legacy": "legacy.nebo",
+  "oracle": "INVALID_NON_NEBO_NO_MATCH",
+  "rules": []
+}

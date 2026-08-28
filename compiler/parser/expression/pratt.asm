@@ -468,10 +468,16 @@ expression_bp_direct_call:
  jnz expression_bp_done_decrement
  mov rax,[r12+NEBOC_EXPR_RESULT_NODE_OFFSET]
  mov [rsp+88],rax
+.direct_argument_first:
+ mov [rsp+96],rax
+ mov qword [rsp+104],1
+.direct_argument_tail:
  mov rbx,[r12+NEBOC_EXPR_INDEX_OFFSET]
  cmp rbx,r14
  jae expression_bp_expected
  EXPR_TOKEN_PTR r11,rbx
+ cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_COMMA
+ je .direct_argument_comma
  cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
  jne expression_bp_expected
  mov [rsp+112],rbx
@@ -498,14 +504,36 @@ expression_bp_direct_call:
  or qword [r10+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
  mov rax,[rsp+88]
  mov [r10+NEBOC_AST_NODE_FIRST_CHILD_OFFSET],rax
- mov qword [r10+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],1
+ mov rax,[rsp+104]
+ mov [r10+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],rax
  mov rax,[rsp+48]
  mov rax,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
  mov [r10+NEBOC_AST_NODE_PAYLOAD0_OFFSET],rax
- mov qword [r10+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ mov rax,[rsp+104]
+ mov [r10+NEBOC_AST_NODE_PAYLOAD1_OFFSET],rax
  mov rax,[rsp+40]
  mov [rsp+8],rax
  jmp expression_bp_loop
+.direct_argument_comma:
+ inc rbx
+ mov [r12+NEBOC_EXPR_INDEX_OFFSET],rbx
+ mov rdi,r12
+ xor esi,esi
+ call neboc_expression_parse_bp
+ test eax,eax
+ jnz expression_bp_done_decrement
+ mov rdi,r15
+ mov rsi,[rsp+96]
+ lea rdx,[rsp+56]
+ call neboc_ast_builder_node
+ test eax,eax
+ jnz expression_bp_done_decrement
+ mov r10,[rsp+56]
+ mov rax,[r12+NEBOC_EXPR_RESULT_NODE_OFFSET]
+ mov [r10+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET],rax
+ mov [rsp+96],rax
+ inc qword [rsp+104]
+ jmp .direct_argument_tail
 
 expression_bp_suffix:
  cmp qword [rsp],NEBOC_EXPR_BP_SUFFIX
@@ -518,6 +546,8 @@ expression_bp_suffix:
  mov rcx,[r11+NEBOC_TOKEN_KIND_OFFSET]
  cmp rcx,NEBOC_TOKEN_KW_RETURN
  je expression_bp_return_terminal
+ cmp rcx,NEBOC_TOKEN_INTEGER
+ je expression_bp_tuple_positional_projection
  cmp rcx,NEBOC_TOKEN_IDENTIFIER
  jne expression_bp_expected
  mov [rsp+80],rax
@@ -525,6 +555,8 @@ expression_bp_suffix:
  cmp rdx,r14
  jae expression_bp_binding_terminal
  EXPR_TOKEN_PTR r10,rdx
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LESS
+ je expression_bp_tuple_generic_projection
  cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
  jne expression_bp_binding_terminal
  lea rdx,[rdx+1]
@@ -624,7 +656,217 @@ expression_bp_call_lhs_ready:
  mov [rsp+8],rax
  jmp expression_bp_loop
 
+expression_bp_tuple_generic_projection:
+ ; The isolated Tuple vertical already authenticates `.at<CONST>()`.  Preserve
+ ; that exact public spelling in the shared Program AST by normalizing it to a
+ ; call with one compiler-owned integer argument.  Other generic suffix names
+ ; remain rejected at this same parser boundary.
+ EXPR_TOKEN_PTR r11,qword [rsp+80]
+ mov rax,[r11+NEBOC_TOKEN_END_OFFSET]
+ sub rax,[r11+NEBOC_TOKEN_START_OFFSET]
+ cmp rax,2
+ jne expression_bp_expected
+ mov rsi,[r12+NEBOC_EXPR_SOURCE_DATA_OFFSET]
+ test rsi,rsi
+ jz expression_bp_expected
+ add rsi,[r11+NEBOC_TOKEN_START_OFFSET]
+ cmp word [rsi],0x7461       ; "at"
+ jne expression_bp_expected
+ lea rax,[rbx+3]
+ cmp rax,r14
+ jae expression_bp_expected
+ EXPR_TOKEN_PTR r11,rax
+ cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_INTEGER
+ jne expression_bp_expected
+ mov [rsp+96],rax            ; generic constant token
+ lea rax,[rbx+4]
+ cmp rax,r14
+ jae expression_bp_expected
+ EXPR_TOKEN_PTR r10,rax
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_GREATER
+ jne expression_bp_expected
+ lea rax,[rbx+5]
+ cmp rax,r14
+ jae expression_bp_expected
+ EXPR_TOKEN_PTR r10,rax
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ jne expression_bp_expected
+ lea rax,[rbx+6]
+ cmp rax,r14
+ jae expression_bp_expected
+ EXPR_TOKEN_PTR r10,rax
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
+ jne expression_bp_expected
+ mov [rsp+112],rax           ; closing parenthesis token
+ ; Materialize the generic constant as the call's sole argument.
+ EXPR_TOKEN_PTR r11,qword [rsp+96]
+ mov rdi,r15
+ mov esi,NEBOC_AST_INTEGER_LITERAL
+ mov rdx,[r12+NEBOC_EXPR_SOURCE_ID_OFFSET]
+ mov rcx,[r11+NEBOC_TOKEN_START_OFFSET]
+ mov r8,[r11+NEBOC_TOKEN_END_OFFSET]
+ lea r9,[rsp+88]
+ call neboc_ast_builder_append
+ test eax,eax
+ jnz expression_bp_done_decrement
+ mov rdi,r15
+ mov rsi,[rsp+88]
+ lea rdx,[rsp+64]
+ call neboc_ast_builder_node
+ test eax,eax
+ jnz expression_bp_done_decrement
+ mov r10,[rsp+64]
+ EXPR_TOKEN_PTR r11,qword [rsp+96]
+ mov rax,[r11+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ mov [r10+NEBOC_AST_NODE_PAYLOAD0_OFFSET],rax
+ mov rax,[rsp+96]
+ mov [r10+NEBOC_AST_NODE_PAYLOAD1_OFFSET],rax
+ ; Build the ordinary receiver-plus-one-argument CallExpr shape.
+ mov rdi,r15
+ mov rsi,[rsp+8]
+ lea rdx,[rsp+48]
+ call neboc_ast_builder_node
+ test eax,eax
+ jnz expression_bp_done_decrement
+ EXPR_TOKEN_PTR r11,qword [rsp+112]
+ mov r10,[rsp+48]
+ mov rdi,r15
+ mov esi,NEBOC_AST_CALL_EXPR
+ mov rdx,[r12+NEBOC_EXPR_SOURCE_ID_OFFSET]
+ mov rcx,[r10+NEBOC_AST_NODE_START_OFFSET]
+ mov r8,[r11+NEBOC_TOKEN_END_OFFSET]
+ lea r9,[rsp+40]
+ call neboc_ast_builder_append
+ test eax,eax
+ jnz expression_bp_done_decrement
+ mov rdi,r15
+ mov rsi,[rsp+40]
+ lea rdx,[rsp+64]
+ call neboc_ast_builder_node
+ test eax,eax
+ jnz expression_bp_done_decrement
+ mov r10,[rsp+64]
+ mov rax,[rsp+8]
+ mov [r10+NEBOC_AST_NODE_FIRST_CHILD_OFFSET],rax
+ mov qword [r10+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],2
+ mov rax,[rsp+80]
+ mov [r10+NEBOC_AST_NODE_PAYLOAD0_OFFSET],rax
+ mov qword [r10+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ mov rdi,r15
+ mov rsi,[rsp+8]
+ lea rdx,[rsp+48]
+ call neboc_ast_builder_node
+ test eax,eax
+ jnz expression_bp_done_decrement
+ mov r10,[rsp+48]
+ mov rax,[rsp+88]
+ mov [r10+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET],rax
+ lea rax,[rbx+7]
+ mov [r12+NEBOC_EXPR_INDEX_OFFSET],rax
+ mov rax,[rsp+40]
+ mov [rsp+8],rax
+ jmp expression_bp_loop
+
+expression_bp_tuple_positional_projection:
+ ; `.N` is the established Tuple positional projection.  A dedicated flag
+ ; prevents this compiler-private call-shaped node from being mistaken for a
+ ; source-visible method invocation.
+ mov [rsp+80],rax
+ mov rdi,r15
+ mov rsi,[rsp+8]
+ lea rdx,[rsp+48]
+ call neboc_ast_builder_node
+ test eax,eax
+ jnz expression_bp_done_decrement
+ mov r10,[rsp+48]
+ mov rdi,r15
+ mov esi,NEBOC_AST_CALL_EXPR
+ mov rdx,[r12+NEBOC_EXPR_SOURCE_ID_OFFSET]
+ mov rcx,[r10+NEBOC_AST_NODE_START_OFFSET]
+ mov r8,[r11+NEBOC_TOKEN_END_OFFSET]
+ lea r9,[rsp+40]
+ call neboc_ast_builder_append
+ test eax,eax
+ jnz expression_bp_done_decrement
+ mov rdi,r15
+ mov rsi,[rsp+40]
+ lea rdx,[rsp+64]
+ call neboc_ast_builder_node
+ test eax,eax
+ jnz expression_bp_done_decrement
+ mov r10,[rsp+64]
+ or qword [r10+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TUPLE_POSITIONAL_PROJECTION
+ mov rax,[rsp+8]
+ mov [r10+NEBOC_AST_NODE_FIRST_CHILD_OFFSET],rax
+ mov qword [r10+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],1
+ mov rax,[rsp+80]
+ mov [r10+NEBOC_AST_NODE_PAYLOAD0_OFFSET],rax
+ EXPR_TOKEN_PTR r11,qword [rsp+80]
+ mov rax,[r11+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ mov [r10+NEBOC_AST_NODE_PAYLOAD1_OFFSET],rax
+ lea rax,[rbx+2]
+ mov [r12+NEBOC_EXPR_INDEX_OFFSET],rax
+ mov rax,[rsp+40]
+ mov [rsp+8],rax
+ jmp expression_bp_loop
+
 expression_bp_binding_terminal:
+ ; A nominal enum receiver has one additional public method suffix:
+ ; `Type.Variant.discriminant()`.  The independently authenticated nominal
+ ; owner still decides whether the type, variant and operation are valid.  The
+ ; shared parser only preserves the exact two-token receiver long enough for
+ ; the ordinary call-suffix path to build the final call node.
+ lea rdx,[rbx+4]
+ cmp rdx,r14
+ jae .binding_terminal_regular
+ lea rax,[rbx+2]
+ EXPR_TOKEN_PTR r10,rax
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne .binding_terminal_regular
+ lea rax,[rbx+3]
+ EXPR_TOKEN_PTR r10,rax
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .binding_terminal_regular
+ lea rax,[rbx+4]
+ EXPR_TOKEN_PTR r10,rax
+ cmp qword [r10+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ jne .binding_terminal_regular
+ mov rdi,r15
+ mov rsi,[rsp+8]
+ lea rdx,[rsp+48]
+ call neboc_ast_builder_node
+ test eax,eax
+ jnz expression_bp_done_decrement
+ EXPR_TOKEN_PTR r11,qword [rsp+80]
+ mov r10,[rsp+48]
+ mov rdi,r15
+ mov esi,NEBOC_AST_IDENTIFIER_EXPR
+ mov rdx,[r12+NEBOC_EXPR_SOURCE_ID_OFFSET]
+ mov rcx,[r10+NEBOC_AST_NODE_START_OFFSET]
+ mov r8,[r11+NEBOC_TOKEN_END_OFFSET]
+ lea r9,[rsp+40]
+ call neboc_ast_builder_append
+ test eax,eax
+ jnz expression_bp_done_decrement
+ mov rdi,r15
+ mov rsi,[rsp+40]
+ lea rdx,[rsp+64]
+ call neboc_ast_builder_node
+ test eax,eax
+ jnz expression_bp_done_decrement
+ mov r10,[rsp+64]
+ or qword [r10+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_NOMINAL_VARIANT_RECEIVER
+ mov rax,[rsp+48]
+ mov rax,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov [r10+NEBOC_AST_NODE_PAYLOAD0_OFFSET],rax
+ mov rax,[rsp+80]
+ mov [r10+NEBOC_AST_NODE_PAYLOAD1_OFFSET],rax
+ lea rax,[rbx+2]
+ mov [r12+NEBOC_EXPR_INDEX_OFFSET],rax
+ mov rax,[rsp+40]
+ mov [rsp+8],rax
+ jmp expression_bp_loop
+.binding_terminal_regular:
  ; LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-F02 extends the existing terminal with exactly one `.mutable`.
  ; Payload0 remains the binding name token and the flag preserves old ASTs.
  xor r13d,r13d

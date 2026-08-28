@@ -28,14 +28,19 @@
 %define NEBOC_ST_DROP_COUNT_OFFSET 184
 %define NEBOC_ST_CLEANUP_HASH_OFFSET 192
 %define NEBOC_ST_SEMANTIC_HASH_OFFSET 200
-%define NEBOC_ST_REQUEST_SIZE 208
-%define NEBOC_ST_REQUEST_QWORDS 26
+; C07-F02 extends the internal request with an explicit nested-Tuple depth
+; proof. This remains caller-owned, allocation-free state.
+%define NEBOC_ST_TUPLE_DEPTH_OFFSET 208
+%define NEBOC_ST_MAX_OBSERVED_DEPTH_OFFSET 216
+%define NEBOC_ST_REQUEST_SIZE 224
+%define NEBOC_ST_REQUEST_QWORDS 28
 
 %define NEBOC_ST_MAX_DECLS 8
 %define NEBOC_ST_MAX_FIELDS 8
 %define NEBOC_ST_MAX_VALUES 32
 %define NEBOC_ST_MAX_BINDINGS 16
 %define NEBOC_ST_MAX_LAYOUT 1048576
+%define NEBOC_ST_MAX_TUPLE_DEPTH 4
 
 ; Declaration records contain only token indices and canonical scalar facts.
 %define NEBOC_DECL_NAME_OFFSET 0
@@ -84,6 +89,9 @@
 %define neboc_option_result_null_externo_e_erros_tipados_DIAG_TYPE_MISMATCH 15
 %define neboc_option_result_null_externo_e_erros_tipados_DIAG_UNKNOWN_FIELD 16
 %define neboc_option_result_null_externo_e_erros_tipados_DIAG_SYNTAX 17
+%define NEBOC_DIAG_TUPLE_DEPTH 18
+%define NEBOC_DIAG_TUPLE_TYPE 19
+%define NEBOC_DIAG_TUPLE_DUPLICATE_BINDING 20
 %define neboc_option_result_null_externo_e_erros_tipados_DIAG_INTERNAL_codegen_aggregates_x86_64_native_vertical 99
 
 %define neboc_option_result_null_externo_e_erros_tipados_LAYOUT_ID 0x5246323747303641

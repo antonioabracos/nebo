@@ -1,0 +1,1 @@
+start(){Quality<Int>(90,77).confidence(88,80).lineage(2301,2302,0).require(70,70);}

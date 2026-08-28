@@ -1,0 +1,9 @@
+{
+  "format": "NEBO-SDK-LOCK-v1",
+  "manifest_sha256": "BOUND_AT_RESTORE",
+  "network": false,
+  "profile": "sdk",
+  "source": "LOCAL_ARCHIVE_ONLY",
+  "target": "linux-x86_64-systemv-elf-static",
+  "version": "1.0.1"
+}

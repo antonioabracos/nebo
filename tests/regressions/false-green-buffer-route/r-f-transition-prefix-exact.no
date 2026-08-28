@@ -1,0 +1,76 @@
+// NEBO-v1.0-INVENTARIO-PRATICO.no
+//
+// Programa prático de pré-publicação para Nebo 1.0.
+//
+// Objetivo:
+// - abrir a Nebo Console;
+// - receber dois valores com Console + Scan;
+// - produzir um relatório de inventário bounded;
+// - exercitar bindings, Text/Unicode, Bool, Int, Char, Float,
+//   Buffer, Bytes, Option, Slice, Array, Tuple, enum, newtype,
+//   Matrix e Tensor;
+// - verificar composição de vários owners num único start().
+//
+// Nota de honestidade sobre G007/G008:
+// A sintaxe source pública de List<T> e Dict<K,V> não tem callable material
+// autenticado no perfil final v1.0. Para não inventar sintaxe, este exemplo usa:
+// - Buffer como lista bounded mutável;
+// - dois Buffers paralelos como mapa/dicionário bounded código -> valor.
+//
+// Valores esperados mais importantes:
+// - total de stock: 31;
+// - total por aritmética: 31;
+// - totais coincidem: true;
+// - soma da Matrix inicial: 42;
+// - soma da Matrix atualizada: 44;
+// - soma do Tensor: 42;
+// - assinatura Bytes "NEBO": 4 bytes.
+
+enum InventoryState { Ready, Audited, Closed }
+newtype ProductId(Int);
+type alias Count = Int;
+
+start() {
+    "============================================================".console();
+    "NEBO 1.0 — INVENTÁRIO PRÁTICO DE PRÉ-PUBLICAÇÃO".console();
+    "============================================================".console();
+    "Este programa usa a janela própria da Nebo Console.".console();
+    "Preenche os dois campos e observa o relatório completo.".console();
+
+    // ---------------------------------------------------------------------
+    // 1. Console + Scan + Text Unicode
+    // ---------------------------------------------------------------------
+
+    "Nome do operador: ".console().scan().operatorName;
+    "Etiqueta da sessão: ".console().scan().sessionLabel;
+
+    "Operador recebido:".console();
+    operatorName.console();
+
+    "Etiqueta recebida:".console();
+    sessionLabel.console();
+
+    operatorName.byteLength().operatorNameBytes;
+    operatorName.codepointCount().operatorNameCodepoints;
+    sessionLabel.byteLength().sessionLabelBytes;
+    sessionLabel.codepointCount().sessionLabelCodepoints;
+
+    "Bytes UTF-8 do nome:".console();
+    operatorNameBytes.console();
+    "Codepoints do nome:".console();
+    operatorNameCodepoints.console();
+    "Bytes UTF-8 da etiqueta:".console();
+    sessionLabelBytes.console();
+    "Codepoints da etiqueta:".console();
+    sessionLabelCodepoints.console();
+
+    // ---------------------------------------------------------------------
+    // 2. Lista bounded mutável: Buffer com capacidade 4
+    // ---------------------------------------------------------------------
+
+    "------------------------------------------------------------".console();
+    "LISTA BOUNDED — quantidades de quatro produtos".console();
+
+    Buffer.withCapacity(4).stockList;
+    0.return;
+}

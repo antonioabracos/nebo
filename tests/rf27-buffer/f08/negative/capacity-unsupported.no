@@ -1,0 +1,3 @@
+start() {
+    Buffer.withCapacity(5).buffer;
+}

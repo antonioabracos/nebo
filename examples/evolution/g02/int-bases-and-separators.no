@@ -1,0 +1,16 @@
+start() {
+    Int(0x2A).explicit_hexadecimal;
+    42.decimal;
+    0b101010.binary;
+    0o52.octal;
+    0x2A.hexadecimal;
+    1_000.separated_decimal;
+
+    if (((((explicit_hexadecimal == decimal) && (decimal == binary)) &&
+          (binary == octal)) && (octal == hexadecimal)) &&
+        (separated_decimal == 1000)) {
+        0;
+    } else {
+        1;
+    }
+}

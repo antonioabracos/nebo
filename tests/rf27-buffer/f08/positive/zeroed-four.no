@@ -1,0 +1,4 @@
+start() {
+    Buffer.zeroed(4).buffer;
+    buffer.length().return;
+}

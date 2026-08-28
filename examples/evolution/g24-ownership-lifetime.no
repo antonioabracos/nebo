@@ -1,0 +1,1 @@
+resource 77 owner 2406 lifetime 31 action borrow shared 2506 region 32;

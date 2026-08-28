@@ -532,6 +532,164 @@ runtime_distribuido_e_streaming_distribuido_n_security_len equ $-runtime_distrib
 runtime_distribuido_e_streaming_distribuido_m_security: db 'cleanup or authenticated local simulation invariant failed'
 runtime_distribuido_e_streaming_distribuido_m_security_len equ $-runtime_distribuido_e_streaming_distribuido_m_security
 
+n_loop_break_outside: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-030'
+n_loop_break_outside_len equ $-n_loop_break_outside
+m_loop_break_outside: db 'break is only valid inside a loop'
+m_loop_break_outside_len equ $-m_loop_break_outside
+n_loop_continue_outside: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-031'
+n_loop_continue_outside_len equ $-n_loop_continue_outside
+m_loop_continue_outside: db 'continue is only valid inside a loop'
+m_loop_continue_outside_len equ $-m_loop_continue_outside
+n_array_length_public: db 'NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-004'
+n_array_length_public_len equ $-n_array_length_public
+m_array_length_public: db 'Array length must be a compile-time Int in 0..256'
+m_array_length_public_len equ $-m_array_length_public
+n_collection_record_capacity: db 'NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-033'
+n_collection_record_capacity_len equ $-n_collection_record_capacity
+m_collection_record_capacity: db 'collection record capacity exceeded (maximum 16)'
+m_collection_record_capacity_len equ $-m_collection_record_capacity
+n_collection_scalar_capacity: db 'NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-034'
+n_collection_scalar_capacity_len equ $-n_collection_scalar_capacity
+m_collection_scalar_capacity: db 'collection scalar pool capacity exceeded (maximum 2048)'
+m_collection_scalar_capacity_len equ $-m_collection_scalar_capacity
+n_function_call_capacity: db 'NEBO_FUNCTION_CALL_CAPACITY'
+n_function_call_capacity_len equ $-n_function_call_capacity
+m_function_call_capacity: db 'direct invocation count exceeds the bounded maximum of 256'
+m_function_call_capacity_len equ $-m_function_call_capacity
+n_binding_type_mismatch: db 'NEBO-BINDINGS-CONSTANTES-MUTABILIDADE-E-DEFINITE-ASSIGNMENT-BINDING-TYPE-MISMATCH'
+n_binding_type_mismatch_len equ $-n_binding_type_mismatch
+m_binding_type_mismatch: db 'binding expression has the wrong public scalar type'
+m_binding_type_mismatch_len equ $-m_binding_type_mismatch
+n_binding_not_initialized: db 'NEBO-BINDINGS-CONSTANTES-MUTABILIDADE-E-DEFINITE-ASSIGNMENT-BINDING-NOT-DEFINITELY-INITIALIZED'
+n_binding_not_initialized_len equ $-n_binding_not_initialized
+m_binding_not_initialized: db 'binding is not definitely initialized on every control-flow path'
+m_binding_not_initialized_len equ $-m_binding_not_initialized
+n_call_recursion_surface: db 'NEBO_CALL_RECURSION_SURFACE'
+n_call_recursion_surface_len equ $-n_call_recursion_surface
+m_call_recursion_surface: db 'recursive function must use the selected Int receiver, zero-parameter, Int-return surface'
+m_call_recursion_surface_len equ $-m_call_recursion_surface
+n_call_recursion_shape: db 'NEBO_CALL_RECURSION_SHAPE'
+n_call_recursion_shape_len equ $-n_call_recursion_shape
+m_call_recursion_shape: db 'recursive function must have one exact if/else base case and one self-call site'
+m_call_recursion_shape_len equ $-m_call_recursion_shape
+n_call_recursion_nontail: db 'NEBO_CALL_RECURSION_NONTAIL'
+n_call_recursion_nontail_len equ $-n_call_recursion_nontail
+m_call_recursion_nontail: db 'recursive self-call must be the direct expression of a branch return'
+m_call_recursion_nontail_len equ $-m_call_recursion_nontail
+n_call_recursion_frame: db 'NEBO_CALL_RECURSION_FRAME'
+n_call_recursion_frame_len equ $-n_call_recursion_frame
+m_call_recursion_frame: db 'selected recursive function requires an exact 16-byte frame'
+m_call_recursion_frame_len equ $-m_call_recursion_frame
+n_nested_context: db 'NEBO_NESTED_CONTEXT'
+n_nested_context_len equ $-n_nested_context
+m_nested_context: db 'nested helper declaration is only valid directly in a receiver-first outer function body'
+m_nested_context_len equ $-m_nested_context
+n_nested_before: db 'NEBO_NESTED_CALL_BEFORE_DECLARATION'
+n_nested_before_len equ $-n_nested_before
+m_nested_before: db 'nested helper call must appear after its declaration'
+m_nested_before_len equ $-m_nested_before
+n_nested_scope: db 'NEBO_NESTED_SCOPE'
+n_nested_scope_len equ $-n_nested_scope
+m_nested_scope: db 'nested helper is private to its exact declaring outer function'
+m_nested_scope_len equ $-m_nested_scope
+n_nested_duplicate: db 'NEBO_NESTED_DUPLICATE'
+n_nested_duplicate_len equ $-n_nested_duplicate
+m_nested_duplicate: db 'only one nested helper is permitted per outer function'
+m_nested_duplicate_len equ $-m_nested_duplicate
+n_nested_capacity: db 'NEBO_NESTED_CAPACITY'
+n_nested_capacity_len equ $-n_nested_capacity
+m_nested_capacity: db 'nested helper depth or capacity exceeds the selected one-level bound'
+m_nested_capacity_len equ $-m_nested_capacity
+n_nested_capture: db 'NEBO_NESTED_CAPTURE_UNSUPPORTED'
+n_nested_capture_len equ $-n_nested_capture
+m_nested_capture: db 'nested helper capture is unsupported; the environment must remain zero bytes'
+m_nested_capture_len equ $-m_nested_capture
+n_nested_escape: db 'NEBO_NESTED_ESCAPE'
+n_nested_escape_len equ $-n_nested_escape
+m_nested_escape: db 'nested helper cannot escape or be used as a function value'
+m_nested_escape_len equ $-m_nested_escape
+n_nested_recursion: db 'NEBO_NESTED_RECURSION'
+n_nested_recursion_len equ $-n_nested_recursion
+m_nested_recursion: db 'nested helper recursion is outside the selected acyclic call graph'
+m_nested_recursion_len equ $-m_nested_recursion
+n_nested_recursive_outer: db 'NEBO_NESTED_RECURSIVE_OUTER'
+n_nested_recursive_outer_len equ $-n_nested_recursive_outer
+m_nested_recursive_outer: db 'a recursive outer function cannot declare the selected nested helper'
+m_nested_recursive_outer_len equ $-m_nested_recursive_outer
+n_nested_receiver: db 'NEBO_NESTED_RECEIVER_UNSUPPORTED'
+n_nested_receiver_len equ $-n_nested_receiver
+m_nested_receiver: db 'nested helper requires the exact Int.self receiver'
+m_nested_receiver_len equ $-m_nested_receiver
+n_nested_parameter: db 'NEBO_NESTED_PARAMETER_UNSUPPORTED'
+n_nested_parameter_len equ $-n_nested_parameter
+m_nested_parameter: db 'nested helper accepts zero explicit parameters'
+m_nested_parameter_len equ $-m_nested_parameter
+n_nested_return: db 'NEBO_NESTED_RETURN_UNSUPPORTED'
+n_nested_return_len equ $-n_nested_return
+m_nested_return: db 'nested helper must return Int on the selected scalar surface'
+m_nested_return_len equ $-m_nested_return
+n_nested_surface: db 'NEBO_NESTED_SURFACE'
+n_nested_surface_len equ $-n_nested_surface
+m_nested_surface: db 'nested helper body uses a feature outside the selected noncapturing scalar surface'
+m_nested_surface_len equ $-m_nested_surface
+n_nested_symbol_collision: db 'NEBO_NESTED_SYMBOL_COLLISION'
+n_nested_symbol_collision_len equ $-n_nested_symbol_collision
+m_nested_symbol_collision: db 'private nested helper symbol identity collided internally'
+m_nested_symbol_collision_len equ $-m_nested_symbol_collision
+
+n_control_header_parens: db 'NEBO_PARSE_CONTROL_HEADER_PARENS_REQUIRED'
+n_control_header_parens_len equ $-n_control_header_parens
+m_control_header_parens: db 'control header requires parentheses'
+m_control_header_parens_len equ $-m_control_header_parens
+n_control_header_delimiter: db 'NEBO_PARSE_CONTROL_HEADER_DELIMITER'
+n_control_header_delimiter_len equ $-n_control_header_delimiter
+m_control_header_delimiter: db 'control header requires a closing parenthesis'
+m_control_header_delimiter_len equ $-m_control_header_delimiter
+n_while_condition_type: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-032'
+n_while_condition_type_len equ $-n_while_condition_type
+m_while_condition_type: db 'while condition must have type Bool'
+m_while_condition_type_len equ $-m_while_condition_type
+n_entrypoint_missing: db 'NEBO_ENTRYPOINT_MISSING'
+n_entrypoint_missing_len equ $-n_entrypoint_missing
+m_entrypoint_missing: db 'selected target requires exactly one start()'
+m_entrypoint_missing_len equ $-m_entrypoint_missing
+n_entrypoint_duplicate: db 'NEBO_ENTRYPOINT_DUPLICATE'
+n_entrypoint_duplicate_len equ $-n_entrypoint_duplicate
+m_entrypoint_duplicate: db 'selected target declares more than one start()'
+m_entrypoint_duplicate_len equ $-m_entrypoint_duplicate
+n_entrypoint_invalid: db 'NEBO_ENTRYPOINT_INVALID_SIGNATURE'
+n_entrypoint_invalid_len equ $-n_entrypoint_invalid
+m_entrypoint_invalid: db 'start() violates the frozen entrypoint signature or status contract'
+m_entrypoint_invalid_len equ $-m_entrypoint_invalid
+n_entrypoint_ambiguous: db 'NEBO_ENTRYPOINT_AMBIGUOUS'
+n_entrypoint_ambiguous_len equ $-n_entrypoint_ambiguous
+m_entrypoint_ambiguous: db 'start() identity is ambiguous in the selected target'
+m_entrypoint_ambiguous_len equ $-m_entrypoint_ambiguous
+n_entrypoint_forbidden: db 'NEBO_ENTRYPOINT_FORBIDDEN_FOR_TARGET'
+n_entrypoint_forbidden_len equ $-n_entrypoint_forbidden
+m_entrypoint_forbidden: db 'library and test targets must not declare start()'
+m_entrypoint_forbidden_len equ $-m_entrypoint_forbidden
+n_tuple_arity: db 'NEBO_TUPLE_ARITY'
+n_tuple_arity_len equ $-n_tuple_arity
+m_tuple_arity: db 'Tuple arity exceeds the bounded maximum of 8'
+m_tuple_arity_len equ $-m_tuple_arity
+n_tuple_bounds: db 'NEBO_TUPLE_INDEX_OUT_OF_RANGE'
+n_tuple_bounds_len equ $-n_tuple_bounds
+m_tuple_bounds: db 'constant Tuple component index is outside its arity'
+m_tuple_bounds_len equ $-m_tuple_bounds
+n_tuple_depth: db 'NEBO_TUPLE_NESTING_LIMIT'
+n_tuple_depth_len equ $-n_tuple_depth
+m_tuple_depth: db 'Tuple nesting exceeds the bounded maximum depth of 4'
+m_tuple_depth_len equ $-m_tuple_depth
+n_tuple_receiver: db 'NEBO_TUPLE_INVALID_RECEIVER'
+n_tuple_receiver_len equ $-n_tuple_receiver
+m_tuple_receiver: db 'Tuple operation requires a Tuple receiver'
+m_tuple_receiver_len equ $-m_tuple_receiver
+n_tuple_duplicate: db 'NEBO_TUPLE_DUPLICATE_BINDING'
+n_tuple_duplicate_len equ $-n_tuple_duplicate
+m_tuple_duplicate: db 'Tuple destructuring binding is already initialized in this scope'
+m_tuple_duplicate_len equ $-m_tuple_duplicate
+
 align 8
 catalog:
  dq n_cli,n_cli_len,m_cli,m_cli_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_DRIVER
@@ -665,6 +823,45 @@ catalog:
  dq runtime_distribuido_e_streaming_distribuido_n_runtime,runtime_distribuido_e_streaming_distribuido_n_runtime_len,runtime_distribuido_e_streaming_distribuido_m_runtime,runtime_distribuido_e_streaming_distribuido_m_runtime_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_RUNTIME
  dq runtime_distribuido_e_streaming_distribuido_n_security,runtime_distribuido_e_streaming_distribuido_n_security_len,runtime_distribuido_e_streaming_distribuido_m_security,runtime_distribuido_e_streaming_distribuido_m_security_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_SECURITY
  dq n_nonassoc_chain,n_nonassoc_chain_len,m_nonassoc_chain,m_nonassoc_chain_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_PARSE
+ dq n_loop_break_outside,n_loop_break_outside_len,m_loop_break_outside,m_loop_break_outside_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_loop_continue_outside,n_loop_continue_outside_len,m_loop_continue_outside,m_loop_continue_outside_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_array_length_public,n_array_length_public_len,m_array_length_public,m_array_length_public_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_collection_record_capacity,n_collection_record_capacity_len,m_collection_record_capacity,m_collection_record_capacity_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_collection_scalar_capacity,n_collection_scalar_capacity_len,m_collection_scalar_capacity,m_collection_scalar_capacity_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_function_call_capacity,n_function_call_capacity_len,m_function_call_capacity,m_function_call_capacity_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_CODEGEN
+ dq n_binding_type_mismatch,n_binding_type_mismatch_len,m_binding_type_mismatch,m_binding_type_mismatch_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_binding_not_initialized,n_binding_not_initialized_len,m_binding_not_initialized,m_binding_not_initialized_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_call_recursion_surface,n_call_recursion_surface_len,m_call_recursion_surface,m_call_recursion_surface_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_CODEGEN
+ dq n_call_recursion_shape,n_call_recursion_shape_len,m_call_recursion_shape,m_call_recursion_shape_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_CODEGEN
+ dq n_call_recursion_nontail,n_call_recursion_nontail_len,m_call_recursion_nontail,m_call_recursion_nontail_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_CODEGEN
+ dq n_call_recursion_frame,n_call_recursion_frame_len,m_call_recursion_frame,m_call_recursion_frame_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_CODEGEN
+ dq n_nested_context,n_nested_context_len,m_nested_context,m_nested_context_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_PARSE
+ dq n_nested_before,n_nested_before_len,m_nested_before,m_nested_before_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_NAME
+ dq n_nested_scope,n_nested_scope_len,m_nested_scope,m_nested_scope_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_NAME
+ dq n_nested_duplicate,n_nested_duplicate_len,m_nested_duplicate,m_nested_duplicate_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_NAME
+ dq n_nested_capacity,n_nested_capacity_len,m_nested_capacity,m_nested_capacity_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_PARSE
+ dq n_nested_capture,n_nested_capture_len,m_nested_capture,m_nested_capture_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_nested_escape,n_nested_escape_len,m_nested_escape,m_nested_escape_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_nested_recursion,n_nested_recursion_len,m_nested_recursion,m_nested_recursion_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_CODEGEN
+ dq n_nested_recursive_outer,n_nested_recursive_outer_len,m_nested_recursive_outer,m_nested_recursive_outer_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_CODEGEN
+ dq n_nested_receiver,n_nested_receiver_len,m_nested_receiver,m_nested_receiver_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_nested_parameter,n_nested_parameter_len,m_nested_parameter,m_nested_parameter_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_nested_return,n_nested_return_len,m_nested_return,m_nested_return_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_nested_surface,n_nested_surface_len,m_nested_surface,m_nested_surface_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_CODEGEN
+ dq n_nested_symbol_collision,n_nested_symbol_collision_len,m_nested_symbol_collision,m_nested_symbol_collision_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_INTERNAL
+ dq n_control_header_parens,n_control_header_parens_len,m_control_header_parens,m_control_header_parens_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_PARSE
+ dq n_control_header_delimiter,n_control_header_delimiter_len,m_control_header_delimiter,m_control_header_delimiter_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_PARSE
+ dq n_while_condition_type,n_while_condition_type_len,m_while_condition_type,m_while_condition_type_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_entrypoint_missing,n_entrypoint_missing_len,m_entrypoint_missing,m_entrypoint_missing_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_NAME
+ dq n_entrypoint_duplicate,n_entrypoint_duplicate_len,m_entrypoint_duplicate,m_entrypoint_duplicate_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_NAME
+ dq n_entrypoint_invalid,n_entrypoint_invalid_len,m_entrypoint_invalid,m_entrypoint_invalid_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_entrypoint_ambiguous,n_entrypoint_ambiguous_len,m_entrypoint_ambiguous,m_entrypoint_ambiguous_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_NAME
+ dq n_entrypoint_forbidden,n_entrypoint_forbidden_len,m_entrypoint_forbidden,m_entrypoint_forbidden_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_NAME
+ dq n_tuple_arity,n_tuple_arity_len,m_tuple_arity,m_tuple_arity_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_tuple_bounds,n_tuple_bounds_len,m_tuple_bounds,m_tuple_bounds_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_tuple_depth,n_tuple_depth_len,m_tuple_depth,m_tuple_depth_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_tuple_receiver,n_tuple_receiver_len,m_tuple_receiver,m_tuple_receiver_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_tuple_duplicate,n_tuple_duplicate_len,m_tuple_duplicate,m_tuple_duplicate_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_NAME
 
 section .text
 ; catalog_lookup(code_id, out_entry*)

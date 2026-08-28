@@ -93,12 +93,9 @@ NEBOC_ABI_FUNCTION neboc_move_copy_clone_recognize
  je .scan_call
  cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_BINDING_TERMINAL
  je .scan_binding
- cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_LOOP_STMT
- je .claimed
- cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_BREAK_STMT
- je .claimed
- cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CONTINUE_STMT
- je .claimed
+ ; Structural loop/control nodes do not by themselves select the ownership
+ ; vertical. Continue scanning so a real move/copy/clone/borrow/cleanup call
+ ; still claims its loop, while scalar loop locals remain with bindings.
  jmp .scan_next
 .scan_call:
  test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR

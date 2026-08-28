@@ -1,0 +1,4 @@
+start() {
+  Int(2).value;
+  value.return;
+}

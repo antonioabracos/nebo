@@ -1,0 +1,13 @@
+{
+  "cache_key": "ALNUM_CONTENT_ID",
+  "format": "NEBO-OFFLINE-STORE-v1",
+  "implicit_latest": false,
+  "isolation": "NO_OVERLAP",
+  "network": false,
+  "roots": {
+    "cache": "EXPLICIT",
+    "packages": "EXPLICIT",
+    "project_state": "PROJECT/.nebo",
+    "sdk": "EXPLICIT"
+  }
+}

@@ -1,0 +1,7 @@
+start() {
+    100.numero;
+    numero.console();
+
+    true.verdadeiro;
+    verdadeiro.console();
+}

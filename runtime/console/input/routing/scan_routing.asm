@@ -15,15 +15,18 @@ default rel
 
 extern nebo_input_registry_init
 extern nebo_input_registry_validate
+extern nebo_input_registry_get
 extern nebo_input_registry_state_hash
 extern nebo_pending_registry_init
 extern nebo_pending_registry_validate
+extern nebo_pending_registry_get
 extern nebo_pending_registry_state_hash
 
 global nebo_input_runtime_init
 global nebo_input_runtime_validate
 global nebo_input_runtime_registry_for_console
 global nebo_console_scan_route
+global nebo_console_scan_cancel
 global nebo_input_runtime_state_hash
 
 section .text
@@ -260,6 +263,171 @@ nebo_input_runtime_registry_for_console:
     pop r13
     pop r12
     pop rbx
+    ret
+
+; Cancel one exact routed Scan without fabricating a result.
+; RDI=InputRuntime*, RSI=ScanRouteDescriptor* -> Console status.
+; Both generational records and all three active counters transition exactly
+; once. Resolved, stale, foreign, or mismatched handles are rejected.
+nebo_console_scan_cancel:
+    push rbp
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+    sub rsp, 56
+    mov r12, rdi
+    mov r13, rsi
+    test r12, r12
+    jz .cancel_invalid_no_route
+    test r13, r13
+    jz .cancel_invalid_no_route
+    mov rbx, [r13+NEBO_SCAN_ROUTE_OUT_CONSOLE_HANDLE_OFFSET]
+    mov r14, [r13+NEBO_SCAN_ROUTE_OUT_INPUT_HANDLE_OFFSET]
+    mov r15, [r13+NEBO_SCAN_ROUTE_OUT_PENDING_HANDLE_OFFSET]
+    test rbx, rbx
+    jz .cancel_invalid
+    test r14, r14
+    jz .cancel_invalid
+    test r15, r15
+    jz .cancel_invalid
+    mov rdi, r12
+    call nebo_input_runtime_validate
+    test eax, eax
+    jnz .cancel_state
+    mov rdi, [r12+NEBO_INPUT_RUNTIME_CONTEXT_PTR_OFFSET]
+    mov rsi, rbx
+    lea rdx, [rsp]
+    call nebo_console_manager_handle_validate
+    test eax, eax
+    jnz .cancel_state
+    mov rdi, r12
+    mov rsi, rbx
+    lea rdx, [rsp+8]
+    lea rcx, [rsp+16]
+    call nebo_input_runtime_registry_for_console
+    test eax, eax
+    jnz .cancel_state
+    mov rdi, [rsp+8]
+    mov rsi, r14
+    lea rdx, [rsp+24]
+    call nebo_input_registry_get
+    test eax, eax
+    jnz .cancel_handle
+    mov rdi, [rsp+16]
+    mov rsi, r15
+    lea rdx, [rsp+32]
+    call nebo_pending_registry_get
+    test eax, eax
+    jnz .cancel_handle
+
+    ; Cross-check the complete route identity before any state mutation.
+    mov r10, [rsp+24]
+    mov r11, [rsp+32]
+    cmp [r10+NEBO_INPUT_RECORD_PENDING_HANDLE_OFFSET], r15
+    jne .cancel_state
+    cmp [r11+NEBO_PENDING_RECORD_INPUT_HANDLE_OFFSET], r14
+    jne .cancel_state
+    cmp [r10+NEBO_INPUT_RECORD_CONSOLE_HANDLE_OFFSET], rbx
+    jne .cancel_state
+    cmp [r11+NEBO_PENDING_RECORD_CONSOLE_HANDLE_OFFSET], rbx
+    jne .cancel_state
+    mov rax, [r13+NEBO_SCAN_ROUTE_BINDING_ID_OFFSET]
+    cmp [r10+NEBO_INPUT_RECORD_BINDING_ID_OFFSET], rax
+    jne .cancel_state
+    cmp [r11+NEBO_PENDING_RECORD_BINDING_ID_OFFSET], rax
+    jne .cancel_state
+    mov rax, [r13+NEBO_SCAN_ROUTE_COMPILER_PENDING_ID_OFFSET]
+    cmp [r10+NEBO_INPUT_RECORD_COMPILER_PENDING_ID_OFFSET], rax
+    jne .cancel_state
+    cmp [r11+NEBO_PENDING_RECORD_COMPILER_PENDING_ID_OFFSET], rax
+    jne .cancel_state
+    mov rax, [rsp+8]
+    cmp qword [rax+NEBO_INPUT_REGISTRY_ACTIVE_COUNT_OFFSET], 0
+    je .cancel_state
+    mov rax, [rsp+16]
+    cmp qword [rax+NEBO_PENDING_REGISTRY_ACTIVE_COUNT_OFFSET], 0
+    je .cancel_state
+    mov rax, [rsp]
+    cmp qword [rax+NEBO_CONSOLE_SLOT_PENDING_COUNT_OFFSET], 0
+    je .cancel_state
+
+    ; Commit the paired cancellation and accounting as one single-writer step.
+    inc qword [r12+NEBO_INPUT_RUNTIME_SEQUENCE_OFFSET]
+    mov rax, [r12+NEBO_INPUT_RUNTIME_SEQUENCE_OFFSET]
+    mov r10, [rsp+24]
+    mov dword [r10+NEBO_INPUT_RECORD_STATE_OFFSET], NEBO_INPUT_STATE_CANCELLED
+    and dword [r10+NEBO_INPUT_RECORD_FLAGS_OFFSET], ~(NEBO_INPUT_FLAG_ACTIVE | NEBO_INPUT_FLAG_VALIDATION_ERROR)
+    mov qword [r10+NEBO_INPUT_RECORD_VALIDATION_ERROR_OFFSET], 0
+    mov r11, [rsp+32]
+    mov dword [r11+NEBO_PENDING_RECORD_STATE_OFFSET], NEBO_PENDING_STATE_CANCELLED
+    and qword [r11+NEBO_PENDING_RECORD_FLAGS_OFFSET], ~NEBO_PENDING_FLAG_ACTIVE
+    mov [r11+NEBO_PENDING_RECORD_RESOLUTION_SEQUENCE_OFFSET], rax
+    mov qword [r11+NEBO_PENDING_RECORD_RESULT_LENGTH_OFFSET], 0
+    mov r10, [rsp+8]
+    dec qword [r10+NEBO_INPUT_REGISTRY_ACTIVE_COUNT_OFFSET]
+    mov r11, [rsp+16]
+    dec qword [r11+NEBO_PENDING_REGISTRY_ACTIVE_COUNT_OFFSET]
+    mov rax, [rsp]
+    dec qword [rax+NEBO_CONSOLE_SLOT_PENDING_COUNT_OFFSET]
+    mov qword [r13+NEBO_SCAN_ROUTE_OUT_INPUT_HANDLE_OFFSET], 0
+    mov qword [r13+NEBO_SCAN_ROUTE_OUT_PENDING_HANDLE_OFFSET], 0
+
+    mov rdi, r10
+    lea rsi, [r10+NEBO_INPUT_REGISTRY_STATE_HASH_OFFSET]
+    call nebo_input_registry_state_hash
+    test eax, eax
+    jnz .cancel_state_after_commit
+    mov r11, [rsp+16]
+    mov rdi, r11
+    lea rsi, [r11+NEBO_PENDING_REGISTRY_STATE_HASH_OFFSET]
+    call nebo_pending_registry_state_hash
+    test eax, eax
+    jnz .cancel_state_after_commit
+    mov rdi, r12
+    lea rsi, [r12+NEBO_INPUT_RUNTIME_STATE_HASH_OFFSET]
+    call nebo_input_runtime_state_hash
+    test eax, eax
+    jnz .cancel_state_after_commit
+    mov qword [r13+NEBO_SCAN_ROUTE_LAST_STATUS_OFFSET], NEBO_CONSOLE_STATUS_OK
+    mov qword [r13+NEBO_SCAN_ROUTE_LAST_ERROR_OFFSET], NEBO_SCAN_ERROR_NONE
+    mov qword [r12+NEBO_INPUT_RUNTIME_LAST_STATUS_OFFSET], NEBO_CONSOLE_STATUS_OK
+    mov qword [r12+NEBO_INPUT_RUNTIME_LAST_ERROR_OFFSET], NEBO_SCAN_ERROR_NONE
+    xor eax, eax
+    jmp .cancel_done
+.cancel_state_after_commit:
+    ; All pointers were prevalidated; a hash failure is an internal invariant.
+    mov eax, NEBO_CONSOLE_STATUS_BAD_STATE
+    mov edx, NEBO_SCAN_ERROR_BAD_RUNTIME
+    jmp .cancel_publish
+.cancel_handle:
+    mov eax, NEBO_CONSOLE_STATUS_HANDLE_INVALID
+    mov edx, NEBO_SCAN_ERROR_BAD_ROUTE
+    jmp .cancel_publish
+.cancel_state:
+    mov eax, NEBO_CONSOLE_STATUS_BAD_STATE
+    mov edx, NEBO_SCAN_ERROR_BAD_RUNTIME
+    jmp .cancel_publish
+.cancel_invalid:
+    mov eax, NEBO_CONSOLE_STATUS_INVALID_ARGUMENT
+    mov edx, NEBO_SCAN_ERROR_BAD_ROUTE
+.cancel_publish:
+    mov [r13+NEBO_SCAN_ROUTE_LAST_STATUS_OFFSET], rax
+    mov [r13+NEBO_SCAN_ROUTE_LAST_ERROR_OFFSET], rdx
+    mov [r12+NEBO_INPUT_RUNTIME_LAST_STATUS_OFFSET], rax
+    mov [r12+NEBO_INPUT_RUNTIME_LAST_ERROR_OFFSET], rdx
+    jmp .cancel_done
+.cancel_invalid_no_route:
+    mov eax, NEBO_CONSOLE_STATUS_INVALID_ARGUMENT
+.cancel_done:
+    add rsp, 56
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbx
+    pop rbp
     ret
 
 ; scan_route(runtime*, ScanRouteDescriptor*) -> status

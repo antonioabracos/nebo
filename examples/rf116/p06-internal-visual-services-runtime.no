@@ -1,0 +1,8 @@
+// RF116 P06 keeps historical visual services internal.
+// The public surface remains receiver-first Console through one RenderPlan.
+start() {
+    observation.console(
+        .dashboard("p06-internal-services-headless"),
+        .cell(0, 0, .plot("line"))
+    );
+}

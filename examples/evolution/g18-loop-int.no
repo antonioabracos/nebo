@@ -1,0 +1,4 @@
+start() {
+    Loop<Int> 18.loop;
+    loop.value();
+}

@@ -1,0 +1,4 @@
+start() {
+    Buffer.withCapacity(4).buffer;
+    buffer.grow().grown;
+}

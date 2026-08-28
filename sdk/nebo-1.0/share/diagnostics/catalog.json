@@ -1,0 +1,1576 @@
+{
+  "entries": [
+    {
+      "code": "1",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_CLI_USAGE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "2",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_SOURCE_BOM_FORBIDDEN",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "3",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_SOURCE_TOO_LARGE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "4",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_LEX_INVALID_UTF8",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "5",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_LEX_INVALID_CHARACTER",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "6",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_PARSE_EXPECTED_TOKEN",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "7",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NAME_UNDEFINED",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "8",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_TYPE_MISMATCH",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "9",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_LIMIT_EXCEEDED",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "10",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_TOOLCHAIN_FAILED",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "11",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_INTERNAL_ERROR",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "12",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_LEX_UNTERMINATED_TEXT",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "13",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_LEX_INVALID_ESCAPE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "14",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_LEX_INT_OVERFLOW",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "15",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_LEX_UNSUPPORTED_BLOCK_COMMENT",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "16",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_PARSE_DUPLICATE_START",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "17",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_PARSE_TOP_LEVEL_STATEMENT",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "18",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_PARSE_NESTING_LIMIT",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "19",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_PARSE_MISSING_START",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "20",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_PARSE_UNSUPPORTED_CONTROL",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "21",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_PARSE_INVALID_CONTROL_CHAIN",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "22",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_PARSE_MISSING_SEMICOLON",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "23",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_PARSE_UNEXPECTED_TOKEN",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "24",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NAME_DUPLICATE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "25",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NAME_SHADOW",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "26",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NAME_RESERVED",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "27",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_TYPE_TRUTHINESS",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "28",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_TYPE_UNSUPPORTED_OPERATOR",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "29",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_TYPE_CONSTANT_OVERFLOW",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "30",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_TYPE_DIVISION_BY_ZERO",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "31",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_TYPE_INCONSISTENT_RETURN",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "32",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_TYPE_MISSING_RETURN",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "33",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_TYPE_VOID_BINDING",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "34",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_CALL_INVALID_RECEIVER",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "35",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_CALL_ARITY",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "36",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_CALL_ARGUMENT_TYPE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "37",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_CALL_RECURSION",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "38",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_CALL_UNDEFINED",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "39",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_CALL_NESTED_FUNCTION",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "40",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_CALL_DUPLICATE_SIGNATURE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "41",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_BEHAVIOR_UNSUPPORTED",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "42",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_BEHAVIOR_CONFLICT",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "43",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_BEHAVIOR_EFFECTFUL",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "44",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_CONTROL_CONDITION_TYPE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "45",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_CONTROL_BRANCH_SCOPE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "46",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_EFFECT_THREAD_CAPABILITY",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "47",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_effects_capabilities_e_politicas_DIAG_LEX_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "48",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_effects_capabilities_e_politicas_DIAG_PARSE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "49",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_effects_capabilities_e_politicas_DIAG_TYPE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "50",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_effects_capabilities_e_politicas_DIAG_CODEGEN_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "51",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_effects_capabilities_e_politicas_DIAG_RUNTIME_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "52",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_effects_capabilities_e_politicas_DIAG_SECURITY_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "53",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_privacidade_dados_sensiveis_e_zero_trust_DIAG_LEX_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "54",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_privacidade_dados_sensiveis_e_zero_trust_DIAG_PARSE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "55",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_privacidade_dados_sensiveis_e_zero_trust_DIAG_TYPE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "56",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_privacidade_dados_sensiveis_e_zero_trust_DIAG_CODEGEN_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "57",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_privacidade_dados_sensiveis_e_zero_trust_DIAG_RUNTIME_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "58",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_privacidade_dados_sensiveis_e_zero_trust_DIAG_SECURITY_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "59",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_quality_confidence_e_lineage_DIAG_LEX_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "60",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_quality_confidence_e_lineage_DIAG_PARSE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "61",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_quality_confidence_e_lineage_DIAG_TYPE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "62",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_quality_confidence_e_lineage_DIAG_CODEGEN_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "63",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_quality_confidence_e_lineage_DIAG_RUNTIME_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "64",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_quality_confidence_e_lineage_DIAG_SECURITY_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "65",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_memoria_ownership_lifetimes_e_recursos_DIAG_LEX_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "66",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_memoria_ownership_lifetimes_e_recursos_DIAG_PARSE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "67",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_memoria_ownership_lifetimes_e_recursos_DIAG_TYPE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "68",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_memoria_ownership_lifetimes_e_recursos_DIAG_CODEGEN_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "69",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_memoria_ownership_lifetimes_e_recursos_DIAG_RUNTIME_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "70",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_memoria_ownership_lifetimes_e_recursos_DIAG_SECURITY_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "71",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_imports_modulos_namespaces_e_api_publica_DIAG_LEX_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "72",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_imports_modulos_namespaces_e_api_publica_DIAG_PARSE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "73",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_imports_modulos_namespaces_e_api_publica_DIAG_TYPE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "74",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_imports_modulos_namespaces_e_api_publica_DIAG_CODEGEN_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "75",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_imports_modulos_namespaces_e_api_publica_DIAG_RUNTIME_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "76",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_imports_modulos_namespaces_e_api_publica_DIAG_SECURITY_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "77",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_packages_registry_lockfile_e_supply_chain_DIAG_LEX_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "78",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_packages_registry_lockfile_e_supply_chain_DIAG_PARSE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "79",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_packages_registry_lockfile_e_supply_chain_DIAG_TYPE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "80",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_packages_registry_lockfile_e_supply_chain_DIAG_CODEGEN_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "81",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_packages_registry_lockfile_e_supply_chain_DIAG_RUNTIME_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "82",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_packages_registry_lockfile_e_supply_chain_DIAG_SECURITY_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "83",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_biblioteca_padrao_por_dominios_DIAG_LEX_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "84",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_biblioteca_padrao_por_dominios_DIAG_PARSE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "85",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_biblioteca_padrao_por_dominios_DIAG_TYPE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "86",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_biblioteca_padrao_por_dominios_DIAG_CODEGEN_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "87",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_biblioteca_padrao_por_dominios_DIAG_RUNTIME_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "88",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_biblioteca_padrao_por_dominios_DIAG_SECURITY_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "89",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_filesystem_paths_e_formatos_DIAG_LEX_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "90",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_filesystem_paths_e_formatos_DIAG_PARSE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "91",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_filesystem_paths_e_formatos_DIAG_TYPE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "92",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_filesystem_paths_e_formatos_DIAG_CODEGEN_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "93",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_filesystem_paths_e_formatos_DIAG_RUNTIME_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "94",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_filesystem_paths_e_formatos_DIAG_SECURITY_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "95",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_rede_e_protocolos_DIAG_LEX_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "96",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_rede_e_protocolos_DIAG_PARSE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "97",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_rede_e_protocolos_DIAG_TYPE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "98",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_rede_e_protocolos_DIAG_CODEGEN_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "99",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_rede_e_protocolos_DIAG_RUNTIME_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "100",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_rede_e_protocolos_DIAG_SECURITY_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "101",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_console_visual_dashboard_e_plots_DIAG_LEX_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "102",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_console_visual_dashboard_e_plots_DIAG_PARSE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "103",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_console_visual_dashboard_e_plots_DIAG_TYPE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "104",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_console_visual_dashboard_e_plots_DIAG_CODEGEN_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "105",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_console_visual_dashboard_e_plots_DIAG_RUNTIME_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "106",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_console_visual_dashboard_e_plots_DIAG_SECURITY_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "107",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_media_imagem_audio_e_video_DIAG_LEX_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "108",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_media_imagem_audio_e_video_DIAG_PARSE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "109",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_media_imagem_audio_e_video_DIAG_TYPE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "110",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_media_imagem_audio_e_video_DIAG_CODEGEN_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "111",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_media_imagem_audio_e_video_DIAG_RUNTIME_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "112",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_media_imagem_audio_e_video_DIAG_SECURITY_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "113",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_machine_learning_neuron_network_e_model_DIAG_LEX",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "114",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_machine_learning_neuron_network_e_model_DIAG_PARSE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "115",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_machine_learning_neuron_network_e_model_DIAG_TYPE_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "116",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_machine_learning_neuron_network_e_model_DIAG_CODEGEN",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "117",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_machine_learning_neuron_network_e_model_DIAG_RUNTIME_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "118",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_machine_learning_neuron_network_e_model_DIAG_SECURITY_diagnostics",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "119",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_gpu_e_computacao_acelerada_DIAG_LEX",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "120",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_gpu_e_computacao_acelerada_DIAG_PARSE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "121",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_gpu_e_computacao_acelerada_DIAG_TYPE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "122",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_gpu_e_computacao_acelerada_DIAG_CODEGEN",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "123",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_gpu_e_computacao_acelerada_DIAG_RUNTIME",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "124",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_gpu_e_computacao_acelerada_DIAG_SECURITY",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "125",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_runtime_distribuido_e_streaming_distribuido_DIAG_LEX",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "126",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_runtime_distribuido_e_streaming_distribuido_DIAG_PARSE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "127",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_runtime_distribuido_e_streaming_distribuido_DIAG_TYPE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "128",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_runtime_distribuido_e_streaming_distribuido_DIAG_CODEGEN",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "129",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_runtime_distribuido_e_streaming_distribuido_DIAG_RUNTIME",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "130",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "neboc_runtime_distribuido_e_streaming_distribuido_DIAG_SECURITY",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "131",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_PARSE_NONASSOCIATIVE_CHAIN",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "140",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_CALL_RECURSION_SURFACE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "141",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_CALL_RECURSION_SHAPE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "142",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_CALL_RECURSION_NONTAIL",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "143",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_CALL_RECURSION_FRAME",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "144",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NESTED_CONTEXT",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "145",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NESTED_CALL_BEFORE_DECLARATION",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "146",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NESTED_SCOPE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "147",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NESTED_DUPLICATE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "148",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NESTED_CAPACITY",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "149",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NESTED_CAPTURE_UNSUPPORTED",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "150",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NESTED_ESCAPE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "151",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NESTED_RECURSION",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "152",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NESTED_RECURSIVE_OUTER",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "153",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NESTED_RECEIVER_UNSUPPORTED",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "154",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NESTED_PARAMETER_UNSUPPORTED",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "155",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NESTED_RETURN_UNSUPPORTED",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "156",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NESTED_SURFACE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "157",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_NESTED_SYMBOL_COLLISION",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "158",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_CONTROL_HEADER_PARENS_REQUIRED",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "159",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_CONTROL_HEADER_DELIMITER",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "160",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_WHILE_CONDITION_TYPE_PUBLIC",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "161",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_ENTRYPOINT_MISSING",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "162",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_ENTRYPOINT_DUPLICATE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "163",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_ENTRYPOINT_INVALID_SIGNATURE",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "164",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_ENTRYPOINT_AMBIGUOUS",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    },
+    {
+      "code": "165",
+      "compatibility": "STABLE_CODE_NO_REUSE",
+      "exit_contract": "EXIT_0_SUCCESS_2_USAGE_3_SOURCE_OR_TOOLCHAIN",
+      "identity": "NEBOC_DIAG_ENTRYPOINT_FORBIDDEN_FOR_TARGET",
+      "machine_formats": "CLI_TEXT_AND_SCHEMA_V1",
+      "severity": "TYPED",
+      "span_contract": "PRIMARY_AND_OPTIONAL_RELATED",
+      "stage": "OWNER_STAGE_ENCODED_BY_CATALOG"
+    }
+  ],
+  "format": "NEBO-DIAGNOSTIC-CATALOG-v1",
+  "source": "DIAGNOSTIC-COMPATIBILITY-REGISTRY.tsv"
+}

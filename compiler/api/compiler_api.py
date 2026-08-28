@@ -40,7 +40,7 @@ class Compiler:
         if not executable.is_file():
             raise CompilerApiError("NG46_F0101", "neboc executable missing")
         self._neboc = executable
-        self._runtime_object = executable.parents[2] / "build/obj/runtime_core.o"
+        self._runtime_object = executable.parents[2] / "build/obj/runtime_practical_io.o"
         self._root = Path(tempfile.mkdtemp(prefix="nebo-compiler-api."))
         self._modules: dict[str, Module] = {}
         self._events: list[str] = []

@@ -1,0 +1,8 @@
+invalid-toolchain-request
+toolchain-target-mismatch
+toolchain-assembler-missing
+toolchain-linker-missing
+toolchain-version-incompatible
+toolchain-path-invalid
+toolchain-runner-failed
+toolchain-process-failed

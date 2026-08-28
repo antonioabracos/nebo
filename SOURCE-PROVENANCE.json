@@ -1,9 +1,10 @@
 {
-  "canonical_version_owner": "version/NEBO-VERSION.json",
+  "distribution": "public",
   "edition": "1.0",
-  "format": "NEBO-SOURCE-PROVENANCE-v1",
   "network_required": false,
-  "source_payload_sha256": "86a3d3ac5db110e1aa4a3c3180ca00e41f17b0f8633444f9fa412050916d88b8",
+  "repository": "https://github.com/antonioabracos/nebo",
+  "schema": "NEBO-1.0.1-PUBLIC-SOURCE-IDENTITY-v1",
+  "tag": "nebo-v1.0.1",
   "target": "x86_64-systemv-elf-linux",
-  "version": "1.0.0"
+  "version": "1.0.1"
 }

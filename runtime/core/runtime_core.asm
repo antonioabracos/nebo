@@ -22,6 +22,12 @@ default rel
 %include "runtime/console/dependency-bridge/dependency_bridge.inc"
 %include "runtime/console/input/submission/input_submission.inc"
 %include "runtime/console/lifecycle/console_lifecycle.inc"
+%ifdef NEBO_RUNTIME_PRACTICAL_IO
+%include "runtime/textual/scan_plan.inc"
+%include "runtime/console/live/live_console.inc"
+extern nebo_runtime_live_finalize
+extern nebo_runtime_live_scan_roundtrip
+%endif
 
 global nebo_runtime_abi_version
 global nebo_runtime_start
@@ -63,6 +69,10 @@ global nebo_runtime_input_ensure_initialized
 global nebo_runtime_contract_1
 global nebo_runtime_contract_2
 global nebo_runtime_contract_3
+%ifdef NEBO_RUNTIME_PRACTICAL_IO
+global nebo_runtime_scan_stdin_text
+global nebo_runtime_scan_console_handle
+%endif
 
 section .rodata align=8
 nebo_runtime_abi_version: dq NEBO_RUNTIME_ABI_VERSION_V0
@@ -95,6 +105,15 @@ nebo_runtime_input_registries: resb NEBO_CONSOLE_MAX_ACTIVE*NEBO_INPUT_REGISTRY_
 nebo_runtime_input_records: resb NEBO_CONSOLE_MAX_ACTIVE*NEBO_INPUT_DEFAULT_CAPACITY*NEBO_INPUT_RECORD_SIZE
 nebo_runtime_pending_registries: resb NEBO_CONSOLE_MAX_ACTIVE*NEBO_PENDING_REGISTRY_SIZE
 nebo_runtime_pending_records: resb NEBO_CONSOLE_MAX_ACTIVE*NEBO_INPUT_DEFAULT_CAPACITY*NEBO_PENDING_RECORD_SIZE
+%ifdef NEBO_RUNTIME_PRACTICAL_IO
+nebo_runtime_process_stack: resq 1
+nebo_runtime_publication_count: resq 1
+nebo_runtime_last_console_handle: resq 1
+nebo_runtime_scan_result_count: resq 1
+nebo_runtime_scan_descriptors: resb NEBO_RUNTIME_SCAN_RESULT_CAPACITY*NEBO_RUNTIME_TEXT_DESCRIPTOR_SIZE
+nebo_runtime_scan_values: resb NEBO_RUNTIME_SCAN_RESULT_CAPACITY*SCAN_MAX_INPUT_BYTES
+nebo_runtime_stdin_buffer: resb SCAN_MAX_INPUT_BYTES
+%endif
 
 section .text
 ; Runtime entry bridge. RDI = pointer to the lowered Nebo start() function.
@@ -107,11 +126,27 @@ nebo_runtime_start:
  mov rbp,rsp
  sub rsp,16
  mov [rsp],rdi
+%ifdef NEBO_RUNTIME_PRACTICAL_IO
+ mov [rel nebo_runtime_process_stack],rsi
+%endif
  call nebo_runtime_console_ensure_initialized
  test eax,eax
  jnz .console_init_failed
  mov rdi,[rsp]
  call rdi
+%ifdef NEBO_RUNTIME_PRACTICAL_IO
+ mov [rsp+8],rax
+ cmp qword [rel nebo_runtime_publication_count],0
+ je .practical_done
+ mov rdi,[rel nebo_runtime_process_stack]
+ lea rsi,[rel nebo_runtime_console_context]
+ mov rdx,[rel nebo_runtime_last_console_handle]
+ call nebo_runtime_live_finalize
+ test eax,eax
+ jnz .console_init_failed
+.practical_done:
+ mov rax,[rsp+8]
+%endif
  mov edi,eax
  add rsp,16
  pop rbp
@@ -551,6 +586,10 @@ nebo_runtime_console_publish_value:
  test eax,eax
  jnz .console_publish_failed
  mov rax,[rsp+64]
+%ifdef NEBO_RUNTIME_PRACTICAL_IO
+ inc qword [rel nebo_runtime_publication_count]
+ mov [rel nebo_runtime_last_console_handle],rax
+%endif
  leave
  ret
 .console_publish_failed:
@@ -617,6 +656,236 @@ nebo_runtime_contract_3:
     leave
     mov edi, NEBO_RUNTIME_TRAP_CONSOLE_RUNTIME
     jmp nebo_runtime_trap
+
+%ifdef NEBO_RUNTIME_PRACTICAL_IO
+; Basic canonical Text Scan over stdin.  Prompt bytes are written to stdout,
+; acquisition is bounded to ScanPlan's 4096-byte ceiling, and a stable runtime
+; Text descriptor is returned only after canonical normalization/validation.
+; RDI=prompt TextDescriptor*, RSI/ RDX/ RCX=nonzero compiler route identities.
+nebo_runtime_scan_stdin_text:
+ push rbp
+ mov rbp,rsp
+ sub rsp,32
+ mov [rsp],rdi
+ mov [rsp+8],rsi
+ mov [rsp+16],rdx
+ mov [rsp+24],rcx
+ test rsi,rsi
+ jz .stdin_failed
+ test rdx,rdx
+ jz .stdin_failed
+ test rcx,rcx
+ jz .stdin_failed
+ test rdi,rdi
+ jz .stdin_failed
+ cmp word [rdi+NEBO_RUNTIME_TEXT_ENCODING_OFFSET],NEBO_RUNTIME_TEXT_ENCODING_UTF8
+ jne .stdin_failed
+ mov rdx,[rdi+NEBO_RUNTIME_TEXT_LENGTH_OFFSET]
+ test rdx,rdx
+ jz .stdin_read
+ cmp rdx,SCAN_MAX_INPUT_BYTES
+ ja .stdin_failed
+ mov rsi,[rdi+NEBO_RUNTIME_TEXT_DATA_OFFSET]
+ test rsi,rsi
+ jz .stdin_failed
+.stdin_write:
+ mov eax,1
+ mov edi,1
+ syscall
+ test rax,rax
+ js .stdin_write_retry
+ add rsi,rax
+ sub rdx,rax
+ jnz .stdin_write
+.stdin_read:
+ xor eax,eax
+ xor edi,edi
+ lea rsi,[rel nebo_runtime_stdin_buffer]
+ mov edx,SCAN_MAX_INPUT_BYTES
+ syscall
+ test rax,rax
+ js .stdin_read_retry
+ test rax,rax
+ jz .stdin_failed
+ lea rdi,[rel nebo_runtime_stdin_buffer]
+ mov rsi,rax
+ mov edx,SCAN_SOURCE_STDIN
+ call nebo_runtime_scan_store_text
+ leave
+ ret
+.stdin_write_retry:
+ cmp rax,-4
+ je .stdin_write
+ jmp .stdin_failed
+.stdin_read_retry:
+ cmp rax,-4
+ je .stdin_read
+.stdin_failed:
+ leave
+ mov edi,NEBO_RUNTIME_TRAP_CONSOLE_RUNTIME
+ jmp nebo_runtime_trap
+
+; Console frontend acquisition.  The canonical route owns document/input/
+; pending state; the live frontend only drives normalized events and returns
+; the immutable submission result for ScanPlan validation and binding.
+; RDI=ConsoleHandle, RSI=BindingId, RDX=PendingId, RCX=source order.
+nebo_runtime_scan_console_handle:
+ push rbp
+ mov rbp,rsp
+ sub rsp,208
+ mov [rsp+176],rdi
+ mov [rsp+184],rsi
+ mov [rsp+192],rdx
+ mov [rsp+200],rcx
+ test rdi,rdi
+ jz .console_scan_failed
+ test rsi,rsi
+ jz .console_scan_failed
+ test rdx,rdx
+ jz .console_scan_failed
+ test rcx,rcx
+ jz .console_scan_failed
+ mov rdi,rsp
+ xor eax,eax
+ mov ecx,NEBO_SCAN_ROUTE_DESCRIPTOR_QWORDS
+ cld
+ rep stosq
+ mov dword [rsp+NEBO_SCAN_ROUTE_KIND_OFFSET],NEBO_SCAN_ROUTE_CONSOLE_INLINE
+ mov dword [rsp+NEBO_SCAN_ROUTE_FLAGS_OFFSET],NEBO_SCAN_ROUTE_REQUIRED_FLAGS
+ mov rax,[rsp+176]
+ mov [rsp+NEBO_SCAN_ROUTE_TARGET_CONSOLE_HANDLE_OFFSET],rax
+ mov rax,[rsp+184]
+ mov [rsp+NEBO_SCAN_ROUTE_BINDING_ID_OFFSET],rax
+ mov rax,[rsp+192]
+ mov [rsp+NEBO_SCAN_ROUTE_COMPILER_PENDING_ID_OFFSET],rax
+ mov rax,[rsp+200]
+ mov [rsp+NEBO_SCAN_ROUTE_SOURCE_ORDER_OFFSET],rax
+ call nebo_runtime_input_ensure_initialized
+ test eax,eax
+ jnz .console_scan_failed
+ lea rdi,[rel nebo_runtime_input_runtime]
+ mov rsi,rsp
+ call nebo_console_scan_route
+ test eax,eax
+ jnz .console_scan_failed
+ lea rdi,[rsp+112]
+ xor eax,eax
+ mov ecx,NEBO_SUBMISSION_RESULT_QWORDS
+ cld
+ rep stosq
+ mov rdi,[rel nebo_runtime_process_stack]
+ lea rsi,[rel nebo_runtime_console_context]
+ lea rdx,[rel nebo_runtime_input_runtime]
+ mov rcx,rsp
+ lea r8,[rsp+112]
+ call nebo_runtime_live_scan_roundtrip
+ cmp eax,NEBO_LIVE_STATUS_CANCELLED
+ je .console_scan_cancelled
+ test eax,eax
+ jnz .console_scan_failed
+ mov rax,[rsp+112+NEBO_SUBMISSION_RESULT_BINDING_ID_OFFSET]
+ cmp rax,[rsp+184]
+ jne .console_scan_failed
+ mov rax,[rsp+112+NEBO_SUBMISSION_RESULT_COMPILER_PENDING_ID_OFFSET]
+ cmp rax,[rsp+192]
+ jne .console_scan_failed
+ mov rdi,[rsp+112+NEBO_SUBMISSION_RESULT_VALUE_PTR_OFFSET]
+ mov rsi,[rsp+112+NEBO_SUBMISSION_RESULT_VALUE_LENGTH_OFFSET]
+ mov edx,SCAN_SOURCE_DEVICE
+ call nebo_runtime_scan_store_text
+ leave
+ ret
+.console_scan_cancelled:
+ leave
+ xor edi,edi
+ jmp nebo_runtime_exit
+.console_scan_failed:
+ leave
+ mov edi,NEBO_RUNTIME_TRAP_CONSOLE_RUNTIME
+ jmp nebo_runtime_trap
+
+; data*, length, Scan source -> stable TextDescriptor*.  Slot publication is
+; failure-atomic: the process-wide count advances only after every ScanPlan
+; gate succeeds.
+nebo_runtime_scan_store_text:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ mov r12,rdi
+ mov r13,rsi
+ mov r14d,edx
+ cmp r13,SCAN_MAX_INPUT_BYTES
+ ja .store_failed
+ mov edi,SCAN_MIN_FEATURE_ID
+ mov esi,SCAN_KIND_TEXT
+ mov edx,SCAN_FLAG_OPTIONAL | SCAN_FLAG_ALLOW_EMPTY | SCAN_FLAG_CHOMP
+ mov ecx,r13d
+ mov r8d,1
+ mov r9d,r14d
+ call neboc_scan_feature_validate
+ test eax,eax
+ jnz .store_failed
+ mov edi,r14d
+ mov esi,SCAN_CAP_STDIN | SCAN_CAP_DEVICE
+ call neboc_scan_source_validate
+ test eax,eax
+ jnz .store_failed
+ mov rbx,[rel nebo_runtime_scan_result_count]
+ cmp rbx,NEBO_RUNTIME_SCAN_RESULT_CAPACITY
+ jae .store_failed
+ mov rax,rbx
+ imul rax,SCAN_MAX_INPUT_BYTES
+ lea rdx,[rel nebo_runtime_scan_values]
+ add rdx,rax
+ mov rdi,r12
+ mov rsi,r13
+ mov ecx,SCAN_MAX_INPUT_BYTES
+ mov r8d,SCAN_FLAG_OPTIONAL | SCAN_FLAG_ALLOW_EMPTY | SCAN_FLAG_CHOMP
+ call neboc_scan_normalize_ascii
+ test rax,rax
+ js .store_failed
+ mov r13,rax
+ mov rax,rbx
+ imul rax,SCAN_MAX_INPUT_BYTES
+ lea r12,[rel nebo_runtime_scan_values]
+ add r12,rax
+ mov rdi,r12
+ mov rsi,r13
+ xor edx,edx
+ mov ecx,SCAN_MAX_INPUT_BYTES
+ mov r8d,SCAN_TEXT_NO_CONTROL
+ call neboc_scan_validate_text
+ test eax,eax
+ jnz .store_failed
+ mov rax,rbx
+ imul rax,NEBO_RUNTIME_TEXT_DESCRIPTOR_SIZE
+ lea rdx,[rel nebo_runtime_scan_descriptors]
+ add rdx,rax
+ mov [rdx+NEBO_RUNTIME_TEXT_DATA_OFFSET],r12
+ mov [rdx+NEBO_RUNTIME_TEXT_LENGTH_OFFSET],r13
+ mov dword [rdx+NEBO_RUNTIME_TEXT_FLAGS_OFFSET],0
+ mov word [rdx+NEBO_RUNTIME_TEXT_ENCODING_OFFSET],NEBO_RUNTIME_TEXT_ENCODING_UTF8
+ mov word [rdx+NEBO_RUNTIME_TEXT_LIFETIME_OFFSET],NEBO_RUNTIME_TEXT_LIFETIME_STATIC
+ inc qword [rel nebo_runtime_scan_result_count]
+ mov rax,rdx
+ jmp .store_done
+.store_failed:
+ xor eax,eax
+.store_done:
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ test rax,rax
+ jz .store_trap
+ ret
+.store_trap:
+ mov edi,NEBO_RUNTIME_TRAP_CONSOLE_RUNTIME
+ jmp nebo_runtime_trap
+%endif
 
 %include "runtime/console/handles/console_handle.asm"
 %include "runtime/console/input/registry/input_registry.asm"

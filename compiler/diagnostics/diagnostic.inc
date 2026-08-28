@@ -139,6 +139,9 @@
 %define NEBOC_DIAGNOSTIC_FLAG_HAS_SECONDARY 1
 %define NEBOC_DIAGNOSTIC_FLAG_HAS_NOTE 2
 %define NEBOC_DIAGNOSTIC_FLAG_HAS_SUGGESTION 4
+; Private schema-v1 bridge used when canonical diagnostics carry exact,
+; machine-applicable insertion edits in the existing argument slots.
+%define NEBOC_DIAGNOSTIC_FLAG_HAS_FIXITS 8
 
 %define NEBOC_DIAGNOSTIC_STORE_ENTRIES_OFFSET 0
 %define NEBOC_DIAGNOSTIC_STORE_COUNT_OFFSET 8

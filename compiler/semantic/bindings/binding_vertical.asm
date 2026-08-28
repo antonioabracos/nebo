@@ -31,6 +31,8 @@ n_console_type: db "Console"
 n_console_type_len equ $-n_console_type
 n_console: db "console"
 n_console_len equ $-n_console
+n_scan: db "scan"
+n_scan_len equ $-n_scan
 n_to_float: db "toFloat"
 n_to_float_len equ $-n_to_float
 n_is_finite: db "isFinite"
@@ -77,7 +79,7 @@ NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
  push r13
  push r14
  push r15
- sub rsp,32
+ sub rsp,48
  mov r12,rdi
  test r12,r12
  jz .invalid
@@ -93,6 +95,15 @@ NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
  mov rax,[r12+NEBOC_VERTICAL_BRANCH_B_OFFSET]
  test rax,rax
  jz .invalid
+ mov rax,[r12+NEBOC_VERTICAL_LOOP_SNAPSHOTS_OFFSET]
+ test rax,rax
+ jz .invalid
+ mov rax,[r12+NEBOC_VERTICAL_LOOP_BODIES_OFFSET]
+ test rax,rax
+ jz .invalid
+ mov rax,[r12+NEBOC_VERTICAL_LOOP_BODY_COUNTS_OFFSET]
+ test rax,rax
+ jz .invalid
  cmp qword [r12+NEBOC_VERTICAL_SYMBOL_CAPACITY_OFFSET],neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_MAX_SYMBOLS
  jb .invalid
  mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_FOUND_OFFSET],0
@@ -106,6 +117,9 @@ NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
  mov qword [r12+NEBOC_VERTICAL_CR_001_CLOSED_OFFSET],0
  mov qword [r12+NEBOC_VERTICAL_BRANCH_A_COUNT_OFFSET],0
  mov qword [r12+NEBOC_VERTICAL_BRANCH_B_COUNT_OFFSET],0
+ mov qword [r12+NEBOC_VERTICAL_BRANCH_SNAPSHOT_COUNT_OFFSET],0
+ mov qword [r12+NEBOC_VERTICAL_LOOP_DEPTH_OFFSET],0
+ mov qword [r12+NEBOC_VERTICAL_LOOP_SNAPSHOT_COUNT_OFFSET],0
  mov rax,[r12+NEBOC_VERTICAL_SYMBOLS_OFFSET]
  mov [r12+NEBOC_VERTICAL_ROOT_SYMBOLS_OFFSET],rax
  cmp qword [r12+NEBOC_VERTICAL_MAX_DEPTH_OFFSET],0
@@ -118,6 +132,7 @@ NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
  ; and nested Console/Scan binding chains remain on the historical text_char_unicode_e_bytes route.
  mov qword [rsp+8],0             ; saw binding terminal
  mov qword [rsp+16],0            ; saw canonical console() call
+ mov qword [rsp+32],0            ; saw public control-flow statement
  mov rbx,1
 .scan:
  cmp rbx,[r13+NEBOC_AST_BUILDER_COUNT_OFFSET]
@@ -141,7 +156,14 @@ NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
  je .scan_found
  cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CONTINUE_STMT
  je .scan_found
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IF_STMT
+ je .scan_if
  jmp .scan_next
+.scan_if:
+ mov qword [rsp+32],1
+ cmp qword [rsp+16],0
+ je .scan_next
+ jmp .scan_found
 .scan_binding:
  mov qword [rsp+8],1
  cmp qword [rsp+16],0
@@ -154,6 +176,15 @@ NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
  call g05v_type_ref
  test eax,eax
  jnz .scan_found
+ ; Inferred binding initializers and discarded expressions share the same
+ ; closed core scalar operator contract.  Validate before ownership routing so
+ ; consuming the result cannot be the condition that enables type checking.
+ mov rdi,r12
+ mov rsi,[rsp]
+ xor edx,edx
+ call g05v_core_discarded_expr_type
+ cmp rax,-1
+ je .scan_semantic_error
  mov rdi,r12
  mov rsi,[rsp]
  call g05v_node_ptr
@@ -161,6 +192,18 @@ NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
  jz .internal
  cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
  jne .scan_next
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ lea rdx,[rel n_scan]
+ mov ecx,n_scan_len
+ call g05v_token_match
+ test eax,eax
+ jnz .scan_found
+ mov rdi,r12
+ mov rsi,[rsp]
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
  mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
  mov rdi,r12
  lea rdx,[rel n_from_byte]
@@ -262,11 +305,26 @@ NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
  jz .scan_next
  jmp .scan_found
 .scan_expression:
- ; AUD-002 owns only a standalone identifier receiver call:
+ ; A result-discarded core scalar expression still owns a semantic contract.
+ ; Validate the self-contained Int/Bool/Text subset during classification even
+ ; when no binding later claims the program.  Unknown receiver/call families
+ ; remain delegated to their established vertical owner.
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov [rsp+24],rsi
+ mov rdi,r12
+ xor edx,edx
+ call g05v_core_discarded_expr_type
+ cmp rax,-1
+ je .scan_semantic_error
+ ; AUD-002 owns a standalone receiver call whenever the same body contains a
+ ; binding and the receiver is one of the closed Text forms that this vertical
+ ; can analyze and lower: identifier, literal, or direct Text constructor.
  ;     binding_statement; identifier.console();
+ ;     binding_statement; "literal".console();
+ ;     binding_statement; Text("literal").console();
  ; A Console call nested inside another expression/binding chain (for example
  ; literal.console().scan().name) remains on the historical Console/Scan path.
- mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rsi,[rsp+24]
  mov rdi,r12
  call g05v_node_ptr
  test rax,rax
@@ -288,10 +346,34 @@ NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
  test rax,rax
  jz .internal
  cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ je .scan_console_owned
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_TEXT_LITERAL
+ je .scan_console_owned
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_INTEGER_LITERAL
+ je .scan_console_owned
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_BOOL_LITERAL
+ je .scan_console_owned
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
  jne .scan_next
+ test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
+ jz .scan_next
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ lea rdx,[rel n_text]
+ mov ecx,n_text_len
+ call g05v_token_match
+ test eax,eax
+ jz .scan_next
+.scan_console_owned:
  mov qword [rsp+16],1
  cmp qword [rsp+8],0
+ jne .scan_found
+ cmp qword [rsp+32],0
  je .scan_next
+ jmp .scan_found
+.scan_semantic_error:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .done
 .scan_found:
  mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_FOUND_OFFSET],1
  jmp .scan_done
@@ -302,9 +384,18 @@ NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
  cmp qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_FOUND_OFFSET],0
  jne .scan_classified
  cmp qword [rsp+8],0
+ je .scan_control_console_pair
+ cmp qword [rsp+32],0
+ jne .scan_mark_found
+ cmp qword [rsp+16],0
+ jne .scan_mark_found
+ jmp .scan_classified
+.scan_control_console_pair:
+ cmp qword [rsp+32],0
  je .scan_classified
  cmp qword [rsp+16],0
  je .scan_classified
+.scan_mark_found:
  mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_FOUND_OFFSET],1
 .scan_classified:
  cmp qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_FOUND_OFFSET],0
@@ -366,13 +457,206 @@ NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
 .invalid:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
 .done:
- add rsp,32
+ add rsp,48
  pop r15
  pop r14
  pop r13
  pop r12
  pop rbx
  cld
+ ret
+
+; request*, expression node id, depth -> core TypeId, zero when another
+; semantic vertical owns the expression, or -1 after a typed diagnostic.
+;
+; This classifier-side check is deliberately limited to the closed public
+; Int/Bool/Text operator table.  It prevents value-discard from becoming a
+; typecheck bypass without preempting Float, Char, Bytes or receiver-call
+; verticals whose representation and operator contracts are separate.
+g05v_core_discarded_expr_type:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,32
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ cmp r14,[r12+NEBOC_VERTICAL_MAX_DEPTH_OFFSET]
+ jae .internal
+ mov rdi,r12
+ mov rsi,r13
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ mov r15,rax
+ mov rax,[r15+NEBOC_AST_NODE_KIND_OFFSET]
+ cmp rax,NEBOC_AST_INTEGER_LITERAL
+ je .int
+ cmp rax,NEBOC_AST_TEXT_LITERAL
+ je .text
+ cmp rax,NEBOC_AST_BOOL_LITERAL
+ je .bool
+ cmp rax,NEBOC_AST_UNARY_EXPR
+ je .unary
+ cmp rax,NEBOC_AST_BINARY_EXPR
+ je .binary
+ jmp .unowned
+.unary:
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rsi,rsi
+ jz .internal
+ mov rdi,r12
+ lea rdx,[r14+1]
+ call g05v_core_discarded_expr_type
+ cmp rax,-1
+ je .done
+ test rax,rax
+ jz .unowned
+ mov rcx,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ cmp rcx,NEBOC_TOKEN_MINUS
+ je .unary_minus
+ cmp rcx,NEBOC_TOKEN_BANG
+ jne .type_error_unary
+ cmp rax,NEBOC_BIND_TYPE_BOOL
+ jne .type_error_unary
+ jmp .bool
+.unary_minus:
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .type_error_unary
+ jmp .int
+.binary:
+ mov rbx,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rbx,rbx
+ jz .internal
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[r14+1]
+ call g05v_core_discarded_expr_type
+ cmp rax,-1
+ je .done
+ test rax,rax
+ jz .unowned
+ mov [rsp],rax
+ mov rdi,r12
+ mov rsi,rbx
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rsi,rsi
+ jz .internal
+ mov rdi,r12
+ lea rdx,[r14+1]
+ call g05v_core_discarded_expr_type
+ cmp rax,-1
+ je .done
+ test rax,rax
+ jz .unowned
+ mov [rsp+8],rax
+ mov rcx,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ cmp rcx,NEBOC_TOKEN_PLUS
+ je .binary_int
+ cmp rcx,NEBOC_TOKEN_MINUS
+ je .binary_int
+ cmp rcx,NEBOC_TOKEN_STAR
+ je .binary_int
+ cmp rcx,NEBOC_TOKEN_SLASH
+ je .binary_int
+ cmp rcx,NEBOC_TOKEN_PERCENT
+ je .binary_int
+ cmp rcx,NEBOC_TOKEN_CARET
+ je .binary_int
+ cmp rcx,NEBOC_TOKEN_AND_AND
+ je .binary_bool
+ cmp rcx,NEBOC_TOKEN_OR_OR
+ je .binary_bool
+ cmp rcx,NEBOC_TOKEN_XOR
+ je .binary_xor
+ cmp rcx,NEBOC_TOKEN_EQUAL_EQUAL
+ je .binary_equal
+ cmp rcx,NEBOC_TOKEN_BANG_EQUAL
+ je .binary_equal
+ cmp rcx,NEBOC_TOKEN_LESS
+ je .binary_order
+ cmp rcx,NEBOC_TOKEN_LESS_EQUAL
+ je .binary_order
+ cmp rcx,NEBOC_TOKEN_GREATER
+ je .binary_order
+ cmp rcx,NEBOC_TOKEN_GREATER_EQUAL
+ jne .type_error_binary
+.binary_order:
+ cmp qword [rsp],NEBOC_BIND_TYPE_INT
+ jne .type_error_binary
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_INT
+ jne .type_error_binary
+ jmp .bool
+.binary_equal:
+ mov rax,[rsp]
+ cmp rax,[rsp+8]
+ jne .type_error_binary
+ cmp rax,NEBOC_BIND_TYPE_INT
+ je .bool
+ cmp rax,NEBOC_BIND_TYPE_BOOL
+ je .bool
+ cmp rax,NEBOC_BIND_TYPE_TEXT
+ jne .type_error_binary
+ jmp .bool
+.binary_xor:
+ mov rax,[rsp]
+ cmp rax,[rsp+8]
+ jne .type_error_binary
+ cmp rax,NEBOC_BIND_TYPE_INT
+ je .int
+ cmp rax,NEBOC_BIND_TYPE_BOOL
+ jne .type_error_binary
+ jmp .bool
+.binary_bool:
+ cmp qword [rsp],NEBOC_BIND_TYPE_BOOL
+ jne .type_error_binary
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_BOOL
+ jne .type_error_binary
+ jmp .bool
+.binary_int:
+ cmp qword [rsp],NEBOC_BIND_TYPE_INT
+ jne .type_error_binary
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_INT
+ jne .type_error_binary
+ jmp .int
+.type_error_unary:
+ mov rdx,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ jmp .type_error
+.type_error_binary:
+ mov rdx,[r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET]
+.type_error:
+ mov rdi,r12
+ mov esi,NEBOC_BIND_DIAG_TYPE_MISMATCH
+ call g05v_set_error
+ mov rax,-1
+ jmp .done
+.int:
+ mov eax,NEBOC_BIND_TYPE_INT
+ jmp .done
+.text:
+ mov eax,NEBOC_BIND_TYPE_TEXT
+ jmp .done
+.bool:
+ mov eax,NEBOC_BIND_TYPE_BOOL
+ jmp .done
+.unowned:
+ xor eax,eax
+ jmp .done
+.internal:
+ mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_INTERNAL
+ mov rax,-1
+.done:
+ add rsp,32
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
  ret
 
 ; request*, block node id, lexical depth -> status
@@ -497,16 +781,20 @@ g05v_analyze_block:
 .error_passthrough: mov eax,NEBOC_STATUS_INVALID_SOURCE
  jmp .done
 .break_outside:
- mov rdi,r12
- mov esi,NEBOC_DIAG_BREAK_OUTSIDE_LOOP
- xor edx,edx
- call g05v_set_error
+ mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],NEBOC_DIAG_BREAK_OUTSIDE_LOOP
+ mov rcx,[rax+NEBOC_AST_NODE_START_OFFSET]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_START_OFFSET],rcx
+ mov rcx,[rax+NEBOC_AST_NODE_END_OFFSET]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_END_OFFSET],rcx
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
  jmp .done
 .continue_outside:
- mov rdi,r12
- mov esi,NEBOC_DIAG_CONTINUE_OUTSIDE_LOOP
- xor edx,edx
- call g05v_set_error
+ mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],NEBOC_DIAG_CONTINUE_OUTSIDE_LOOP
+ mov rcx,[rax+NEBOC_AST_NODE_START_OFFSET]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_START_OFFSET],rcx
+ mov rcx,[rax+NEBOC_AST_NODE_END_OFFSET]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_END_OFFSET],rcx
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
  jmp .done
 .unreachable:
  mov rdi,r12
@@ -527,16 +815,16 @@ g05v_analyze_block:
  ret
 
 ; request*, while/loop node id, lexical depth -> status. The body is analyzed
-; on the live table to validate every operation, then the preheader snapshot is
-; restored: a while may execute zero times and loop-local declarations do not
-; escape. Each nested loop owns a disjoint fixed snapshot segment.
+; on the live table to validate every operation. A persistent body catalogue is
+; retained for codegen while the separate preheader snapshot is restored: a
+; while may execute zero times and loop-local declarations do not escape.
 g05v_analyze_loop:
  push rbx
  push r12
  push r13
  push r14
  push r15
- sub rsp,64
+ sub rsp,80
  mov r12,rdi
  mov r13,rsi
  mov r14,rdx
@@ -585,6 +873,20 @@ g05v_analyze_loop:
  mov rcx,[r12+NEBOC_VERTICAL_LOOP_DEPTH_OFFSET]
  cmp rcx,NEBOC_VERTICAL_MAX_LOOP_DEPTH
  jae .nesting
+ mov rax,[r12+NEBOC_VERTICAL_LOOP_SNAPSHOT_COUNT_OFFSET]
+ cmp rax,NEBOC_VERTICAL_MAX_LOOP_DEPTH
+ jae .nesting
+ mov [rsp+48],rax
+ inc qword [r12+NEBOC_VERTICAL_LOOP_SNAPSHOT_COUNT_OFFSET]
+ mov rcx,NEBOC_VERTICAL_LOOP_SNAPSHOT_BYTES
+ imul rcx,rax
+ mov rax,[r12+NEBOC_VERTICAL_LOOP_BODIES_OFFSET]
+ add rax,rcx
+ mov [rsp+56],rax
+ mov rax,[r12+NEBOC_VERTICAL_LOOP_BODY_COUNTS_OFFSET]
+ mov rcx,[rsp+48]
+ mov qword [rax+rcx*8],0
+ mov rcx,[r12+NEBOC_VERTICAL_LOOP_DEPTH_OFFSET]
  mov rax,neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_MAX_SYMBOLS*NEBOC_SYMBOL_RECORD_SIZE
  imul rax,rcx
  add rax,[r12+NEBOC_VERTICAL_LOOP_SNAPSHOTS_OFFSET]
@@ -602,6 +904,19 @@ g05v_analyze_loop:
  call g05v_analyze_block
  mov [rsp+40],rax
  dec qword [r12+NEBOC_VERTICAL_LOOP_DEPTH_OFFSET]
+ test eax,eax
+ jnz .restore_preheader
+ mov rax,[r12+NEBOC_VERTICAL_SYMBOL_COUNT_OFFSET]
+ mov [rsp+64],rax
+ mov rdi,[r12+NEBOC_VERTICAL_SYMBOLS_OFFSET]
+ mov rsi,[rsp+56]
+ mov rdx,rax
+ call g05v_copy_records
+ mov rax,[r12+NEBOC_VERTICAL_LOOP_BODY_COUNTS_OFFSET]
+ mov rcx,[rsp+48]
+ mov rdx,[rsp+64]
+ mov [rax+rcx*8],rdx
+.restore_preheader:
  mov rdi,[rsp+32]
  mov rsi,[rsp+16]
  mov rdx,[rsp+24]
@@ -617,10 +932,19 @@ g05v_analyze_loop:
  xor eax,eax
  jmp .done
 .condition_type:
+ ; The condition AST, not token zero, is the causal semantic span.
  mov rdi,r12
- mov esi,NEBOC_DIAG_WHILE_CONDITION_TYPE
- xor edx,edx
- call g05v_set_error
+ mov rsi,rbx
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],NEBOC_DIAG_WHILE_CONDITION_TYPE
+ mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_TOKEN_OFFSET],0
+ mov rcx,[rax+NEBOC_AST_NODE_START_OFFSET]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_START_OFFSET],rcx
+ mov rcx,[rax+NEBOC_AST_NODE_END_OFFSET]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_END_OFFSET],rcx
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
  jmp .done
 .nesting:
  mov rdi,r12
@@ -635,7 +959,7 @@ g05v_analyze_loop:
  mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_INTERNAL
  mov eax,NEBOC_STATUS_INTERNAL_ERROR
 .done:
- add rsp,64
+ add rsp,80
  pop r15
  pop r14
  pop r13
@@ -919,8 +1243,9 @@ g05v_analyze_assignment:
  pop rbx
  ret
 
-; request*, if statement id, depth -> status. One nesting level is sufficient
-; for the first vertical definite-assignment profile; deeper nesting is bounded.
+; request*, if statement id, depth -> status. Every if owns a persistent pair
+; of branch snapshots, allocated in semantic traversal order. This keeps nested
+; and sequential flow states disjoint while retaining them for codegen.
 g05v_analyze_if:
  push rbx
  push r12
@@ -933,10 +1258,23 @@ g05v_analyze_if:
  mov r14,rdx
  cmp r14,[r12+NEBOC_VERTICAL_MAX_DEPTH_OFFSET]
  jae .internal
- ; PF005 supports one top-level if/else merge. Nested branch tables are
- ; intentionally rejected instead of aliasing the fixed A/B work areas.
- test r14,r14
- jnz .internal
+ mov rax,[r12+NEBOC_VERTICAL_BRANCH_SNAPSHOT_COUNT_OFFSET]
+ cmp rax,NEBOC_VERTICAL_MAX_BRANCH_SNAPSHOTS
+ jae .internal
+ cmp qword [r12+NEBOC_VERTICAL_BRANCH_A_COUNTS_OFFSET],0
+ je .internal
+ cmp qword [r12+NEBOC_VERTICAL_BRANCH_B_COUNTS_OFFSET],0
+ je .internal
+ mov [rsp+56],rax                ; persistent snapshot index
+ inc qword [r12+NEBOC_VERTICAL_BRANCH_SNAPSHOT_COUNT_OFFSET]
+ mov rcx,NEBOC_VERTICAL_BRANCH_SNAPSHOT_BYTES
+ imul rcx,rax
+ mov rdx,[r12+NEBOC_VERTICAL_BRANCH_A_OFFSET]
+ add rdx,rcx
+ mov [rsp+64],rdx                ; this if's then table
+ mov rdx,[r12+NEBOC_VERTICAL_BRANCH_B_OFFSET]
+ add rdx,rcx
+ mov [rsp+72],rdx                ; this if's else table
  mov rdi,r12
  mov rsi,r13
  call g05v_node_ptr
@@ -979,15 +1317,15 @@ g05v_analyze_if:
  mov [rsp+32],rax                 ; original count
  ; Copy main into both branch tables.
  mov rdi,[r12+NEBOC_VERTICAL_SYMBOLS_OFFSET]
- mov rsi,[r12+NEBOC_VERTICAL_BRANCH_A_OFFSET]
+ mov rsi,[rsp+64]
  mov rdx,[rsp+32]
  call g05v_copy_records
  mov rdi,[r12+NEBOC_VERTICAL_SYMBOLS_OFFSET]
- mov rsi,[r12+NEBOC_VERTICAL_BRANCH_B_OFFSET]
+ mov rsi,[rsp+72]
  mov rdx,[rsp+32]
  call g05v_copy_records
  ; Then branch.
- mov rax,[r12+NEBOC_VERTICAL_BRANCH_A_OFFSET]
+ mov rax,[rsp+64]
  mov [r12+NEBOC_VERTICAL_SYMBOLS_OFFSET],rax
  mov rax,[rsp+32]
  mov [r12+NEBOC_VERTICAL_SYMBOL_COUNT_OFFSET],rax
@@ -1000,8 +1338,11 @@ g05v_analyze_if:
  mov rax,[r12+NEBOC_VERTICAL_SYMBOL_COUNT_OFFSET]
  mov [rsp+40],rax
  mov [r12+NEBOC_VERTICAL_BRANCH_A_COUNT_OFFSET],rax
+ mov rcx,[r12+NEBOC_VERTICAL_BRANCH_A_COUNTS_OFFSET]
+ mov rdx,[rsp+56]
+ mov [rcx+rdx*8],rax
  ; Else branch or unchanged false path.
- mov rax,[r12+NEBOC_VERTICAL_BRANCH_B_OFFSET]
+ mov rax,[rsp+72]
  mov [r12+NEBOC_VERTICAL_SYMBOLS_OFFSET],rax
  mov rax,[rsp+32]
  mov [r12+NEBOC_VERTICAL_SYMBOL_COUNT_OFFSET],rax
@@ -1013,17 +1354,29 @@ g05v_analyze_if:
  test rax,rax
  jz .restore_internal
  cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_BLOCK
+ je .else_block
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IF_STMT
  jne .restore_internal
  mov rdi,r12
  mov rsi,[rsp+16]
  lea rdx,[r14+1]
+ call g05v_analyze_if
+ jmp .else_checked
+.else_block:
+ mov rdi,r12
+ mov rsi,[rsp+16]
+ lea rdx,[r14+1]
  call g05v_analyze_block
+.else_checked:
  test eax,eax
  jnz .restore_error
 .else_done:
  mov rax,[r12+NEBOC_VERTICAL_SYMBOL_COUNT_OFFSET]
  mov [rsp+48],rax
  mov [r12+NEBOC_VERTICAL_BRANCH_B_COUNT_OFFSET],rax
+ mov rcx,[r12+NEBOC_VERTICAL_BRANCH_B_COUNTS_OFFSET]
+ mov rdx,[rsp+56]
+ mov [rcx+rdx*8],rax
  ; Restore main table and merge only symbols visible before the branch.
  mov rax,[rsp+24]
  mov [r12+NEBOC_VERTICAL_SYMBOLS_OFFSET],rax
@@ -1037,9 +1390,9 @@ g05v_analyze_if:
  imul rax,NEBOC_SYMBOL_RECORD_SIZE
  mov rbx,[rsp+24]
  add rbx,rax
- mov rcx,[r12+NEBOC_VERTICAL_BRANCH_A_OFFSET]
+ mov rcx,[rsp+64]
  add rcx,rax
- mov rdx,[r12+NEBOC_VERTICAL_BRANCH_B_OFFSET]
+ mov rdx,[rsp+72]
  add rdx,rax
  mov rax,[rcx+NEBOC_SYMBOL_WRITE_GENERATION_OFFSET]
  mov rsi,[rdx+NEBOC_SYMBOL_WRITE_GENERATION_OFFSET]
@@ -1218,6 +1571,10 @@ g05v_expr_type:
  je .bool
  cmp rcx,NEBOC_TOKEN_GREATER_EQUAL
  je .bool
+ cmp rcx,NEBOC_TOKEN_AND_AND
+ je .binary_need_bool
+ cmp rcx,NEBOC_TOKEN_OR_OR
+ je .binary_need_bool
  ; The bounded composition profile lowers checked integer arithmetic.  Reject
  ; non-Int arithmetic structurally instead of letting codegen reinterpret Float,
  ; Text, Char, Bytes or Bool payload bits as signed integers.
@@ -1235,6 +1592,11 @@ g05v_expr_type:
  cmp qword [rsp],NEBOC_BIND_TYPE_INT
  jne .binary_type_error
  mov rax,NEBOC_BIND_TYPE_INT
+ jmp .done
+.binary_need_bool:
+ cmp qword [rsp],NEBOC_BIND_TYPE_BOOL
+ jne .binary_type_error
+ mov rax,NEBOC_BIND_TYPE_BOOL
  jmp .done
 .binary_type_error:
  mov rdi,r12
@@ -1254,6 +1616,13 @@ g05v_expr_type:
  call g05v_token_match
  test eax,eax
  jnz .call_console
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_scan]
+ mov ecx,n_scan_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_scan
  mov rdi,r12
  mov rsi,rbx
  lea rdx,[rel n_from_byte]
@@ -1419,6 +1788,20 @@ g05v_expr_type:
 .console:
  mov eax,NEBOC_BIND_TYPE_CONSOLE
  jmp .done
+.call_scan:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .call_type_error
+ mov rdi,r12
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ lea rdx,[r14+1]
+ call g05v_expr_type
+ cmp rax,-1
+ je .done
+ cmp rax,NEBOC_BIND_TYPE_TEXT
+ je .text
+ cmp rax,NEBOC_BIND_TYPE_CONSOLE
+ jne .call_type_error
+ jmp .text
 .call_bytes_constructor:
  ; TIPOS-PRIMITIVOS-ESCALARES validates exact arity, literal-only arguments and 0..255 range in
  ; the text_char_unicode_e_bytes pass. bindings_constantes_mutabilidade_e_definite_assignment only transports the resulting immutable Bytes type.
@@ -1853,7 +2236,7 @@ g05v_find_symbol:
  pop rbx
  ret
 
-; request*, name token -> 1 iff a first-depth branch-local declaration exists
+; request*, name token -> 1 iff a closed branch/loop-local declaration exists
 ; after the current root visibility boundary.
 g05v_name_in_closed_scope:
  push rbx
@@ -1868,6 +2251,37 @@ g05v_name_in_closed_scope:
  cmp rax,[r12+NEBOC_VERTICAL_ROOT_SYMBOLS_OFFSET]
  jne .no
  mov r15,[r12+NEBOC_VERTICAL_SYMBOL_COUNT_OFFSET]
+ cmp qword [r12+NEBOC_VERTICAL_BRANCH_A_COUNTS_OFFSET],0
+ je .legacy
+ cmp qword [r12+NEBOC_VERTICAL_BRANCH_B_COUNTS_OFFSET],0
+ je .legacy
+ mov qword [rsp],0
+.snapshot:
+ mov rax,[rsp]
+ cmp rax,[r12+NEBOC_VERTICAL_BRANCH_SNAPSHOT_COUNT_OFFSET]
+ jae .loop_snapshots
+ mov rcx,NEBOC_VERTICAL_BRANCH_SNAPSHOT_BYTES
+ imul rcx,rax
+ mov rbx,[r12+NEBOC_VERTICAL_BRANCH_A_OFFSET]
+ add rbx,rcx
+ mov rdx,[r12+NEBOC_VERTICAL_BRANCH_A_COUNTS_OFFSET]
+ mov r14,[rdx+rax*8]
+ call g05v_name_in_closed_table
+ test eax,eax
+ jnz .yes
+ mov rax,[rsp]
+ mov rcx,NEBOC_VERTICAL_BRANCH_SNAPSHOT_BYTES
+ imul rcx,rax
+ mov rbx,[r12+NEBOC_VERTICAL_BRANCH_B_OFFSET]
+ add rbx,rcx
+ mov rdx,[r12+NEBOC_VERTICAL_BRANCH_B_COUNTS_OFFSET]
+ mov r14,[rdx+rax*8]
+ call g05v_name_in_closed_table
+ test eax,eax
+ jnz .yes
+ inc qword [rsp]
+ jmp .snapshot
+.legacy:
  mov rbx,[r12+NEBOC_VERTICAL_BRANCH_A_OFFSET]
  mov r14,[r12+NEBOC_VERTICAL_BRANCH_A_COUNT_OFFSET]
  call g05v_name_in_closed_table
@@ -1878,6 +2292,27 @@ g05v_name_in_closed_scope:
  call g05v_name_in_closed_table
  test eax,eax
  jnz .yes
+.loop_snapshots:
+ cmp qword [r12+NEBOC_VERTICAL_LOOP_BODIES_OFFSET],0
+ je .no
+ cmp qword [r12+NEBOC_VERTICAL_LOOP_BODY_COUNTS_OFFSET],0
+ je .no
+ mov qword [rsp+8],0
+.loop_snapshot:
+ mov rax,[rsp+8]
+ cmp rax,[r12+NEBOC_VERTICAL_LOOP_SNAPSHOT_COUNT_OFFSET]
+ jae .no
+ mov rcx,NEBOC_VERTICAL_LOOP_SNAPSHOT_BYTES
+ imul rcx,rax
+ mov rbx,[r12+NEBOC_VERTICAL_LOOP_BODIES_OFFSET]
+ add rbx,rcx
+ mov rdx,[r12+NEBOC_VERTICAL_LOOP_BODY_COUNTS_OFFSET]
+ mov r14,[rdx+rax*8]
+ call g05v_name_in_closed_table
+ test eax,eax
+ jnz .yes
+ inc qword [rsp+8]
+ jmp .loop_snapshot
 .no:
  xor eax,eax
  jmp .done

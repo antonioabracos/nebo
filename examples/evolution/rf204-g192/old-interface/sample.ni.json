@@ -1,0 +1,8 @@
+{
+  "exports": [
+    "nebo://legacy/sample"
+  ],
+  "fingerprint": "historical-fixture-not-trusted",
+  "module": "legacy.sample",
+  "schema": "0.2"
+}

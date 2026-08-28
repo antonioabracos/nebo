@@ -1,0 +1,374 @@
+// NEBO-v1.0-INVENTARIO-PRATICO.no
+//
+// Programa prático de pré-publicação para Nebo 1.0.
+//
+// Objetivo:
+// - abrir a Nebo Console;
+// - receber dois valores com Console + Scan;
+// - produzir um relatório de inventário bounded;
+// - exercitar bindings, Text/Unicode, Bool, Int, Char, Float,
+//   Buffer, Bytes, Option, Slice, Array, Tuple, enum, newtype,
+//   Matrix e Tensor;
+// - verificar composição de vários owners num único start().
+//
+// Nota de honestidade sobre G007/G008:
+// A sintaxe source pública de List<T> e Dict<K,V> não tem callable material
+// autenticado no perfil final v1.0. Para não inventar sintaxe, este exemplo usa:
+// - Buffer como lista bounded mutável;
+// - dois Buffers paralelos como mapa/dicionário bounded código -> valor.
+//
+// Valores esperados mais importantes:
+// - total de stock: 31;
+// - total por aritmética: 31;
+// - totais coincidem: true;
+// - soma da Matrix inicial: 42;
+// - soma da Matrix atualizada: 44;
+// - soma do Tensor: 42;
+// - assinatura Bytes "NEBO": 4 bytes.
+
+enum InventoryState { Ready, Audited, Closed }
+newtype ProductId(Int);
+type alias Count = Int;
+
+start() {
+    "============================================================".console();
+    "NEBO 1.0 — INVENTÁRIO PRÁTICO DE PRÉ-PUBLICAÇÃO".console();
+    "============================================================".console();
+    "Este programa usa a janela própria da Nebo Console.".console();
+    "Preenche os dois campos e observa o relatório completo.".console();
+
+    // ---------------------------------------------------------------------
+    // 1. Console + Scan + Text Unicode
+    // ---------------------------------------------------------------------
+
+    "Nome do operador: ".console().scan().operatorName;
+    "Etiqueta da sessão: ".console().scan().sessionLabel;
+
+    "Operador recebido:".console();
+    operatorName.console();
+
+    "Etiqueta recebida:".console();
+    sessionLabel.console();
+
+    operatorName.byteLength().operatorNameBytes;
+    operatorName.codepointCount().operatorNameCodepoints;
+    sessionLabel.byteLength().sessionLabelBytes;
+    sessionLabel.codepointCount().sessionLabelCodepoints;
+
+    "Bytes UTF-8 do nome:".console();
+    operatorNameBytes.console();
+    "Codepoints do nome:".console();
+    operatorNameCodepoints.console();
+    "Bytes UTF-8 da etiqueta:".console();
+    sessionLabelBytes.console();
+    "Codepoints da etiqueta:".console();
+    sessionLabelCodepoints.console();
+
+    // ---------------------------------------------------------------------
+    // 2. Lista bounded mutável: Buffer com capacidade 4
+    // ---------------------------------------------------------------------
+
+    "------------------------------------------------------------".console();
+    "LISTA BOUNDED — quantidades de quatro produtos".console();
+
+    Buffer.withCapacity(4).stockList;
+    stockList.push(12).stockPush0;
+    stockList.push(7).stockPush1;
+    stockList.push(3).stockPush2;
+    stockList.push(9).stockPush3;
+
+    stockList.length().stockCount;
+    stockList.capacity().stockCapacity;
+
+    stockList.at(0).stock0;
+    stockList.at(1).stock1;
+    stockList.at(2).stock2;
+    stockList.at(3).stock3;
+
+    "Número de posições usadas:".console();
+    stockCount.console();
+    "Capacidade da lista bounded:".console();
+    stockCapacity.console();
+
+    "Stocks individuais:".console();
+    stock0.console();
+    stock1.console();
+    stock2.console();
+    stock3.console();
+
+    // Buffer.view usa o nome do binding de destino no modelo receiver-first.
+    stockList.stockView(0, 4).stockView;
+    stockView.sum().stockTotal;
+
+    "Total de unidades calculado pela Slice:".console();
+    stockTotal.console();
+
+    // ---------------------------------------------------------------------
+    // 3. Dicionário bounded: Buffers paralelos código -> preço/stock
+    // ---------------------------------------------------------------------
+
+    "------------------------------------------------------------".console();
+    "DICIONÁRIO BOUNDED — código -> preço e código -> stock".console();
+
+    Buffer.zeroed(4).productCodes;
+    productCodes.set(0, 101).oldProductCode0;
+    productCodes.set(1, 102).oldProductCode1;
+    productCodes.set(2, 103).oldProductCode2;
+    productCodes.set(3, 104).oldProductCode3;
+
+    Buffer.zeroed(4).priceMap;
+    priceMap.set(0, 125).oldPrice0;
+    priceMap.set(1, 99).oldPrice1;
+    priceMap.set(2, 215).oldPrice2;
+    priceMap.set(3, 180).oldPrice3;
+
+    "Produto 1 — código / preço-cêntimos / stock:".console();
+    productCodes.at(0).productCode0;
+    priceMap.at(0).productPrice0;
+    productCode0.console();
+    productPrice0.console();
+    stock0.console();
+
+    "Produto 2 — código / preço-cêntimos / stock:".console();
+    productCodes.at(1).productCode1;
+    priceMap.at(1).productPrice1;
+    productCode1.console();
+    productPrice1.console();
+    stock1.console();
+
+    "Produto 3 — código / preço-cêntimos / stock:".console();
+    productCodes.at(2).productCode2;
+    priceMap.at(2).productPrice2;
+    productCode2.console();
+    productPrice2.console();
+    stock2.console();
+
+    "Produto 4 — código / preço-cêntimos / stock:".console();
+    productCodes.at(3).productCode3;
+    priceMap.at(3).productPrice3;
+    productCode3.console();
+    productPrice3.console();
+    stock3.console();
+
+    // ---------------------------------------------------------------------
+    // 4. Option: lookup seguro existente e lookup ausente
+    // ---------------------------------------------------------------------
+
+    "------------------------------------------------------------".console();
+    "LOOKUP SEGURO COM OPTION".console();
+
+    productCodes.get(2).existingProductOption;
+    existingProductOption.isSome().existingProductFound;
+    existingProductOption.unwrapOr(0).existingProductSafe;
+
+    productCodes.get(9).missingProductOption;
+    missingProductOption.isNone().missingProductConfirmed;
+    missingProductOption.unwrapOr(255).missingProductFallback;
+
+    "Produto existente encontrado:".console();
+    existingProductFound.console();
+    "Código existente:".console();
+    existingProductSafe.console();
+
+    "Produto ausente confirmado:".console();
+    missingProductConfirmed.console();
+    "Fallback do produto ausente:".console();
+    missingProductFallback.console();
+
+    // ---------------------------------------------------------------------
+    // 5. Bytes, slicing e bridge Buffer -> Bytes
+    // ---------------------------------------------------------------------
+
+    "------------------------------------------------------------".console();
+    "BYTES — assinatura NEBO e pacote congelado".console();
+
+    Bytes.fromValues(78, 69, 66, 79).neboSignature;
+    neboSignature.byteLength().signatureLength;
+    neboSignature.at(0).signatureN;
+    neboSignature.at(1).signatureE;
+    neboSignature.at(2).signatureB;
+    neboSignature.at(3).signatureO;
+    neboSignature.slice(1, 3).signatureMiddle;
+    signatureMiddle.byteLength().signatureMiddleLength;
+    signatureMiddle.at(0).signatureMiddleFirst;
+
+    "Comprimento da assinatura:".console();
+    signatureLength.console();
+    "Octetos N/E/B/O:".console();
+    signatureN.console();
+    signatureE.console();
+    signatureB.console();
+    signatureO.console();
+    "Comprimento do slice central:".console();
+    signatureMiddleLength.console();
+    "Primeiro octeto do slice central:".console();
+    signatureMiddleFirst.console();
+
+    Buffer.zeroed(4).packetBuffer;
+    packetBuffer.set(0, 1).oldPacket0;
+    packetBuffer.set(1, 2).oldPacket1;
+    packetBuffer.set(2, 3).oldPacket2;
+    packetBuffer.set(3, 4).oldPacket3;
+    packetBuffer.freeze().packetBytes;
+
+    packetBytes.byteLength().packetLength;
+    packetBytes.at(3).packetLast;
+    packetBuffer.at(3).sourceStillPresent;
+
+    "Bytes no pacote congelado:".console();
+    packetLength.console();
+    "Último byte congelado:".console();
+    packetLast.console();
+    "Origem preservada depois de freeze:".console();
+    sourceStillPresent.console();
+
+    // ---------------------------------------------------------------------
+    // 6. Array fixa e Slice
+    // ---------------------------------------------------------------------
+
+    "------------------------------------------------------------".console();
+    "ARRAY FIXA E SLICE".console();
+
+    Array<Int,4> [12, 7, 3, 9].fixedStock;
+    fixedStock.length().fixedStockLength;
+    fixedStock.at(2).fixedStockThird;
+    fixedStock.asSlice().fixedStockView;
+    fixedStockView.sum().fixedStockTotal;
+
+    "Comprimento da Array:".console();
+    fixedStockLength.console();
+    "Terceiro elemento da Array:".console();
+    fixedStockThird.console();
+    "Soma da Array via Slice:".console();
+    fixedStockTotal.console();
+
+    // ---------------------------------------------------------------------
+    // 7. Tuple, enum, newtype e alias
+    // ---------------------------------------------------------------------
+
+    "------------------------------------------------------------".console();
+    "TIPOS COMPOSTOS E NOMINAIS".console();
+
+    Tuple.of(101, 4, 31).inventoryMetadata;
+    inventoryMetadata.length().metadataLength;
+    inventoryMetadata.at<0>().metadataFirst;
+    inventoryMetadata.at<2>().metadataThird;
+
+    InventoryState.Ready.discriminant().inventoryStateCode;
+    ProductId(101).unwrap().primaryProductId;
+    Count.sizeOf().countStorageBytes;
+
+    "Campos na Tuple:".console();
+    metadataLength.console();
+    "Primeiro campo da Tuple:".console();
+    metadataFirst.console();
+    "Terceiro campo da Tuple:".console();
+    metadataThird.console();
+    "Discriminante do estado:".console();
+    inventoryStateCode.console();
+    "ProductId desembrulhado:".console();
+    primaryProductId.console();
+    "Tamanho de Count/Int:".console();
+    countStorageBytes.console();
+
+    // ---------------------------------------------------------------------
+    // 8. Unicode, Char e conversão numérica
+    // ---------------------------------------------------------------------
+
+    "------------------------------------------------------------".console();
+    "UNICODE E CONVERSÃO NUMÉRICA".console();
+
+    "Nébo inventário 😀".byteLength().unicodeBytes;
+    "Nébo inventário 😀".codepointCount().unicodeCodepoints;
+    'ç'.codepoint().cedillaCodepoint;
+    '😀'.codepoint().emojiCodepoint;
+    42.toFloat().isFinite().convertedFloatIsFinite;
+
+    "Bytes da frase Unicode:".console();
+    unicodeBytes.console();
+    "Codepoints da frase Unicode:".console();
+    unicodeCodepoints.console();
+    "Codepoint de ç:".console();
+    cedillaCodepoint.console();
+    "Codepoint de 😀:".console();
+    emojiCodepoint.console();
+    "42 convertido para Float é finito:".console();
+    convertedFloatIsFinite.console();
+
+    // ---------------------------------------------------------------------
+    // 9. Matrix: construção, leitura, atualização e redução
+    // ---------------------------------------------------------------------
+
+    "------------------------------------------------------------".console();
+    "MATRIX 2x3 — análise científica bounded".console();
+
+    Matrix<Int>.filled(2, 3, 7).stockMatrix;
+    stockMatrix.sum().matrixTotal;
+    stockMatrix.at(1, 2).matrixLastCell;
+    stockMatrix.isSquare().matrixIsSquare;
+    stockMatrix.set(1, 2, 9).updatedStockMatrix;
+    updatedStockMatrix.sum().updatedMatrixTotal;
+
+    "Soma da Matrix inicial:".console();
+    matrixTotal.console();
+    "Célula [1,2] inicial:".console();
+    matrixLastCell.console();
+    "Matrix é quadrada:".console();
+    matrixIsSquare.console();
+    "Soma da Matrix atualizada:".console();
+    updatedMatrixTotal.console();
+
+    // ---------------------------------------------------------------------
+    // 10. Tensor: shape por Tuple e redução
+    // ---------------------------------------------------------------------
+
+    "------------------------------------------------------------".console();
+    "TENSOR 2x3 — construção e soma".console();
+
+    Tensor<Int>.filled(Tuple.of(2, 3), 7).stockTensor;
+    stockTensor.sum().tensorTotal;
+
+    "Soma do Tensor:".console();
+    tensorTotal.console();
+
+    // ---------------------------------------------------------------------
+    // 11. Verificação cruzada e controlo de fluxo
+    // ---------------------------------------------------------------------
+
+    "------------------------------------------------------------".console();
+    "VERIFICAÇÃO CRUZADA".console();
+
+    (stock0 + stock1 + stock2 + stock3).stockTotalArithmetic;
+    (stockTotal == stockTotalArithmetic).stockTotalsMatch;
+    (stockTotal == fixedStockTotal).bufferAndArrayMatch;
+    (matrixTotal == tensorTotal).matrixAndTensorMatch;
+
+    "Total por aritmética:".console();
+    stockTotalArithmetic.console();
+    "Buffer e aritmética coincidem:".console();
+    stockTotalsMatch.console();
+    "Buffer e Array coincidem:".console();
+    bufferAndArrayMatch.console();
+    "Matrix e Tensor coincidem:".console();
+    matrixAndTensorMatch.console();
+
+    if stockTotalsMatch {
+        "PASS — o inventário bounded está coerente.".console();
+    } else {
+        "FAIL — os totais do inventário divergem.".console();
+    }
+
+    // Liberta a view antes de limpar o Buffer owner.
+    stockView.release().stockViewReleased;
+    stockList.clear().stockListCleared;
+    stockList.length().stockAfterClear;
+
+    "Comprimento da lista após clear:".console();
+    stockAfterClear.console();
+
+    "============================================================".console();
+    "FIM DO TESTE — fecha a janela Nebo Console para terminar.".console();
+    "============================================================".console();
+
+    0.return;
+}

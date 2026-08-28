@@ -30,6 +30,98 @@ ls_n_vector: db 'Vector'
 ls_n_vector_len equ $-ls_n_vector
 ls_n_matrix: db 'Matrix'
 ls_n_matrix_len equ $-ls_n_matrix
+ls_n_zeros: db 'zeros'
+ls_n_zeros_len equ $-ls_n_zeros
+ls_n_filled: db 'filled'
+ls_n_filled_len equ $-ls_n_filled
+ls_n_from_buffer: db 'fromBuffer'
+ls_n_from_buffer_len equ $-ls_n_from_buffer
+ls_n_from_rows: db 'fromRows'
+ls_n_from_rows_len equ $-ls_n_from_rows
+ls_n_from_nested: db 'fromNested'
+ls_n_from_nested_len equ $-ls_n_from_nested
+ls_n_tuple: db 'Tuple'
+ls_n_tuple_len equ $-ls_n_tuple
+ls_n_of: db 'of'
+ls_n_of_len equ $-ls_n_of
+ls_n_add: db 'add'
+ls_n_add_len equ $-ls_n_add
+ls_n_rows: db 'rows'
+ls_n_rows_len equ $-ls_n_rows
+ls_n_columns: db 'columns'
+ls_n_columns_len equ $-ls_n_columns
+ls_n_layout: db 'layout'
+ls_n_layout_len equ $-ls_n_layout
+ls_n_at: db 'at'
+ls_n_at_len equ $-ls_n_at
+ls_n_set: db 'set'
+ls_n_set_len equ $-ls_n_set
+ls_n_row: db 'row'
+ls_n_row_len equ $-ls_n_row
+ls_n_column_method: db 'column'
+ls_n_column_method_len equ $-ls_n_column_method
+ls_n_slice_method: db 'slice'
+ls_n_slice_method_len equ $-ls_n_slice_method
+ls_n_transpose_view: db 'transposeView'
+ls_n_transpose_view_len equ $-ls_n_transpose_view
+ls_n_contiguous: db 'contiguous'
+ls_n_contiguous_len equ $-ls_n_contiguous
+ls_n_subtract: db 'subtract'
+ls_n_subtract_len equ $-ls_n_subtract
+ls_n_multiply_elements: db 'multiplyElements'
+ls_n_multiply_elements_len equ $-ls_n_multiply_elements
+ls_n_scale: db 'scale'
+ls_n_scale_len equ $-ls_n_scale
+ls_n_trace: db 'trace'
+ls_n_trace_len equ $-ls_n_trace
+ls_n_is_square: db 'isSquare'
+ls_n_is_square_len equ $-ls_n_is_square
+ls_n_matmul: db 'matmul'
+ls_n_matmul_len equ $-ls_n_matmul
+ls_n_matmul_into: db 'matmulInto'
+ls_n_matmul_into_len equ $-ls_n_matmul_into
+ls_n_serialized_size_nbm1: db 'serializedSizeNBM1'
+ls_n_serialized_size_nbm1_len equ $-ls_n_serialized_size_nbm1
+ls_n_serialize_nbm1: db 'serializeNBM1'
+ls_n_serialize_nbm1_len equ $-ls_n_serialize_nbm1
+ls_n_deserialize_nbm1: db 'deserializeNBM1'
+ls_n_deserialize_nbm1_len equ $-ls_n_deserialize_nbm1
+ls_n_length: db 'length'
+ls_n_length_len equ $-ls_n_length
+ls_n_return: db 'return'
+ls_n_return_len equ $-ls_n_return
+ls_n_self: db 'self'
+ls_n_self_len equ $-ls_n_self
+; pointer, length, operation, argument count, identifier-argument, result kind.
+; The table is the bounded public Matrix<Int> operation registry consumed by
+; the structural parser; it is independent of source paths and fixture names.
+ls_matrix_operation_table:
+ dq ls_n_rows,ls_n_rows_len,NEBOC_MATRIX_OPERATION_ROWS,0,0,NEBOC_MATRIX_RESULT_SCALAR
+ dq ls_n_columns,ls_n_columns_len,NEBOC_MATRIX_OPERATION_COLUMNS,0,0,NEBOC_MATRIX_RESULT_SCALAR
+ dq ls_n_layout,ls_n_layout_len,NEBOC_MATRIX_OPERATION_LAYOUT,0,0,NEBOC_MATRIX_RESULT_SCALAR
+ dq ls_n_at,ls_n_at_len,NEBOC_MATRIX_OPERATION_AT,2,0,NEBOC_MATRIX_RESULT_SCALAR
+ dq ls_n_set,ls_n_set_len,NEBOC_MATRIX_OPERATION_SET,3,0,NEBOC_MATRIX_RESULT_OWNED
+ dq ls_n_row,ls_n_row_len,NEBOC_MATRIX_OPERATION_ROW,1,0,NEBOC_MATRIX_RESULT_VIEW
+ dq ls_n_column_method,ls_n_column_method_len,NEBOC_MATRIX_OPERATION_COLUMN,1,0,NEBOC_MATRIX_RESULT_VIEW
+ dq ls_n_slice_method,ls_n_slice_method_len,NEBOC_MATRIX_OPERATION_SLICE,4,0,NEBOC_MATRIX_RESULT_VIEW
+ dq ls_n_transpose_view,ls_n_transpose_view_len,NEBOC_MATRIX_OPERATION_TRANSPOSE_VIEW,0,0,NEBOC_MATRIX_RESULT_VIEW
+ dq ls_n_contiguous,ls_n_contiguous_len,NEBOC_MATRIX_OPERATION_CONTIGUOUS,0,0,NEBOC_MATRIX_RESULT_OWNED
+ dq ls_n_add,ls_n_add_len,NEBOC_MATRIX_OPERATION_ADD,1,1,NEBOC_MATRIX_RESULT_OWNED
+ dq ls_n_subtract,ls_n_subtract_len,NEBOC_MATRIX_OPERATION_SUBTRACT,1,1,NEBOC_MATRIX_RESULT_OWNED
+ dq ls_n_multiply_elements,ls_n_multiply_elements_len,NEBOC_MATRIX_OPERATION_MULTIPLY_ELEMENTS,1,1,NEBOC_MATRIX_RESULT_OWNED
+ dq ls_n_scale,ls_n_scale_len,NEBOC_MATRIX_OPERATION_SCALE,1,0,NEBOC_MATRIX_RESULT_OWNED
+ dq ls_n_sum,ls_n_sum_len,NEBOC_MATRIX_OPERATION_SUM,0,0,NEBOC_MATRIX_RESULT_SCALAR
+ dq ls_n_min,ls_n_min_len,NEBOC_MATRIX_OPERATION_MIN,0,0,NEBOC_MATRIX_RESULT_SCALAR
+ dq ls_n_max,ls_n_max_len,NEBOC_MATRIX_OPERATION_MAX,0,0,NEBOC_MATRIX_RESULT_SCALAR
+ dq ls_n_trace,ls_n_trace_len,NEBOC_MATRIX_OPERATION_TRACE,0,0,NEBOC_MATRIX_RESULT_SCALAR
+ dq ls_n_is_square,ls_n_is_square_len,NEBOC_MATRIX_OPERATION_IS_SQUARE,0,0,NEBOC_MATRIX_RESULT_SCALAR
+ dq ls_n_matmul,ls_n_matmul_len,NEBOC_MATRIX_OPERATION_MATMUL,1,1,NEBOC_MATRIX_RESULT_OWNED
+ dq ls_n_matmul_into,ls_n_matmul_into_len,NEBOC_MATRIX_OPERATION_MATMUL_INTO,1,1,NEBOC_MATRIX_RESULT_OWNED
+ dq ls_n_serialized_size_nbm1,ls_n_serialized_size_nbm1_len,NEBOC_MATRIX_OPERATION_SERIALIZED_SIZE_NBM1,0,0,NEBOC_MATRIX_RESULT_SCALAR
+ dq ls_n_serialize_nbm1,ls_n_serialize_nbm1_len,NEBOC_MATRIX_OPERATION_SERIALIZE_NBM1,0,0,NEBOC_MATRIX_RESULT_ARRAY_I64_70
+ dq ls_n_deserialize_nbm1,ls_n_deserialize_nbm1_len,NEBOC_MATRIX_OPERATION_DESERIALIZE_NBM1,2,1,NEBOC_MATRIX_RESULT_OWNED
+ls_matrix_operation_count equ 24
+ls_matrix_operation_row_qwords equ 6
 ls_n_tensor: db 'Tensor'
 ls_n_tensor_len equ $-ls_n_tensor
 ls_n_sparse: db 'sparse'
@@ -130,6 +222,15 @@ ls_collection_names: resq LS_MAX_COLLECTIONS
 ls_collection_values: resq LS_MAX_COLLECTIONS*LS_COLLECTION_VALUES
 ls_collection_value_counts: resq LS_MAX_COLLECTIONS
 ls_wrapper_spec: resq 1
+ls_tensor_source_name: resq 1
+ls_tensor_source_extent: resq 1
+ls_tensor_filled_binding: resq 1
+ls_tensor_filled_rank: resq 1
+ls_tensor_filled_dim0: resq 1
+ls_tensor_filled_dim1: resq 1
+ls_tensor_filled_dim2: resq 1
+ls_tensor_filled_count: resq 1
+ls_tensor_filled_value: resq 1
 ls_scratch_end:
 
 section .text
@@ -1108,6 +1209,2329 @@ NEBOC_ABI_FUNCTION neboc_array_vertical_recognize
  ret
 
 ; ---------------------------------------------------------------------------
+; C11-F01 exact Matrix<Int>.zeros(rows, columns) parser/type vertical.
+; ---------------------------------------------------------------------------
+; Consume Matrix<Int>. and leave the cursor at the constructor atom.
+ls_matrix_type_prefix:
+ sub rsp,8
+ lea rsi,[rel ls_n_matrix]
+ mov edx,ls_n_matrix_len
+ call ls_expect_atom
+ test eax,eax
+ jz .done
+ mov edi,NEBOC_TOKEN_LESS
+ call ls_expect_kind
+ test eax,eax
+ jz .done
+ lea rsi,[rel ls_n_int]
+ mov edx,ls_n_int_len
+ call ls_expect_atom
+ test eax,eax
+ jz .done
+ mov edi,NEBOC_TOKEN_GREATER
+ call ls_expect_kind
+ test eax,eax
+ jz .done
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+.done:
+ add rsp,8
+ ret
+
+; Consume `.identifier;`.  EAX boolean, RDX identifier token index.
+ls_matrix_binding:
+ push rbx
+ sub rsp,8
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .no
+ mov rbx,[rel ls_cursor]
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_SEMICOLON
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov rdx,rbx
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,8
+ pop rbx
+ ret
+
+; RDI receiver binding token -> consume receiver.sum(); } EOF.
+ls_matrix_sum_tail:
+ push rbx
+ sub rsp,8
+ mov rbx,rdi
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .no
+ mov rsi,[rel ls_cursor]
+ mov rdi,rbx
+ call ls_name_equal
+ test eax,eax
+ jz .no
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ lea rsi,[rel ls_n_sum]
+ mov edx,ls_n_sum_len
+ call ls_expect_atom
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_finish_program
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,8
+ pop rbx
+ ret
+
+; Consume an identifier that must denote the binding at token index RDI.
+ls_matrix_expect_same_identifier:
+ push rbx
+ sub rsp,8
+ mov rbx,rdi
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .no
+ mov rsi,[rel ls_cursor]
+ mov rdi,rbx
+ call ls_name_equal
+ test eax,eax
+ jz .no
+ inc qword [rel ls_cursor]
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,8
+ pop rbx
+ ret
+
+; Classify and consume one selected operation atom.  Success returns EAX=1,
+; operation in RDX, argc in RCX, identifier-argument flag in R8 and result kind
+; in R9.  The complete source is never inspected or hashed by this classifier.
+ls_matrix_operation_current:
+ push rbx
+ push r12
+ sub rsp,8
+ lea rbx,[rel ls_matrix_operation_table]
+ mov r12d,ls_matrix_operation_count
+.loop:
+ mov rdi,[rel ls_cursor]
+ mov rsi,[rbx]
+ mov rdx,[rbx+8]
+ call ls_token_match
+ test eax,eax
+ jnz .found
+ add rbx,ls_matrix_operation_row_qwords*8
+ dec r12
+ jnz .loop
+ xor eax,eax
+ jmp .done
+.found:
+ inc qword [rel ls_cursor]
+ mov rdx,[rbx+16]
+ mov rcx,[rbx+24]
+ mov r8,[rbx+32]
+ mov r9,[rbx+40]
+ mov eax,1
+.done:
+ add rsp,8
+ pop r12
+ pop rbx
+ ret
+
+; Parse Matrix<Int>.filled(rows, columns, value).binding; at the current
+; cursor.  Success: EAX=1, RDX=binding token, RCX=rows, R8=columns, R9=fill.
+ls_matrix_parse_filled_binding:
+ push rbp
+ mov rbp,rsp
+ sub rsp,48
+ call ls_matrix_type_prefix
+ test eax,eax
+ jz .no
+ lea rsi,[rel ls_n_filled]
+ mov edx,ls_n_filled_len
+ call ls_expect_atom
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_parse_signed_int
+ test eax,eax
+ jz .no
+ test rdx,rdx
+ js .no
+ cmp rdx,8
+ ja .no
+ mov [rsp],rdx
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_parse_signed_int
+ test eax,eax
+ jz .no
+ test rdx,rdx
+ js .no
+ cmp rdx,8
+ ja .no
+ mov [rsp+8],rdx
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_parse_signed_int
+ test eax,eax
+ jz .no
+ mov [rsp+16],rdx
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov rax,[rsp]
+ imul rax,[rsp+8]
+ jo .no
+ cmp rax,NEBOC_VECTOR_VERTICAL_MATRIX_MAX_VALUES
+ ja .no
+ call ls_matrix_binding
+ test eax,eax
+ jz .no
+ mov [rsp+24],rdx
+ mov rcx,[rsp]
+ mov r8,[rsp+8]
+ mov r9,[rsp+16]
+ mov rdx,[rsp+24]
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ leave
+ ret
+
+; Consume `.return;` after a selected expression.
+ls_matrix_return_tail:
+ sub rsp,8
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ lea rsi,[rel ls_n_return]
+ mov edx,ls_n_return_len
+ call ls_expect_atom
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_SEMICOLON
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,8
+ ret
+
+; Parse the two selected Matrix function-boundary forms.  Identifiers are
+; compared by token identity/equality; their spellings are intentionally not
+; frozen.  EAX=1 success with a complete typed plan, 0 otherwise.
+ls_matrix_parse_function_boundary:
+ push rbp
+ mov rbp,rsp
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,72
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ lea rsi,[rel ls_n_int]
+ mov edx,ls_n_int_len
+ call ls_current_atom
+ test eax,eax
+ jnz .parameter
+ lea rsi,[rel ls_n_matrix]
+ mov edx,ls_n_matrix_len
+ call ls_current_atom
+ test eax,eax
+ jz .no
+ jmp .return
+
+.parameter:
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ lea rsi,[rel ls_n_self]
+ mov edx,ls_n_self_len
+ call ls_expect_atom
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ ; Function symbol (arbitrary identifier).
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .no
+ mov rax,[rel ls_cursor]
+ mov [rsp],rax
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_matrix_type_prefix
+ test eax,eax
+ jz .no
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .no
+ mov rax,[rel ls_cursor]
+ mov [rsp+8],rax
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_LBRACE
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov rdi,[rsp+8]
+ call ls_matrix_expect_same_identifier
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ lea rsi,[rel ls_n_sum]
+ mov edx,ls_n_sum_len
+ call ls_expect_atom
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_matrix_return_tail
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_RBRACE
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_start_header
+ test eax,eax
+ jz .no
+ call ls_matrix_parse_filled_binding
+ test eax,eax
+ jz .no
+ mov [rsp+16],rdx
+ mov [rsp+24],rcx
+ mov [rsp+32],r8
+ mov [rsp+40],r9
+ call ls_parse_signed_int
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov rdi,[rsp]
+ call ls_matrix_expect_same_identifier
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov rdi,[rsp+16]
+ call ls_matrix_expect_same_identifier
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ lea rsi,[rel ls_n_return]
+ mov edx,ls_n_return_len
+ call ls_expect_atom
+ test eax,eax
+ jz .no
+ call ls_finish_program
+ test eax,eax
+ jz .no
+ mov r14d,NEBOC_VECTOR_MATRIX_KIND_FUNCTION_PARAMETER
+ jmp .publish
+
+.return:
+ call ls_matrix_type_prefix
+ test eax,eax
+ jz .no
+ lea rsi,[rel ls_n_self]
+ mov edx,ls_n_self_len
+ call ls_expect_atom
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .no
+ mov rax,[rel ls_cursor]
+ mov [rsp],rax
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_LBRACE
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_matrix_parse_filled_binding
+ test eax,eax
+ jz .no
+ mov [rsp+16],rdx
+ mov [rsp+24],rcx
+ mov [rsp+32],r8
+ mov [rsp+40],r9
+ mov rdi,[rsp+16]
+ call ls_matrix_expect_same_identifier
+ test eax,eax
+ jz .no
+ call ls_matrix_return_tail
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_RBRACE
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_start_header
+ test eax,eax
+ jz .no
+ call ls_parse_signed_int
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov rdi,[rsp]
+ call ls_matrix_expect_same_identifier
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_matrix_binding
+ test eax,eax
+ jz .no
+ mov rdi,rdx
+ call ls_matrix_sum_tail
+ test eax,eax
+ jz .no
+ mov r14d,NEBOC_VECTOR_MATRIX_KIND_FUNCTION_RETURN
+
+.publish:
+ mov rax,[rel ls_request]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_KIND_OFFSET],r14
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_CONSTRUCTOR0_OFFSET],NEBOC_MATRIX_CONSTRUCTOR_FILLED
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_OPERATION0_OFFSET],NEBOC_MATRIX_OPERATION_SUM
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_RESULT_KIND_OFFSET],NEBOC_MATRIX_RESULT_SCALAR
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_PLAN_FLAGS_OFFSET],NEBOC_MATRIX_PLAN_FLAG_PRIMARY | NEBOC_MATRIX_PLAN_FLAG_FUNCTION
+ mov rdx,[rsp+24]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_ROWS_OFFSET],rdx
+ mov rdx,[rsp+32]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_COLUMNS_OFFSET],rdx
+ mov rdx,[rsp+40]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_FILL_OFFSET],rdx
+ xor edi,edi
+ mov esi,NEBOC_VECTOR_VERTICAL_FLAGS_REQUIRED
+ mov rdx,0x4331314631335232
+ call ls_success
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,72
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ pop rbp
+ ret
+
+; RDI primary binding.  Parse a selected Matrix value expression after a
+; bounded filled constructor.  This records semantic constructor/operation
+; identities and explicit arguments; it does not key on paths, source bytes,
+; hashes, expected results, or user-selected identifier spellings.
+ls_matrix_r2_filled_tail:
+ push rbp
+ mov rbp,rsp
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,72
+ mov [rsp],rdi
+ mov qword [rsp+8],LS_NO_TOKEN
+ mov rax,[rel ls_request]
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_CONSTRUCTOR0_OFFSET],NEBOC_MATRIX_CONSTRUCTOR_FILLED
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_PLAN_FLAGS_OFFSET],NEBOC_MATRIX_PLAN_FLAG_PRIMARY
+
+ ; A second explicit filled value is accepted before binary operations.
+ lea rsi,[rel ls_n_matrix]
+ mov edx,ls_n_matrix_len
+ call ls_current_atom
+ test eax,eax
+ jz .operation
+ call ls_matrix_type_prefix
+ test eax,eax
+ jz .no
+ lea rsi,[rel ls_n_filled]
+ mov edx,ls_n_filled_len
+ call ls_expect_atom
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_parse_signed_int
+ test eax,eax
+ jz .no
+ test rdx,rdx
+ js .no
+ cmp rdx,8
+ ja .no
+ mov rax,[rel ls_request]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_SECOND_ROWS_OFFSET],rdx
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_parse_signed_int
+ test eax,eax
+ jz .no
+ test rdx,rdx
+ js .no
+ cmp rdx,8
+ ja .no
+ mov rax,[rel ls_request]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_SECOND_COLUMNS_OFFSET],rdx
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_parse_signed_int
+ test eax,eax
+ jz .no
+ mov rax,[rel ls_request]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_SECOND_FILL_OFFSET],rdx
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_matrix_binding
+ test eax,eax
+ jz .no
+ mov [rsp+8],rdx
+ mov rax,[rel ls_request]
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_CONSTRUCTOR1_OFFSET],NEBOC_MATRIX_CONSTRUCTOR_FILLED
+ or qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_PLAN_FLAGS_OFFSET],NEBOC_MATRIX_PLAN_FLAG_SECONDARY
+
+.operation:
+ mov rdi,[rsp]
+ call ls_matrix_expect_same_identifier
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_matrix_operation_current
+ test eax,eax
+ jz .no
+ mov [rsp+24],rdx
+ mov [rsp+32],rcx
+ mov [rsp+40],r8
+ mov [rsp+48],r9
+ mov rax,[rel ls_request]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_OPERATION0_OFFSET],rdx
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_RESULT_KIND_OFFSET],r9
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ cmp qword [rsp+40],0
+ je .integer_args
+ ; Binary Matrix arguments must denote the independently bound second value.
+ cmp qword [rsp+32],1
+ jne .no
+ cmp qword [rsp+8],LS_NO_TOKEN
+ je .no
+ mov rdi,[rsp+8]
+ call ls_matrix_expect_same_identifier
+ test eax,eax
+ jz .no
+ jmp .args_done
+.integer_args:
+ xor r15d,r15d
+.integer_arg_loop:
+ cmp r15,[rsp+32]
+ jae .args_done
+ call ls_parse_signed_int
+ test eax,eax
+ jz .no
+ mov rax,[rel ls_request]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_ARG0_OFFSET+r15*8],rdx
+ inc r15
+ cmp r15,[rsp+32]
+ jae .args_done
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ jmp .integer_arg_loop
+.args_done:
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+
+ ; Scalar-returning calls terminate the program directly.
+ cmp qword [rsp+48],NEBOC_MATRIX_RESULT_SCALAR
+ jne .result_binding
+ call ls_finish_program
+ test eax,eax
+ jz .no
+ jmp .validate_plan
+
+.result_binding:
+ call ls_matrix_binding
+ test eax,eax
+ jz .no
+ mov [rsp+16],rdx
+ cmp qword [rsp+24],NEBOC_MATRIX_OPERATION_SERIALIZE_NBM1
+ je .serialized_tail
+ cmp qword [rsp+24],NEBOC_MATRIX_OPERATION_TRANSPOSE_VIEW
+ jne .ordinary_result
+ ; A transpose result may be consumed by the selected contiguous materializer.
+ mov r14,[rel ls_cursor]
+ mov rdi,[rsp+16]
+ call ls_matrix_expect_same_identifier
+ test eax,eax
+ jz .restore_ordinary
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .restore_ordinary
+ call ls_matrix_operation_current
+ test eax,eax
+ jz .restore_ordinary
+ cmp rdx,NEBOC_MATRIX_OPERATION_CONTIGUOUS
+ jne .restore_ordinary
+ cmp rcx,0
+ jne .restore_ordinary
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_matrix_binding
+ test eax,eax
+ jz .no
+ mov rax,[rel ls_request]
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_OPERATION1_OFFSET],NEBOC_MATRIX_OPERATION_CONTIGUOUS
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_RESULT_KIND_OFFSET],NEBOC_MATRIX_RESULT_OWNED
+ or qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_PLAN_FLAGS_OFFSET],NEBOC_MATRIX_PLAN_FLAG_CHAIN
+ mov rdi,rdx
+ call ls_matrix_sum_tail
+ test eax,eax
+ jz .no
+ jmp .validate_plan
+.restore_ordinary:
+ mov [rel ls_cursor],r14
+.ordinary_result:
+ mov rdi,[rsp+16]
+ call ls_matrix_sum_tail
+ test eax,eax
+ jz .no
+ jmp .validate_plan
+
+.serialized_tail:
+ ; Array<Int,70>.length() or the selected serialize/asSlice/deserialize route.
+ mov rdi,[rsp+16]
+ call ls_matrix_expect_same_identifier
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ lea rsi,[rel ls_n_length]
+ mov edx,ls_n_length_len
+ call ls_current_atom
+ test eax,eax
+ jz .serialized_slice
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_finish_program
+ test eax,eax
+ jz .no
+ mov rax,[rel ls_request]
+ or qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_PLAN_FLAGS_OFFSET],NEBOC_MATRIX_PLAN_FLAG_NBM1
+ jmp .validate_plan
+.serialized_slice:
+ lea rsi,[rel ls_n_as_slice]
+ mov edx,ls_n_as_slice_len
+ call ls_expect_atom
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_matrix_binding
+ test eax,eax
+ jz .no
+ mov r13,rdx
+ call ls_matrix_type_prefix
+ test eax,eax
+ jz .no
+ lea rsi,[rel ls_n_deserialize_nbm1]
+ mov edx,ls_n_deserialize_nbm1_len
+ call ls_expect_atom
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov rdi,r13
+ call ls_matrix_expect_same_identifier
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov rdi,[rsp]
+ call ls_matrix_expect_same_identifier
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ lea rsi,[rel ls_n_serialized_size_nbm1]
+ mov edx,ls_n_serialized_size_nbm1_len
+ call ls_expect_atom
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .no
+ call ls_matrix_binding
+ test eax,eax
+ jz .no
+ mov rdi,rdx
+ call ls_matrix_sum_tail
+ test eax,eax
+ jz .no
+ mov rax,[rel ls_request]
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_OPERATION1_OFFSET],NEBOC_MATRIX_OPERATION_DESERIALIZE_NBM1
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_RESULT_KIND_OFFSET],NEBOC_MATRIX_RESULT_OWNED
+ or qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_PLAN_FLAGS_OFFSET],NEBOC_MATRIX_PLAN_FLAG_CHAIN | NEBOC_MATRIX_PLAN_FLAG_NBM1
+
+.validate_plan:
+ ; Binary elementwise shapes must agree; matmul has the selected inner-shape
+ ; rule.  These are the same public, bounded constraints as the runtime.
+ cmp qword [rsp+8],LS_NO_TOKEN
+ je .publish
+ mov rax,[rel ls_request]
+ mov rdx,[rsp+24]
+ cmp rdx,NEBOC_MATRIX_OPERATION_MATMUL
+ je .matmul_shape
+ cmp rdx,NEBOC_MATRIX_OPERATION_MATMUL_INTO
+ je .matmul_shape
+ mov rcx,[rax+NEBOC_VECTOR_VERTICAL_MATRIX_ROWS_OFFSET]
+ cmp rcx,[rax+NEBOC_VECTOR_VERTICAL_MATRIX_SECOND_ROWS_OFFSET]
+ jne .no
+ mov rcx,[rax+NEBOC_VECTOR_VERTICAL_MATRIX_COLUMNS_OFFSET]
+ cmp rcx,[rax+NEBOC_VECTOR_VERTICAL_MATRIX_SECOND_COLUMNS_OFFSET]
+ jne .no
+ jmp .publish
+.matmul_shape:
+ mov rcx,[rax+NEBOC_VECTOR_VERTICAL_MATRIX_COLUMNS_OFFSET]
+ cmp rcx,[rax+NEBOC_VECTOR_VERTICAL_MATRIX_SECOND_ROWS_OFFSET]
+ jne .no
+ mov rcx,[rax+NEBOC_VECTOR_VERTICAL_MATRIX_ROWS_OFFSET]
+ imul rcx,[rax+NEBOC_VECTOR_VERTICAL_MATRIX_SECOND_COLUMNS_OFFSET]
+ jo .no
+ cmp rcx,NEBOC_VECTOR_VERTICAL_MATRIX_MAX_VALUES
+ ja .no
+.publish:
+ mov rax,[rel ls_request]
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_KIND_OFFSET],NEBOC_VECTOR_MATRIX_KIND_GENERIC_VALUE_PLAN
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,72
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ pop rbp
+ ret
+
+ls_parse_matrix_f01:
+ push rbp
+ mov rbp,rsp
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,72
+ mov qword [rel ls_cursor],0
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_LPAREN
+ jne .start_form
+ call ls_matrix_parse_function_boundary
+ test eax,eax
+ jz .syntax
+ xor eax,eax
+ jmp .done
+.start_form:
+ call ls_start_header
+ test eax,eax
+ jz .syntax
+ ; A Slice-backed fromBuffer may have the canonical bounded Array prefix.
+ lea rsi,[rel ls_n_array]
+ mov edx,ls_n_array_len
+ call ls_current_atom
+ test eax,eax
+ jnz .from_buffer_prefix
+ call ls_matrix_type_prefix
+ test eax,eax
+ jz .dtype_or_syntax
+ lea rsi,[rel ls_n_filled]
+ mov edx,ls_n_filled_len
+ call ls_current_atom
+ test eax,eax
+ jnz .filled
+ lea rsi,[rel ls_n_from_rows]
+ mov edx,ls_n_from_rows_len
+ call ls_current_atom
+ test eax,eax
+ jnz .from_rows
+ lea rsi,[rel ls_n_zeros]
+ mov edx,ls_n_zeros_len
+ call ls_expect_atom
+ test eax,eax
+ jz .deferred
+ ; First bounded zeros constructor.
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ mov [rsp+16],rdx
+ test rdx,rdx
+ js .limit
+ cmp rdx,8
+ ja .limit
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ mov [rsp+24],rdx
+ test rdx,rdx
+ js .limit
+ cmp rdx,8
+ ja .limit
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov rax,[rsp+16]
+ imul rax,[rsp+24]
+ jo .limit
+ cmp rax,64
+ ja .limit
+ call ls_matrix_binding
+ test eax,eax
+ jz .syntax
+ mov [rsp],rdx
+ ; Preserve the historical C11-F01 check-only form with a scalar tail.
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_INTEGER
+ je .zeros_legacy_scalar
+ cmp eax,NEBOC_TOKEN_MINUS
+ je .zeros_legacy_scalar
+ ; One zeros value followed by its reduction is a real runtime route.
+ lea rsi,[rel ls_n_matrix]
+ mov edx,ls_n_matrix_len
+ call ls_current_atom
+ test eax,eax
+ jnz .zeros_second
+ mov rdi,[rsp]
+ call ls_matrix_sum_tail
+ test eax,eax
+ jz .syntax
+ mov rax,[rel ls_request]
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_KIND_OFFSET],NEBOC_VECTOR_MATRIX_KIND_ZEROS_SUM
+ jmp .publish_dimensions
+.zeros_legacy_scalar:
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ mov [rsp+48],rdx
+ call ls_finish_program
+ test eax,eax
+ jz .syntax
+ mov rdi,[rsp+48]
+ mov esi,NEBOC_VECTOR_VERTICAL_FLAGS_REQUIRED
+ mov rdx,0x4331314630310000
+ call ls_success
+ jmp .done
+.zeros_second:
+ call ls_matrix_type_prefix
+ test eax,eax
+ jz .syntax
+ lea rsi,[rel ls_n_zeros]
+ mov edx,ls_n_zeros_len
+ call ls_expect_atom
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ cmp rdx,[rsp+16]
+ jne .shape
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ cmp rdx,[rsp+24]
+ jne .shape
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_matrix_binding
+ test eax,eax
+ jz .syntax
+ mov [rsp+8],rdx
+ ; left.add(right).sum()
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .syntax
+ mov rsi,[rel ls_cursor]
+ mov rdi,[rsp]
+ call ls_name_equal
+ test eax,eax
+ jz .syntax
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ lea rsi,[rel ls_n_add]
+ mov edx,ls_n_add_len
+ call ls_expect_atom
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .syntax
+ mov rsi,[rel ls_cursor]
+ mov rdi,[rsp+8]
+ call ls_name_equal
+ test eax,eax
+ jz .syntax
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ lea rsi,[rel ls_n_sum]
+ mov edx,ls_n_sum_len
+ call ls_expect_atom
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_finish_program
+ test eax,eax
+ jz .syntax
+ mov rax,[rel ls_request]
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_KIND_OFFSET],NEBOC_VECTOR_MATRIX_KIND_ZEROS_ADD_SUM
+ jmp .publish_dimensions
+
+.filled:
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ mov [rsp+16],rdx
+ test rdx,rdx
+ js .limit
+ cmp rdx,8
+ ja .limit
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ mov [rsp+24],rdx
+ test rdx,rdx
+ js .limit
+ cmp rdx,8
+ ja .limit
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ mov [rsp+48],rdx
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov rax,[rsp+16]
+ imul rax,[rsp+24]
+ jo .limit
+ cmp rax,64
+ ja .limit
+ call ls_matrix_binding
+ test eax,eax
+ jz .syntax
+ mov [rsp],rdx
+ mov rax,[rel ls_request]
+ mov rdx,[rsp+16]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_ROWS_OFFSET],rdx
+ mov rdx,[rsp+24]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_COLUMNS_OFFSET],rdx
+ mov rdx,[rsp+48]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_FILL_OFFSET],rdx
+ mov r14,[rel ls_cursor]
+ mov rdi,rdx
+ mov rdi,[rsp]
+ call ls_matrix_sum_tail
+ test eax,eax
+ jz .filled_r2
+ mov rax,[rel ls_request]
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_KIND_OFFSET],NEBOC_VECTOR_MATRIX_KIND_FILLED_SUM
+ mov rdx,[rsp+48]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_FILL_OFFSET],rdx
+ jmp .publish_dimensions
+.filled_r2:
+ mov [rel ls_cursor],r14
+ mov rdi,[rsp]
+ call ls_matrix_r2_filled_tail
+ test eax,eax
+ jz .syntax
+ jmp .publish_dimensions
+
+.from_buffer_prefix:
+ ; Array<Int,N> [values...].owner; owner.asSlice().slice;
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_LESS
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ lea rsi,[rel ls_n_int]
+ mov edx,ls_n_int_len
+ call ls_expect_atom
+ test eax,eax
+ jz .dtype
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ test rdx,rdx
+ js .limit
+ cmp rdx,NEBOC_VECTOR_VERTICAL_MATRIX_MAX_VALUES
+ ja .limit
+ mov [rsp+32],rdx
+ mov edi,NEBOC_TOKEN_GREATER
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_RESERVED_LBRACKET
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov qword [rsp+40],0
+.from_buffer_values:
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_RESERVED_RBRACKET
+ je .from_buffer_values_done
+ cmp qword [rsp+40],NEBOC_VECTOR_VERTICAL_MATRIX_MAX_VALUES
+ jae .limit
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ mov rax,[rel ls_request]
+ mov rcx,[rsp+40]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_VALUES_OFFSET+rcx*8],rdx
+ inc qword [rsp+40]
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_COMMA
+ jne .from_buffer_values
+ inc qword [rel ls_cursor]
+ jmp .from_buffer_values
+.from_buffer_values_done:
+ mov edi,NEBOC_TOKEN_RESERVED_RBRACKET
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov rax,[rsp+40]
+ cmp rax,[rsp+32]
+ jne .shape
+ call ls_matrix_binding
+ test eax,eax
+ jz .syntax
+ mov [rsp],rdx
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .syntax
+ mov rsi,[rel ls_cursor]
+ mov rdi,[rsp]
+ call ls_name_equal
+ test eax,eax
+ jz .syntax
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ lea rsi,[rel ls_n_as_slice]
+ mov edx,ls_n_as_slice_len
+ call ls_expect_atom
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_matrix_binding
+ test eax,eax
+ jz .syntax
+ mov [rsp+8],rdx
+ call ls_matrix_type_prefix
+ test eax,eax
+ jz .syntax
+ lea rsi,[rel ls_n_from_buffer]
+ mov edx,ls_n_from_buffer_len
+ call ls_expect_atom
+ test eax,eax
+ jz .deferred
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .syntax
+ mov rsi,[rel ls_cursor]
+ mov rdi,[rsp+8]
+ call ls_name_equal
+ test eax,eax
+ jz .syntax
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ mov [rsp+16],rdx
+ test rdx,rdx
+ js .limit
+ cmp rdx,8
+ ja .limit
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ mov [rsp+24],rdx
+ test rdx,rdx
+ js .limit
+ cmp rdx,8
+ ja .limit
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov rax,[rsp+16]
+ imul rax,[rsp+24]
+ jo .limit
+ cmp rax,[rsp+40]
+ jne .shape
+ call ls_matrix_binding
+ test eax,eax
+ jz .syntax
+ mov [rsp],rdx
+ mov rdi,rdx
+ call ls_matrix_sum_tail
+ test eax,eax
+ jz .syntax
+ mov rax,[rel ls_request]
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_KIND_OFFSET],NEBOC_VECTOR_MATRIX_KIND_FROM_BUFFER_SUM
+ mov rdx,[rsp+40]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_VALUE_COUNT_OFFSET],rdx
+ jmp .publish_dimensions
+
+.from_rows:
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ lea rsi,[rel ls_n_tuple]
+ mov edx,ls_n_tuple_len
+ call ls_expect_atom
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ lea rsi,[rel ls_n_of]
+ mov edx,ls_n_of_len
+ call ls_expect_atom
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov qword [rsp+16],0
+ mov qword [rsp+24],-1
+ mov qword [rsp+40],0
+.from_rows_row:
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_RPAREN
+ je .from_rows_outer_done
+ cmp qword [rsp+16],8
+ jae .limit
+ lea rsi,[rel ls_n_tuple]
+ mov edx,ls_n_tuple_len
+ call ls_expect_atom
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ lea rsi,[rel ls_n_of]
+ mov edx,ls_n_of_len
+ call ls_expect_atom
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ xor r12d,r12d
+.from_rows_value:
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_RPAREN
+ je .from_rows_value_done
+ cmp r12,8
+ jae .limit
+ cmp qword [rsp+40],NEBOC_VECTOR_VERTICAL_MATRIX_MAX_VALUES
+ jae .limit
+ call ls_parse_signed_int
+ test eax,eax
+ jz .dtype
+ mov rax,[rel ls_request]
+ mov rcx,[rsp+40]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_VALUES_OFFSET+rcx*8],rdx
+ inc qword [rsp+40]
+ inc r12
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_COMMA
+ jne .from_rows_value
+ inc qword [rel ls_cursor]
+ jmp .from_rows_value
+.from_rows_value_done:
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ cmp qword [rsp+24],-1
+ jne .from_rows_compare_width
+ mov [rsp+24],r12
+ jmp .from_rows_width_ok
+.from_rows_compare_width:
+ cmp r12,[rsp+24]
+ jne .shape
+.from_rows_width_ok:
+ inc qword [rsp+16]
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_COMMA
+ jne .from_rows_row
+ inc qword [rel ls_cursor]
+ jmp .from_rows_row
+.from_rows_outer_done:
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ cmp qword [rsp+24],-1
+ jne .from_rows_have_columns
+ mov qword [rsp+24],0
+.from_rows_have_columns:
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov rax,[rsp+16]
+ imul rax,[rsp+24]
+ jo .limit
+ cmp rax,[rsp+40]
+ jne .shape
+ call ls_matrix_binding
+ test eax,eax
+ jz .syntax
+ mov [rsp],rdx
+ mov rdi,rdx
+ call ls_matrix_sum_tail
+ test eax,eax
+ jz .syntax
+ mov rax,[rel ls_request]
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_MATRIX_KIND_OFFSET],NEBOC_VECTOR_MATRIX_KIND_FROM_ROWS_SUM
+ mov rdx,[rsp+40]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_VALUE_COUNT_OFFSET],rdx
+
+.publish_dimensions:
+ mov rax,[rel ls_request]
+ mov rdx,[rsp+16]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_ROWS_OFFSET],rdx
+ mov rdx,[rsp+24]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_COLUMNS_OFFSET],rdx
+ xor edi,edi
+ mov esi,NEBOC_VECTOR_VERTICAL_FLAGS_REQUIRED
+ mov rdx,0x4331314631330001
+ call ls_success
+ jmp .done
+.dtype_or_syntax:
+ ; A Matrix atom was already observed by the caller, so a malformed generic
+ ; prefix is type/syntax owned rather than silently falling through.
+ mov edi,11
+ call ls_error
+ jmp .done
+.dtype:
+ mov edi,11
+ call ls_error
+ jmp .done
+.limit:
+ mov edi,12
+ call ls_error
+ jmp .done
+.deferred:
+ mov edi,16
+ call ls_error
+ jmp .done
+.shape:
+ mov edi,12
+ call ls_error
+ jmp .done
+.syntax:
+ mov edi,13
+ call ls_error
+.done:
+ add rsp,72
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ pop rbp
+ ret
+
+; ---------------------------------------------------------------------------
+; C12-F01 exact Tensor<Int> parser/typechecker identity vertical.
+; ---------------------------------------------------------------------------
+; Parse Tuple.of() or Tuple.of(d0[,d1[,d2]]).  Success returns EAX=1,
+; rank in RDX, checked element count in RCX and dimensions in R8/R9/R10.
+; EAX=0 is malformed syntax, -1 is a selected rank/dimension/product limit
+; and -2 is checked product overflow.  No value is published on failure.
+ls_tensor_parse_shape:
+ push rbp
+ mov rbp,rsp
+ sub rsp,48
+ lea rsi,[rel ls_n_tuple]
+ mov edx,ls_n_tuple_len
+ call ls_expect_atom
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ lea rsi,[rel ls_n_of]
+ mov edx,ls_n_of_len
+ call ls_expect_atom
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov qword [rsp],0
+ mov qword [rsp+8],0
+ mov qword [rsp+16],0
+ mov qword [rsp+24],0
+ mov qword [rsp+32],1
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_RPAREN
+ je .close
+.dimension:
+ cmp qword [rsp+24],NEBOC_TENSOR_MAX_RANK
+ jae .syntax
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ test rdx,rdx
+ js .syntax
+ cmp rdx,NEBOC_TENSOR_MAX_DIMENSION
+ ja .limit
+ mov rax,[rsp+24]
+ mov [rsp+rax*8],rdx
+ test rdx,rdx
+ jz .zero_product
+ cmp qword [rsp+32],0
+ je .product_ready
+ mov rax,[rsp+32]
+ imul rax,rdx
+ jo .overflow
+ cmp rax,NEBOC_TENSOR_MAX_ELEMENTS
+ ja .limit
+ mov [rsp+32],rax
+ jmp .product_ready
+.zero_product:
+ mov qword [rsp+32],0
+.product_ready:
+ inc qword [rsp+24]
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_RPAREN
+ je .close
+ cmp eax,NEBOC_TOKEN_COMMA
+ jne .syntax
+ inc qword [rel ls_cursor]
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_RPAREN
+ je .syntax
+ jmp .dimension
+.close:
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov rdx,[rsp+24]
+ mov rcx,[rsp+32]
+ mov r8,[rsp]
+ mov r9,[rsp+8]
+ mov r10,[rsp+16]
+ mov eax,1
+ jmp .done
+.syntax:
+ xor eax,eax
+ jmp .done
+.limit:
+ mov eax,-1
+ jmp .done
+.overflow:
+ mov eax,-2
+.done:
+ leave
+ ret
+
+; Parse the optional bounded Array<Int,N> owner and its exact asSlice binding
+; used by the selected explicit-copy fromBuffer signature.  EAX=1 success,
+; 0 syntax, -1 non-Int source type, -2 source limit, -3 extent mismatch.
+ls_tensor_parse_optional_source:
+ push rbp
+ mov rbp,rsp
+ sub rsp,48
+ mov qword [rel ls_tensor_source_name],LS_NO_TOKEN
+ mov qword [rel ls_tensor_source_extent],0
+ lea rsi,[rel ls_n_array]
+ mov edx,ls_n_array_len
+ call ls_current_atom
+ test eax,eax
+ jnz .array
+ mov eax,1
+ jmp .done
+.array:
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_LESS
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ lea rsi,[rel ls_n_int]
+ mov edx,ls_n_int_len
+ call ls_expect_atom
+ test eax,eax
+ jz .dtype
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ test rdx,rdx
+ js .limit
+ cmp rdx,NEBOC_TENSOR_MAX_ELEMENTS
+ ja .limit
+ mov [rsp],rdx
+ mov edi,NEBOC_TOKEN_GREATER
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_RESERVED_LBRACKET
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov qword [rsp+8],0
+.value:
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_RESERVED_RBRACKET
+ je .values_done
+ cmp qword [rsp+8],NEBOC_TENSOR_MAX_ELEMENTS
+ jae .limit
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ inc qword [rsp+8]
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_RESERVED_RBRACKET
+ je .value
+ cmp eax,NEBOC_TOKEN_COMMA
+ jne .syntax
+ inc qword [rel ls_cursor]
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_RESERVED_RBRACKET
+ je .syntax
+ jmp .value
+.values_done:
+ mov edi,NEBOC_TOKEN_RESERVED_RBRACKET
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov rax,[rsp+8]
+ cmp rax,[rsp]
+ jne .extent
+ call ls_matrix_binding
+ test eax,eax
+ jz .syntax
+ mov [rsp+16],rdx
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .syntax
+ mov rsi,[rel ls_cursor]
+ mov rdi,[rsp+16]
+ call ls_name_equal
+ test eax,eax
+ jz .syntax
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ lea rsi,[rel ls_n_as_slice]
+ mov edx,ls_n_as_slice_len
+ call ls_expect_atom
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_matrix_binding
+ test eax,eax
+ jz .syntax
+ mov [rel ls_tensor_source_name],rdx
+ mov rax,[rsp]
+ mov [rel ls_tensor_source_extent],rax
+ mov eax,1
+ jmp .done
+.syntax:
+ xor eax,eax
+ jmp .done
+.dtype:
+ mov eax,-1
+ jmp .done
+.limit:
+ mov eax,-2
+ jmp .done
+.extent:
+ mov eax,-3
+.done:
+ leave
+ ret
+
+; EDI Tensor diagnostic -> remember the first causal token before publishing
+; the common invalid-source result.
+ls_tensor_error:
+ mov rax,[rel ls_request]
+ mov rdx,[rel ls_cursor]
+ mov [rax+NEBOC_VECTOR_VERTICAL_TENSOR_ERROR_TOKEN_OFFSET],rdx
+ jmp ls_error
+
+; Consume Tensor<Int>. and leave the cursor at the selected member.
+ls_tensor_type_prefix:
+ sub rsp,8
+ lea rsi,[rel ls_n_tensor]
+ mov edx,ls_n_tensor_len
+ call ls_expect_atom
+ test eax,eax
+ jz .tensor_type_done
+ mov edi,NEBOC_TOKEN_LESS
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_type_done
+ lea rsi,[rel ls_n_int]
+ mov edx,ls_n_int_len
+ call ls_expect_atom
+ test eax,eax
+ jz .tensor_type_done
+ mov edi,NEBOC_TOKEN_GREATER
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_type_done
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+.tensor_type_done:
+ add rsp,8
+ ret
+
+; Parse Tensor<Int>.filled(Tuple.of(...), value).binding; and publish its
+; bounded constructor fields to dedicated scratch slots.
+ls_tensor_parse_filled_binding:
+ push rbp
+ mov rbp,rsp
+ sub rsp,64
+ call ls_tensor_type_prefix
+ test eax,eax
+ jz .tensor_filled_no
+ lea rsi,[rel ls_n_filled]
+ mov edx,ls_n_filled_len
+ call ls_expect_atom
+ test eax,eax
+ jz .tensor_filled_no
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_filled_no
+ call ls_tensor_parse_shape
+ test eax,eax
+ jle .tensor_filled_no
+ mov [rsp],rdx
+ mov [rsp+8],rcx
+ mov [rsp+16],r8
+ mov [rsp+24],r9
+ mov [rsp+32],r10
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_filled_no
+ call ls_parse_signed_int
+ test eax,eax
+ jz .tensor_filled_no
+ mov [rsp+40],rdx
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_filled_no
+ call ls_matrix_binding
+ test eax,eax
+ jz .tensor_filled_no
+ mov [rel ls_tensor_filled_binding],rdx
+ mov rax,[rsp]
+ mov [rel ls_tensor_filled_rank],rax
+ mov rax,[rsp+8]
+ mov [rel ls_tensor_filled_count],rax
+ mov rax,[rsp+16]
+ mov [rel ls_tensor_filled_dim0],rax
+ mov rax,[rsp+24]
+ mov [rel ls_tensor_filled_dim1],rax
+ mov rax,[rsp+32]
+ mov [rel ls_tensor_filled_dim2],rax
+ mov rax,[rsp+40]
+ mov [rel ls_tensor_filled_value],rax
+ mov eax,1
+ jmp .tensor_filled_done
+.tensor_filled_no:
+ xor eax,eax
+.tensor_filled_done:
+ leave
+ ret
+
+; Parse the two selected Tensor function-boundary forms using token identity.
+ls_tensor_parse_function_boundary:
+ push rbp
+ mov rbp,rsp
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,40
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ lea rsi,[rel ls_n_int]
+ mov edx,ls_n_int_len
+ call ls_current_atom
+ test eax,eax
+ jnz .tensor_function_parameter
+ lea rsi,[rel ls_n_tensor]
+ mov edx,ls_n_tensor_len
+ call ls_current_atom
+ test eax,eax
+ jz .tensor_function_no
+ jmp .tensor_function_return
+
+.tensor_function_parameter:
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ lea rsi,[rel ls_n_self]
+ mov edx,ls_n_self_len
+ call ls_expect_atom
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .tensor_function_no
+ mov rax,[rel ls_cursor]
+ mov [rsp],rax
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ call ls_tensor_type_prefix
+ test eax,eax
+ jz .tensor_function_no
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .tensor_function_no
+ mov rax,[rel ls_cursor]
+ mov [rsp+8],rax
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_LBRACE
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ mov rdi,[rsp+8]
+ call ls_matrix_expect_same_identifier
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ lea rsi,[rel ls_n_sum]
+ mov edx,ls_n_sum_len
+ call ls_expect_atom
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ call ls_matrix_return_tail
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_RBRACE
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ call ls_start_header
+ test eax,eax
+ jz .tensor_function_no
+ call ls_tensor_parse_filled_binding
+ test eax,eax
+ jz .tensor_function_no
+ call ls_parse_signed_int
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ mov rdi,[rsp]
+ call ls_matrix_expect_same_identifier
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ mov rdi,[rel ls_tensor_filled_binding]
+ call ls_matrix_expect_same_identifier
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ lea rsi,[rel ls_n_return]
+ mov edx,ls_n_return_len
+ call ls_expect_atom
+ test eax,eax
+ jz .tensor_function_no
+ call ls_finish_program
+ test eax,eax
+ jz .tensor_function_no
+ mov r14d,NEBOC_VECTOR_MATRIX_KIND_TENSOR_FUNCTION_PARAMETER
+ jmp .tensor_function_publish
+
+.tensor_function_return:
+ call ls_tensor_type_prefix
+ test eax,eax
+ jz .tensor_function_no
+ lea rsi,[rel ls_n_self]
+ mov edx,ls_n_self_len
+ call ls_expect_atom
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .tensor_function_no
+ mov rax,[rel ls_cursor]
+ mov [rsp],rax
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_LBRACE
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ call ls_tensor_parse_filled_binding
+ test eax,eax
+ jz .tensor_function_no
+ mov rdi,[rel ls_tensor_filled_binding]
+ call ls_matrix_expect_same_identifier
+ test eax,eax
+ jz .tensor_function_no
+ call ls_matrix_return_tail
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_RBRACE
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ call ls_start_header
+ test eax,eax
+ jz .tensor_function_no
+ call ls_parse_signed_int
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ mov rdi,[rsp]
+ call ls_matrix_expect_same_identifier
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .tensor_function_no
+ call ls_matrix_binding
+ test eax,eax
+ jz .tensor_function_no
+ mov rdi,rdx
+ call ls_matrix_sum_tail
+ test eax,eax
+ jz .tensor_function_no
+ mov r14d,NEBOC_VECTOR_MATRIX_KIND_TENSOR_FUNCTION_RETURN
+
+.tensor_function_publish:
+ mov rax,[rel ls_request]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_KIND_OFFSET],r14
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_TENSOR_TYPE_OFFSET],NEBOC_TENSOR_TYPE_INT
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_TENSOR_DTYPE_OFFSET],NEBOC_TENSOR_DTYPE_INT
+ mov rdx,[rel ls_tensor_filled_rank]
+ mov [rax+NEBOC_VECTOR_VERTICAL_TENSOR_RANK_OFFSET],rdx
+ mov rdx,[rel ls_tensor_filled_dim0]
+ mov [rax+NEBOC_VECTOR_VERTICAL_TENSOR_DIM0_OFFSET],rdx
+ mov rdx,[rel ls_tensor_filled_dim1]
+ mov [rax+NEBOC_VECTOR_VERTICAL_TENSOR_DIM1_OFFSET],rdx
+ mov rdx,[rel ls_tensor_filled_dim2]
+ mov [rax+NEBOC_VECTOR_VERTICAL_TENSOR_DIM2_OFFSET],rdx
+ mov rdx,[rel ls_tensor_filled_count]
+ mov [rax+NEBOC_VECTOR_VERTICAL_TENSOR_ELEMENT_COUNT_OFFSET],rdx
+ mov rdx,[rel ls_tensor_filled_value]
+ mov [rax+NEBOC_VECTOR_VERTICAL_MATRIX_FILL_OFFSET],rdx
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_TENSOR_FLAGS_OFFSET],NEBOC_TENSOR_FLAG_TYPECHECKED|NEBOC_TENSOR_FLAG_SHAPE_CHECKED
+ xor edi,edi
+ mov esi,NEBOC_VECTOR_VERTICAL_FLAGS_REQUIRED
+ mov rdx,0x4331324631330001
+ call ls_success
+ mov eax,1
+ jmp .tensor_function_done
+.tensor_function_no:
+ xor eax,eax
+.tensor_function_done:
+ add rsp,40
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ pop rbp
+ ret
+
+; Parse one or more selected Tensor declarations followed by the historical
+; scalar proof expression.  The emitted scalar proves check/emit/build parity
+; without implementing Tensor storage or any runtime constructor.
+ls_parse_tensor_f01:
+ push rbp
+ mov rbp,rsp
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,104
+ mov qword [rel ls_cursor],0
+ xor edi,edi
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_LPAREN
+ jne .tensor_declaration_program
+ call ls_tensor_parse_function_boundary
+ test eax,eax
+ jz .syntax
+ xor eax,eax
+ jmp .done
+.tensor_declaration_program:
+ call ls_start_header
+ test eax,eax
+ jz .syntax
+ call ls_tensor_parse_optional_source
+ test eax,eax
+ jz .syntax
+ cmp eax,-1
+ je .copy
+ cmp eax,-2
+ je .limit
+ cmp eax,-3
+ je .shape_mismatch
+ mov qword [rsp+72],0
+.declaration:
+ lea rsi,[rel ls_n_tensor]
+ mov edx,ls_n_tensor_len
+ call ls_current_atom
+ test eax,eax
+ jz .scalar
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_LESS
+ call ls_expect_kind
+ test eax,eax
+ jz .dtype
+ lea rsi,[rel ls_n_int]
+ mov edx,ls_n_int_len
+ call ls_expect_atom
+ test eax,eax
+ jz .dtype
+ mov edi,NEBOC_TOKEN_GREATER
+ call ls_expect_kind
+ test eax,eax
+ jz .dtype
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ lea rsi,[rel ls_n_zeros]
+ mov edx,ls_n_zeros_len
+ call ls_current_atom
+ test eax,eax
+ jnz .zeros
+ lea rsi,[rel ls_n_filled]
+ mov edx,ls_n_filled_len
+ call ls_current_atom
+ test eax,eax
+ jnz .filled
+ lea rsi,[rel ls_n_from_buffer]
+ mov edx,ls_n_from_buffer_len
+ call ls_current_atom
+ test eax,eax
+ jnz .from_buffer
+ lea rsi,[rel ls_n_from_nested]
+ mov edx,ls_n_from_nested_len
+ call ls_current_atom
+ test eax,eax
+ jnz .deferred
+ jmp .deferred
+.zeros:
+ inc qword [rel ls_cursor]
+ mov qword [rsp+40],NEBOC_TENSOR_CONSTRUCTOR_ZEROS
+ mov qword [rsp+64],NEBOC_TENSOR_FLAG_TYPECHECKED|NEBOC_TENSOR_FLAG_SHAPE_CHECKED
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_tensor_parse_shape
+ jmp .shape_result
+.filled:
+ inc qword [rel ls_cursor]
+ mov qword [rsp+40],NEBOC_TENSOR_CONSTRUCTOR_FILLED
+ mov qword [rsp+64],NEBOC_TENSOR_FLAG_TYPECHECKED|NEBOC_TENSOR_FLAG_SHAPE_CHECKED
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_tensor_parse_shape
+ test eax,eax
+ jz .syntax
+ cmp eax,-1
+ je .limit
+ cmp eax,-2
+ je .overflow
+ mov [rsp],rdx
+ mov [rsp+8],rcx
+ mov [rsp+16],r8
+ mov [rsp+24],r9
+ mov [rsp+32],r10
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ mov [rsp+48],rdx
+ jmp .constructor_close
+.from_buffer:
+ inc qword [rel ls_cursor]
+ mov qword [rsp+40],NEBOC_TENSOR_CONSTRUCTOR_FROM_BUFFER
+ mov qword [rsp+64],NEBOC_TENSOR_FLAG_TYPECHECKED|NEBOC_TENSOR_FLAG_SHAPE_CHECKED|NEBOC_TENSOR_FLAG_EXPLICIT_COPY
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .copy
+ mov rdi,[rel ls_tensor_source_name]
+ mov rsi,[rel ls_cursor]
+ call ls_name_equal
+ test eax,eax
+ jz .copy
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_tensor_parse_shape
+.shape_result:
+ test eax,eax
+ jz .syntax
+ cmp eax,-1
+ je .limit
+ cmp eax,-2
+ je .overflow
+ mov [rsp],rdx
+ mov [rsp+8],rcx
+ mov [rsp+16],r8
+ mov [rsp+24],r9
+ mov [rsp+32],r10
+ cmp qword [rsp+40],NEBOC_TENSOR_CONSTRUCTOR_FROM_BUFFER
+ jne .constructor_close
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_COMMA
+ je .copy
+ mov rax,[rel ls_tensor_source_extent]
+ cmp rax,[rsp+8]
+ jne .shape_mismatch
+.constructor_close:
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call ls_matrix_binding
+ test eax,eax
+ jz .syntax
+ mov rax,[rel ls_request]
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_TENSOR_TYPE_OFFSET],NEBOC_TENSOR_TYPE_INT
+ mov qword [rax+NEBOC_VECTOR_VERTICAL_TENSOR_DTYPE_OFFSET],NEBOC_TENSOR_DTYPE_INT
+ mov rdx,[rsp]
+ mov [rax+NEBOC_VECTOR_VERTICAL_TENSOR_RANK_OFFSET],rdx
+ mov rdx,[rsp+16]
+ mov [rax+NEBOC_VECTOR_VERTICAL_TENSOR_DIM0_OFFSET],rdx
+ mov rdx,[rsp+24]
+ mov [rax+NEBOC_VECTOR_VERTICAL_TENSOR_DIM1_OFFSET],rdx
+ mov rdx,[rsp+32]
+ mov [rax+NEBOC_VECTOR_VERTICAL_TENSOR_DIM2_OFFSET],rdx
+ mov rdx,[rsp+8]
+ mov [rax+NEBOC_VECTOR_VERTICAL_TENSOR_ELEMENT_COUNT_OFFSET],rdx
+ mov rdx,[rsp+40]
+ mov [rax+NEBOC_VECTOR_VERTICAL_TENSOR_CONSTRUCTOR_OFFSET],rdx
+ mov rdx,[rel ls_tensor_source_extent]
+ mov [rax+NEBOC_VECTOR_VERTICAL_TENSOR_SOURCE_EXTENT_OFFSET],rdx
+ mov rdx,[rsp+64]
+ mov [rax+NEBOC_VECTOR_VERTICAL_TENSOR_FLAGS_OFFSET],rdx
+ inc qword [rsp+72]
+ mov rdx,[rsp+72]
+ mov [rax+NEBOC_VECTOR_VERTICAL_TENSOR_DECLARATION_COUNT_OFFSET],rdx
+ jmp .declaration
+.scalar:
+ cmp qword [rsp+72],0
+ je .syntax
+ call ls_parse_signed_int
+ test eax,eax
+ jz .syntax
+ mov [rsp+80],rdx
+ call ls_finish_program
+ test eax,eax
+ jz .syntax
+ mov rdi,[rsp+80]
+ mov esi,NEBOC_VECTOR_VERTICAL_FLAGS_REQUIRED
+ mov rdx,0x4331324630310001
+ call ls_success
+ jmp .done
+.dtype:
+ mov edi,17
+ call ls_tensor_error
+ jmp .done
+.syntax:
+ mov edi,18
+ call ls_tensor_error
+ jmp .done
+.shape_mismatch:
+ mov edi,19
+ call ls_tensor_error
+ jmp .done
+.overflow:
+ mov edi,20
+ call ls_tensor_error
+ jmp .done
+.limit:
+ mov edi,21
+ call ls_tensor_error
+ jmp .done
+.copy:
+ mov edi,22
+ call ls_tensor_error
+ jmp .done
+.deferred:
+ mov edi,23
+ call ls_tensor_error
+.done:
+ add rsp,104
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ pop rbp
+ ret
+
+; ---------------------------------------------------------------------------
 ; vetores_matrizes_tensores_e_computacao_cientifica Vector<Int>#4
 ; ---------------------------------------------------------------------------
 NEBOC_ABI_FUNCTION neboc_vector_vertical_recognize
@@ -1273,12 +3697,10 @@ NEBOC_ABI_FUNCTION neboc_vector_vertical_recognize
  call ls_error
  jmp .done
 .matrix:
- mov edi,6
- call ls_error
+ call ls_parse_matrix_f01
  jmp .done
 .tensor:
- mov edi,7
- call ls_error
+ call ls_parse_tensor_f01
  jmp .done
 .sparse:
  mov edi,9

@@ -1,0 +1,2 @@
+print(Text.bytes(value xor mask))
+Scan.line()

@@ -97,7 +97,7 @@
         "Source version: `{version}`",
         "Language Edition: `{edition}`",
         "Latest published release: `1.0.1`",
-        "Publication status: PULL_REQUEST_CANDIDATE"
+        "Publication status: FINAL_RELEASE_READY"
       ]
     },
     {
@@ -112,7 +112,8 @@
       "kind": "text",
       "contains": [
         "Version: `{version}`",
-        "Language Edition: `{edition}`"
+        "Language Edition: `{edition}`",
+        "Publication status: FINAL_RELEASE_READY"
       ]
     },
     {
@@ -185,7 +186,8 @@
       "path": "docs/public/v1.0/index.md",
       "kind": "text",
       "contains": [
-        "Source version: `{version}`"
+        "Source version: `{version}`",
+        "FINAL_RELEASE_READY"
       ]
     },
     {
@@ -260,7 +262,8 @@
       "kind": "text",
       "contains": [
         "# Build Nebo {version} from source",
-        "Language Edition: {edition}."
+        "Language Edition: {edition}.",
+        "Status: FINAL_RELEASE_READY."
       ]
     },
     {
@@ -268,7 +271,12 @@
       "kind": "json",
       "fields": {
         "version": "{version}",
-        "edition": "{edition}"
+        "edition": "{edition}",
+        "status": "FINAL_RELEASE_READY",
+        "source_integration_commit": "ea0e407b82595577c48c70b7877499f7757d4010",
+        "source_integration_tree": "5878240e6627106a466bf3fd88399eacde7492e1",
+        "source_integration_ci": "PASS",
+        "remote_publication": "NOT_PERFORMED_BY_THIS_SNAPSHOT"
       }
     },
     {
@@ -276,7 +284,15 @@
       "kind": "text",
       "contains": [
         "\nVERSION={version}\n",
-        "\nEDITION={edition}\n"
+        "\nEDITION={edition}\n",
+        "STATUS=FINAL_RELEASE_READY\n",
+        "SOURCE_MAIN_COMMIT=ea0e407b82595577c48c70b7877499f7757d4010\n",
+        "SOURCE_MAIN_CI=PASS\n",
+        "RELEASE_DATE=UNSET\n",
+        "EXPECTED_TAG=nebo-v{version}\n",
+        "TAG_CREATED=NO\n",
+        "GITHUB_RELEASE_CREATED=NO\n",
+        "ASSETS_UPLOADED=0\n"
       ]
     },
     {
@@ -284,8 +300,25 @@
       "kind": "json",
       "fields": {
         "version": "{version}",
-        "edition": "{edition}"
+        "edition": "{edition}",
+        "release_readiness": "FINAL_RELEASE_READY",
+        "source_integration_commit": "ea0e407b82595577c48c70b7877499f7757d4010",
+        "post_merge_ci": "PASS"
       }
+    },
+    {
+      "path": "docs/releases/VERSION-DECISION.md",
+      "kind": "text",
+      "contains": [
+        "Publication status: **FINAL_RELEASE_READY**."
+      ]
+    },
+    {
+      "path": "docs/reference/nebo-1.0/g027-readiness.md",
+      "kind": "text",
+      "contains": [
+        "The public source is FINAL_RELEASE_READY"
+      ]
     }
   ],
   "references": [

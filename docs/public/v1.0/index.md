@@ -20,7 +20,10 @@ reference, projects, search, CLI manual and editor help.
 
 ## Current source release
 
-Source version: `1.1.0`; Language Edition: `1.0`. PULL_REQUEST_CANDIDATE.
+Source version: `1.1.0`; Language Edition: `1.0`. FINAL_RELEASE_READY.
 Latest published release: `1.0.1`. See the [current release notes](releases/NEBO-1.1.0-RELEASE-NOTES.md),
 [migration guide](releases/NEBO-1.1.0-MIGRATION-GUIDE.md) and
 [known limitations](releases/NEBO-1.1.0-KNOWN-LIMITATIONS.md).
+
+Source integration and post-merge CI are complete. The release date is unset;
+tag, GitHub Release and asset publication require a separate RELEASE_GO.

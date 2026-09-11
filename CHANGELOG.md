@@ -32,7 +32,9 @@ All notable changes to Nebo are recorded in this file.
 
 ### Publication
 
-- Pull request candidate; the latest published release remains 1.0.1.
+- Source integration is complete and release metadata is FINAL_RELEASE_READY.
+- Tag, GitHub Release and asset publication require a separate RELEASE_GO.
+- The release date is unset; the latest published release remains 1.0.1.
 
 ## [1.0.1] - Published
 

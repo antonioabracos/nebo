@@ -2,9 +2,17 @@
 
 Source version: `1.1.0`
 Language Edition: `1.0`
-Publication status: PULL_REQUEST_CANDIDATE
+Publication status: FINAL_RELEASE_READY
 Latest published release: `1.0.1`
 Supported target: `x86_64-systemv-elf-linux`
+Expected tag: `nebo-v1.1.0`
+Tag status: NOT_CREATED
+GitHub Release status: NOT_CREATED
+Release date: UNSET
+
+The 1.1.0 source is integrated into main and has passed post-merge CI.
+FINAL_RELEASE_READY records release readiness; publication requires a separate
+RELEASE_GO. No 1.1.0 tag, GitHub Release or uploaded assets exist yet.
 
 Nebo compila programas para executáveis ELF64 estáticos em Linux x86-64.
 O compilador e o runtime nativos usam Assembly/NASM. As ferramentas locais de

@@ -2,7 +2,7 @@
 
 Product version: **1.1.0**. Language Edition: **1.0**.
 Decision: **BACKWARD_COMPATIBLE_PUBLIC_ADDITIONS**.
-Publication status: **PULL_REQUEST_CANDIDATE**.
+Publication status: **FINAL_RELEASE_READY**.
 Latest published release: **1.0.1**.
 
 Bounded overload selection, composable Array reads and machine-readable CLI
@@ -24,6 +24,7 @@ and data/stream validators retain independent values, negative controls,
 ordering, missing-state and lazy-effect checks.
 
 Only Linux x86-64/System V static ELF is supported. Edition, ABI identifiers
-and schema versions are separate from the product version. The candidate
+and schema versions are separate from the product version. This source
 makes no additional operating-system, GPU, external-service or certification
-claim. Integration and publication remain separate steps.
+claim. Source integration and post-merge CI are complete. The release date is unset;
+tag, GitHub Release and assets await a separate RELEASE_GO.

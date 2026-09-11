@@ -20,7 +20,9 @@ compiler version `1.1.0`. Link compatibility validates the complete bounded
 object set before publishing a result.
 
 The legacy aggregate status is an implementation inspection result and does not
-describe publication. The public source is a PULL_REQUEST_CANDIDATE; the latest
-published release remains 1.0.1. Historical release materialization and roadmap
+describe publication. The public source is FINAL_RELEASE_READY after
+main integration and successful post-merge CI; the latest published release
+remains 1.0.1. The release date is unset. Tag, GitHub Release and assets require
+a separate RELEASE_GO. Historical release materialization and roadmap
 orchestration are excluded. Run `bash scripts/ci-public.sh` for the current
 bounded validation suite. No inspection result grants release authorization.

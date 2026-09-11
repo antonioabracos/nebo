@@ -2,8 +2,14 @@
 
 Version: `1.1.0`
 Language Edition: `1.0`
-Publication status: PULL_REQUEST_CANDIDATE
+Publication status: FINAL_RELEASE_READY
 Latest published release: `1.0.1`
+Release date: UNSET
+
+The 1.1.0 source is integrated into main and has passed post-merge CI.
+FINAL_RELEASE_READY does not mean published: tag `nebo-v1.1.0`, the GitHub
+Release and uploaded assets do not exist yet. A separate RELEASE_GO must freeze
+the publication date and authorize those steps.
 
 The release line adds bounded public functionality while preserving the
 stable public source envelope. Integral overload selection is now executable;

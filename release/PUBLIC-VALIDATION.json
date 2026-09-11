@@ -67,5 +67,15 @@
     "Headless console tests do not certify live X11 or external services",
     "Unsigned local integrity and inventory; no external certification or release publication",
     "Review covers current public contracts and critical owners; no claim of manual line-by-line review of every historical source file"
-  ]
+  ],
+  "release_readiness": "FINAL_RELEASE_READY",
+  "source_integration_commit": "ea0e407b82595577c48c70b7877499f7757d4010",
+  "source_integration_tree": "5878240e6627106a466bf3fd88399eacde7492e1",
+  "post_merge_ci_run": 34645936056,
+  "post_merge_ci": "PASS",
+  "tag_created": false,
+  "github_release_created": false,
+  "assets_uploaded": 0,
+  "release_date": null,
+  "validation_record_scope": "Existing gate counts and reproducibility records describe the integrated public snapshot; finalization executions are recorded separately in the PR validation and external audit"
 }

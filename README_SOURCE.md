@@ -1,7 +1,9 @@
 # Build Nebo 1.1.0 from source
 
-Language Edition: 1.0. Status: PULL_REQUEST_CANDIDATE.
+Language Edition: 1.0. Status: FINAL_RELEASE_READY.
 The latest published release remains 1.0.1.
+Source integration into main and post-merge CI are complete. Tag, GitHub Release
+and asset publication require a separate RELEASE_GO; the release date is unset.
 
 On Linux x86-64 with Python 3, Ninja, NASM and GNU binutils installed:
 

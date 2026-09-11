@@ -14,12 +14,28 @@ NEBOC_ABI_FUNCTION neboc_operator_lsp_metadata
  jz .invalid
  test rdi,rdi
  jz .source
- cmp rdi,NEBOC_OPERATOR_REGISTRY_ENTRY_COUNT
+ cmp rdi,NEBOC_OPERATOR_CATALOG_ENTRY_COUNT
  ja .source
  test rdx,rdx
  jz .source
  cmp rdx,NEBOC_OPERATOR_LSP_CLASS_MAX
  ja .source
+ mov eax,NEBOC_OPERATOR_LSP_CLASS_CORE
+ cmp rdi,NEBOC_OPERATOR_CATALOG_CORE_LAST
+ jbe .class_ready
+ inc eax
+ cmp rdi,NEBOC_OPERATOR_CATALOG_ALIAS_LAST
+ jbe .class_ready
+ inc eax
+ cmp rdi,NEBOC_OPERATOR_CATALOG_DOMAIN_LAST
+ jbe .class_ready
+ inc eax
+ cmp rdi,NEBOC_OPERATOR_CATALOG_RESERVED_LAST
+ jbe .class_ready
+ inc eax
+.class_ready:
+ cmp rdx,rax
+ jne .source
  xor r8d,r8d
  cmp rdx,NEBOC_OPERATOR_LSP_CLASS_UNICODE_ALIAS
  jne .domain

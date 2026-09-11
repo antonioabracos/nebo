@@ -1,0 +1,7 @@
+// Headless mode, theme, and resource limits remain explicit deterministic inputs.
+start() {
+    RenderPlan;
+    3003;
+    output.stdout().stderr().target("visual-service").plain().visual().headlessEvent();
+    lifecycle.event("console-panel").payload("configure-headless-theme-limits").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

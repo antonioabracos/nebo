@@ -1,0 +1,1 @@
+start() { Tuple.of("owned", 9).pair; pair.destructure(_, value); value.return; }

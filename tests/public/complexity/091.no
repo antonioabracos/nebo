@@ -1,0 +1,7 @@
+// Registers deterministic renderer and backend ownership for a live-console plan.
+start() {
+    RenderPlan;
+    1401;
+    output.stdout().stderr().target("headless").plain().visual().headlessEvent();
+    lifecycle.event("registry.ready").payload("software").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

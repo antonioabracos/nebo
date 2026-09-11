@@ -1,0 +1,226 @@
+; G013 source-to-effect probe. Source-derived subgroup and seed values reach
+; the native bounded concurrency owners and yield one deterministic result.
+bits 64
+default rel
+%include "runtime/concurrency/thread.inc"
+%include "runtime/concurrency/task.inc"
+%include "runtime/concurrency/future.inc"
+%include "runtime/concurrency/cancel.inc"
+%include "runtime/concurrency/channel.inc"
+%include "runtime/concurrency/sync.inc"
+%include "runtime/concurrency/scheduler.inc"
+
+section .text
+global nebo_g013_source_probe
+nebo_g013_source_probe:
+ push rbx
+ push r12
+ push r13
+ mov r12d,edi
+ mov r13d,esi
+ sub rsp,2048
+ cmp r12d,1
+ je .thread
+ cmp r12d,2
+ je .task
+ cmp r12d,3
+ je .future
+ cmp r12d,4
+ je .cancel
+ cmp r12d,5
+ je .channel
+ cmp r12d,6
+ je .sync
+ cmp r12d,7
+ je .scheduler
+ jmp .failure
+.thread:
+ call nebo_thread_current_id
+ test eax,eax
+ jnz .failure
+ test rdx,rdx
+ jz .failure
+ call nebo_thread_yield
+ test eax,eax
+ jnz .failure
+ jmp .success
+.task:
+ lea rdi,[rsp]
+ mov esi,2
+ mov edx,4
+ mov ecx,4
+ mov r8d,8
+ mov r9d,32
+ call nebo_scheduler_budget_init
+ test eax,eax
+ jnz .failure
+ lea rdi,[rsp+64]
+ lea rsi,[rsp]
+ lea rdx,[rsp+128]
+ mov ecx,2
+ call nebo_task_group_init
+ test eax,eax
+ jnz .failure
+ lea rdi,[rsp+64]
+ call nebo_task_group_join_all
+ test eax,eax
+ jnz .failure
+ test rdx,rdx
+ jnz .failure
+ jmp .success
+.future:
+ lea rdi,[rsp]
+ mov esi,8
+ call nebo_future_init
+ test eax,eax
+ jnz .failure
+ lea rdi,[rsp]
+ mov esi,r13d
+ xor edx,edx
+ call nebo_future_complete
+ test eax,eax
+ jnz .failure
+ lea rdi,[rsp]
+ call nebo_task_await
+ test eax,eax
+ jnz .failure
+ cmp edx,r13d
+ jne .failure
+ jmp .success
+.cancel:
+ lea rdi,[rsp]
+ mov esi,4
+ mov edx,2
+ mov ecx,1000000
+ call nebo_cancellation_budget_init
+ test eax,eax
+ jnz .failure
+ lea rdi,[rsp+64]
+ lea rsi,[rsp]
+ xor edx,edx
+ xor ecx,ecx
+ xor r8d,r8d
+ xor r9d,r9d
+ call nebo_cancellation_token_init
+ test eax,eax
+ jnz .failure
+ lea rdi,[rsp+64]
+ call nebo_cancellation_cancel
+ test eax,eax
+ jnz .failure
+ cmp edx,1
+ jne .failure
+ lea rdi,[rsp+64]
+ call nebo_cancellation_is_cancelled
+ test eax,eax
+ jnz .failure
+ cmp edx,1
+ jne .failure
+ jmp .success
+.channel:
+ lea rdi,[rsp]
+ mov esi,2
+ mov edx,2
+ mov ecx,1000000
+ call nebo_channel_budget_init
+ test eax,eax
+ jnz .failure
+ lea rdi,[rsp+64]
+ lea rsi,[rsp]
+ lea rdx,[rsp+192]
+ mov ecx,2
+ call nebo_channel_init
+ test eax,eax
+ jnz .failure
+ lea rdi,[rsp+64]
+ mov esi,r13d
+ call nebo_channel_try_send
+ test eax,eax
+ jnz .failure
+ lea rdi,[rsp+64]
+ call nebo_channel_try_receive
+ test eax,eax
+ jnz .failure
+ cmp edx,r13d
+ jne .failure
+ lea rdi,[rsp+64]
+ call nebo_channel_close_sender
+ test eax,eax
+ jnz .failure
+ jmp .success
+.sync:
+ lea rdi,[rsp]
+ mov esi,2
+ mov edx,1000000
+ call nebo_sync_budget_init
+ test eax,eax
+ jnz .failure
+ lea rdi,[rsp+64]
+ lea rsi,[rsp]
+ call nebo_mutex_init
+ test eax,eax
+ jnz .failure
+ lea rdi,[rsp+64]
+ lea rsi,[rsp+128]
+ mov edx,2
+ call nebo_mutex_lock
+ test eax,eax
+ jnz .failure
+ lea rdi,[rsp+128]
+ call nebo_mutex_unlock
+ test eax,eax
+ jnz .failure
+ lea rdi,[rsp+192]
+ mov esi,r13d
+ call nebo_atomic_init
+ test eax,eax
+ jnz .failure
+ lea rdi,[rsp+192]
+ mov esi,NEBO_MEMORY_ORDER_SEQCST
+ call nebo_atomic_load
+ test eax,eax
+ jnz .failure
+ cmp edx,r13d
+ jne .failure
+ jmp .success
+.scheduler:
+ lea rdi,[rsp]
+ mov esi,2
+ mov edx,4
+ mov ecx,4
+ mov r8d,8
+ mov r9d,32
+ call nebo_scheduler_budget_init
+ test eax,eax
+ jnz .failure
+ lea rdi,[rsp+64]
+ lea rsi,[rsp]
+ lea rdx,[rsp+192]
+ mov ecx,2
+ lea r8,[rsp+512]
+ mov r9d,4
+ call nebo_scheduler_init
+ test eax,eax
+ jnz .failure
+ lea rdi,[rsp+64]
+ call nebo_scheduler_queue_depth
+ test eax,eax
+ jnz .failure
+ test edx,edx
+ jnz .failure
+ lea rdi,[rsp+64]
+ call nebo_scheduler_shutdown
+ test eax,eax
+ jnz .failure
+ jmp .success
+.success:
+ mov eax,r13d
+ jmp .return
+.failure:
+ lea eax,[r12d+70]
+.return:
+ add rsp,2048
+ pop r13
+ pop r12
+ pop rbx
+ ret

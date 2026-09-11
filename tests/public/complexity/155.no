@@ -1,0 +1,7 @@
+// Static x86-64 ELF owners provide the full path without C or libc symbols.
+start() {
+    RenderPlan;
+    3509;
+    output.stdout().stderr().target("console-abi-service").plain().visual().headlessEvent();
+    lifecycle.event("renderer-plugin").payload("portable-static-elf-no-c-no-libc").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

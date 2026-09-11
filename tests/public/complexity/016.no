@@ -1,0 +1,14 @@
+// A frozen binary64 transform plan composes forward and inverse spectra with signal and window operations.
+(Int.self)fftPlan() { self.return; }
+(Int.self)fftForward() { self.return; }
+(Int.self)fftInverse() { self.return; }
+(Int.self)signalConvolve() { self.return; }
+(Int.self)signalCorrelate() { self.return; }
+(Int.self)signalAutocorrelation() { self.return; }
+(Int.self)spectrumMagnitude() { self.return; }
+(Int.self)spectrumPower() { self.return; }
+(Int.self)windowFunctionHann() { self.return; }
+
+start() {
+    53.fftPlan().fftForward().fftInverse().signalConvolve().signalCorrelate().signalAutocorrelation().spectrumMagnitude().spectrumPower().windowFunctionHann();
+}

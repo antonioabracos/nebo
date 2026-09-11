@@ -1,0 +1,14 @@
+start() {
+  1.value.mutable;
+  if (true) {
+    2.value.mutable;
+    value = 3;
+    value;
+  } else {
+    4.value.mutable;
+    value = 5;
+    value;
+  }
+  value = 6;
+  value;
+}

@@ -1,0 +1,9 @@
+start() {
+    Int(42).explicit_decimal;
+    42.implicit_decimal;
+    if (explicit_decimal == implicit_decimal) {
+        0;
+    } else {
+        1;
+    }
+}

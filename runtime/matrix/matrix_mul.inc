@@ -5,5 +5,7 @@
 extern nebo_matrix_matmul_f64
 extern nebo_matrix_matvec_f64
 extern nebo_matrix_outer_f64
+extern nebo_matrix_dot_flattened_f64
+extern nebo_matrix_batched_matmul_f64
 %endif
 %endif

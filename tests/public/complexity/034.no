@@ -1,0 +1,13 @@
+// A bounded wasm32 module binds target, imports, exports, memory, table, emission, and inspection.
+(Int.self)targetWasm32() { self.return; }
+(Int.self)wasmModuleNew() { self.return; }
+(Int.self)moduleExport() { self.return; }
+(Int.self)moduleImport() { self.return; }
+(Int.self)wasmMemory() { self.return; }
+(Int.self)wasmTable() { self.return; }
+(Int.self)emitWasm() { self.return; }
+(Int.self)wasmInspect() { self.return; }
+
+start() {
+    39.targetWasm32().wasmModuleNew().moduleExport().moduleImport().wasmMemory().wasmTable().emitWasm().wasmInspect();
+}

@@ -1,0 +1,19 @@
+{
+  "expected_exit": 47,
+  "expected_files": {
+    "output.json": {
+      "bytes_hex": "7b22666163746f72223a332c226e616d65223a2273616d706c65227d"
+    }
+  },
+  "inputs": {
+    "input.json": {
+      "bytes_hex": "7b22666163746f72223a332c20226e616d65223a2273616d706c65227d"
+    }
+  },
+  "kinds": [
+    2
+  ],
+  "text": {
+    "bytes_hex": "7b22666163746f72223a332c226e616d65223a2273616d706c65227d"
+  }
+}

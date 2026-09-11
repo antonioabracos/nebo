@@ -1,0 +1,4 @@
+start() {
+    Tensor<Int>.fromNested(Tuple.of(1)).tensor;
+    0;
+}

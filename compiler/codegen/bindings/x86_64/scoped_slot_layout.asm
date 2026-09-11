@@ -250,6 +250,21 @@ scoped_slot_assign_record:
  je .size8
  cmp rax,NEBOC_BIND_TYPE_BYTES
  je .size8
+ cmp rax,NEBOC_BIND_TYPE_PERCENT
+ jb .after_quantity
+ cmp rax,NEBOC_BIND_TYPE_TEMPERATURE
+ jbe .size8
+.after_quantity:
+ cmp rax,NEBOC_BIND_TYPE_OPTION_INT
+ je .size16
+ cmp rax,NEBOC_BIND_TYPE_OVERFLOW_INT
+ je .size16
+ cmp rax,NEBOC_BIND_TYPE_RANGE_INT
+ je .size16
+ cmp rax,NEBOC_BIND_TYPE_ITERATOR_INT
+ je .size16
+ cmp rax,NEBOC_BIND_TYPE_SIZE_HINT
+ je .size16
  mov rax,-1
  ret
 .size1:
@@ -263,6 +278,10 @@ scoped_slot_assign_record:
 .size8:
  mov ecx,8
  mov edx,8
+ jmp .place
+.size16:
+ mov ecx,8
+ mov edx,16
 .place:
  mov rax,rsi
  add rax,rdx

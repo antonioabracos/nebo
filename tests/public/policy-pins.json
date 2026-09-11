@@ -1,0 +1,25 @@
+{
+  "schema": "nebo.public-policy-pins.v1",
+  "local_only_occurrences": {
+    "compiler/driver/cli/linux-x86_64/cli_driver.asm": 1,
+    "docs/public/v1.0/diagnostics/core/cli-help.html": 1,
+    "docs/public/v1.0/diagnostics/core/cli-help.json": 1,
+    "docs/public/v1.0/diagnostics/core/cli-help.md": 1,
+    "docs/public/v1.0/reference/core/operator-NSR-RES-015.json": 1,
+    "sdk/contracts/compatibility/SYMBOLID-EXPORT-INVENTORY.tsv": 2,
+    "sdk/nebo-1.0/share/nebo/cli/CLI-DISTRIBUTION-MANIFEST.tsv": 1,
+    "sdk/nebo-1.0/share/nebo/cli/help.txt": 1,
+    "tests/cli/goldens/help.txt": 1,
+    "tests/public/policy.py": 2,
+    "tests/public/privacy_selftest.py": 2,
+    "tools/rf204-g159.py": 2
+  },
+  "local_only_reason": "Semantic CLI option and documented/tested public representations, including positive privacy controls; spelling preserved",
+  "license_and_asset_sha256": {
+    "LICENSE": "23b838f798e12a514b33388d262003e90fc660b2b50593142f158ff62a743a0a",
+    "third_party/fonts/adobe-source-code-pro/SourceCodePro-Regular.ttf": "74bd80d3e42a08517cd7e1108ba3d86f2da29ac0f3065be95e0357956ab9db37",
+    "third_party/fonts/adobe-source-code-pro/LICENSE.md": "7c940e28a5388e9bba866cf0e408edda45fe0899ba98665b8f6ab31dc5e4b8ff",
+    "sdk/nebo-1.0/licenses/NeboConsoleMonoAtlas-OFL-1.1.md": "7c940e28a5388e9bba866cf0e408edda45fe0899ba98665b8f6ab31dc5e4b8ff",
+    "runtime/console/live/nebo_console_mono_atlas.inc": "81d710ecc21ee7d5c7d520826b1a6ea22cffe4e50ce072b808fe80d3376d1d92"
+  }
+}

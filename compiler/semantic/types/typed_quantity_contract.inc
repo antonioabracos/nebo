@@ -30,4 +30,16 @@
 %define NEBO_QCTX_FORMAT_PLACEHOLDER      0x04
 %define NEBO_QCTX_DOMAIN_ENABLED          0x08
 
+; Locale-stable quantity FormatPlan. The value remains in its canonical unit;
+; locale affects surrounding number formatting, never the Registry suffix.
+%define NEBO_QUANTITY_LOCALE_INVARIANT    0
+%define NEBO_QUANTITY_LOCALE_EN           1
+%define NEBO_QUANTITY_LOCALE_FR           2
+%define NEBO_QUANTITY_FORMAT_VALUE_OFFSET 0
+%define NEBO_QUANTITY_FORMAT_UNIT_OFFSET  8
+%define NEBO_QUANTITY_FORMAT_SUFFIX_OFFSET 16
+%define NEBO_QUANTITY_FORMAT_SUFFIX_LENGTH_OFFSET 24
+%define NEBO_QUANTITY_FORMAT_LOCALE_OFFSET 32
+%define NEBO_QUANTITY_FORMAT_SIZE         40
+
 %endif

@@ -1,0 +1,4 @@
+start() {
+    Float(1).invalid_float;
+    0.return;
+}

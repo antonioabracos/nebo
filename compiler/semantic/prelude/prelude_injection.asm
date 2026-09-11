@@ -6,12 +6,14 @@
 bits 64
 default rel
 
+%include "compiler/semantic/prelude/prelude.inc"
+
 global neboc_prelude_inject
 
-%define DOC_MAX_INPUT 4096
-%define DOC_TAG 26
-%define hover_FNV_OFFSET 0xcbf29ce484222325
-%define hover_FNV_PRIME  0x100000001b3
+%define DOC_MAX_INPUT NEBOC_PRELUDE_MAX_INPUT
+%define DOC_TAG NEBOC_PRELUDE_TAG_INJECTION
+%define prelude_FNV_OFFSET 0xcbf29ce484222325
+%define prelude_FNV_PRIME  0x100000001b3
 
 section .text
 align 16
@@ -30,8 +32,8 @@ neboc_prelude_inject:
     cmp rax, rdi
     jb .length
 
-    mov rax, hover_FNV_OFFSET
-    mov r8, hover_FNV_PRIME
+    mov rax, prelude_FNV_OFFSET
+    mov r8, prelude_FNV_PRIME
     xor ecx, ecx
 .scan:
     cmp rcx, rsi
@@ -64,8 +66,4 @@ neboc_prelude_inject:
 .encoding:
     mov eax, 3
     mov edx, 3
-    ret
-.keyword:
-    mov eax, 4
-    mov edx, 4
     ret

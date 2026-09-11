@@ -1,0 +1,28 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>gpu-reference — buffer.copyTo(other)</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>gpu-reference — buffer.copyTo(other)</h1><p>CPU reference only; zero authenticated GPU devices; no accelerator backend; original observation: buffer.copyTo(other); SDK bounds: {&quot;MAX_BUFFER_BYTES&quot;:262144,&quot;MAX_CONTEXT_BYTES&quot;:1048576,&quot;MAX_LAUNCH_DIMENSION&quot;:65535,&quot;MAX_LAUNCH_WORK_ITEMS&quot;:1048576,&quot;MAX_PENDING_COMMANDS&quot;:256,&quot;MAX_PINNED_BYTES&quot;:262144,&quot;MAX_STREAMS&quot;:32,&quot;MAX_TRACE_EVENTS&quot;:512}</p><pre>Identity: owner:G022:G022-S02-04 (DOMAIN_CONTRACT_ID)
+Edition: 1
+Target: PYTHON_CPU_REFERENCE
+Availability: EXPERIMENTAL</pre><h2>Syntax or signature</h2><pre>DeviceBuffer.copyTo(self, other: &#x27;DeviceBuffer&#x27;) -&gt; int</pre><h2>Reference-model API</h2><p>The signature describes the Python reference model. Parameters and return annotations belong to that model; they are not an admitted Nebo spelling.</p><h2>Complete executable Python example</h2><p>Run python3 -B tests/rf204/G022/sdk_oracle.py from the repository root with only synthetic inputs. Set G020_TMP and G021_TMP to an empty private temporary directory for the two checkpoint suites. This program contains the setup and independent assertions for the model. The line excerpt below is not a standalone program. No native Nebo binding is inferred.</p><h2>Availability and maturity</h2><p>EXPERIMENTAL; evidence SDK_REFERENCE_MODEL. Documentation does not promote this identity to stable. Public and owner namespaces are separate contracts.</p><h2>Limits and lifecycle</h2><p>CPU reference only; zero authenticated GPU devices; no accelerator backend; original observation: buffer.copyTo(other); SDK bounds: {&quot;MAX_BUFFER_BYTES&quot;:262144,&quot;MAX_CONTEXT_BYTES&quot;:1048576,&quot;MAX_LAUNCH_DIMENSION&quot;:65535,&quot;MAX_LAUNCH_WORK_ITEMS&quot;:1048576,&quot;MAX_PENDING_COMMANDS&quot;:256,&quot;MAX_PINNED_BYTES&quot;:262144,&quot;MAX_STREAMS&quot;:32,&quot;MAX_TRACE_EVENTS&quot;:512}</p><h2>Privacy, dependencies and authority</h2><p>Capability: SYNTHETIC_LOCAL_DATA. Gate: NONE. Import grants capability: NO. Use synthetic local data. Hardware claim: NO. Security assurance: NO. RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE. SDK buffers and handles follow the owner lifecycle and reject invalid/released inputs where specified. No downloaded models, secrets, external network or device access is needed for the documented local proofs.</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;classification&quot;: {
+      &quot;capability&quot;: &quot;SYNTHETIC_LOCAL_DATA&quot;,
+      &quot;core&quot;: &quot;NO&quot;,
+      &quot;evidence_level&quot;: &quot;SDK_REFERENCE_MODEL&quot;,
+      &quot;external_gate&quot;: &quot;NONE&quot;,
+      &quot;hardware_claim&quot;: &quot;NO&quot;,
+      &quot;import_grants_capability&quot;: &quot;NO&quot;,
+      &quot;legal&quot;: &quot;RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE&quot;,
+      &quot;security_assurance&quot;: &quot;NO&quot;,
+      &quot;target&quot;: &quot;PYTHON_CPU_REFERENCE&quot;,
+      &quot;tier&quot;: &quot;EXPERIMENTAL&quot;
+    }
+  },
+  {
+    &quot;excerpt&quot;: &quot;76:    bytes(downloaded) == pack((1.25, -2.5)))\n77: ok(\&quot;positive\&quot;, \&quot;buffer.copyTo\&quot;, left.copyTo(right) == 16 and\n78:    unpack(right) == (1.25, -2.5))\n79: host_tensor = GpuTensor.fromHost(HostTensor([3.5, -4.25], (2,)))\n80: placed = host_tensor.toDevice(device)&quot;,
+    &quot;executed_assertions&quot;: 116,
+    &quot;execution&quot;: &quot;SDK_REFERENCE_MODEL_ONLY&quot;,
+    &quot;language&quot;: &quot;python&quot;,
+    &quot;line&quot;: 77,
+    &quot;source_path&quot;: &quot;tests/rf204/G022/sdk_oracle.py&quot;,
+    &quot;source_sha256&quot;: &quot;e0401f145d76fdd7c2508733ea0aa27d5c065dd056208a30e5543a6d5f771d89&quot;
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a></nav><h2>Provenance</h2><ul><li>compiler/sdk/gpu.py — SHA-256 69ddff3178824ab48f04f0233d9c06c6eab814f5b6647a1bd29eb0a573eae5b3</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

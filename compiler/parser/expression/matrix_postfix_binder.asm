@@ -6,7 +6,7 @@ default rel
 %define POSTFIX_TRANSPOSE 1
 %define POSTFIX_ADJOINT 2
 %define POSTFIX_INVERSE 3
-%define POSTFIX_PRECEDENCE 240
+%define POSTFIX_PRECEDENCE 170
 
 section .text
 global matrix_postfix_plan

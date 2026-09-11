@@ -15,50 +15,54 @@ semantic_error:
 
 ; EAX type, EDX constraint -> EAX 1/0
 constraint_satisfied:
- cmp edx,NEBOC_GEN_CONSTRAINT_COPY
- je .copy
- cmp edx,NEBOC_GEN_CONSTRAINT_EQ
- je .eq
- cmp edx,NEBOC_GEN_CONSTRAINT_COMPARABLE
- je .comparable
- cmp edx,NEBOC_GEN_CONSTRAINT_HASH
- je .hash
- xor eax,eax
- ret
-.copy:
- cmp eax,NEBOC_GEN_TYPE_FLOAT
- jbe .yes
- xor eax,eax
- ret
-.eq:
- cmp eax,NEBOC_GEN_TYPE_BOOL
- je .yes
- cmp eax,NEBOC_GEN_TYPE_INT
- je .yes
- cmp eax,NEBOC_GEN_TYPE_CHAR
- je .yes
- xor eax,eax
- ret
-.comparable:
- cmp eax,NEBOC_GEN_TYPE_INT
- je .yes
- cmp eax,NEBOC_GEN_TYPE_CHAR
- je .yes
- cmp eax,NEBOC_GEN_TYPE_FLOAT
- je .yes
- xor eax,eax
- ret
-.hash:
- cmp eax,NEBOC_GEN_TYPE_INT
- je .yes
- cmp eax,NEBOC_GEN_TYPE_CHAR
- je .yes
- cmp eax,NEBOC_GEN_TYPE_TEXT
- je .yes
- xor eax,eax
- ret
-.yes:
+ test edx,edx
+ jnz .combined_begin
  mov eax,1
+ ret
+.combined_begin:
+ ; Constraints are capability bits.  Combined bounds (for example Hash + Eq)
+ ; require every advertised capability instead of being treated as a new,
+ ; unrelated enum member.
+ push rbx
+ mov ebx,edx
+ test ebx,NEBOC_GEN_CONSTRAINT_COPY
+ jz .check_eq
+ cmp eax,NEBOC_GEN_TYPE_FLOAT
+ ja .combined_no
+.check_eq:
+ test ebx,NEBOC_GEN_CONSTRAINT_EQ
+ jz .check_comparable
+ cmp eax,NEBOC_GEN_TYPE_BOOL
+ je .check_comparable
+ cmp eax,NEBOC_GEN_TYPE_INT
+ je .check_comparable
+ cmp eax,NEBOC_GEN_TYPE_CHAR
+ jne .combined_no
+.check_comparable:
+ test ebx,NEBOC_GEN_CONSTRAINT_COMPARABLE
+ jz .check_hash
+ cmp eax,NEBOC_GEN_TYPE_INT
+ je .check_hash
+ cmp eax,NEBOC_GEN_TYPE_CHAR
+ je .check_hash
+ cmp eax,NEBOC_GEN_TYPE_FLOAT
+ jne .combined_no
+.check_hash:
+ test ebx,NEBOC_GEN_CONSTRAINT_HASH
+ jz .combined_yes
+ cmp eax,NEBOC_GEN_TYPE_INT
+ je .combined_yes
+ cmp eax,NEBOC_GEN_TYPE_CHAR
+ je .combined_yes
+ cmp eax,NEBOC_GEN_TYPE_TEXT
+ jne .combined_no
+.combined_yes:
+ pop rbx
+ mov eax,1
+ ret
+.combined_no:
+ pop rbx
+ xor eax,eax
  ret
 
 %define call NEBOC_ABI_FUNCTION_SCOPED_CALL

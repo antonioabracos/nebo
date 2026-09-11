@@ -1,4 +1,4 @@
-; RELEASE-GOVERNANCE-E-ENCERRAMENTO-DE-PROGRAMAS-F08 deterministic offline ICE reports, redaction and bundles.
+; RELEASE-GOVERNANCE-E-ENCERRAMENTO-DE-PROGRAMAS-F08 deterministic local-only ICE reports, redaction and bundles.
 bits 64
 default rel
 %include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"

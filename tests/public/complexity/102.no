@@ -1,0 +1,7 @@
+// A source-backed plan drives one controlled open, status, close, and cleanup cycle.
+start() {
+    RenderPlan;
+    3002;
+    output.stdout().stderr().target("visual-service").plain().visual().headlessEvent();
+    lifecycle.event("console-panel").payload("open-status-close").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

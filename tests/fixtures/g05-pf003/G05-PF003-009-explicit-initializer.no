@@ -1,0 +1,5 @@
+start() {
+    Int.value;
+    Int(42).value;
+    value;
+}

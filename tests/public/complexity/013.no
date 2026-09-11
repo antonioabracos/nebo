@@ -1,0 +1,13 @@
+// Explicit local vectors combine with text and graph filters without becoming factual proof.
+(Int.self)semanticIndexBuild() { self.return; }
+(Int.self)indexInsert() { self.return; }
+(Int.self)indexRemove() { self.return; }
+(Int.self)indexSearch() { self.return; }
+(Int.self)hybridSearchNew() { self.return; }
+(Int.self)searchQuery() { self.return; }
+(Int.self)resultScoreBreakdown() { self.return; }
+(Int.self)resultProvenance() { self.return; }
+
+start() {
+    102.semanticIndexBuild().indexInsert().indexRemove().indexSearch().hybridSearchNew().searchQuery().resultScoreBreakdown().resultProvenance();
+}

@@ -1,0 +1,9 @@
+start() {
+    Bool.ready;
+    true.ready;
+    ready;
+    Float.ratio;
+    1.5.ratio;
+    ratio;
+    0;
+}

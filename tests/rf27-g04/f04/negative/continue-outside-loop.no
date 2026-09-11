@@ -1,0 +1,5 @@
+start() {
+    "continue".owner;
+    continue;
+    0;
+}

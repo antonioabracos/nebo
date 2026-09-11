@@ -1,0 +1,4 @@
+start() {
+  Result<Array<Int,2>,Bool>(Ok(Array<Int,2> [1,2])).values;
+  values.drop().return;
+}

@@ -1,0 +1,14 @@
+// The physical loop is simulated, deadline-bound, watched, fail-safe, and replayable.
+(Int.self)robotLoopNew() { self.return; }
+(Int.self)loopReadSensors() { self.return; }
+(Int.self)loopCompute() { self.return; }
+(Int.self)loopWriteActuators() { self.return; }
+(Int.self)loopSafeState() { self.return; }
+(Int.self)loopWatchdog() { self.return; }
+(Int.self)loopRun() { self.return; }
+(Int.self)loopTimingReport() { self.return; }
+(Int.self)loopReplay() { self.return; }
+
+start() {
+    143.robotLoopNew().loopReadSensors().loopCompute().loopWriteActuators().loopSafeState().loopWatchdog().loopRun().loopTimingReport().loopReplay();
+}

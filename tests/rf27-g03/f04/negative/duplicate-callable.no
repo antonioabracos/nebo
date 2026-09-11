@@ -1,0 +1,3 @@
+callable same(Int.value) capture copy 1 { capture.return; }
+callable same(Int.value) capture copy 2 { capture.return; }
+start() { same.call(1).drop().return; }

@@ -1,0 +1,2 @@
+struct Point { Int.x; Int.y; }
+start() { Point.default().p; p.update(x: 7, y: 11).q; q.y; }

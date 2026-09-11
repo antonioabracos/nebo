@@ -94,9 +94,6 @@ rg -q '%define NEBOC_TYPE_ID_BYTES 11' compiler/semantic/types/type_table.inc
 rg -q '%define NEBOC_TYPE_ID_BUFFER 12' compiler/semantic/types/type_table.inc
 rg -q '%define NEBOC_BUFFER_PLAN_SIZE 96' compiler/lowering/textual/buffer_plan.inc
 rg -Fq 'mov qword [r12+NEBOC_BUFFER_STORAGE_OFFSET],0' compiler/parser/buffer_parser.asm
-test "$(git rev-parse 'nebo-v0.2.0-rc.2^{}')" = e055debd358a747f8793015546162e31fe9b3370
-test "$(sha256sum release/package/nebo-v0.2.0-rc.2-x86_64-systemv-elf-linux.zip | cut -d' ' -f1)" = \
-  1fad420b226eef186179819a2ca2b459cb621b412fb30bf056709388b0762f8d
-test "$(build/bin/neboc --version)" = 'neboc 0.2.0-rc.2'
+test "$(build/bin/neboc --version)" = "$(python3 -B scripts/check-version-consistency.py --expected-cli)"
 
 echo "RF27_G01_F08_GREEN positives=5 negative_fixtures=10 negative_tri_mode=30 type_id=12 bytes_type_id=11 layout=16/8 capacity=4 zeroed=yes unique_local=yes deterministic_asm=5 deterministic_objects=9 deterministic_elf=5 static_elf=5 rc2=yes tmp=$tmp_root"

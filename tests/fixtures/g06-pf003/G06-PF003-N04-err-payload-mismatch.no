@@ -1,0 +1,3 @@
+start() {
+    Result<Int, Bool>(Err(1)).result;
+}

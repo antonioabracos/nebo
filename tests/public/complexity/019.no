@@ -1,0 +1,13 @@
+// Uniform grids bind explicit boundary kinds to a bounded PDE solve and observable differential fields.
+(Int.self)gridUniform() { self.return; }
+(Int.self)gridCoordinates() { self.return; }
+(Int.self)boundaryDirichlet() { self.return; }
+(Int.self)boundaryNeumann() { self.return; }
+(Int.self)pdeProblemDefine() { self.return; }
+(Int.self)pdeSolve() { self.return; }
+(Int.self)fieldGradient() { self.return; }
+(Int.self)fieldLaplacian() { self.return; }
+
+start() {
+    104.gridUniform().gridCoordinates().boundaryDirichlet().boundaryNeumann().pdeProblemDefine().pdeSolve().fieldGradient().fieldLaplacian();
+}

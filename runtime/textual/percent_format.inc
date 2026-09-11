@@ -1,0 +1,110 @@
+%ifndef NEBO_PERCENT_FORMAT_INC
+%define NEBO_PERCENT_FORMAT_INC 1
+
+; G060 caller-owned percent-format ABI. Templates and argument records are
+; immutable. Compilation materializes bounded nodes into caller storage and
+; rendering preflights the complete result before committing any output byte.
+PERCENT_NODE_KIND       equ 0
+PERCENT_NODE_DATA       equ 8
+PERCENT_NODE_LENGTH     equ 16
+PERCENT_NODE_TYPE       equ 24
+PERCENT_NODE_ADDRESS    equ 32
+PERCENT_NODE_KEY        equ 40
+PERCENT_NODE_WIDTH      equ 48
+PERCENT_NODE_PRECISION  equ 56
+PERCENT_NODE_FLAGS      equ 64
+PERCENT_NODE_SIZE       equ 72
+
+PERCENT_NODE_LITERAL     equ 1
+PERCENT_NODE_PLACEHOLDER equ 2
+
+PERCENT_ADDRESS_SEQUENTIAL equ 0
+PERCENT_ADDRESS_NAMED      equ 1
+PERCENT_ADDRESS_POSITIONAL equ 2
+
+PERCENT_TYPE_TEXT        equ 1
+PERCENT_TYPE_INT         equ 2
+PERCENT_TYPE_FLOAT       equ 3
+PERCENT_TYPE_BOOL        equ 4
+PERCENT_TYPE_VALUE       equ 5
+PERCENT_TYPE_TYPENAME    equ 6
+PERCENT_TYPE_QUOTE       equ 7
+PERCENT_TYPE_JSON        equ 8
+PERCENT_TYPE_STRUCTURAL  equ 9
+PERCENT_TYPE_INSPECT     equ 10
+PERCENT_TYPE_HEX         equ 11
+PERCENT_TYPE_OCTAL       equ 12
+PERCENT_TYPE_SCIENTIFIC  equ 13
+PERCENT_TYPE_BINARY      equ 14
+
+PERCENT_FLAG_LEFT        equ 1
+PERCENT_FLAG_ZERO        equ 2
+PERCENT_FLAG_SIGN        equ 4
+PERCENT_FLAG_CENTER      equ 8
+
+PERCENT_ARG_KIND         equ 0
+PERCENT_ARG_DATA         equ 8
+PERCENT_ARG_LENGTH       equ 16
+PERCENT_ARG_NAME_HASH    equ 24
+PERCENT_ARG_SIZE         equ 32
+
+PERCENT_ARG_TEXT         equ 1
+PERCENT_ARG_INT          equ 2
+PERCENT_ARG_FLOAT        equ 3
+PERCENT_ARG_BOOL         equ 4
+PERCENT_ARG_STRUCTURAL   equ 5
+
+PERCENT_REQUEST_TEMPLATE      equ 0
+PERCENT_REQUEST_TEMPLATE_LEN  equ 8
+PERCENT_REQUEST_NODES         equ 16
+PERCENT_REQUEST_NODE_CAP      equ 24
+PERCENT_REQUEST_NODE_COUNT    equ 32
+PERCENT_REQUEST_ARGS          equ 40
+PERCENT_REQUEST_ARG_COUNT     equ 48
+PERCENT_REQUEST_POLICY        equ 56
+PERCENT_REQUEST_OUTPUT        equ 64
+PERCENT_REQUEST_CAPACITY      equ 72
+PERCENT_REQUEST_WRITTEN       equ 80
+PERCENT_REQUEST_DIAGNOSTIC    equ 88
+PERCENT_REQUEST_SIZE          equ 96
+
+; Zero is the canonical strict/no-coercion/format-only policy.
+PERCENT_POLICY_ALLOW_COERCE    equ 1
+PERCENT_POLICY_ALLOW_MISSING   equ 2
+PERCENT_POLICY_ALLOW_EXTRA     equ 4
+PERCENT_POLICY_UNKNOWN_LITERAL equ 8
+PERCENT_POLICY_VALIDATE_ONLY   equ 16
+PERCENT_POLICY_NAMED_ONLY      equ 32
+PERCENT_POLICY_POSITIONAL_ONLY equ 64
+PERCENT_POLICY_ALL             equ 127
+PERCENT_POLICY_LOOSE           equ PERCENT_POLICY_ALLOW_COERCE | PERCENT_POLICY_ALLOW_MISSING | PERCENT_POLICY_ALLOW_EXTRA | PERCENT_POLICY_UNKNOWN_LITERAL
+
+; Stable public diagnostics NEBO-FORMAT-001 through NEBO-FORMAT-008.
+PERCENT_DIAG_UNKNOWN_PLACEHOLDER equ 1
+PERCENT_DIAG_ARITY_MISMATCH       equ 2
+PERCENT_DIAG_TYPE_MISMATCH        equ 3
+PERCENT_DIAG_WIDTH_PRECISION      equ 4
+PERCENT_DIAG_NAMED_ARGUMENT       equ 5
+PERCENT_DIAG_POSITIONAL_INDEX     equ 6
+PERCENT_DIAG_COERCION_FORBIDDEN   equ 7
+PERCENT_DIAG_OUTPUT_LIMIT         equ 8
+
+PERCENT_MAX_TEMPLATE  equ 4096
+PERCENT_MAX_NODES     equ 128
+PERCENT_MAX_ARGS      equ 64
+PERCENT_MAX_WIDTH     equ 256
+PERCENT_MAX_PRECISION equ 6
+PERCENT_MAX_OUTPUT    equ 1048576
+
+%ifndef NEBO_PERCENT_FORMAT_IMPLEMENTATION
+ extern neboc_percent_compile_request
+ extern neboc_percent_validate_request
+ extern neboc_percent_render_request
+ extern neboc_percent_validate_plan_request
+ extern neboc_percent_render_plan_request
+ extern neboc_percent_policy_validate
+ extern neboc_percent_name_hash
+ extern neboc_percent_diagnostic_name
+%endif
+
+%endif

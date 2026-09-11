@@ -1,0 +1,5 @@
+start() {
+  Option<Int>(Some(4)).source;
+  source.andThen(Some(8)).mapped;
+  mapped.get().return;
+}

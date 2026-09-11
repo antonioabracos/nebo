@@ -17,12 +17,43 @@ prefix:
  db 10,'section .text',10
  db 'global nebo_fn_1',10
  db 'nebo_fn_1:',10
- db '    mov rax, '
 prefix_len equ $-prefix
+value_prefix: db '    mov rax, '
+value_prefix_len equ $-value_prefix
 suffix: db 10,'    ret',10
 suffix_len equ $-suffix
 
+event_data: db 10,'section .rodata',10,'align 8',10,'nebo_ownership_events:',10
+ event_data_len equ $-event_data
+ event_qword: db ' dq '
+ event_qword_len equ $-event_qword
+ newline: db 10
+ backing_prefix: db 'section .bss',10,'align 16',10,'nebo_ownership_backing: resb '
+ backing_prefix_len equ $-backing_prefix
+ execute_prefix: db '    sub rsp, 8',10,'    lea rdi, [rel nebo_ownership_events]',10,'    mov esi, '
+ execute_prefix_len equ $-execute_prefix
+ execute_middle: db 10,'    lea rdx, [rel nebo_ownership_backing]',10,'    mov ecx, '
+ execute_middle_len equ $-execute_middle
+ execute_suffix: db 10,'    extern nebo_runtime_ownership_execute',10,'    call nebo_runtime_ownership_execute',10,'    add rsp, 8',10
+ execute_suffix_len equ $-execute_suffix
+
 section .text
+
+%macro WRITE_BYTES 2
+ mov rdi,r14
+ lea rsi,[rel %1]
+ mov edx,%2
+ call neboc_assembly_writer_append_bytes
+ test eax,eax
+ jnz .writer
+%endmacro
+%macro WRITE_VALUE 1
+ mov rdi,r14
+ mov rsi,%1
+ call neboc_assembly_writer_append_i64_decimal
+ test eax,eax
+ jnz .writer
+%endmacro
 
 %define call NEBOC_ABI_FUNCTION_SCOPED_CALL
 NEBOC_ABI_FUNCTION neboc_move_copy_clone_codegen_emit_start
@@ -58,17 +89,57 @@ NEBOC_ABI_FUNCTION neboc_move_copy_clone_codegen_emit_start
  call hash_bytes
  cmp rax,[r13+neboc_text_char_unicode_e_bytes_PLAN_HASH_OFFSET]
  jne .source
- mov rdi,r14
- lea rsi,[rel prefix]
- mov edx,prefix_len
- call neboc_assembly_writer_append_bytes
- test eax,eax
- jnz .writer
- mov rdi,r14
- mov rsi,[r13+neboc_text_char_unicode_e_bytes_PLAN_RESULT_VALUE_OFFSET]
- call neboc_assembly_writer_append_i64_decimal
- test eax,eax
- jnz .writer
+ cmp qword [r13+NEBOC_PLAN_EVENT_COUNT_OFFSET],NEBOC_OWNERSHIP_MAX_EVENTS
+ ja .source
+ xor ebx,ebx
+ mov [rsp],rbx
+ cmp qword [r13+NEBOC_PLAN_EVENT_COUNT_OFFSET],0
+ je .body
+ WRITE_BYTES event_data,event_data_len
+ lea r15,[r13+NEBOC_PLAN_EVENTS_OFFSET]
+.events:
+ cmp rbx,[r13+NEBOC_PLAN_EVENT_COUNT_OFFSET]
+ jae .backing
+ cmp qword [r15],NEBOC_OWN_EVENT_ARENA_INIT
+ je .reserve
+ cmp qword [r15],NEBOC_OWN_EVENT_CLONE
+ jne .serialized
+.reserve:
+ mov rax,[r15+24]
+ cmp rax,1048576
+ ja .source
+ add rax,15
+ and rax,-16
+ add [rsp],rax
+.serialized:
+ %assign field 0
+ %rep 6
+ WRITE_BYTES event_qword,event_qword_len
+ WRITE_VALUE [r15+field]
+ WRITE_BYTES newline,1
+ %assign field field+8
+ %endrep
+ add r15,NEBOC_OWNERSHIP_EVENT_SIZE
+ inc rbx
+ jmp .events
+.backing:
+ WRITE_BYTES backing_prefix,backing_prefix_len
+ mov rax,[rsp]
+ inc rax
+ WRITE_VALUE rax
+ WRITE_BYTES newline,1
+.body:
+ WRITE_BYTES prefix,prefix_len
+ cmp qword [r13+NEBOC_PLAN_EVENT_COUNT_OFFSET],0
+ je .value
+ WRITE_BYTES execute_prefix,execute_prefix_len
+ WRITE_VALUE [r13+NEBOC_PLAN_EVENT_COUNT_OFFSET]
+ WRITE_BYTES execute_middle,execute_middle_len
+ WRITE_VALUE [rsp]
+ WRITE_BYTES execute_suffix,execute_suffix_len
+.value:
+ WRITE_BYTES value_prefix,value_prefix_len
+ WRITE_VALUE [r13+neboc_text_char_unicode_e_bytes_PLAN_RESULT_VALUE_OFFSET]
  mov rdi,r14
  lea rsi,[rel suffix]
  mov edx,suffix_len

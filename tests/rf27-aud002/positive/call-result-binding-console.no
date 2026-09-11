@@ -1,0 +1,4 @@
+start() {
+    "Olá".byteLength().bytes;
+    bytes.console();
+}

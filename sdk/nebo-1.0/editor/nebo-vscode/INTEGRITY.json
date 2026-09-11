@@ -1,0 +1,21 @@
+{
+  "files": [
+    {
+      "path": "client.js",
+      "sha256": "91a06a461935b6d3694866ec5d99b2d181847f21e54d0c7b7167cb075af1dd25"
+    },
+    {
+      "path": "extension.js",
+      "sha256": "9062d252cd07dbdcedc2bd808fbca5986f1c2a5571d9d52bb3d9d31ad02a4159"
+    },
+    {
+      "path": "language-configuration.json",
+      "sha256": "7e515685e5a4b649c5545225cd7a0bfe45f57fd6938fb1c72a75c08df80d9fc1"
+    },
+    {
+      "path": "package.json",
+      "sha256": "eba49c684d8ad48cbc37365b7d8bc1528e7af9a730c6df174796c3aadc718e0a"
+    }
+  ],
+  "format": "NEBO-EDITOR-INTEGRITY-v1"
+}

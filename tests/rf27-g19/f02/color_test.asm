@@ -1,0 +1,102 @@
+bits 64
+default rel
+%include "runtime/media/color.inc"
+section .text
+global _start
+_start:
+ mov edi,1
+ mov esi,2
+ mov edx,3
+ call nebo_color_rgb_media_native_vertical
+ test eax,eax
+ jnz .fail1
+ cmp edx,0xff030201
+ jne .fail2
+ mov edi,4
+ mov esi,5
+ mov edx,6
+ mov ecx,7
+ call nebo_color_rgba_media_native_vertical
+ test eax,eax
+ jnz .fail3
+ cmp edx,0x07060504
+ jne .fail4
+ mov edi,256
+ xor esi,esi
+ xor edx,edx
+ call nebo_color_rgb_media_native_vertical
+ cmp eax,NEBO_MEDIA_E_ARGUMENT
+ jne .fail5
+ call nebo_pixel_format_rgba8
+ mov rbx,NEBO_PIXEL_FORMAT_RGBA8_VALUE
+ cmp rax,rbx
+ jne .fail6
+ call nebo_pixel_format_gray8
+ mov rbx,NEBO_PIXEL_FORMAT_GRAY8_VALUE
+ cmp rax,rbx
+ jne .fail7
+ mov edi,0x44332211
+ mov esi,NEBO_PIXEL_RGBA8
+ call nebo_pixel_pack
+ test eax,eax
+ jnz .fail8
+ cmp edx,0x44332211
+ jne .fail9
+ mov edi,0xff0000ff
+ mov esi,NEBO_PIXEL_GRAY8
+ call nebo_pixel_pack
+ test eax,eax
+ jnz .fail10
+ cmp edx,54
+ jne .fail11
+ mov edi,0xff00ff00
+ mov esi,NEBO_PIXEL_GRAY8
+ call nebo_pixel_pack
+ cmp edx,182
+ jne .fail12
+ mov edi,0xffff0000
+ mov esi,NEBO_PIXEL_GRAY8
+ call nebo_pixel_pack
+ cmp edx,18
+ jne .fail13
+ xor edi,edi
+ call nebo_color_to_linear_u8
+ test eax,eax
+ jnz .fail14
+ test edx,edx
+ jnz .fail15
+ mov edi,255
+ call nebo_color_to_linear_u8
+ cmp edx,65535
+ jne .fail16
+ mov edi,128
+ call nebo_color_to_linear_u8
+ test eax,eax
+ jnz .fail17
+ mov edi,edx
+ call nebo_color_to_srgb_q16
+ test eax,eax
+ jnz .fail18
+ cmp edx,128
+ jne .fail19
+ mov edi,65536
+ call nebo_color_to_srgb_q16
+ cmp eax,NEBO_MEDIA_E_RANGE
+ jne .fail20
+ mov edi,0x01020304
+ mov esi,99
+ call nebo_pixel_pack
+ cmp eax,NEBO_MEDIA_E_FORMAT
+ jne .fail21
+ xor edi,edi
+ jmp .exit
+%assign i 1
+%rep 21
+.fail%+i: mov edi,i
+ jmp .exit
+%assign i i+1
+%endrep
+.exit:
+ mov eax,60
+ syscall
+section .note.GNU-stack noalloc noexec nowrite progbits

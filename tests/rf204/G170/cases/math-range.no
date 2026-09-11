@@ -1,0 +1,1 @@
+start() { std.math.clamp(3, 7, 1).return; }

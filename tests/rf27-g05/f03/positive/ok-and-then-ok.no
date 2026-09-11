@@ -1,0 +1,5 @@
+start() {
+  Result<Int,Bool>(Ok(4)).source;
+  source.andThen(Ok(8)).mapped;
+  mapped.get().return;
+}

@@ -2,13 +2,23 @@
 %define NEBO_MATRIX_CORE_INC 1
 %include "compiler/semantic/matrix/matrix_contract.inc"
 %ifndef NEBO_MATRIX_CORE_IMPLEMENTATION
+extern nebo_matrix_zeros_f64
+extern nebo_matrix_filled_f64
+extern nebo_matrix_from_rows_f64
+extern nebo_matrix_from_buffer_f64
+extern nebo_matrix_rows
+extern nebo_matrix_columns
+extern nebo_matrix_layout
 extern nebo_matrix_identity_f64
 extern nebo_matrix_at_f64
+extern nebo_matrix_get_f64
 extern nebo_matrix_set_f64
 extern nebo_matrix_row_view
 extern nebo_matrix_column_view
 extern nebo_matrix_slice_view
 extern nebo_matrix_transpose_view
 extern nebo_matrix_contiguous_f64
+extern nebo_matrix_trace_f64
+extern nebo_matrix_is_square
 %endif
 %endif

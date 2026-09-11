@@ -1,0 +1,4 @@
+start() {
+    Text.name;
+    "Ada".name;
+}

@@ -1,0 +1,10 @@
+invalid-codegen-argument
+codegen-target-mismatch
+assembly-writer-not-ready
+lowering-table-not-frozen
+unresolved-node-before-codegen
+invalid-codegen-state
+invalid-codegen-label-id
+unsafe-text-input
+assembly-writer-limit
+unsupported-lowering-operation

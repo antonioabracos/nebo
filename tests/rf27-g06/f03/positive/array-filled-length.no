@@ -1,0 +1,4 @@
+start() {
+  Array<Bool,4>.filled(true).flags;
+  flags.length().return;
+}

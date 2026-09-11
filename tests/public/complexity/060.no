@@ -1,0 +1,14 @@
+// ECS systems publish access sets, dependencies, schedule barriers, and deterministic execution.
+(Int.self)systemDefine() { self.return; }
+(Int.self)systemReads() { self.return; }
+(Int.self)systemWrites() { self.return; }
+(Int.self)systemBefore() { self.return; }
+(Int.self)systemAfter() { self.return; }
+(Int.self)worldAddSystem() { self.return; }
+(Int.self)worldCompileSchedule() { self.return; }
+(Int.self)worldRunSystems() { self.return; }
+(Int.self)scheduleExplain() { self.return; }
+
+start() {
+    60.systemDefine().systemReads().systemWrites().systemBefore().systemAfter().worldAddSystem().worldCompileSchedule().worldRunSystems().scheduleExplain();
+}

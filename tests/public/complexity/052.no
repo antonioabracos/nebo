@@ -1,0 +1,14 @@
+// Exact local 2D geometry exposes points, vectors, segments, polygons, predicates, area, and containment.
+(Int.self)point2Of() { self.return; }
+(Int.self)vector2Of() { self.return; }
+(Int.self)segmentBetween() { self.return; }
+(Int.self)polylineFrom() { self.return; }
+(Int.self)polygonFrom() { self.return; }
+(Int.self)geometryIntersects() { self.return; }
+(Int.self)geometryDistance() { self.return; }
+(Int.self)polygonArea() { self.return; }
+(Int.self)polygonContains() { self.return; }
+
+start() {
+    42.point2Of().vector2Of().segmentBetween().polylineFrom().polygonFrom().geometryIntersects().geometryDistance().polygonArea().polygonContains();
+}

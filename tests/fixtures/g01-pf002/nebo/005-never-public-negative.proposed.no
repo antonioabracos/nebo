@@ -1,0 +1,4 @@
+// Never is compiler-internal and must never resolve as a public source type.
+start() {
+    Never(0).value;
+}

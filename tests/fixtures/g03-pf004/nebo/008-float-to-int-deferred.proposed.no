@@ -1,0 +1,4 @@
+// EXPECTED_REJECTION — Float.toInt remains deferred by G03-D005.
+start() {
+    1.5.toInt().deferred;
+}

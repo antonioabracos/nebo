@@ -1,0 +1,5 @@
+start() {
+  'A'.letter.mutable;
+  letter = 'B';
+  letter;
+}

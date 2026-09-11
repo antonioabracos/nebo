@@ -1,0 +1,13 @@
+// Operation-set joins give counters, sets, maps, registers, and lists deterministic merge and bounded deltas.
+(Int.self)crdtCounterNew() { self.return; }
+(Int.self)counterIncrement() { self.return; }
+(Int.self)crdtSetNew() { self.return; }
+(Int.self)crdtMapNew() { self.return; }
+(Int.self)crdtRegisterNew() { self.return; }
+(Int.self)crdtListNew() { self.return; }
+(Int.self)crdtMerge() { self.return; }
+(Int.self)crdtDeltaSince() { self.return; }
+
+start() {
+    69.crdtCounterNew().counterIncrement().crdtSetNew().crdtMapNew().crdtRegisterNew().crdtListNew().crdtMerge().crdtDeltaSince();
+}

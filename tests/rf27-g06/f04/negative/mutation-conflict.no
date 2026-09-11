@@ -1,0 +1,5 @@
+start() {
+  Array<Int,2> [7,9].values;
+  values.asSlice().view;
+  values.mutate(4);
+}

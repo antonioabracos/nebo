@@ -1,0 +1,11 @@
+start() {
+  0.outer.mutable;
+  while (outer < 2) {
+    outer += 1;
+    loop {
+      break;
+    }
+    continue;
+  }
+  outer;
+}

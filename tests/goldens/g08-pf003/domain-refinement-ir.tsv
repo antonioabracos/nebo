@@ -1,0 +1,7 @@
+case_id	operation	input_type	output_type	layout	flags
+G08-IR-001	result_ok	Int	Result<PositiveInt,Int>	16/8 tag0 payload8	nominal typed zero-alloc preserve deterministic
+G08-IR-002	result_err	Int	Result<PositiveInt,Int>	16/8 tag0 payload8	nominal typed zero-alloc preserve deterministic
+G08-IR-003	isOk	Result<PositiveInt,Int>	Bool	1/1 INTEGER	nominal typed zero-alloc preserve deterministic
+G08-IR-004	isErr	Result<PositiveInt,Int>	Bool	1/1 INTEGER	nominal typed zero-alloc preserve deterministic
+G08-IR-005	unwrap_ok	Result<PositiveInt,Int>	PositiveInt	8/8 INTEGER	nominal typed zero-alloc preserve deterministic
+G08-IR-006	unwrap_err	Result<PositiveInt,Int>	PositiveInt	8/8 INTEGER	nominal typed zero-alloc preserve deterministic

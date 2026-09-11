@@ -1,0 +1,6 @@
+NEBO-N0001: diagnostic context note
+causes: Additional local context is attached to a primary diagnostic.
+solutions: Read the primary diagnostic before acting on this note.
+positive: primary error followed by a related context note
+negative: context note used as an independent root cause
+related: NEBO-E0001

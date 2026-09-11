@@ -1,0 +1,9 @@
+start() {
+    "Nebo".owner;
+    if (true) {
+        owner.borrowShared().view;
+        4;
+    }
+    owner.move().transferred;
+    17;
+}

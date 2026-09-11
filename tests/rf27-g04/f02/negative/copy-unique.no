@@ -1,0 +1,5 @@
+start() {
+    "Nebo".source;
+    source.copy().duplicated;
+    0;
+}

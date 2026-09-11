@@ -1,0 +1,4 @@
+start() {
+    Float(-0.0).isNegativeZero().explicit_negative_zero;
+    Float(1.25).isFinite().explicit_finite;
+}

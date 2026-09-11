@@ -1,0 +1,3 @@
+overload (Int.self)pick(Scalar.value) where Any symbol pick_any { 10.return; }
+overload (Int.self)pick(Scalar.value) where Scalar symbol pick_scalar { 20.return; }
+start() { 1.pick(7).return; }

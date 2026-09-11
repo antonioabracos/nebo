@@ -1,0 +1,4 @@
+start() {
+    7.value;
+    Bytes.fromByte(value).payload;
+}

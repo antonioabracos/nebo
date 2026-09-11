@@ -1,0 +1,19 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>neboc --version-json</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>neboc --version-json</h1><p>Read the canonical product version, compiler identity, language Edition and supported target as JSON.</p><pre>Identity: cli:--version-json (CLI_FORM)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: EDITION_1_BOUNDED</pre><h2>Syntax or signature</h2><pre>neboc --version-json</pre><h2>Identity contract</h2><p>This read-only command emits the canonical NEBO-VERSION-v1 record. The product version and language Edition are separate fields. It neither reads source nor creates an artifact.</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;case_id&quot;: &quot;version-consistency:native-human-machine&quot;,
+    &quot;category&quot;: &quot;CLI&quot;,
+    &quot;exit&quot;: 0,
+    &quot;observed_json&quot;: {
+      &quot;cli&quot;: &quot;neboc 1.1.0&quot;,
+      &quot;compiler&quot;: &quot;neboc&quot;,
+      &quot;edition&quot;: &quot;1.0&quot;,
+      &quot;language&quot;: &quot;Nebo&quot;,
+      &quot;schema&quot;: &quot;NEBO-VERSION-v1&quot;,
+      &quot;target&quot;: &quot;x86_64-systemv-elf-linux&quot;,
+      &quot;version&quot;: &quot;1.1.0&quot;
+    }
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a> <a href="cli-version.html">cli-version</a></nav><h2>Provenance</h2><ul><li>version/NEBO-VERSION.json — SHA-256 af4258c4488498878cd320455ef90b516d63e28d12b9ada1ebe949b10584159c</li></ul></main></body></html>

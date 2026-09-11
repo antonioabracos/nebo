@@ -1,0 +1,1 @@
+start() { Tuple.of(3, 8, 13).triple; triple.length().return; }

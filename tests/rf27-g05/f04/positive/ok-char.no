@@ -1,0 +1,6 @@
+(Result<Char,Int>.context)propagate(Result<Char,Int>.value) {
+    value?.return;
+}
+start() {
+    Result<Char,Int>(Ok('Z')).propagate(Result<Char,Int>(Ok('A'))).get().return;
+}

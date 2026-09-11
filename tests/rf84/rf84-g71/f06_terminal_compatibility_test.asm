@@ -1,0 +1,4 @@
+%define G071_FEATURE_ID 7106
+%define G071_POLICY_TOKEN RENDER_POLICY_TERMINAL
+%define G071_POLICY_AUX RENDER_TERMINAL_WIDE
+%include "tests/rf84/rf84-g71/policy_front_test.inc"

@@ -1,0 +1,7 @@
+start() {
+  Array<Int,3> [1,2,3].items;
+  for (item in items) {
+    items.mutate(4);
+  }
+  items.length().return;
+}

@@ -1,0 +1,5 @@
+start() {
+    if ) {
+        console..write_line(;
+    }
+}

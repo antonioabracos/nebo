@@ -17,6 +17,8 @@ n_eq: db 'Eq'
 n_eq_len equ $-n_eq
 n_comparable: db 'Comparable'
 n_comparable_len equ $-n_comparable
+n_ord: db 'Ord'
+n_ord_len equ $-n_ord
 n_hash: db 'Hash'
 n_hash_len equ $-n_hash
 n_int: db 'Int'
@@ -29,6 +31,14 @@ n_float: db 'Float'
 n_float_len equ $-n_float
 n_text: db 'Text'
 n_text_len equ $-n_text
+n_where: db 'where'
+n_where_len equ $-n_where
+n_const: db 'const'
+n_const_len equ $-n_const
+n_n: db 'N'
+n_n_len equ $-n_n
+n_value: db 'value'
+n_value_len equ $-n_value
 
 section .text
 
@@ -278,10 +288,10 @@ NEBOC_ABI_FUNCTION neboc_generic_parse
  push r13
  push r14
  push r15
- sub rsp,32
+ sub rsp,48
  mov r12,rdi
  lea rdi,[r12+NEBOC_GEN_FOUND_OFFSET]
- mov ecx,8
+ mov ecx,NEBOC_GEN_REQUEST_QWORDS-6
  xor eax,eax
  rep stosq
  mov r13,[r12+NEBOC_GEN_RECORDS_OFFSET]
@@ -298,6 +308,16 @@ NEBOC_ABI_FUNCTION neboc_generic_parse
  rep stosq
  cmp qword [r12+NEBOC_GEN_TOKEN_COUNT_OFFSET],7
  jb .not_owned
+ ; A const-generic declaration uses the canonical `const generic<N>` prefix.
+ ; It has a separate bounded grammar because N contributes to layout and the
+ ; monomorphization key rather than to a runtime scalar type.
+ mov rdi,r12
+ xor esi,esi
+ lea rdx,[rel n_const]
+ mov ecx,n_const_len
+ call token_match
+ test eax,eax
+ jnz .const_generic
  mov rdi,r12
  xor esi,esi
  mov edx,NEBOC_TOKEN_KW_GENERIC
@@ -305,7 +325,34 @@ NEBOC_ABI_FUNCTION neboc_generic_parse
  test eax,eax
  jz .not_owned
 
- ; Own only Copy/Eq/Comparable/Hash; Scalar remains the historical generics_constraints_overload_e_dispatch route.
+ ; Parse either the compatibility inline bound (`generic<T: Copy>`) or the
+ ; corrected open form (`generic<T> ... where T: Copy`). Scalar remains the
+ ; historical generic vertical's ownership boundary.
+ mov rdi,r12
+ mov esi,1
+ mov edx,NEBOC_TOKEN_LESS
+ call kind_is
+ test eax,eax
+ jz .not_owned
+ mov rdi,r12
+ mov esi,2
+ lea rdx,[rel n_t]
+ mov ecx,n_t_len
+ call token_match
+ test eax,eax
+ jz .not_owned
+ mov rdi,r12
+ mov esi,3
+ mov edx,NEBOC_TOKEN_GREATER
+ call kind_is
+ test eax,eax
+ jnz .unconstrained_header
+ mov rdi,r12
+ mov esi,3
+ mov edx,NEBOC_TOKEN_RESERVED_COLON
+ call kind_is
+ test eax,eax
+ jz .not_owned
  mov rdi,r12
  mov esi,4
  lea rdx,[rel n_copy]
@@ -329,6 +376,13 @@ NEBOC_ABI_FUNCTION neboc_generic_parse
  jnz .constraint_comparable
  mov rdi,r12
  mov esi,4
+ lea rdx,[rel n_ord]
+ mov ecx,n_ord_len
+ call token_match
+ test eax,eax
+ jnz .constraint_comparable
+ mov rdi,r12
+ mov esi,4
  lea rdx,[rel n_hash]
  mov ecx,n_hash_len
  call token_match
@@ -336,40 +390,51 @@ NEBOC_ABI_FUNCTION neboc_generic_parse
  jnz .constraint_hash
  jmp .not_owned
 .constraint_copy: mov qword [rsp],NEBOC_GEN_CONSTRAINT_COPY
- jmp .header
+ jmp .inline_close
 .constraint_eq: mov qword [rsp],NEBOC_GEN_CONSTRAINT_EQ
- jmp .header
+ jmp .inline_close
 .constraint_comparable: mov qword [rsp],NEBOC_GEN_CONSTRAINT_COMPARABLE
- jmp .header
-.constraint_hash: mov qword [rsp],NEBOC_GEN_CONSTRAINT_HASH
-
-.header:
- mov qword [r12+NEBOC_GEN_FOUND_OFFSET],1
+ jmp .inline_close
+.constraint_hash:
+ mov qword [rsp],NEBOC_GEN_CONSTRAINT_HASH
+ ; Hash + Eq is the first public compound capability bound.
  mov rdi,r12
- mov esi,1
- mov edx,NEBOC_TOKEN_LESS
+ mov esi,5
+ mov edx,NEBOC_TOKEN_PLUS
  call kind_is
  test eax,eax
- jz .syntax
+ jz .inline_close
  mov rdi,r12
- mov esi,2
- lea rdx,[rel n_t]
- mov ecx,n_t_len
+ mov esi,6
+ lea rdx,[rel n_eq]
+ mov ecx,n_eq_len
  call token_match
  test eax,eax
  jz .syntax
+ or qword [rsp],NEBOC_GEN_CONSTRAINT_EQ
+ mov qword [rsp+32],8
  mov rdi,r12
- mov esi,3
- mov edx,NEBOC_TOKEN_RESERVED_COLON
+ mov esi,7
+ mov edx,NEBOC_TOKEN_GREATER
  call kind_is
  test eax,eax
  jz .syntax
+ jmp .header
+.inline_close:
+ mov qword [rsp+32],6
  mov rdi,r12
  mov esi,5
  mov edx,NEBOC_TOKEN_GREATER
  call kind_is
  test eax,eax
  jz .syntax
+ jmp .header
+.unconstrained_header:
+ mov qword [rsp],NEBOC_GEN_CONSTRAINT_NONE
+ mov qword [rsp+32],4
+
+.header:
+ mov qword [r12+NEBOC_GEN_FOUND_OFFSET],1
 
  ; Find start and reject multiple generic declarations as a mangle collision.
  xor ebx,ebx
@@ -399,43 +464,149 @@ NEBOC_ABI_FUNCTION neboc_generic_parse
  mov qword [r12+NEBOC_GEN_DECLARATION_COUNT_OFFSET],1
 
  mov rdi,r12
- mov esi,6
+ mov rsi,[rsp+32]
  mov edx,NEBOC_TOKEN_KW_STRUCT
  call kind_is
  test eax,eax
  jnz .type_header
  mov rdi,r12
- mov esi,6
+ mov rsi,[rsp+32]
  mov edx,NEBOC_TOKEN_LPAREN
  call kind_is
  test eax,eax
  jz .syntax
- mov qword [rsp+24],14
- mov qword [rsp+8],11
+ mov rax,[rsp+32]
+ lea rcx,[rax+8]
+ mov [rsp+24],rcx
+ lea rcx,[rax+5]
+ mov [rsp+8],rcx
  mov r14d,NEBOC_GEN_KIND_FUNCTION
  mov rdi,r12
- mov esi,7
+ mov rsi,[rsp+32]
+ inc rsi
  lea rdx,[rel n_t]
  mov ecx,n_t_len
  call token_match
  test eax,eax
  jz .syntax
  mov rdi,r12
- mov esi,8
+ mov rsi,[rsp+32]
+ add rsi,2
  mov edx,NEBOC_TOKEN_DOT
  call kind_is
  test eax,eax
  jz .syntax
  mov rdi,r12
- mov esi,10
+ mov rsi,[rsp+32]
+ add rsi,4
  mov edx,NEBOC_TOKEN_RPAREN
  call kind_is
  test eax,eax
  jz .syntax
+ ; The corrected where-clause follows the empty declaration call.  It is
+ ; optional only for the truly unconstrained generic<T> form.
+ mov rbx,[rsp+32]
+ add rbx,8
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_where]
+ mov ecx,n_where_len
+ call token_match
+ test eax,eax
+ jz .function_brace
+ cmp qword [rsp],NEBOC_GEN_CONSTRAINT_NONE
+ jne .syntax
+ mov rdi,r12
+ lea rsi,[rbx+1]
+ lea rdx,[rel n_t]
+ mov ecx,n_t_len
+ call token_match
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ lea rsi,[rbx+2]
+ mov edx,NEBOC_TOKEN_RESERVED_COLON
+ call kind_is
+ test eax,eax
+ jz .syntax
+ lea r15,[rbx+3]
+ mov rdi,r12
+ mov rsi,r15
+ lea rdx,[rel n_copy]
+ mov ecx,n_copy_len
+ call token_match
+ test eax,eax
+ jnz .where_copy
+ mov rdi,r12
+ mov rsi,r15
+ lea rdx,[rel n_comparable]
+ mov ecx,n_comparable_len
+ call token_match
+ test eax,eax
+ jnz .where_comparable
+ mov rdi,r12
+ mov rsi,r15
+ lea rdx,[rel n_ord]
+ mov ecx,n_ord_len
+ call token_match
+ test eax,eax
+ jnz .where_comparable
+ mov rdi,r12
+ mov rsi,r15
+ lea rdx,[rel n_hash]
+ mov ecx,n_hash_len
+ call token_match
+ test eax,eax
+ jnz .where_hash
+ jmp .syntax
+.where_copy:
+ mov qword [rsp],NEBOC_GEN_CONSTRAINT_COPY
+ add rbx,4
+ jmp .function_brace_at
+.where_comparable:
+ mov qword [rsp],NEBOC_GEN_CONSTRAINT_COMPARABLE
+ add rbx,4
+ jmp .function_brace_at
+.where_hash:
+ mov qword [rsp],NEBOC_GEN_CONSTRAINT_HASH
+ mov rdi,r12
+ lea rsi,[rbx+4]
+ mov edx,NEBOC_TOKEN_PLUS
+ call kind_is
+ test eax,eax
+ jz .where_hash_single
+ mov rdi,r12
+ lea rsi,[rbx+5]
+ lea rdx,[rel n_eq]
+ mov ecx,n_eq_len
+ call token_match
+ test eax,eax
+ jz .syntax
+ or qword [rsp],NEBOC_GEN_CONSTRAINT_EQ
+ add rbx,6
+ jmp .function_brace_at
+.where_hash_single:
+ add rbx,4
+ jmp .function_brace_at
+.function_brace:
+ cmp qword [rsp],NEBOC_GEN_CONSTRAINT_NONE
+ jne .function_brace_at
+.function_brace_at:
+ mov rdi,r12
+ mov rsi,rbx
+ mov edx,NEBOC_TOKEN_LBRACE
+ call kind_is
+ test eax,eax
+ jz .syntax
+ inc rbx
+ mov [rsp+24],rbx
  jmp .decl_ready
 .type_header:
- mov qword [rsp+24],8
- mov qword [rsp+8],7
+ mov rax,[rsp+32]
+ lea rcx,[rax+2]
+ mov [rsp+24],rcx
+ lea rcx,[rax+1]
+ mov [rsp+8],rcx
  mov r14d,NEBOC_GEN_KIND_TYPE
 
 .decl_ready:
@@ -467,6 +638,61 @@ NEBOC_ABI_FUNCTION neboc_generic_parse
  jmp .recursive_scan
 
 .use_scan_begin:
+ cmp r14,NEBOC_GEN_KIND_FUNCTION
+ jne .typed_uses_ready
+ ; The existing pure identity specialization is a complete typed body, not
+ ; evidence that permits arbitrary source statements to disappear.
+ mov rbx,[rsp+24]
+ mov rdi,r12
+ mov rsi,rbx
+ call token_hash
+ mov rbp,rax
+ mov rdi,r12
+ mov rsi,[rsp+32]
+ add rsi,3
+ call token_hash
+ cmp rax,rbp
+ jne .syntax
+ mov rdi,r12
+ lea rsi,[rbx+1]
+ mov edx,NEBOC_TOKEN_DOT
+ call kind_is
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ lea rsi,[rbx+2]
+ mov edx,NEBOC_TOKEN_KW_RETURN
+ call kind_is
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ lea rsi,[rbx+3]
+ mov edx,NEBOC_TOKEN_SEMICOLON
+ call kind_is
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ lea rsi,[rbx+4]
+ mov edx,NEBOC_TOKEN_RBRACE
+ call kind_is
+ test eax,eax
+ jz .syntax
+ lea rax,[rbx+5]
+ mov [r12+NEBOC_GEN_PURE_DECL_END_OFFSET],rax
+ mov rbx,[rsp+32]
+ mov rdi,r12
+ lea rsi,[rbx+6]
+ mov edx,NEBOC_TOKEN_LPAREN
+ call kind_is
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ lea rsi,[rbx+7]
+ mov edx,NEBOC_TOKEN_RPAREN
+ call kind_is
+ test eax,eax
+ jz .syntax
+.typed_uses_ready:
  mov rbx,[rsp+16]
 .use_scan:
  cmp rbx,[r12+NEBOC_GEN_TOKEN_COUNT_OFFSET]
@@ -549,6 +775,16 @@ NEBOC_ABI_FUNCTION neboc_generic_parse
  test eax,eax
  jz .syntax
  mov rdi,r12
+ lea rsi,[rbx+4]
+ mov edx,NEBOC_TOKEN_RPAREN
+ call kind_is
+ test eax,eax
+ jz .syntax
+ mov rax,[r12+NEBOC_GEN_USE_COUNT_OFFSET]
+ cmp rax,NEBOC_GEN_MAX_INSTANCES
+ jae .const_budget
+ mov [r12+NEBOC_GEN_PURE_USE_TOKENS_OFFSET+rax*8],rbx
+ mov rdi,r12
  mov rsi,r13
  mov rdx,rbp
  mov rcx,r15
@@ -557,7 +793,7 @@ NEBOC_ABI_FUNCTION neboc_generic_parse
  call add_record
  test eax,eax
  jnz .done
- add rbx,3
+ add rbx,4
 .use_next:
  inc rbx
  jmp .use_scan
@@ -568,6 +804,201 @@ NEBOC_ABI_FUNCTION neboc_generic_parse
  mov qword [r12+NEBOC_GEN_FLAGS_OFFSET],NEBOC_GEN_FLAG_PARSED
  xor eax,eax
  jmp .done
+.const_generic:
+ mov qword [r12+NEBOC_GEN_FOUND_OFFSET],1
+ ; Exact bounded declaration: const generic<N> (Int.value)name() {
+ ; N.return; }.  The call is receiver-first and supplies N explicitly.
+ mov rdi,r12
+ mov esi,1
+ mov edx,NEBOC_TOKEN_KW_GENERIC
+ call kind_is
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ mov esi,2
+ mov edx,NEBOC_TOKEN_LESS
+ call kind_is
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ mov esi,3
+ lea rdx,[rel n_n]
+ mov ecx,n_n_len
+ call token_match
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ mov esi,4
+ mov edx,NEBOC_TOKEN_GREATER
+ call kind_is
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ mov esi,5
+ mov edx,NEBOC_TOKEN_LPAREN
+ call kind_is
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ mov esi,6
+ lea rdx,[rel n_int]
+ mov ecx,n_int_len
+ call token_match
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ mov esi,7
+ mov edx,NEBOC_TOKEN_DOT
+ call kind_is
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ mov esi,8
+ lea rdx,[rel n_value]
+ mov ecx,n_value_len
+ call token_match
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ mov esi,9
+ mov edx,NEBOC_TOKEN_RPAREN
+ call kind_is
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ mov esi,10
+ call token_hash
+ test rax,rax
+ jz .syntax
+ mov r15,rax
+ ; Authenticate the complete pure declaration. The shared Program parser
+ ; owns every following statement; no first-call whole-source shortcut.
+ %assign gen_tail_index 11
+ %rep 8
+ mov rdi,r12
+ mov esi,gen_tail_index
+ %if gen_tail_index = 11
+ mov edx,NEBOC_TOKEN_LPAREN
+ %elif gen_tail_index = 12
+ mov edx,NEBOC_TOKEN_RPAREN
+ %elif gen_tail_index = 13
+ mov edx,NEBOC_TOKEN_LBRACE
+ %elif gen_tail_index = 14
+ lea rdx,[rel n_n]
+ mov ecx,n_n_len
+ call token_match
+ test eax,eax
+ jz .syntax
+ %elif gen_tail_index = 15
+ mov edx,NEBOC_TOKEN_DOT
+ %elif gen_tail_index = 16
+ mov edx,NEBOC_TOKEN_KW_RETURN
+ %elif gen_tail_index = 17
+ mov edx,NEBOC_TOKEN_SEMICOLON
+ %elif gen_tail_index = 18
+ mov edx,NEBOC_TOKEN_RBRACE
+ %endif
+ %if gen_tail_index != 14
+ call kind_is
+ test eax,eax
+ jz .syntax
+ %endif
+ %assign gen_tail_index gen_tail_index+1
+ %endrep
+ mov qword [r12+NEBOC_GEN_PURE_DECL_END_OFFSET],19
+ mov qword [r12+NEBOC_GEN_DECLARATION_COUNT_OFFSET],1
+ mov ebx,19
+.const_find_start:
+ cmp rbx,[r12+NEBOC_GEN_TOKEN_COUNT_OFFSET]
+ jae .syntax
+ mov rdi,r12
+ mov rsi,rbx
+ mov edx,NEBOC_TOKEN_KW_START
+ call kind_is
+ test eax,eax
+ jnz .const_use_begin
+ inc rbx
+ jmp .const_find_start
+.const_use_begin:
+ inc rbx
+.const_use_scan:
+ cmp rbx,[r12+NEBOC_GEN_TOKEN_COUNT_OFFSET]
+ jae .uses_done
+ mov rdi,r12
+ mov rsi,rbx
+ call literal_type
+ cmp eax,NEBOC_GEN_TYPE_INT
+ jne .const_use_next
+ mov rbp,rdx
+ mov rdi,r12
+ lea rsi,[rbx+1]
+ mov edx,NEBOC_TOKEN_DOT
+ call kind_is
+ test eax,eax
+ jz .const_use_next
+ mov rdi,r12
+ lea rsi,[rbx+2]
+ call token_hash
+ cmp rax,r15
+ jne .const_use_next
+ mov rdi,r12
+ lea rsi,[rbx+3]
+ mov edx,NEBOC_TOKEN_LESS
+ call kind_is
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ lea rsi,[rbx+4]
+ call token_ptr
+ test rax,rax
+ jz .syntax
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_INTEGER
+ jne .type_error
+ mov r14,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ cmp r14,1048576
+ ja .type_error
+ mov rdi,r12
+ lea rsi,[rbx+5]
+ mov edx,NEBOC_TOKEN_GREATER
+ call kind_is
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ lea rsi,[rbx+6]
+ mov edx,NEBOC_TOKEN_LPAREN
+ call kind_is
+ test eax,eax
+ jz .syntax
+ mov rdi,r12
+ lea rsi,[rbx+7]
+ mov edx,NEBOC_TOKEN_RPAREN
+ call kind_is
+ test eax,eax
+ jz .syntax
+ mov rcx,[r12+NEBOC_GEN_USE_COUNT_OFFSET]
+ cmp rcx,NEBOC_GEN_MAX_INSTANCES
+ jae .const_budget
+ cmp rcx,[r12+NEBOC_GEN_CAPACITY_OFFSET]
+ jae .const_budget
+ mov [r12+NEBOC_GEN_PURE_USE_TOKENS_OFFSET+rcx*8],rbx
+ mov rax,rcx
+ shl rax,6
+ add rax,[r12+NEBOC_GEN_RECORDS_OFFSET]
+ mov [rax+NEBOC_GEN_RECORD_DECLARATION_HASH_OFFSET],r15
+ mov qword [rax+NEBOC_GEN_RECORD_TYPE_ID_OFFSET],NEBOC_GEN_TYPE_INT
+ mov [rax+NEBOC_GEN_RECORD_CONST_KEY_OFFSET],r14
+ mov qword [rax+NEBOC_GEN_RECORD_CONSTRAINT_OFFSET],NEBOC_GEN_CONSTRAINT_NONE
+ mov qword [rax+NEBOC_GEN_RECORD_KIND_OFFSET],NEBOC_GEN_KIND_CONST_FUNCTION
+ inc qword [r12+NEBOC_GEN_USE_COUNT_OFFSET]
+ mov [r12+NEBOC_GEN_RESULT_OFFSET],r14
+ add rbx,8
+ jmp .const_use_scan
+.const_budget:
+ mov esi,NEBOC_GEN_DIAG_BUDGET
+ jmp .error
+.const_use_next:
+ inc rbx
+ jmp .const_use_scan
 .constraint_error:
  mov esi,NEBOC_GEN_DIAG_CONSTRAINT
  jmp .error
@@ -592,7 +1023,7 @@ NEBOC_ABI_FUNCTION neboc_generic_parse
 .invalid:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
 .done:
- add rsp,32
+ add rsp,48
  pop r15
  pop r14
  pop r13

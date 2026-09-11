@@ -1,0 +1,1 @@
+start(){if(true){'A'.return;}else{'B'.return;}}

@@ -13,7 +13,8 @@ default rel
 %include "compiler/semantic/collections/vector_vertical.inc"
 %include "compiler/semantic/collections/column_vertical.inc"
 
-%define LS_MAX_COLLECTIONS 2
+%define LS_COLLECTION_CAPACITY 3
+%define LS_LEGACY_MAX_COLLECTIONS 2
 %define LS_COLLECTION_VALUES 4
 %define LS_NO_TOKEN 0xffffffffffffffff
 
@@ -24,6 +25,12 @@ ls_n_as_slice: db 'asSlice'
 ls_n_as_slice_len equ $-ls_n_as_slice
 ls_n_list: db 'List'
 ls_n_list_len equ $-ls_n_list
+ls_n_stack: db 'Stack'
+ls_n_stack_len equ $-ls_n_stack
+ls_n_queue: db 'Queue'
+ls_n_queue_len equ $-ls_n_queue
+ls_n_deque: db 'Deque'
+ls_n_deque_len equ $-ls_n_deque
 ls_n_dict: db 'Dict'
 ls_n_dict_len equ $-ls_n_dict
 ls_n_vector: db 'Vector'
@@ -144,6 +151,35 @@ ls_n_sum: db 'sum'
 ls_n_sum_len equ $-ls_n_sum
 ls_n_dot: db 'dot'
 ls_n_dot_len equ $-ls_n_dot
+ls_n_cross: db 'cross'
+ls_n_cross_len equ $-ls_n_cross
+ls_n_hadamard: db 'hadamard'
+ls_n_hadamard_len equ $-ls_n_hadamard
+ls_n_tensor_product: db 'tensorProduct'
+ls_n_tensor_product_len equ $-ls_n_tensor_product
+ls_n_direct_sum: db 'directSum'
+ls_n_direct_sum_len equ $-ls_n_direct_sum
+ls_n_compose: db 'compose'
+ls_n_compose_len equ $-ls_n_compose
+ls_n_orthogonal: db 'isOrthogonalTo'
+ls_n_orthogonal_len equ $-ls_n_orthogonal
+ls_n_parallel: db 'isParallelTo'
+ls_n_parallel_len equ $-ls_n_parallel
+ls_n_apply: db 'apply'
+ls_n_apply_len equ $-ls_n_apply
+align 8
+; Portable named APIs converge on the same semantic operation IDs as the
+; exact Registry spellings; source spelling never selects a separate result.
+ls_g134_method_table:
+ dq ls_n_dot,ls_n_dot_len,NEBOC_TOKEN_LINEAR_DOT
+ dq ls_n_cross,ls_n_cross_len,NEBOC_TOKEN_SET_CARTESIAN_PRODUCT
+ dq ls_n_hadamard,ls_n_hadamard_len,NEBOC_TOKEN_LINEAR_HADAMARD
+ dq ls_n_tensor_product,ls_n_tensor_product_len,NEBOC_TOKEN_LINEAR_TENSOR_PRODUCT
+ dq ls_n_direct_sum,ls_n_direct_sum_len,NEBOC_TOKEN_LINEAR_DIRECT_SUM
+ dq ls_n_compose,ls_n_compose_len,NEBOC_TOKEN_LINEAR_COMPOSE
+ dq ls_n_orthogonal,ls_n_orthogonal_len,NEBOC_TOKEN_LINEAR_ORTHOGONAL
+ dq ls_n_parallel,ls_n_parallel_len,NEBOC_TOKEN_LINEAR_PARALLEL
+ls_g134_method_count equ 8
 ls_n_to: db 'to'
 ls_n_to_len equ $-ls_n_to
 ls_n_min: db 'min'
@@ -158,6 +194,10 @@ ls_n_with_capacity: db 'withCapacity'
 ls_n_with_capacity_len equ $-ls_n_with_capacity
 ls_n_value: db 'value'
 ls_n_value_len equ $-ls_n_value
+ls_n_uncertain: db 'Uncertain'
+ls_n_uncertain_len equ $-ls_n_uncertain
+ls_n_measurement: db 'Measurement'
+ls_n_measurement_len equ $-ls_n_measurement
 ls_n_mutate: db 'mutate'
 ls_n_mutate_len equ $-ls_n_mutate
 ls_n_async: db 'async'
@@ -218,9 +258,10 @@ ls_mode: resq 1
 ls_scalar_name: resq 1
 ls_scalar_value: resq 1
 ls_collection_count: resq 1
-ls_collection_names: resq LS_MAX_COLLECTIONS
-ls_collection_values: resq LS_MAX_COLLECTIONS*LS_COLLECTION_VALUES
-ls_collection_value_counts: resq LS_MAX_COLLECTIONS
+ls_collection_names: resq LS_COLLECTION_CAPACITY
+ls_collection_values: resq LS_COLLECTION_CAPACITY*LS_COLLECTION_VALUES
+ls_collection_value_counts: resq LS_COLLECTION_CAPACITY
+ls_g134_result_values: resq LS_COLLECTION_VALUES
 ls_wrapper_spec: resq 1
 ls_tensor_source_name: resq 1
 ls_tensor_source_extent: resq 1
@@ -530,6 +571,78 @@ ls_contains_atom:
  call ls_token_match
  test eax,eax
  jnz .yes
+ inc rbx
+ jmp .loop
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,16
+ pop rbx
+ ret
+
+; Current typed operator groups are owned by the Pratt/type/codegen pipeline.
+; Keep the historical collection recognizer disjoint when it sees their
+; public constructors or any exact Registry-backed UTF-8 token.
+g131_is_program:
+ push rbx
+ sub rsp,16
+ lea rsi,[rel ls_n_uncertain]
+ mov edx,ls_n_uncertain_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .yes
+ lea rsi,[rel ls_n_measurement]
+ mov edx,ls_n_measurement_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .yes
+ xor ebx,ebx
+.loop:
+ cmp rbx,[rel ls_token_count]
+ jae .no
+ mov rdi,rbx
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_PLUS_MINUS
+ je .yes
+ cmp eax,NEBOC_TOKEN_APPROX_EQUAL
+ je .yes
+ cmp eax,NEBOC_TOKEN_NOT_APPROX_EQUAL
+ je .yes
+ cmp eax,NEBOC_TOKEN_EQUIVALENT
+ je .yes
+ cmp eax,NEBOC_TOKEN_DIVIDES
+ je .yes
+ cmp eax,NEBOC_TOKEN_NOT_DIVIDES
+ je .yes
+ cmp eax,NEBOC_TOKEN_PROPORTIONAL
+ je .yes
+ cmp eax,NEBOC_TOKEN_SET_MEMBERSHIP
+ je .yes
+ cmp eax,NEBOC_TOKEN_SET_NON_MEMBERSHIP
+ je .yes
+ cmp eax,NEBOC_TOKEN_SET_UNION
+ je .yes
+ cmp eax,NEBOC_TOKEN_SET_INTERSECTION
+ je .yes
+ cmp eax,NEBOC_TOKEN_SET_DIFFERENCE
+ je .yes
+ cmp eax,NEBOC_TOKEN_SET_SYMMETRIC_DIFFERENCE
+ je .yes
+ cmp eax,NEBOC_TOKEN_SET_SUBSET
+ je .yes
+ cmp eax,NEBOC_TOKEN_SET_PROPER_SUBSET
+ je .yes
+ cmp eax,NEBOC_TOKEN_SET_SUPERSET
+ je .yes
+ cmp eax,NEBOC_TOKEN_SET_PROPER_SUPERSET
+ je .yes
+ cmp eax,NEBOC_TOKEN_SET_CARTESIAN_PRODUCT
+ je .yes
+ cmp eax,NEBOC_TOKEN_EMPTY_SET
+ je .yes
  inc rbx
  jmp .loop
 .yes:
@@ -983,6 +1096,276 @@ NEBOC_ABI_FUNCTION neboc_array_vertical_recognize
  test eax,eax
  jz .invalid
  mov qword [rel ls_mode],10
+ ; G131 sources belong to the typed uncertainty/operator owner and must never
+ ; enter this legacy Array<Int,4> compatibility grammar.
+ call g131_is_program
+ test eax,eax
+ jnz .not_owned
+ ; The SlashPlan root is disjoint from RenderPlan and owns the bounded Slash
+ ; micro-language before the broader textual/rendering verticals.
+ call sc_is_program
+ test eax,eax
+ jnz .slash_core
+ ; G029 owns its disjoint contract/proof micro-language before the adjacent
+ ; solver and metaprogramming owners can interpret shared formal atoms.
+ call g29_is_program
+ test eax,eax
+ jnz .g029
+ ; G030 owns its disjoint formal-methods micro-language before broad textual
+ ; or metaprogramming owners can interpret shared atoms.
+ call g30_is_program
+ test eax,eax
+ jnz .g030
+ ; G046 owns the compiler-platform API micro-language before generic method
+ ; names such as add, transform, and report reach broader owners.
+ call g46_is_program
+ test eax,eax
+ jnz .g046
+ ; G035 owns the bounded exact/scientific-math micro-language before broad
+ ; numeric and collection recognizers can interpret shared method atoms.
+ call g35_is_program
+ test eax,eax
+ jnz .g035
+ call g28_is_program
+ test eax,eax
+ jnz .g028
+ ; G084 owns the disjoint RF84 integration/closeout evidence facade.
+ call g84_is_program
+ test eax,eax
+ jnz .g084
+ ; G083 owns the disjoint regex/formatter/linter/LSP evidence facade.
+ call g83_is_program
+ test eax,eax
+ jnz .g083
+ ; G082 owns bounded Text collection/data programs before format-specific roots.
+ call g82_is_program
+ test eax,eax
+ jnz .g082
+ ; G081 owns bounded advanced textual formats before the concrete G080 layer.
+ call g81_is_program
+ test eax,eax
+ jnz .g081
+ ; G080 owns concrete CSV/TSV/JSON/JSONL grammars before common formats.
+ call g80_is_program
+ test eax,eax
+ jnz .g080
+ ; G079 owns common bounded format contracts before concrete format grammars.
+ call g79_is_program
+ test eax,eax
+ jnz .g079
+ ; G116 owns the RF116 closeout profile before every constituent profile.
+ call g116_is_program
+ test eax,eax
+ jnz .g116
+ ; G115 owns the Console ABI renderer-plugin profile before G114/G104.
+ call g115_is_program
+ test eax,eax
+ jnz .g115
+ ; G114 owns the export-privacy-service RenderPlan profile before G113/G104.
+ call g114_is_program
+ test eax,eax
+ jnz .g114
+ ; G113 owns the domain-visual-service RenderPlan profile before G112/G104.
+ call g113_is_program
+ test eax,eax
+ jnz .g113
+ ; G112 owns the chart-table-service RenderPlan profile before G111/G104.
+ call g112_is_program
+ test eax,eax
+ jnz .g112
+ ; G111 owns the observability-service RenderPlan profile before G110/G104.
+ call g111_is_program
+ test eax,eax
+ jnz .g111
+ ; G110 owns the narrow internal-service RenderPlan profile before G104 and
+ ; the earlier Console schema families.
+ call g110_is_program
+ test eax,eax
+ jnz .g110
+ ; G109 owns structured diagnostics before testability and earlier Console schemas.
+ call g109_is_program
+ test eax,eax
+ jnz .g109
+ ; G108 owns deterministic capture/replay before earlier Console schemas.
+ call g108_is_program
+ test eax,eax
+ jnz .g108
+ ; G107 owns explicit sink routing before earlier Console schema families.
+ call g107_is_program
+ test eax,eax
+ jnz .g107
+ ; G106 owns explicit privacy schema composition before visual/source families.
+ call g106_is_program
+ test eax,eax
+ jnz .g106
+ ; G105 owns the bounded ScanPlan/Console composition before the inherited
+ ; G075-G078 ScanPlan families inspect their individual surface subsets.
+ call g105_is_program
+ test eax,eax
+ jnz .g105
+ ; G078 owns bounded ScanPlan multiline/editor/source/form metadata programs.
+ call g78_is_program
+ test eax,eax
+ jnz .g078
+ ; G077 owns bounded ScanPlan privacy, cancellation/EOF, and safe parsing.
+ call g77_is_program
+ test eax,eax
+ jnz .g077
+ ; G076 owns bounded ScanPlan validation, choices, retry and UX.
+ call g76_is_program
+ test eax,eax
+ jnz .g076
+ ; G075 owns the bounded ScanPlan type/empty/normalization vertical.
+ call g75_is_program
+ test eax,eax
+ jnz .g075
+ ; G104 owns the complete live-console profile before its G103 subset.
+ call g104_is_program
+ test eax,eax
+ jnz .g104
+ ; G103 owns the complete internal headless JSONL contract before older visual families.
+ call g103_is_program
+ test eax,eax
+ jnz .g103
+ ; G102 owns animation, capture and export roots before older visual families.
+ call g102_is_program
+ test eax,eax
+ jnz .g102
+ ; G101 owns bounded large-data visual roots before observability and older views.
+ call g101_is_program
+ test eax,eax
+ jnz .g101
+ ; G100 owns bounded live observability roots before dashboard and older views.
+ call g100_is_program
+ test eax,eax
+ jnz .g100
+ ; G099 owns dashboard/panel/cell roots before graph, scientific and layout views.
+ call g99_is_program
+ test eax,eax
+ jnz .g099
+ ; G098 owns graph/tree/embedding/projection roots before scientific and 3D views.
+ call g98_is_program
+ test eax,eax
+ jnz .g098
+ ; G097 owns bounded scientific Matrix/Tensor/Volume roots before 3D/2D views.
+ call g97_is_program
+ test eax,eax
+ jnz .g097
+ ; G096 owns target-neutral 3D scene roots before 2D/chart/layout families.
+ call g96_is_program
+ test eax,eax
+ jnz .g096
+ ; G095 owns target-neutral 2D chart roots before G094, G018 and RF84 families.
+ call g95_is_program
+ test eax,eax
+ jnz .g095
+ ; G094 owns bounded structured-view roots before layout and RF84 families.
+ call g94_is_program
+ test eax,eax
+ jnz .g094
+ ; G093 owns composite-layout roots before style, geometry and RF84 families.
+ call g93_is_program
+ test eax,eax
+ jnz .g093
+ ; G092 owns style/status/typography roots before layout and RF84 families.
+ call g92_is_program
+ test eax,eax
+ jnz .g092
+ ; G091 owns ConsoleDocument geometry roots before G090/RF84 Console families.
+ call g91_is_program
+ test eax,eax
+ jnz .g091
+ ; G090 owns typed adapter model roots before G089/RF84 Console families.
+ call g90_is_program
+ test eax,eax
+ jnz .g090
+ ; G089 owns its nominal ConsoleCall/ConsoleOption/RenderIntent model before
+ ; the RF84 RenderPlan owners can claim shared console and plan atoms.
+ call g89_is_program
+ test eax,eax
+ jnz .g089
+ ; G072's complete target/sink signatures precede G069 because the explicit
+ ; JSON target profile legitimately shares RenderPlan and json atoms.
+ call g72_is_program
+ test eax,eax
+ jnz .g072
+ ; G069's specific developer-view witnesses precede G073's intentionally
+ ; broader explain marker, which is shared by diagnostic inspection views.
+ call g69_is_program
+ test eax,eax
+ jnz .g069
+ ; G074 owns policy/catalog/editor closeout before broader RenderPlan groups.
+ call g74_is_program
+ test eax,eax
+ jnz .g074
+ ; G073 owns bounded testability/education/conditional/scoped rendering.
+ call g73_is_program
+ test eax,eax
+ jnz .g073
+ ; G071 owns security/policy rendering before operational/developer roots.
+ call g71_is_program
+ test eax,eax
+ jnz .g071
+ ; G070 owns operational rendering before developer/layout/style/base roots.
+ call g70_is_program
+ test eax,eax
+ jnz .g070
+ ; G068 owns structured layout programs before style/base RenderPlan roots.
+ call g68_is_program
+ test eax,eax
+ jnz .g068
+ ; G067 owns styled RenderPlan programs before G066 claims the shared root.
+ call g67_is_program
+ test eax,eax
+ jnz .g067
+ ; G066 owns base RenderPlan/Console programs before formatting or historical
+ ; Text recognizers can claim shared atoms such as pad, join or console.
+ call g66_is_program
+ test eax,eax
+ jnz .g066
+ ; G063 owns raw/multiline/tagged templates before interpolation and the more
+ ; general formatting chains can claim shared Text atoms.
+ call g63_is_program
+ test eax,eax
+ jnz .g063
+ ; G060 owns statically validated percent templates before typed profiles and
+ ; the more general G059 format chain can claim shared format atoms.
+ call g61_is_program
+ test eax,eax
+ jnz .g061
+ call g60_is_program
+ test eax,eax
+ jnz .g060
+ ; G062 owns typed profiles before the more general G059 format chain.
+ call g62_is_program
+ test eax,eax
+ jnz .g062
+ ; G059 owns typed formatting and the format(...).console() chain before media,
+ ; visual or historical Text recognizers can claim their shared atoms.
+ call g59_is_program
+ test eax,eax
+ jnz .g059
+ ; G088 owns typed color-role programs before the Color value/media verticals.
+ call g88_is_program
+ test eax,eax
+ jnz .g088
+ ; G087 owns the public Color value surface before the older media vertical can
+ ; interpret the shared Color/rgb/rgba atoms.
+ call g87_is_program
+ test eax,eax
+ jnz .g087
+ ; G019 public media programs are complete token-owned verticals. Select them
+ ; before visual and historical collection recognizers interpret shared image,
+ ; color, line, frame or stream atoms.
+ call g19_is_program
+ test eax,eax
+ jnz .g019
+ ; G018 public visual programs are complete token-owned verticals. Select them
+ ; before historical collection recognizers interpret shared atoms such as
+ ; row, column, line or text.
+ call g18_is_program
+ test eax,eax
+ jnz .g018
  xor ecx,ecx
 .declaration_guard_10:
  cmp rcx,[rel ls_token_count]
@@ -1035,17 +1418,344 @@ NEBOC_ABI_FUNCTION neboc_array_vertical_recognize
  inc qword [rbp-8]
  jmp .canonical_slice_scan
 .canonical_slice_scan_done:
+ ; G016 corrected Tensor programs must precede the historical bounded Tensor
+ ; recognizer, just as G015 precedes the historical Matrix profile.
+ call g16_is_program
+ test eax,eax
+ jnz .g016
+ ; G015 corrected dense Matrix programs must precede the historical bounded
+ ; Matrix recognizer, which intentionally owns only the earlier C11 profile.
+ call g15_is_program
+ test eax,eax
+ jnz .g015
+ ; G014 owns complete public math programs before generic Vector and Random
+ ; owners. These discriminators are specific to the corrected contract.
+ lea rsi,[rel g14_n_hypot]
+ mov edx,g14_n_hypot_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g014
+ lea rsi,[rel g14_n_atan2]
+ mov edx,g14_n_atan2_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g014
+ lea rsi,[rel g14_n_approx_equals]
+ mov edx,g14_n_approx_equals_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g014
+ lea rsi,[rel g14_n_standard_deviation]
+ mov edx,g14_n_standard_deviation_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g014
+ lea rsi,[rel g14_n_categorical]
+ mov edx,g14_n_categorical_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g014
+ lea rsi,[rel g14_n_normalize]
+ mov edx,g14_n_normalize_len
+ call ls_contains_atom
+ test eax,eax
+ jz .g014_normalize_not_owned
+ lea rsi,[rel g14_n_vector_type]
+ mov edx,g14_n_vector_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g014
+.g014_normalize_not_owned:
  ; Preserve deferred ownership priority structurally.
+ lea rsi,[rel g13_n_thread]
+ mov edx,g13_n_thread_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g013
+ lea rsi,[rel g13_n_task_group]
+ mov edx,g13_n_task_group_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g013
+ lea rsi,[rel g13_n_future]
+ mov edx,g13_n_future_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g013
+ lea rsi,[rel g13_n_cancellation_token]
+ mov edx,g13_n_cancellation_token_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g013
+ lea rsi,[rel g13_n_channel]
+ mov edx,g13_n_channel_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g013
+ lea rsi,[rel g13_n_mutex]
+ mov edx,g13_n_mutex_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g013
+ lea rsi,[rel g13_n_scheduler]
+ mov edx,g13_n_scheduler_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g013
+ ; Bounded database programs use current-only public type atoms and must be
+ ; selected before generic Query, Stream, Table and transaction heuristics.
+ lea rsi,[rel g32_n_database_type]
+ mov edx,g32_n_database_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g032
+ lea rsi,[rel g32_n_db_schema_type]
+ mov edx,g32_n_db_schema_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g032
+ lea rsi,[rel g32_n_storage_options_type]
+ mov edx,g32_n_storage_options_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g032
+ lea rsi,[rel g32_n_query_type]
+ mov edx,g32_n_query_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g032
+ lea rsi,[rel g32_n_migration_type]
+ mov edx,g32_n_migration_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g032
+ ; Bounded reactive programs use current-only public type atoms and must be
+ ; selected before generic Stream, List, Graph and Cell recognizers.
+ lea rsi,[rel g31_n_signal_type]
+ mov edx,g31_n_signal_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g031
+ lea rsi,[rel g31_n_cell_type]
+ mov edx,g31_n_cell_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g031
+ lea rsi,[rel g31_n_computed_type]
+ mov edx,g31_n_computed_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g031
+ lea rsi,[rel g31_n_reactive_list_type]
+ mov edx,g31_n_reactive_list_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g031
+ lea rsi,[rel g31_n_dataflow_graph_type]
+ mov edx,g31_n_dataflow_graph_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g031
+ lea rsi,[rel g31_n_reactive]
+ mov edx,g31_n_reactive_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g031
+ lea rsi,[rel g12_n_instant]
+ mov edx,g12_n_instant_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g012
+ lea rsi,[rel g12_n_random]
+ mov edx,g12_n_random_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g012
+ lea rsi,[rel g12_n_process]
+ mov edx,g12_n_process_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g012
+ lea rsi,[rel g12_n_ip_address]
+ mov edx,g12_n_ip_address_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g012
+ lea rsi,[rel g12_n_tcp_listener]
+ mov edx,g12_n_tcp_listener_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g012
+ lea rsi,[rel g12_n_http_request]
+ mov edx,g12_n_http_request_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g012
+ lea rsi,[rel g12_n_sha256]
+ mov edx,g12_n_sha256_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g012
+ lea rsi,[rel g11_n_path_type]
+ mov edx,g11_n_path_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g011
+ lea rsi,[rel g11_n_file_type]
+ mov edx,g11_n_file_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g011
+ lea rsi,[rel g11_n_directory_type]
+ mov edx,g11_n_directory_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g011
+ lea rsi,[rel g11_n_binary_encoder]
+ mov edx,g11_n_binary_encoder_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g011
+ lea rsi,[rel g11_n_json]
+ mov edx,g11_n_json_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g011
+ lea rsi,[rel g11_n_csv]
+ mov edx,g11_n_csv_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g011
  lea rsi,[rel ls_n_list]
  mov edx,ls_n_list_len
  call ls_contains_atom
  test eax,eax
- jnz .list
+ jnz .g007
+ lea rsi,[rel ls_n_stack]
+ mov edx,ls_n_stack_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g007
+ lea rsi,[rel ls_n_queue]
+ mov edx,ls_n_queue_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g007
+ lea rsi,[rel ls_n_deque]
+ mov edx,ls_n_deque_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g007
+ lea rsi,[rel g8_n_hasher]
+ mov edx,g8_n_hasher_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g008
+ lea rsi,[rel g8_n_set_type]
+ mov edx,g8_n_set_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g008
  lea rsi,[rel ls_n_dict]
  mov edx,ls_n_dict_len
  call ls_contains_atom
  test eax,eax
- jnz .dict
+ jnz .g008
+ lea rsi,[rel g9_n_node]
+ mov edx,g9_n_node_len
+ call ls_contains_atom
+ test eax,eax
+ jz .g009_tree
+ lea rsi,[rel g9_n_replace_value]
+ mov edx,g9_n_replace_value_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g009
+.g009_tree:
+ lea rsi,[rel g9_n_tree]
+ mov edx,g9_n_tree_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g009
+ lea rsi,[rel g9_n_graph]
+ mov edx,g9_n_graph_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g009
+ lea rsi,[rel g10_n_schema_type]
+ mov edx,g10_n_schema_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g010
+ lea rsi,[rel g10_n_row_type]
+ mov edx,g10_n_row_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g010
+ lea rsi,[rel g10_n_table_type]
+ mov edx,g10_n_table_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g010
+ lea rsi,[rel g10_n_dataset_type]
+ mov edx,g10_n_dataset_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g010
+ ; General Column and Stream programs are distinguished from the historical
+ ; bounded profiles by current-contract operations.
+ lea rsi,[rel g10_n_cast]
+ mov edx,g10_n_cast_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g010
+ lea rsi,[rel g10_n_drop_missing]
+ mov edx,g10_n_drop_missing_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g010
+ lea rsi,[rel g10_n_batch]
+ mov edx,g10_n_batch_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g010
+ ; G025 owns only current security/policy public type atoms.  It must run
+ ; before the historical Policy/Quality recognizers later in this file.
+ lea rsi,[rel g25_n_file_capability]
+ mov edx,g25_n_file_capability_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g025
+ lea rsi,[rel g25_n_effects]
+ mov edx,g25_n_effects_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g025
+ lea rsi,[rel g25_n_permit]
+ mov edx,g25_n_permit_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g025
+ lea rsi,[rel g25_n_sensitive_type]
+ mov edx,g25_n_sensitive_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g025
+ lea rsi,[rel g25_n_metrics]
+ mov edx,g25_n_metrics_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g025
+ lea rsi,[rel g25_n_provenance_type]
+ mov edx,g25_n_provenance_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g025
+ lea rsi,[rel g25_n_audit_type]
+ mov edx,g25_n_audit_type_len
+ call ls_contains_atom
+ test eax,eax
+ jnz .g025
  lea rsi,[rel ls_n_array]
  mov edx,ls_n_array_len
  call ls_contains_atom
@@ -1179,13 +1889,234 @@ NEBOC_ABI_FUNCTION neboc_array_vertical_recognize
  mov edi,eax
  call ls_error
  jmp .done
-.list:
- mov edi,6
+.g007:
+ call neboc_g007_source_parse
+ jmp .done
+.g008:
+ call neboc_g008_source_parse
+ jmp .done
+.g009:
+ call neboc_g009_source_parse
+ jmp .done
+.g010:
+ call neboc_g010_source_parse
+ jmp .done
+.g025:
+ call neboc_g025_source_parse
+ jmp .done
+.g031:
+ call neboc_g031_source_parse
+ jmp .done
+.g032:
+ call neboc_g032_source_parse
+ jmp .done
+.g014:
+ call neboc_g014_source_parse
+ jmp .done
+.g015:
+ call neboc_g015_source_parse
+ jmp .done
+.g016:
+ call neboc_g016_source_parse
+ jmp .done
+.g018:
+ call neboc_g018_source_parse
+ jmp .done
+.g019:
+ call neboc_g019_source_parse
+ jmp .done
+.g087:
+ call neboc_g087_source_parse
+ jmp .done
+.g088:
+ call neboc_g088_source_parse
+ jmp .done
+.g089:
+ call neboc_g089_source_parse
+ jmp .done
+.g090:
+ call neboc_g090_source_parse
+ jmp .done
+.g091:
+ call neboc_g091_source_parse
+ jmp .done
+.g092:
+ call neboc_g092_source_parse
+ jmp .done
+.g093:
+ call neboc_g093_source_parse
+ jmp .done
+.g094:
+ call neboc_g094_source_parse
+ jmp .done
+.g095:
+ call neboc_g095_source_parse
+ jmp .done
+.g096:
+ call neboc_g096_source_parse
+ jmp .done
+.g097:
+ call neboc_g097_source_parse
+ jmp .done
+.g098:
+ call neboc_g098_source_parse
+ jmp .done
+.g099:
+ call neboc_g099_source_parse
+ jmp .done
+.g100:
+ call neboc_g100_source_parse
+ jmp .done
+.g101:
+ call neboc_g101_source_parse
+ jmp .done
+.g102:
+ call neboc_g102_source_parse
+ jmp .done
+.g103:
+ call neboc_g103_source_parse
+ jmp .done
+.g104:
+ call neboc_g104_source_parse
+ jmp .done
+.g105:
+ ; The historical ScanPlan/mode/seed probe has no source binding or input
+ ; semantics. Native adapter probes remain available to owner tests, while
+ ; public scans use the typed function pipeline and consume every operand.
+ mov edi,24
  call ls_error
  jmp .done
-.dict:
- mov edi,7
- call ls_error
+.g106:
+ call neboc_g106_source_parse
+ jmp .done
+.g107:
+ call neboc_g107_source_parse
+ jmp .done
+.g108:
+ call neboc_g108_source_parse
+ jmp .done
+.g109:
+ call neboc_g109_source_parse
+ jmp .done
+.g110:
+ call neboc_g110_source_parse
+ jmp .done
+.g111:
+ call neboc_g111_source_parse
+ jmp .done
+.g112:
+ call neboc_g112_source_parse
+ jmp .done
+.g113:
+ call neboc_g113_source_parse
+ jmp .done
+.g114:
+ call neboc_g114_source_parse
+ jmp .done
+.g115:
+ call neboc_g115_source_parse
+ jmp .done
+.g116:
+ call neboc_g116_source_parse
+ jmp .done
+.slash_core:
+ call neboc_slash_core_source_parse
+ jmp .done
+.g069:
+ call neboc_g069_source_parse
+ jmp .done
+.g070:
+ call neboc_g070_source_parse
+ jmp .done
+.g071:
+ call neboc_g071_source_parse
+ jmp .done
+.g072:
+ call neboc_g072_source_parse
+ jmp .done
+.g073:
+ call neboc_g073_source_parse
+ jmp .done
+.g074:
+ call neboc_g074_source_parse
+ jmp .done
+.g075:
+ call neboc_g075_source_parse
+ jmp .done
+.g076:
+ call neboc_g076_source_parse
+ jmp .done
+.g077:
+ call neboc_g077_source_parse
+ jmp .done
+.g078:
+ call neboc_g078_source_parse
+ jmp .done
+.g079:
+ call neboc_g079_source_parse
+ jmp .done
+.g080:
+ call neboc_g080_source_parse
+ jmp .done
+.g081:
+ call neboc_g081_source_parse
+ jmp .done
+.g082:
+ call neboc_g082_source_parse
+ jmp .done
+.g083:
+ call neboc_g083_source_parse
+ jmp .done
+.g084:
+ call neboc_g084_source_parse
+ jmp .done
+.g028:
+ call neboc_g028_source_parse
+ jmp .done
+.g029:
+ call neboc_g029_source_parse
+ jmp .done
+.g030:
+ call neboc_g030_source_parse
+ jmp .done
+.g046:
+ call neboc_g046_source_parse
+ jmp .done
+.g035:
+ call neboc_g035_source_parse
+ jmp .done
+.g068:
+ call neboc_g068_source_parse
+ jmp .done
+.g067:
+ call neboc_g067_source_parse
+ jmp .done
+.g066:
+ call neboc_g066_source_parse
+ jmp .done
+.g060:
+ call neboc_g060_source_parse
+ jmp .done
+.g061:
+ call neboc_g061_source_parse
+ jmp .done
+.g063:
+ call neboc_g063_source_parse
+ jmp .done
+.g062:
+ call neboc_g062_source_parse
+ jmp .done
+.g059:
+ call neboc_g059_source_parse
+ jmp .done
+.g011:
+ call neboc_g011_source_parse
+ jmp .done
+.g012:
+ call neboc_g012_source_parse
+ jmp .done
+.g013:
+ call neboc_g013_source_parse
  jmp .done
 .capacity:
  mov edi,8
@@ -1207,6 +2138,91 @@ NEBOC_ABI_FUNCTION neboc_array_vertical_recognize
 .done:
  leave
  ret
+
+%include "compiler/semantic/collections/sequential_collections_source_vertical.inc"
+%include "compiler/semantic/collections/associative_collections_source_vertical.inc"
+%include "compiler/semantic/graph/graph_tree_source_vertical.inc"
+%include "compiler/semantic/data/typed_data_source_vertical.inc"
+%include "compiler/semantic/security/effect_privacy_policy_source_vertical.inc"
+%include "compiler/semantic/reactive/reactive_streams_source_vertical.inc"
+%include "compiler/semantic/database/database_query_source_vertical.inc"
+%include "compiler/semantic/numeric/scalar_vector_math_source_vertical.inc"
+%include "compiler/semantic/matrix/dense_matrix_source_vertical.inc"
+%include "compiler/semantic/matrix/matrix_notation_source_vertical.inc"
+%include "compiler/semantic/calculus/integrals_source_vertical.inc"
+%include "compiler/semantic/calculus/differential_calculus_source_vertical.inc"
+%include "compiler/semantic/probability/probability_notation_source_vertical.inc"
+%include "compiler/semantic/formal/formal_logic_source_vertical.inc"
+%include "compiler/semantic/graph/graph_notation_source_vertical.inc"
+%include "compiler/semantic/textual/text_pattern_source_vertical.inc"
+%include "compiler/semantic/textual/contextual_format_source_vertical.inc"
+%include "compiler/semantic/meta/typed_annotations_source_vertical.inc"
+%include "compiler/semantic/tensor/tensor_source_vertical.inc"
+%include "compiler/semantic/visual/visual_console_source_vertical.inc"
+%include "compiler/semantic/media/media_source_vertical.inc"
+%include "compiler/semantic/visual/color_source_vertical.inc"
+%include "compiler/semantic/visual/color_roles_source_vertical.inc"
+%include "compiler/semantic/visual/console_options_source_vertical.inc"
+%include "compiler/semantic/visual/console_values_source_vertical.inc"
+%include "compiler/semantic/visual/document_geometry_source_vertical.inc"
+%include "compiler/semantic/visual/text_style_source_vertical.inc"
+%include "compiler/semantic/visual/composite_layout_source_vertical.inc"
+%include "compiler/semantic/visual/structured_views_source_vertical.inc"
+%include "compiler/semantic/visual/chart_source_vertical.inc"
+%include "compiler/semantic/visual/scene_source_vertical.inc"
+%include "compiler/semantic/visual/scientific_view_source_vertical.inc"
+%include "compiler/semantic/visual/graph_view_source_vertical.inc"
+%include "compiler/semantic/visual/dashboard_source_vertical.inc"
+%include "compiler/semantic/visual/observability_source_vertical.inc"
+%include "compiler/semantic/visual/large_data_source_vertical.inc"
+%include "compiler/semantic/visual/animation_export_source_vertical.inc"
+%include "compiler/semantic/visual/headless_protocol_source_vertical.inc"
+%include "compiler/semantic/visual/live_console_source_vertical.inc"
+%include "compiler/semantic/visual/console_scan_source_vertical.inc"
+%include "compiler/semantic/visual/console_privacy_source_vertical.inc"
+%include "compiler/semantic/visual/console_fallback_source_vertical.inc"
+%include "compiler/semantic/visual/console_testability_source_vertical.inc"
+%include "compiler/semantic/visual/console_diagnostics_source_vertical.inc"
+%include "compiler/semantic/visual/console_scheduler_source_vertical.inc"
+%include "compiler/semantic/visual/console_lifecycle_source_vertical.inc"
+%include "compiler/semantic/visual/console_binding_source_vertical.inc"
+%include "compiler/semantic/visual/console_workflow_source_vertical.inc"
+%include "compiler/semantic/visual/console_export_source_vertical.inc"
+%include "compiler/semantic/visual/console_abi_source_vertical.inc"
+%include "compiler/semantic/visual/console_integration_source_vertical.inc"
+%include "compiler/semantic/textual/slash_core_source_vertical.inc"
+%include "compiler/semantic/formal/formal_verification_source_vertical.inc"
+%include "compiler/semantic/formal/constraint_solver_source_vertical.inc"
+%include "compiler/semantic/compiler/compiler_platform_source_vertical.inc"
+%include "compiler/semantic/numeric/exact_scientific_math_source_vertical.inc"
+%include "compiler/semantic/meta/typed_metaprogramming_source_vertical.inc"
+%include "compiler/semantic/textual/text_console_integration_source_vertical.inc"
+%include "compiler/semantic/textual/regex_tooling_source_vertical.inc"
+%include "compiler/semantic/textual/text_data_source_vertical.inc"
+%include "compiler/semantic/textual/text_formats_source_vertical.inc"
+%include "compiler/semantic/textual/tabular_json_formats_source_vertical.inc"
+%include "compiler/semantic/textual/format_contracts_source_vertical.inc"
+%include "compiler/semantic/textual/scan_editor_source_vertical.inc"
+%include "compiler/semantic/textual/scan_privacy_source_vertical.inc"
+%include "compiler/semantic/textual/scan_validation_source_vertical.inc"
+%include "compiler/semantic/textual/scan_plan_source_vertical.inc"
+%include "compiler/semantic/textual/template_policy_source_vertical.inc"
+%include "compiler/semantic/textual/render_conditions_source_vertical.inc"
+%include "compiler/semantic/textual/render_targets_source_vertical.inc"
+%include "compiler/semantic/textual/render_security_source_vertical.inc"
+%include "compiler/semantic/textual/operational_render_source_vertical.inc"
+%include "compiler/semantic/textual/developer_render_source_vertical.inc"
+%include "compiler/semantic/textual/render_layout_source_vertical.inc"
+%include "compiler/semantic/textual/render_nodes_source_vertical.inc"
+%include "compiler/semantic/textual/render_console_source_vertical.inc"
+%include "compiler/semantic/textual/raw_tagged_template_source_vertical.inc"
+%include "compiler/semantic/textual/interpolation_source_vertical.inc"
+%include "compiler/semantic/textual/percent_template_source_vertical.inc"
+%include "compiler/semantic/textual/format_profiles_source_vertical.inc"
+%include "compiler/semantic/textual/format_plan_source_vertical.inc"
+%include "compiler/semantic/system/filesystem_source_vertical.inc"
+%include "compiler/semantic/system/system_services_source_vertical.inc"
+%include "compiler/semantic/concurrency/concurrency_source_vertical.inc"
 
 ; ---------------------------------------------------------------------------
 ; C11-F01 exact Matrix<Int>.zeros(rows, columns) parser/type vertical.
@@ -3534,6 +4550,750 @@ ls_parse_tensor_f01:
 ; ---------------------------------------------------------------------------
 ; vetores_matrizes_tensores_e_computacao_cientifica Vector<Int>#4
 ; ---------------------------------------------------------------------------
+
+; G134 owns a bounded exact-Int Vector profile.  The scanner is structural:
+; it consumes canonical tokens, authenticates names/extents and derives the
+; emitted scalar from source values.  No path, fixture name or fixed output is
+; consulted.  EAX is boolean and the token cursor is not material here.
+ls_g134_is_program:
+ push rbx
+ xor ebx,ebx
+.scan:
+ cmp rbx,[rel ls_token_count]
+ jae .no
+ mov rdi,rbx
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_LINEAR_DOT
+ je .yes
+ cmp eax,NEBOC_TOKEN_LINEAR_HADAMARD
+ je .yes
+ cmp eax,NEBOC_TOKEN_LINEAR_TENSOR_PRODUCT
+ je .yes
+ cmp eax,NEBOC_TOKEN_LINEAR_DIRECT_SUM
+ je .yes
+ cmp eax,NEBOC_TOKEN_LINEAR_COMPOSE
+ je .yes
+ cmp eax,NEBOC_TOKEN_LINEAR_ORTHOGONAL
+ je .yes
+ cmp eax,NEBOC_TOKEN_LINEAR_PARALLEL
+ je .yes
+ cmp eax,NEBOC_TOKEN_SET_CARTESIAN_PRODUCT
+ je .yes
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .next
+ mov rdi,rbx
+ call ls_g134_method_kind_at
+ test eax,eax
+ jnz .yes
+.next:
+ inc rbx
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop rbx
+ ret
+
+; Method token index RDI -> EAX normalized G134 operation token or zero.
+ls_g134_method_kind_at:
+ push rbx
+ push r12
+ mov r12,rdi
+ lea rbx,[rel ls_g134_method_table]
+ mov ecx,ls_g134_method_count
+.loop:
+ push rcx
+ mov rdi,r12
+ mov rsi,[rbx]
+ mov rdx,[rbx+8]
+ call ls_token_match
+ pop rcx
+ test eax,eax
+ jnz .found
+ add rbx,24
+ dec ecx
+ jnz .loop
+ xor eax,eax
+ jmp .done
+.found:
+ mov rax,[rbx+16]
+.done:
+ pop r12
+ pop rbx
+ ret
+
+; Current method token -> EAX normalized G134 operation token or zero.
+ls_g134_method_kind:
+ mov rdi,[rel ls_cursor]
+ jmp ls_g134_method_kind_at
+
+; Parse one `Vector<Int,N> [..].name;`, where 1 <= N <= 4.
+; EAX=0 success, positive semantic diagnostic, or -1 for syntax.
+ls_g134_parse_declaration:
+ push rbx
+ push r12
+ push r13
+ sub rsp,8
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_LESS
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ lea rsi,[rel ls_n_int]
+ mov edx,ls_n_int_len
+ call ls_expect_atom
+ test eax,eax
+ jz .dtype
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_INTEGER
+ jne .arity
+ mov rdi,[rel ls_cursor]
+ call ls_token_ptr
+ mov r12,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ test r12,r12
+ jz .arity
+ cmp r12,LS_COLLECTION_VALUES
+ ja .arity
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_GREATER
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_RESERVED_LBRACKET
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov rbx,[rel ls_collection_count]
+ xor r13d,r13d
+.value_loop:
+ cmp r13,r12
+ jae .values_done
+ call ls_parse_signed_int
+ test eax,eax
+ jz .type
+ mov rax,rbx
+ imul rax,LS_COLLECTION_VALUES
+ add rax,r13
+ mov [ls_collection_values+rax*8],rdx
+ inc r13
+ cmp r13,r12
+ jae .values_done
+ mov edi,NEBOC_TOKEN_COMMA
+ call ls_expect_kind
+ test eax,eax
+ jz .arity
+ jmp .value_loop
+.values_done:
+ mov edi,NEBOC_TOKEN_RESERVED_RBRACKET
+ call ls_expect_kind
+ test eax,eax
+ jz .arity
+ mov [ls_collection_value_counts+rbx*8],r12
+ mov rdi,rbx
+ call ls_parse_collection_binding
+ test eax,eax
+ jz .syntax
+ xor eax,eax
+ jmp .done
+.arity:
+ mov eax,1
+ jmp .done
+.type:
+ mov eax,2
+ jmp .done
+.dtype:
+ mov eax,5
+ jmp .done
+.syntax:
+ mov rax,-1
+.done:
+ add rsp,8
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Exact checked reduction of one Vector record. RDI=index -> EAX status,
+; RDX=sum.  The bounded profile uses this as the independent scalar observer
+; for vector-valued products.
+ls_g134_vector_sum:
+ push rbx
+ push r12
+ push r13
+ mov r12,rdi
+ cmp r12,[rel ls_collection_count]
+ jae .type
+ mov r13,[ls_collection_value_counts+r12*8]
+ imul r12,LS_COLLECTION_VALUES
+ xor ebx,ebx
+ xor edx,edx
+.loop:
+ cmp rbx,r13
+ jae .yes
+ add rdx,[ls_collection_values+r12*8]
+ jo .overflow
+ inc r12
+ inc rbx
+ jmp .loop
+.yes:
+ xor eax,eax
+ jmp .done
+.type:
+ mov eax,2
+ xor edx,edx
+ jmp .done
+.overflow:
+ mov eax,10
+ xor edx,edx
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; RDI=normalized op, RSI=left record, RDX=right record.
+; Returns the exact scalar observation in RDX.  Vector products are observed
+; by checked sum, as authenticated by the source `.sum()` suffix.
+ls_g134_compute_binary:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,48
+ mov [rsp],rdi
+ mov [rsp+8],rsi
+ mov [rsp+16],rdx
+ cmp rsi,[rel ls_collection_count]
+ jae .type
+ cmp rdx,[rel ls_collection_count]
+ jae .type
+ mov r12,rsi
+ imul r12,LS_COLLECTION_VALUES
+ mov r13,rdx
+ imul r13,LS_COLLECTION_VALUES
+ mov r14,[ls_collection_value_counts+rsi*8]
+ mov r15,[ls_collection_value_counts+rdx*8]
+ mov rax,[rsp]
+ cmp rax,NEBOC_TOKEN_LINEAR_TENSOR_PRODUCT
+ je .tensor
+ cmp rax,NEBOC_TOKEN_LINEAR_DIRECT_SUM
+ je .direct_sum
+ cmp r14,r15
+ jne .arity
+ cmp rax,NEBOC_TOKEN_SET_CARTESIAN_PRODUCT
+ je .cross
+ cmp rax,NEBOC_TOKEN_LINEAR_PARALLEL
+ je .parallel
+ ; Dot, Hadamard.sum and orthogonality share the same exact checked dot
+ ; reduction, while retaining distinct token/Registry identities.
+ cmp rax,NEBOC_TOKEN_LINEAR_DOT
+ je .dot
+ cmp rax,NEBOC_TOKEN_LINEAR_HADAMARD
+ je .dot
+ cmp rax,NEBOC_TOKEN_LINEAR_ORTHOGONAL
+ jne .type
+.dot:
+ mov qword [rsp+24],0
+ xor ebx,ebx
+.dot_loop:
+ cmp rbx,r14
+ jae .dot_done
+ mov rax,[ls_collection_values+r12*8]
+ imul rax,[ls_collection_values+r13*8]
+ jo .overflow
+ add [rsp+24],rax
+ jo .overflow
+ inc r12
+ inc r13
+ inc rbx
+ jmp .dot_loop
+.dot_done:
+ mov rdx,[rsp+24]
+ cmp qword [rsp],NEBOC_TOKEN_LINEAR_ORTHOGONAL
+ jne .yes
+ test rdx,rdx
+ sete dl
+ movzx edx,dl
+ jmp .yes
+.cross:
+ cmp r14,3
+ jne .arity
+ ; c0 = a1*b2-a2*b1
+ mov rax,[ls_collection_values+r12*8+8]
+ imul rax,[ls_collection_values+r13*8+16]
+ jo .overflow
+ mov [rsp+24],rax
+ mov rax,[ls_collection_values+r12*8+16]
+ imul rax,[ls_collection_values+r13*8+8]
+ jo .overflow
+ sub [rsp+24],rax
+ jo .overflow
+ ; c1 = a2*b0-a0*b2
+ mov rax,[ls_collection_values+r12*8+16]
+ imul rax,[ls_collection_values+r13*8]
+ jo .overflow
+ mov [rsp+32],rax
+ mov rax,[ls_collection_values+r12*8]
+ imul rax,[ls_collection_values+r13*8+16]
+ jo .overflow
+ sub [rsp+32],rax
+ jo .overflow
+ ; c2 = a0*b1-a1*b0, then exact sum observation.
+ mov rax,[ls_collection_values+r12*8]
+ imul rax,[ls_collection_values+r13*8+8]
+ jo .overflow
+ mov [rsp+40],rax
+ mov rax,[ls_collection_values+r12*8+8]
+ imul rax,[ls_collection_values+r13*8]
+ jo .overflow
+ sub [rsp+40],rax
+ jo .overflow
+ mov rdx,[rsp+24]
+ add rdx,[rsp+32]
+ jo .overflow
+ add rdx,[rsp+40]
+ jo .overflow
+ jmp .yes
+.tensor:
+ mov rdi,[rsp+8]
+ call ls_g134_vector_sum
+ test eax,eax
+ jnz .done
+ mov [rsp+24],rdx
+ mov rdi,[rsp+16]
+ call ls_g134_vector_sum
+ test eax,eax
+ jnz .done
+ mov rax,[rsp+24]
+ imul rax,rdx
+ jo .overflow
+ mov rdx,rax
+ jmp .yes
+.direct_sum:
+ mov rdi,[rsp+8]
+ call ls_g134_vector_sum
+ test eax,eax
+ jnz .done
+ mov [rsp+24],rdx
+ mov rdi,[rsp+16]
+ call ls_g134_vector_sum
+ test eax,eax
+ jnz .done
+ add rdx,[rsp+24]
+ jo .overflow
+ jmp .yes
+.parallel:
+ ; Exact linear-dependence oracle: all 2x2 minors must be zero.  This is
+ ; deterministic for the bounded Int profile and needs no hidden tolerance.
+ xor ebx,ebx
+.parallel_i:
+ cmp rbx,r14
+ jae .parallel_true
+ lea rcx,[rbx+1]
+.parallel_j:
+ cmp rcx,r14
+ jae .parallel_next_i
+ mov rdx,r12
+ add rdx,rbx
+ mov rax,[ls_collection_values+rdx*8]
+ mov rdx,r13
+ add rdx,rcx
+ imul rax,[ls_collection_values+rdx*8]
+ jo .overflow
+ mov [rsp+24],rax
+ mov rdx,r12
+ add rdx,rcx
+ mov rax,[ls_collection_values+rdx*8]
+ mov rdx,r13
+ add rdx,rbx
+ imul rax,[ls_collection_values+rdx*8]
+ jo .overflow
+ cmp rax,[rsp+24]
+ jne .parallel_false
+ inc rcx
+ jmp .parallel_j
+.parallel_next_i:
+ inc rbx
+ jmp .parallel_i
+.parallel_true:
+ mov edx,1
+ jmp .yes
+.parallel_false:
+ xor edx,edx
+.yes:
+ xor eax,eax
+ jmp .done
+.arity:
+ mov eax,1
+ xor edx,edx
+ jmp .done
+.type:
+ mov eax,2
+ xor edx,edx
+ jmp .done
+.overflow:
+ mov eax,10
+ xor edx,edx
+.done:
+ add rsp,48
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; RDI=outer diagonal map, RSI=inner diagonal map, RDX=input Vector.
+; Output is sum(outer(inner(input))), preserving right-before-left order.
+ls_g134_compute_compose:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,16
+ cmp rdi,[rel ls_collection_count]
+ jae .type
+ cmp rsi,[rel ls_collection_count]
+ jae .type
+ cmp rdx,[rel ls_collection_count]
+ jae .type
+ mov r14,[ls_collection_value_counts+rdi*8]
+ cmp r14,[ls_collection_value_counts+rsi*8]
+ jne .arity
+ cmp r14,[ls_collection_value_counts+rdx*8]
+ jne .arity
+ mov r12,rdi
+ imul r12,LS_COLLECTION_VALUES
+ mov r13,rsi
+ imul r13,LS_COLLECTION_VALUES
+ mov r15,rdx
+ imul r15,LS_COLLECTION_VALUES
+ xor ebx,ebx
+ mov qword [rsp],0
+.loop:
+ cmp rbx,r14
+ jae .yes
+ mov rax,[ls_collection_values+r13*8]
+ imul rax,[ls_collection_values+r15*8]
+ jo .overflow
+ imul rax,[ls_collection_values+r12*8]
+ jo .overflow
+ add [rsp],rax
+ jo .overflow
+ inc r12
+ inc r13
+ inc r15
+ inc rbx
+ jmp .loop
+.yes:
+ mov rdx,[rsp]
+ xor eax,eax
+ jmp .done
+.arity:
+ mov eax,1
+ xor edx,edx
+ jmp .done
+.type:
+ mov eax,2
+ xor edx,edx
+ jmp .done
+.overflow:
+ mov eax,10
+ xor edx,edx
+.done:
+ add rsp,16
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Parse one symbolic or portable named operation and return its exact scalar
+; observation. EAX follows the declaration parser status convention.
+ls_g134_parse_term:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,48
+ mov qword [rsp+24],0
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_LPAREN
+ jne .first
+ inc qword [rel ls_cursor]
+ mov qword [rsp+24],1
+.first:
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .syntax
+ mov rdi,[rel ls_cursor]
+ call ls_find_collection
+ cmp rax,-1
+ je .type
+ mov [rsp],rax
+ inc qword [rel ls_cursor]
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ mov r14,rax
+ cmp r14,NEBOC_TOKEN_LINEAR_DOT
+ je .symbol
+ cmp r14,NEBOC_TOKEN_SET_CARTESIAN_PRODUCT
+ je .symbol
+ cmp r14,NEBOC_TOKEN_LINEAR_HADAMARD
+ je .symbol
+ cmp r14,NEBOC_TOKEN_LINEAR_TENSOR_PRODUCT
+ je .symbol
+ cmp r14,NEBOC_TOKEN_LINEAR_DIRECT_SUM
+ je .symbol
+ cmp r14,NEBOC_TOKEN_LINEAR_COMPOSE
+ je .symbol
+ cmp r14,NEBOC_TOKEN_LINEAR_ORTHOGONAL
+ je .symbol
+ cmp r14,NEBOC_TOKEN_LINEAR_PARALLEL
+ je .symbol
+ cmp r14,NEBOC_TOKEN_DOT
+ jne .syntax
+ inc qword [rel ls_cursor]
+ call ls_g134_method_kind
+ test eax,eax
+ jz .syntax
+ mov r14,rax
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call .second_operand
+ test eax,eax
+ jnz .done
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ jmp .after_pair
+.symbol:
+ inc qword [rel ls_cursor]
+ call .second_operand
+ test eax,eax
+ jnz .done
+ cmp qword [rsp+24],0
+ je .after_pair
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+.after_pair:
+ mov [rsp+16],r14
+ cmp r14,NEBOC_TOKEN_LINEAR_COMPOSE
+ je .compose_suffix
+ cmp r14,NEBOC_TOKEN_SET_CARTESIAN_PRODUCT
+ je .sum_suffix
+ cmp r14,NEBOC_TOKEN_LINEAR_HADAMARD
+ je .sum_suffix
+ cmp r14,NEBOC_TOKEN_LINEAR_TENSOR_PRODUCT
+ je .sum_suffix
+ cmp r14,NEBOC_TOKEN_LINEAR_DIRECT_SUM
+ je .sum_suffix
+ jmp .compute
+.compose_suffix:
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ lea rsi,[rel ls_n_apply]
+ mov edx,ls_n_apply_len
+ call ls_expect_atom
+ test eax,eax
+ jz .syntax
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .syntax
+ mov rdi,[rel ls_cursor]
+ call ls_find_collection
+ cmp rax,-1
+ je .type
+ mov [rsp+32],rax
+ inc qword [rel ls_cursor]
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .syntax
+ call .expect_sum
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ mov rdx,[rsp+32]
+ call ls_g134_compute_compose
+ jmp .done
+.sum_suffix:
+ call .expect_sum
+ test eax,eax
+ jnz .done
+.compute:
+ mov rdi,[rsp+16]
+ mov rsi,[rsp]
+ mov rdx,[rsp+8]
+ call ls_g134_compute_binary
+ jmp .done
+
+; Local callable: parse identifier operand into rsp+8.
+.second_operand:
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .second_syntax
+ mov rdi,[rel ls_cursor]
+ call ls_find_collection
+ cmp rax,-1
+ je .second_type
+ ; This local helper is reached with CALL, so the caller's rsp+8 slot is
+ ; sixteen bytes above the helper stack pointer (past the return address).
+ mov [rsp+16],rax
+ inc qword [rel ls_cursor]
+ xor eax,eax
+ ret
+.second_type:
+ mov eax,2
+ ret
+.second_syntax:
+ mov rax,-1
+ ret
+
+; Local callable: require the exact zero-argument `.sum()` observer.
+.expect_sum:
+ mov edi,NEBOC_TOKEN_DOT
+ call ls_expect_kind
+ test eax,eax
+ jz .sum_syntax
+ lea rsi,[rel ls_n_sum]
+ mov edx,ls_n_sum_len
+ call ls_expect_atom
+ test eax,eax
+ jz .sum_syntax
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .sum_syntax
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ls_expect_kind
+ test eax,eax
+ jz .sum_syntax
+ xor eax,eax
+ ret
+.sum_syntax:
+ mov rax,-1
+ ret
+.type:
+ mov eax,2
+ xor edx,edx
+ jmp .done
+.syntax:
+ mov rax,-1
+ xor edx,edx
+.done:
+ add rsp,48
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Complete bounded G134 program: declarations followed by one or more scalar
+; observations joined with ordinary checked `+`.
+ls_g134_parse_program:
+ push rbx
+ sub rsp,16
+ mov qword [rel ls_cursor],0
+ call ls_start_header
+ test eax,eax
+ jz .syntax
+.decl_loop:
+ cmp qword [rel ls_collection_count],LS_COLLECTION_CAPACITY
+ jae .expression
+ lea rsi,[rel ls_n_vector]
+ mov edx,ls_n_vector_len
+ call ls_current_atom
+ test eax,eax
+ jz .expression
+ call ls_g134_parse_declaration
+ cmp eax,-1
+ je .syntax
+ test eax,eax
+ jnz .semantic
+ jmp .decl_loop
+.expression:
+ cmp qword [rel ls_collection_count],2
+ jb .type
+ call ls_g134_parse_term
+ cmp eax,-1
+ je .syntax
+ test eax,eax
+ jnz .semantic
+ mov [rsp],rdx
+.plus_loop:
+ mov rdi,[rel ls_cursor]
+ call ls_kind_at
+ cmp eax,NEBOC_TOKEN_PLUS
+ jne .finish
+ inc qword [rel ls_cursor]
+ call ls_g134_parse_term
+ cmp eax,-1
+ je .syntax
+ test eax,eax
+ jnz .semantic
+ add [rsp],rdx
+ jo .overflow
+ jmp .plus_loop
+.finish:
+ call ls_finish_program
+ test eax,eax
+ jz .syntax
+ mov rdi,[rsp]
+ mov esi,NEBOC_VECTOR_VERTICAL_FLAGS_REQUIRED
+ mov rdx,0x5246324747313334
+ call ls_success
+ jmp .done
+.semantic:
+ mov edi,eax
+ call ls_error
+ jmp .done
+.type:
+ mov edi,2
+ call ls_error
+ jmp .done
+.overflow:
+ mov edi,10
+ call ls_error
+ jmp .done
+.syntax:
+ mov edi,5
+ call ls_error
+.done:
+ add rsp,16
+ pop rbx
+ ret
+
 NEBOC_ABI_FUNCTION neboc_vector_vertical_recognize
  push rbp
  mov rbp,rsp
@@ -3542,6 +5302,15 @@ NEBOC_ABI_FUNCTION neboc_vector_vertical_recognize
  test eax,eax
  jz .invalid
  mov qword [rel ls_mode],11
+ ; G143 owns `@name(...)` declaration metadata before declaration guards and
+ ; every expression-oriented legacy route.  Bare/free `@` is still claimed so
+ ; it fails with the annotation grammar's precise diagnostic.
+ call g143_is_program
+ test eax,eax
+ jz .not_g143
+ call g143_parse_program
+ jmp .done
+.not_g143:
  xor ecx,ecx
 .declaration_guard_11:
  cmp rcx,[rel ls_token_count]
@@ -3556,6 +5325,70 @@ NEBOC_ABI_FUNCTION neboc_vector_vertical_recognize
  inc rcx
  jmp .declaration_guard_11
 .declaration_guard_11_done:
+ ; G142 owns the integrated contextual template grammar before the historical
+ ; FormatPlan, percent-format and Slash routes can claim its component atoms.
+ call g142_is_program
+ test eax,eax
+ jz .not_g142
+ call g142_parse_program
+ jmp .done
+.not_g142:
+ ; G141 Text/Pattern operators and canonical APIs own complete bounded
+ ; literal expressions before graph, formal and historical textual routes.
+ call g141_is_program
+ test eax,eax
+ jz .not_g141
+ call g141_parse_program
+ jmp .done
+.not_g141:
+ ; G140 graph/workflow/statechart arrows and canonical APIs own complete
+ ; bounded call expressions before formal and scientific source routes.
+ call g140_is_program
+ test eax,eax
+ jz .not_g140
+ call g140_parse_program
+ jmp .done
+.not_g140:
+ ; G139 formal logic owns its exact Registry tokens and canonical portable
+ ; spellings before probability/calculus and historical scientific routes.
+ call g139_is_program
+ test eax,eax
+ jz .not_g139
+ call g139_parse_program
+ jmp .done
+.not_g139:
+ ; G138 probability relations and their portable spellings own complete
+ ; bounded call expressions before the calculus/scientific heuristics.
+ call g138_is_program
+ test eax,eax
+ jz .not_g138
+ call g138_parse_program
+ jmp .done
+.not_g138:
+ ; G137 differential binders/prefixes and portable APIs own complete bounded
+ ; call expressions before integral and historical scientific heuristics.
+ call g137_is_program
+ test eax,eax
+ jz .not_g137
+ call g137_parse_program
+ jmp .done
+.not_g137:
+ ; G136 integral binders and portable APIs own complete call expressions and
+ ; therefore take precedence over historical Matrix/Vector name heuristics.
+ call g136_is_program
+ test eax,eax
+ jz .not_g136
+ call g136_parse_program
+ jmp .done
+.not_g136:
+ ; G135 is authenticated by an explicit bounded extent plus one Registry
+ ; spelling/API.  Give it first refusal before the historical Matrix profile.
+ call g135_is_program
+ test eax,eax
+ jz .not_g135
+ call g135_parse_program
+ jmp .done
+.not_g135:
  ; Explicit deferred surfaces retain deterministic ownership.
  lea rsi,[rel ls_n_matrix]
  mov edx,ls_n_matrix_len
@@ -3572,6 +5405,12 @@ NEBOC_ABI_FUNCTION neboc_vector_vertical_recognize
  call ls_contains_atom
  test eax,eax
  jz .not_owned
+ call ls_g134_is_program
+ test eax,eax
+ jz .legacy_vector
+ call ls_g134_parse_program
+ jmp .done
+.legacy_vector:
  mov qword [rel ls_cursor],0
  call ls_start_header
  test eax,eax
@@ -3622,7 +5461,7 @@ NEBOC_ABI_FUNCTION neboc_vector_vertical_recognize
  test eax,eax
  jz .syntax
 .decl_loop:
- cmp qword [rel ls_collection_count],LS_MAX_COLLECTIONS
+ cmp qword [rel ls_collection_count],LS_LEGACY_MAX_COLLECTIONS
  jae .expr
  lea rsi,[rel ls_n_vector]
  mov edx,ls_n_vector_len
@@ -3697,9 +5536,21 @@ NEBOC_ABI_FUNCTION neboc_vector_vertical_recognize
  call ls_error
  jmp .done
 .matrix:
+ call g15_is_program
+ test eax,eax
+ jz .matrix_legacy
+ call neboc_g015_source_parse
+ jmp .done
+.matrix_legacy:
  call ls_parse_matrix_f01
  jmp .done
 .tensor:
+ call g16_is_program
+ test eax,eax
+ jz .tensor_legacy
+ call neboc_g016_source_parse
+ jmp .done
+.tensor_legacy:
  call ls_parse_tensor_f01
  jmp .done
 .sparse:
@@ -3942,7 +5793,7 @@ NEBOC_ABI_FUNCTION neboc_column_vertical_recognize
  cmp eax,-1
  jne .done
 .decl_loop:
- cmp qword [rel ls_collection_count],LS_MAX_COLLECTIONS
+ cmp qword [rel ls_collection_count],LS_LEGACY_MAX_COLLECTIONS
  jae .after_decls
  lea rsi,[rel ls_n_column]
  mov edx,ls_n_column_len

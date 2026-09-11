@@ -1,0 +1,15 @@
+property	value
+size	32
+alignment	8
+stride	8
+cell0_offset	0
+cell1_offset	8
+cell2_offset	16
+cell3_offset	24
+metadata_bytes	0
+allocation_count	0
+ownership	COPY_ONLY
+public_ffi	NONE
+dtype	INT64
+cell_count	4
+missing_bitmap	NONE

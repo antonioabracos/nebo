@@ -1,0 +1,4 @@
+start() {
+  Array<Int,1> [7].one;
+  one.at(index).return;
+}

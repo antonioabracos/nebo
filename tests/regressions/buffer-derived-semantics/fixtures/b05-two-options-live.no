@@ -1,0 +1,8 @@
+start() {
+    Buffer.zeroed(4).codes;
+    codes.set(2, 103).old;
+    codes.get(2).first;
+    codes.get(9).second;
+    second.unwrapOr(255).secondValue;
+    first.unwrapOr(0).return;
+}

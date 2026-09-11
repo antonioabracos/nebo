@@ -1,0 +1,2 @@
+// This module deliberately exports a different symbol from the requested one.
+module core export public base = 101;

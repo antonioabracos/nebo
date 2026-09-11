@@ -1,0 +1,4 @@
+start() {
+    Option<Int>(Some(180)).value;
+    value.expect("seed payload").return;
+}

@@ -1,0 +1,5 @@
+start() {
+  Option<Array<Int,2>>(Some(Array<Int,2> [1,2])).values;
+  values.map(1).mapped;
+  mapped.drop().return;
+}

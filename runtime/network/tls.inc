@@ -1,0 +1,23 @@
+%ifndef NEBO_TLS_INC
+%define NEBO_TLS_INC 1
+%include "runtime/network/socket.inc"
+%include "runtime/crypto/sha256.inc"
+%define NEBO_TLS_CONFIG_MAGIC 0
+%define NEBO_TLS_CONFIG_SERVER_NAME 8
+%define NEBO_TLS_CONFIG_SERVER_NAME_LENGTH 16
+%define NEBO_TLS_CONFIG_TRUST_KEY 24
+%define NEBO_TLS_CONFIG_TRUST_KEY_LENGTH 32
+%define NEBO_TLS_CONFIG_PROFILE 40
+%define NEBO_TLS_CONFIG_SIZE 48
+%define NEBO_TLS_CONFIG_MAGIC_VALUE 0x4e42544c53433132
+%define NEBO_TLS_PROFILE_PINNED_HMAC_SHA256_LOCAL_V1 1
+%define NEBO_TLS_STREAM_SOCKET 0
+%define NEBO_TLS_STREAM_STATE 8
+%define NEBO_TLS_STREAM_PROFILE 16
+%define NEBO_TLS_STREAM_SERVER_NAME 24
+%define NEBO_TLS_STREAM_SIZE 32
+%ifndef NEBO_TLS_IMPLEMENTATION
+ extern nebo_tls_config_with_trust_store
+ extern nebo_tls_stream_connect
+%endif
+%endif

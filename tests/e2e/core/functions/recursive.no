@@ -1,0 +1,7 @@
+(Int.a)loop(Int.b) {
+    a.loop(b).return;
+}
+
+start() {
+    1.loop(2);
+}

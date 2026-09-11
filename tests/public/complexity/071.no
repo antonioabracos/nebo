@@ -1,0 +1,13 @@
+// Memory-only key rotation and allowlisted base composition feed an input-dependent crypto audit.
+(Int.self)keyVaultLocal() { self.return; }
+(Int.self)vaultStore() { self.return; }
+(Int.self)vaultRotate() { self.return; }
+(Int.self)vaultRevoke() { self.return; }
+(Int.self)cryptoProtocolCompose() { self.return; }
+(Int.self)protocolReviewStatus() { self.return; }
+(Int.self)protocolVerifyTranscript() { self.return; }
+(Int.self)cryptoAudit() { self.return; }
+
+start() {
+    110.keyVaultLocal().vaultStore().vaultRotate().vaultRevoke().cryptoProtocolCompose().protocolReviewStatus().protocolVerifyTranscript().cryptoAudit();
+}

@@ -1,0 +1,2 @@
+struct Packet { Bool.ready; Int.count; Char.tag; }
+start() { Packet.layout().facts; facts.at<0>(); }

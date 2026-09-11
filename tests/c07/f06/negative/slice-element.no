@@ -1,0 +1,1 @@
+start() { Tuple.of(Slice<Int>.of(1)).unsupported; 0.return; }

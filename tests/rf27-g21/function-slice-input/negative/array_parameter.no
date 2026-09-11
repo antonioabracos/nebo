@@ -1,0 +1,2 @@
+(Int.self)size(Array<Int,2>.values) { 0.return; }
+start() { 0.return; }

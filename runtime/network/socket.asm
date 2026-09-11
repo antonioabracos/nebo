@@ -19,11 +19,13 @@ global nebo_tcp_listener_accept
 global nebo_tcp_stream_connect
 global nebo_tcp_stream_read
 global nebo_tcp_stream_write
+global nebo_tcp_stream_write_all
 global nebo_tcp_stream_shutdown
 global nebo_socket_close
 global nebo_udp_socket_bind
 global nebo_udp_socket_send_to
 global nebo_udp_socket_receive_from
+global nebo_udp_socket_receive_from_address
 
 ; rdi=capability, rsi=permissions, rdx=max connections, rcx=max bytes,
 ; r8=max deadline ns. Loopback set is intrinsic.
@@ -109,6 +111,15 @@ nebo_tcp_listener_bind:
  add rsp,16
  cmp rax,-4095
  jae .listener_fd_error
+ mov r9,[r13+NEBO_SOCKET_ADDRESS_PORT]
+ test r9,r9
+ jnz .listener_port_ready
+ mov rdi,r8
+ call socket_bound_port
+ test eax,eax
+ jnz .listener_fd_error_status
+ mov r9,rdx
+.listener_port_ready:
  mov eax,NEBO_LINUX_X86_64_SYS_LISTEN
  mov rdi,r8
  mov rsi,rbx
@@ -121,6 +132,7 @@ nebo_tcp_listener_bind:
  mov rcx,r13
  mov r8d,NEBO_SOCKET_FLAG_LISTENER
  call socket_publish
+ mov [r12+NEBO_SOCKET_PORT],r9
  xor eax,eax
  jmp .listener_return
 .listener_fd_error:
@@ -130,6 +142,15 @@ nebo_tcp_listener_bind:
  syscall
  pop rdi
  call network_map_errno
+ mov rdi,r14
+ call socket_unreserve
+ jmp .listener_return
+.listener_fd_error_status:
+ push rax
+ mov eax,NEBO_LINUX_X86_64_SYS_CLOSE
+ mov rdi,r8
+ syscall
+ pop rax
  mov rdi,r14
  call socket_unreserve
  jmp .listener_return
@@ -190,6 +211,7 @@ nebo_tcp_listener_accept:
  mov rdx,[rbx+NEBO_SOCKET_CAPABILITY]
  mov rcx,rbx
  mov r8d,NEBO_SOCKET_FLAG_STREAM
+ mov r9,[rbx+NEBO_SOCKET_PORT]
  call socket_publish
  xor eax,eax
  jmp .accept_return
@@ -225,7 +247,7 @@ nebo_tcp_stream_connect:
  test eax,eax
  jnz .connect_return
  mov rdi,r13
- call loopback_address_validate
+ call loopback_peer_validate
  test eax,eax
  jnz .connect_return
  mov rdi,rbx
@@ -260,6 +282,7 @@ nebo_tcp_stream_connect:
  mov rdx,rbx
  mov rcx,r13
  mov r8d,NEBO_SOCKET_FLAG_STREAM
+ mov r9,[r13+NEBO_SOCKET_ADDRESS_PORT]
  call socket_publish
  xor eax,eax
  jmp .connect_return
@@ -296,6 +319,44 @@ nebo_tcp_stream_write:
  mov r8,socket_SYS_WRITE
  mov r9d,1
  jmp stream_io
+
+; rdi=stream, rsi=buffer, rdx=bytes. Writes all bytes or returns an error.
+nebo_tcp_stream_write_all:
+ push rbx
+ push r12
+ push r13
+ push r14
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ xor ebx,ebx
+.write_all_loop:
+ cmp rbx,r14
+ jae .write_all_ok
+ mov rdi,r12
+ lea rsi,[r13+rbx]
+ mov rdx,r14
+ sub rdx,rbx
+ call nebo_tcp_stream_write
+ test eax,eax
+ jnz .write_all_return
+ test rdx,rdx
+ jz .write_all_io
+ add rbx,rdx
+ jmp .write_all_loop
+.write_all_ok:
+ mov rdx,r14
+ xor eax,eax
+ jmp .write_all_return
+.write_all_io:
+ mov eax,NEBO_SYSTEM_ERROR_IO
+ xor edx,edx
+.write_all_return:
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
 
 nebo_tcp_stream_shutdown:
  test rdi,rdi
@@ -365,12 +426,22 @@ nebo_udp_socket_bind:
  add rsp,16
  cmp rax,-4095
  jae .udp_bind_fd_error
+ mov r9,[r13+NEBO_SOCKET_ADDRESS_PORT]
+ test r9,r9
+ jnz .udp_port_ready
+ mov rdi,r8
+ call socket_bound_port
+ test eax,eax
+ jnz .udp_bind_fd_error_status
+ mov r9,rdx
+.udp_port_ready:
  mov rdi,r12
  mov rsi,r8
  mov rdx,rbx
  mov rcx,r13
  mov r8d,NEBO_SOCKET_FLAG_DATAGRAM
  call socket_publish
+ mov [r12+NEBO_SOCKET_PORT],r9
  xor eax,eax
  jmp .udp_bind_return
 .udp_bind_fd_error:
@@ -380,6 +451,15 @@ nebo_udp_socket_bind:
  syscall
  pop rdi
  call network_map_errno
+ mov rdi,rbx
+ call socket_unreserve
+ jmp .udp_bind_return
+.udp_bind_fd_error_status:
+ push rax
+ mov eax,NEBO_LINUX_X86_64_SYS_CLOSE
+ mov rdi,r8
+ syscall
+ pop rax
  mov rdi,rbx
  call socket_unreserve
  jmp .udp_bind_return
@@ -414,7 +494,7 @@ nebo_udp_socket_send_to:
  test eax,eax
  jnz .send_return
  mov rdi,rbx
- call loopback_address_validate
+ call loopback_peer_validate
  test eax,eax
  jnz .send_return
  sub rsp,16
@@ -449,41 +529,69 @@ nebo_udp_socket_send_to:
  pop rbx
  ret
 
-; rdi=UdpSocket, rsi=buffer, rdx=capacity. Sender address is not published.
+; Compatibility entry: receive a datagram without publishing its origin.
 nebo_udp_socket_receive_from:
+ xor ecx,ecx
+ jmp nebo_udp_socket_receive_from_address
+
+; rdi=UdpSocket, rsi=buffer, rdx=capacity, rcx=optional sender address out.
+nebo_udp_socket_receive_from_address:
  push rbx
  push r12
  push r13
+ push r14
  mov r12,rdi
  mov r13,rsi
  mov rbx,rdx
+ mov r14,rcx
  mov rdi,r12
  mov rsi,rbx
  xor edx,edx
  call socket_io_validate
  test eax,eax
  jnz .recv_return
+ sub rsp,32
+ mov dword [rsp+16],16
 .recv_retry:
  mov eax,NEBO_LINUX_X86_64_SYS_RECVFROM
  mov rdi,[r12+NEBO_SOCKET_FD]
  mov rsi,r13
  mov rdx,rbx
  xor r10d,r10d
- xor r8d,r8d
- xor r9d,r9d
+ mov r8,rsp
+ lea r9,[rsp+16]
  syscall
  cmp rax,-EINTR
  je .recv_retry
  cmp rax,-4095
  jae .recv_error
- add [r12+NEBO_SOCKET_BYTES_READ],rax
- mov rdx,rax
+ mov [rsp+24],rax
+ cmp dword [rsp+16],16
+ jb .recv_error
+ test r14,r14
+ jz .recv_publish_done
+ cmp word [rsp],NEBO_NETWORK_AF_INET
+ jne .recv_error
+ mov qword [r14+NEBO_SOCKET_ADDRESS_IP+NEBO_IP_FAMILY],NEBO_IP_FAMILY_V4
+ mov eax,[rsp+4]
+ mov [r14+NEBO_SOCKET_ADDRESS_IP+NEBO_IP_BYTES],rax
+ mov qword [r14+NEBO_SOCKET_ADDRESS_IP+NEBO_IP_BYTES+8],0
+ movzx eax,word [rsp+2]
+ xchg al,ah
+ movzx eax,ax
+ mov [r14+NEBO_SOCKET_ADDRESS_PORT],rax
+.recv_publish_done:
+ mov rdx,[rsp+24]
+ add [r12+NEBO_SOCKET_BYTES_READ],rdx
+ add rsp,32
  xor eax,eax
  jmp .recv_return
 .recv_error:
  mov eax,NEBO_SYSTEM_ERROR_IO
  xor edx,edx
+ add rsp,32
 .recv_return:
+ pop r14
  pop r13
  pop r12
  pop rbx
@@ -504,8 +612,7 @@ nebo_socket_close:
  mov eax,NEBO_LINUX_X86_64_SYS_CLOSE
  mov rdi,[rbx+NEBO_SOCKET_FD]
  syscall
- cmp rax,-EINTR
- je .close_retry
+ ; Linux closes the fd even on EINTR; a retry could close a reused fd.
  mov qword [rbx+NEBO_SOCKET_STATE],NEBO_RESOURCE_STATE_CLOSED
  mov rdi,[rbx+NEBO_SOCKET_CAPABILITY]
  call socket_unreserve
@@ -556,8 +663,6 @@ loopback_address_validate:
  jne .address_denied
  cmp byte [rdi+NEBO_SOCKET_ADDRESS_IP+NEBO_IP_BYTES+3],1
  jne .address_denied
- cmp qword [rdi+NEBO_SOCKET_ADDRESS_PORT],0
- je .address_denied
  cmp qword [rdi+NEBO_SOCKET_ADDRESS_PORT],65535
  ja .address_denied
  xor eax,eax
@@ -566,6 +671,43 @@ loopback_address_validate:
  mov eax,NEBO_SYSTEM_ERROR_PERMISSION_DENIED
  ret
 
+loopback_peer_validate:
+ call loopback_address_validate
+ test eax,eax
+ jnz .peer_return
+ cmp qword [rdi+NEBO_SOCKET_ADDRESS_PORT],0
+ je .peer_denied
+.peer_return:
+ ret
+.peer_denied:
+ mov eax,NEBO_SYSTEM_ERROR_PERMISSION_DENIED
+ ret
+
+; rdi=bound IPv4 fd. eax=status, rdx=host-order port.
+socket_bound_port:
+ sub rsp,24
+ mov dword [rsp+16],16
+ mov eax,NEBO_LINUX_X86_64_SYS_GETSOCKNAME
+ mov rsi,rsp
+ lea rdx,[rsp+16]
+ syscall
+ cmp rax,-4095
+ jae .bound_error
+ cmp dword [rsp+16],16
+ jb .bound_error
+ cmp word [rsp],NEBO_NETWORK_AF_INET
+ jne .bound_error
+ movzx edx,word [rsp+2]
+ xchg dl,dh
+ movzx edx,dx
+ add rsp,24
+ xor eax,eax
+ ret
+.bound_error:
+ add rsp,24
+ mov eax,NEBO_SYSTEM_ERROR_IO
+ xor edx,edx
+ ret
 socket_reserve:
  test rdi,rdi
  jz .reserve_limit
@@ -596,8 +738,9 @@ socket_publish:
  mov qword [rdi+NEBO_SOCKET_BYTES_READ],0
  mov qword [rdi+NEBO_SOCKET_BYTES_WRITTEN],0
  mov qword [rdi+NEBO_SOCKET_FAMILY],NEBO_IP_FAMILY_V4
- mov rax,[rcx+NEBO_SOCKET_PORT]
- mov [rdi+NEBO_SOCKET_PORT],rax
+ ; Callers supply the port explicitly. SocketAddress is 32 bytes whereas
+ ; a Socket resource is 64 bytes; never read a Socket field from an address.
+ mov [rdi+NEBO_SOCKET_PORT],r9
  mov [rdi+NEBO_SOCKET_FLAGS],r8
  ret
 
@@ -645,25 +788,52 @@ stream_io:
  push rbx
  push r12
  push r13
+ push r14
+ push r15
  mov rbx,rdi
  mov r12,rsi
  mov r13,rdx
+ mov r14,r8
+ mov r15,r9
  mov rsi,rdx
+ test r15,r15
+ jnz .validate_transfer
+ test r13,r13
+ jz .validate_transfer
+ ; A read buffer is a capacity, not a promised transfer. Authenticate one
+ ; byte then cap the syscall to the capability's remaining actual byte budget.
+ mov esi,1
+.validate_transfer:
  mov edx,r9d
  call socket_io_validate
  test eax,eax
  jnz .stream_return_zero
+ test r15,r15
+ jnz .stream_retry
+ mov rax,[rbx+NEBO_SOCKET_CAPABILITY]
+ mov rax,[rax+NEBO_NETWORK_CAPABILITY_MAX_BYTES]
+ sub rax,[rbx+NEBO_SOCKET_BYTES_READ]
+ sub rax,[rbx+NEBO_SOCKET_BYTES_WRITTEN]
+ cmp r13,rax
+ cmova r13,rax
 .stream_retry:
- mov rax,r8
+ mov rax,r14
  mov rdi,[rbx+NEBO_SOCKET_FD]
  mov rsi,r12
  mov rdx,r13
+ test r15,r15
+ jz .stream_syscall
+ mov eax,NEBO_LINUX_X86_64_SYS_SENDTO
+ mov r10d,MSG_NOSIGNAL
+ xor r8d,r8d
+ xor r9d,r9d
+.stream_syscall:
  syscall
  cmp rax,-EINTR
  je .stream_retry
  cmp rax,-4095
  jae .stream_error
- test r9d,r9d
+ test r15d,r15d
  jz .stream_read_count
  add [rbx+NEBO_SOCKET_BYTES_WRITTEN],rax
  jmp .stream_success
@@ -674,10 +844,17 @@ stream_io:
  xor eax,eax
  jmp .stream_return
 .stream_error:
+ cmp rax,-11 ; EAGAIN after the configured receive/send deadline
+ je .stream_timeout
  mov eax,NEBO_SYSTEM_ERROR_IO
+ jmp .stream_return_zero
+.stream_timeout:
+ mov eax,NEBO_SYSTEM_ERROR_TIMEOUT
 .stream_return_zero:
  xor edx,edx
 .stream_return:
+ pop r15
+ pop r14
  pop r13
  pop r12
  pop rbx

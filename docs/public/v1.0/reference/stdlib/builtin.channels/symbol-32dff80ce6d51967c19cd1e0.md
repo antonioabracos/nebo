@@ -1,0 +1,78 @@
+# builtin.channels — builtin.channels
+
+Module grouping comes from the qualified inventory; it is not a package artifact, compiled .ni or capability grant.
+
+```text
+Identity: module:builtin.channels (MODULE_IDENTITY)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: INTRINSIC_NAMESPACE_NOT_AN_IMPORTABLE_MODULE
+```
+
+## Syntax or signature
+
+```text
+Intrinsic namespace: builtin.channels. Use the exact receiver-qualified or operator syntax on each member page; no selective import is declared for this namespace.
+```
+
+## Stability and availability
+
+Module grouping comes from the qualified inventory; it is not a package artifact, compiled .ni or capability grant.
+
+## Canonical import policy
+
+Intrinsic namespace: builtin.channels. Use the exact receiver-qualified or operator syntax on each member page; no selective import is declared for this namespace. Importing never grants capabilities. std.core and std.console exports retain their canonical core/prelude reference owners.
+
+## Packages and compiled interfaces
+
+The stdlib registry supplies visibility metadata. G180 package manifests and lockfiles describe content-addressed offline packages; an intrinsic namespace is not a fictitious shipped package. See docs/reference/packages/PACKAGE-MANIFEST-SPEC.md and LOCKFILE-SPEC.md. Serialized .ni declarations retain their original SymbolIds; intrinsic entries do not acquire fabricated IDs.
+
+## Executed examples
+
+### system:pid-observed; expected 23
+
+```nebo
+start(){Process.currentId().p;(p>0).console();23.return;}
+```
+
+Oracle: {"capabilities": {"console": "RETAINED_DOCUMENT", "filesystem": "EXPLICIT_SCRATCH_EFFECT_ORACLE", "network": "DENIED_BY_SECCOMP"}, "console_text_utf8": "true", "filesystem_effects": {}, "independent_builds": 2, "kinds": \[5\], "process_exit": 23, "runtime_determinism": "BYTE_IDENTICAL", "runtime_sha256": "26e99610443e30ab87a629aa5de2392ce6d0117574455307c7c97e44b2fcac90", "text": {"bytes_hex": "74727565"}}
+
+## Rejected examples
+
+### system:channel-capacity-over; expected NEBO_LIMIT_EXCEEDED
+
+```nebo
+start(){Channel<Int>.bounded(65).c;23.return;}
+```
+
+Oracle: {"artifact_publication": "REJECTED", "compiler_exit": 1, "diagnostic": "NEBO_LIMIT_EXCEEDED"}
+
+## Related entries
+
+[Index](index.md)
+
+- [symbol-9286b510e7998bb8be1993ce](symbol-9286b510e7998bb8be1993ce.md)
+
+- [symbol-cefdc8b3526d7a0280ae6fbc](symbol-cefdc8b3526d7a0280ae6fbc.md)
+
+- [symbol-2efd3055f978a6a43f7227bc](symbol-2efd3055f978a6a43f7227bc.md)
+
+- [symbol-95bd356d42a3173147d0e951](symbol-95bd356d42a3173147d0e951.md)
+
+- [symbol-a1f63e04b942fabc239fc389](symbol-a1f63e04b942fabc239fc389.md)
+
+- [symbol-c47ca88b4926d26206e873b4](symbol-c47ca88b4926d26206e873b4.md)
+
+- [symbol-05a8ad14675a3ada31bd7edf](symbol-05a8ad14675a3ada31bd7edf.md)
+
+- [symbol-7e399f75346fcc67e5487b7a](symbol-7e399f75346fcc67e5487b7a.md)
+
+## Provenance
+
+- sdk/interfaces/prelude/stdlib-registry.json — SHA-256 a70407bf8b12d694da501b3a9b515c6a7760c03eeb72ab6b6580e79db731c922
+
+- compiler/sdk/prelude.py — SHA-256 edcc9b51c6e6683d3d208a033c3c9f3bda4d70b0ca63d38b9bd362a31cdd1ad3
+
+- tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0
+
+- tests/rf204/G170/random_test.py — SHA-256 a4d3692d30d6947812089d0ad64318a32a6a9279c567ac96481f207daeb95516

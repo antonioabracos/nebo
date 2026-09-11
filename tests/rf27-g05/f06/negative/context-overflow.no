@@ -1,0 +1,9 @@
+start() {
+  Error(1, 2, 1, 0, 4, 0).e0;
+  e0.withContext(1).e1;
+  e1.withContext(2).e2;
+  e2.withContext(3).e3;
+  e3.withContext(4).e4;
+  e4.withContext(5).e5;
+  e5.code().return;
+}

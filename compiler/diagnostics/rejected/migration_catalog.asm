@@ -4,11 +4,12 @@ align 8
 quick_fixes:
     dq 146001,146002,146003,0,146005,146006,146007,146008
     dq 146009,0,146011,146012,146013,146014,146015,146016,146017,146018
-    dq 146019,146020,0,0,146023,0,0,146026
+    dq 146019,146020,0,0,146023,0,146025,146026
 section .text
 global nebo_rejected_migration
 ; edi=Registry ordinal 1..26, rsi=out[diagnostic,quick-fix].
-; eax: 1 automatic fix, 2 manual migration, 3 invalid; invalid is atomic.
+; eax: 1 replacement guidance, 2 manual migration, 3 invalid.  A nonzero
+; quick-fix ID is never applied automatically; callers must request migration.
 nebo_rejected_migration:
     test rsi, rsi
     jz .invalid

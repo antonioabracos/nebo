@@ -1,0 +1,6 @@
+// Observe the actual typed native vector lane and preserve the program return.
+start() {
+    Vector<Int, 4>.filled(9).values;
+    values.at(2).console();
+    23.return;
+}

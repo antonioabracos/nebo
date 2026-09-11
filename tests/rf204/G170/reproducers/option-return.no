@@ -1,0 +1,6 @@
+// A typed Option observation must preserve the following explicit return.
+start() {
+    Option<Int>(Some(17)).present;
+    present.expect("the value is present");
+    23.return;
+}

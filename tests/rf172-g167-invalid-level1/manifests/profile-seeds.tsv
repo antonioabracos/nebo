@@ -1,0 +1,3 @@
+seed_id	production_id	source_path	validation_route	state
+RF172-G167-F02-SEED_IMPORT	module_import	tests/rf172-g167-invalid-level1/canonical/seed-import-root.no	module-check root plus core and util units	MATERIALIZED
+RF172-G167-F02-SEED_DOC	doc_block	tests/rf172-g167-invalid-level1/canonical/seed-doc.no	dump doc-ast	MATERIALIZED

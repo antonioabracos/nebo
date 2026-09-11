@@ -1,0 +1,7 @@
+start() {
+    5.owner;
+    owner.borrowShared().view;
+    view.release().done;
+    view.read().again;
+    0;
+}

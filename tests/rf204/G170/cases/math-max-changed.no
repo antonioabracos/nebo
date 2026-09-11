@@ -1,0 +1,2 @@
+// Independent atomic runtime case.
+start() { std.math.max(71, 13).return; }

@@ -1,0 +1,3 @@
+(Char.self)pick(Slice<Char>.values, Int.index) { values.at(index).return; }
+(Char.self)work() { Array<Char,2> ['A','B'].source; source.asSlice().view; self.pick(view, 1).return; }
+start() { 'A'.work().return; }

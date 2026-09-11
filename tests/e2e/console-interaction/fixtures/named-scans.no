@@ -1,0 +1,6 @@
+start() {
+    "Aluno de musica: ".console().musica;
+    "Aluno de programacao: ".console().programacao;
+    musica.scan().alunoMusica;
+    programacao.scan().alunoProgramacao;
+}

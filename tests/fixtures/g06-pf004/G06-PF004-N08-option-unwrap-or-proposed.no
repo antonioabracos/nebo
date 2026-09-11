@@ -1,0 +1,4 @@
+start() {
+    Option<Int>(None()).maybe;
+    maybe.unwrapOr(7).value;
+}

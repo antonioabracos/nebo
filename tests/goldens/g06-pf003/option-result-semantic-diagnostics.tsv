@@ -1,0 +1,6 @@
+diagnostic_id	trigger	primary_span	help
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-OPTION-RESULT-PAYLOAD-TYPE-MISMATCH	Some/Ok/Err payload differs from declared branch type	payload expression	use exactly the declared payload type
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-OPTION-RESULT-CONTEXT-REQUIRED	None/Ok/Err lacks complete intrinsic container context	constructor expression	provide Option<T> or Result<T,E> context
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-OPTION-RESULT-FALLBACK-TYPE-MISMATCH	unwrapOr fallback differs from success payload type	fallback expression	use a fallback of the success payload type
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-OPTION-RESULT-RECEIVER-TYPE-MISMATCH	observer receiver structural container differs	receiver expression	use an observer owned by the structural container
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-OPTION-RESULT-SEMANTIC-SPAN-INVARIANT	semantic provenance span is malformed	semantic subject	preserve exact AST/source spans

@@ -1,0 +1,5 @@
+start() {
+  Array<Int,2> [7,9].values;
+  values.asSlice().view;
+  view.at(2).return;
+}

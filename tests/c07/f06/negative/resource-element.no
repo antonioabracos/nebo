@@ -1,0 +1,1 @@
+start() { Tuple.of(Resource.of()).unsupported; 0.return; }

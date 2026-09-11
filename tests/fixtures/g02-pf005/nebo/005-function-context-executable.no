@@ -1,0 +1,7 @@
+(Int.a)soma(Int.b) {
+    (a + b).return;
+}
+
+start() {
+    0x28.soma(0b10);
+}

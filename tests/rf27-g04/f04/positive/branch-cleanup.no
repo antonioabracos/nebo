@@ -1,0 +1,10 @@
+start() {
+    "outer".outer;
+    if (true) {
+        "branch".inner;
+        inner.deferDrop().scheduled;
+        3;
+    }
+    outer.deferDrop().outerScheduled;
+    33;
+}

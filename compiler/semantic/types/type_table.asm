@@ -318,6 +318,63 @@ NEBOC_ABI_FUNCTION neboc_type_table_declare_ordering
  cld
  ret
 
+; type_table_declare_typed_quantities(table*) appends G129's five exact
+; semantic identities after Ordering.  This optional declaration keeps every
+; earlier frozen TypeTable profile byte-stable.
+NEBOC_ABI_FUNCTION neboc_type_table_declare_typed_quantities
+ push rbx
+ push r12
+ mov r12,rdi
+ test r12,r12
+ jz .quantities_invalid
+ cmp qword [r12+NEBOC_TYPE_TABLE_STATE_OFFSET],NEBOC_TYPE_TABLE_STATE_MUTABLE
+ jne .quantities_invalid
+ cmp qword [r12+NEBOC_TYPE_TABLE_COUNT_OFFSET],NEBOC_TYPE_P02_MAX_COUNT
+ jne .quantities_invalid
+ cmp qword [r12+NEBOC_TYPE_TABLE_CAPACITY_OFFSET],NEBOC_TYPE_QUANTITY_MAX_COUNT
+ jb .quantities_limit
+ mov rbx,[r12+NEBOC_TYPE_TABLE_DATA_OFFSET]
+ test rbx,rbx
+ jz .quantities_invalid
+ add rbx,NEBOC_TYPE_P02_MAX_COUNT * NEBOC_TYPE_ENTRY_SIZE
+ mov qword [rbx+NEBOC_TYPE_ENTRY_KIND_OFFSET],NEBOC_TYPE_KIND_PERCENT
+ mov qword [rbx+NEBOC_TYPE_ENTRY_BASE_TYPE_ID_OFFSET],0
+ mov qword [rbx+NEBOC_TYPE_ENTRY_FLAGS_OFFSET],NEBOC_TYPE_FLAG_SEMANTIC
+ mov qword [rbx+NEBOC_TYPE_ENTRY_ID_OFFSET],NEBOC_TYPE_ID_PERCENT
+ add rbx,NEBOC_TYPE_ENTRY_SIZE
+ mov qword [rbx+NEBOC_TYPE_ENTRY_KIND_OFFSET],NEBOC_TYPE_KIND_PER_MILLE
+ mov qword [rbx+NEBOC_TYPE_ENTRY_BASE_TYPE_ID_OFFSET],0
+ mov qword [rbx+NEBOC_TYPE_ENTRY_FLAGS_OFFSET],NEBOC_TYPE_FLAG_SEMANTIC
+ mov qword [rbx+NEBOC_TYPE_ENTRY_ID_OFFSET],NEBOC_TYPE_ID_PER_MILLE
+ add rbx,NEBOC_TYPE_ENTRY_SIZE
+ mov qword [rbx+NEBOC_TYPE_ENTRY_KIND_OFFSET],NEBOC_TYPE_KIND_BASIS_POINTS
+ mov qword [rbx+NEBOC_TYPE_ENTRY_BASE_TYPE_ID_OFFSET],0
+ mov qword [rbx+NEBOC_TYPE_ENTRY_FLAGS_OFFSET],NEBOC_TYPE_FLAG_SEMANTIC
+ mov qword [rbx+NEBOC_TYPE_ENTRY_ID_OFFSET],NEBOC_TYPE_ID_BASIS_POINTS
+ add rbx,NEBOC_TYPE_ENTRY_SIZE
+ mov qword [rbx+NEBOC_TYPE_ENTRY_KIND_OFFSET],NEBOC_TYPE_KIND_ANGLE
+ mov qword [rbx+NEBOC_TYPE_ENTRY_BASE_TYPE_ID_OFFSET],0
+ mov qword [rbx+NEBOC_TYPE_ENTRY_FLAGS_OFFSET],NEBOC_TYPE_FLAG_SEMANTIC
+ mov qword [rbx+NEBOC_TYPE_ENTRY_ID_OFFSET],NEBOC_TYPE_ID_ANGLE
+ add rbx,NEBOC_TYPE_ENTRY_SIZE
+ mov qword [rbx+NEBOC_TYPE_ENTRY_KIND_OFFSET],NEBOC_TYPE_KIND_TEMPERATURE
+ mov qword [rbx+NEBOC_TYPE_ENTRY_BASE_TYPE_ID_OFFSET],0
+ mov qword [rbx+NEBOC_TYPE_ENTRY_FLAGS_OFFSET],NEBOC_TYPE_FLAG_SEMANTIC
+ mov qword [rbx+NEBOC_TYPE_ENTRY_ID_OFFSET],NEBOC_TYPE_ID_TEMPERATURE
+ mov qword [r12+NEBOC_TYPE_TABLE_COUNT_OFFSET],NEBOC_TYPE_QUANTITY_MAX_COUNT
+ xor eax,eax
+ jmp .quantities_done
+.quantities_limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ jmp .quantities_done
+.quantities_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+.quantities_done:
+ pop r12
+ pop rbx
+ cld
+ ret
+
 ; type_table_get(table*, type_id, out_entry_ptr*)
 NEBOC_ABI_FUNCTION neboc_type_table_get
  test rdi,rdi
@@ -361,6 +418,8 @@ NEBOC_ABI_FUNCTION neboc_type_table_freeze
  cmp r9,NEBOC_TYPE_SLICE_MAX_COUNT
  je .freeze_count_ok
  cmp r9,NEBOC_TYPE_P02_MAX_COUNT
+ je .freeze_count_ok
+ cmp r9,NEBOC_TYPE_QUANTITY_MAX_COUNT
  jne .freeze_invalid
 .freeze_count_ok:
  mov rbx,NEBOC_TYPE_HASH_FNV1A32_OFFSET_BASIS

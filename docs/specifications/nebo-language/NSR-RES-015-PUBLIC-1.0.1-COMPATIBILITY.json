@@ -1,0 +1,47 @@
+{
+  "schema": "NEBO-PUBLIC-SOURCE-COMPATIBILITY-v1",
+  "registry_id": "NSR-RES-015-COMPAT-1.0.1",
+  "related_registry_id": "NSR-RES-015",
+  "state": "LEGACY_PUBLIC_COMPATIBILITY_ACTIVE",
+  "language_edition": "1.0",
+  "public_baseline": "753cc86c752a132779401384c99ed0f3eb580f20",
+  "public_sdk_sha256": "3060daf1561429c7f65c596258b8b56df26aa2ba0074c464df02702c98732928",
+  "receiver": "bound immutable Array<Int,4>",
+  "element_type": "Int",
+  "literal": "[Int,Int,Int,Int] or Array<Int,4> [Int,Int,Int,Int]",
+  "index": "one native nonnegative INTEGER literal; decimal, hexadecimal, octal, binary and separators",
+  "valid_indices": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "canonical": "receiver.at(index)",
+  "evaluation": "receiver then index exactly once; neither supported operand contains effects",
+  "ownership": "immutable value; no allocation, borrow, retain or lifetime extension",
+  "bounds": "compile-time rejection through canonical Array.at owner",
+  "general_indexing": "RESERVED",
+  "slicing": "RESERVED",
+  "user_defined_index_protocol": false,
+  "default_warning": null,
+  "deprecation": "DOCUMENTATION_ONLY",
+  "separate_mode": false,
+  "compatibility_window": {
+    "minimum_public_version": "1.0.1",
+    "edition": "1.0",
+    "removal_version": null,
+    "removal_requires": "new explicit product decision and compatibility review"
+  },
+  "migration": {
+    "from": "receiver[index]",
+    "to": "receiver.at(index)",
+    "automatic": false,
+    "requires": "typed receiver and literal in this exact envelope"
+  },
+  "change_control": {
+    "decision": "REVIEW_G144_AND_PRESERVE_NEBO_1_0_1_PUBLIC_SOURCE_COMPATIBILITY",
+    "historical_id_preserved": true,
+    "general_class_unchanged": true
+  },
+  "evidence": "tests/release/indexing-compatibility/validate.sh"
+}

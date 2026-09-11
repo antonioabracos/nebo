@@ -1,0 +1,4 @@
+start() {
+    Option<Int>(Some(42)).maybe;
+    maybe.isSome().present;
+}

@@ -3,6 +3,7 @@
 
 ; Canonical P02 lowering contract.  Plans describe evaluation; constructing a
 ; plan never evaluates source expressions or mutates a target.
+%define NEBOC_EVAL_PLAN_SCHEMA_VERSION 1
 %define NEBOC_EVAL_PLAN_KIND_EAGER_BINARY 1
 %define NEBOC_EVAL_PLAN_KIND_SHORT_CIRCUIT 2
 %define NEBOC_EVAL_PLAN_KIND_ASSIGNMENT 3
@@ -11,6 +12,8 @@
 %define NEBOC_EVAL_PLAN_KIND_OPTIONAL_CHAIN 6
 %define NEBOC_EVAL_PLAN_KIND_RANGE 7
 %define NEBOC_EVAL_PLAN_KIND_LATERAL_FLOW 8
+%define NEBOC_EVAL_PLAN_KIND_CLEANUP 9
+%define NEBOC_EVAL_PLAN_KIND_COUNT 9
 
 %define NEBOC_EVAL_PLAN_FLAG_LEFT_TO_RIGHT 1
 %define NEBOC_EVAL_PLAN_FLAG_EXACTLY_ONCE 2
@@ -37,11 +40,36 @@
 %define NEBOC_EVAL_PLAN_MAX_RANGE_CARDINALITY 1048576
 %define NEBOC_EVAL_PLAN_MAX_OPERATOR_CANDIDATES 64
 
+; Runtime materialization evidence is separate from the immutable plan.  A
+; caller records each semantic operand once and can then verify the exact
+; left-to-right event sequence without re-evaluating an expression.
+%define NEBOC_EVAL_OPERAND_LEFT 0
+%define NEBOC_EVAL_OPERAND_RIGHT 1
+%define NEBOC_EVAL_OPERAND_TARGET 2
+%define NEBOC_EVAL_OPERAND_RECEIVER 3
+%define NEBOC_EVAL_OPERAND_INDEX 4
+%define NEBOC_EVAL_OPERAND_OPTION 5
+%define NEBOC_EVAL_OPERAND_CALLBACK 6
+%define NEBOC_EVAL_OPERAND_CLEANUP 7
+%define NEBOC_EVAL_OPERAND_COUNT 8
+
+%define NEBOC_EVAL_STATE_SEEN_MASK_OFFSET 0
+%define NEBOC_EVAL_STATE_EVENT_COUNT_OFFSET 8
+%define NEBOC_EVAL_STATE_EVENTS_OFFSET 16
+%define NEBOC_EVAL_STATE_VALUES_OFFSET 80
+%define NEBOC_EVAL_STATE_SIZE 144
+
 %if NEBOC_EVAL_PLAN_SIZE & 15
  %error "evaluation plan ABI must be sixteen-byte aligned"
 %endif
 %if NEBOC_EVAL_PLAN_MAX_OPERATOR_CANDIDATES != 64
  %error "operator candidate budget drift"
+%endif
+%if NEBOC_EVAL_STATE_SIZE & 15
+ %error "evaluation state ABI must be sixteen-byte aligned"
+%endif
+%if NEBOC_EVAL_OPERAND_COUNT > 64
+ %error "evaluation operand mask budget exceeded"
 %endif
 
 %endif

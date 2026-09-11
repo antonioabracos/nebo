@@ -1,0 +1,15 @@
+case_id	operation	input	tag	payload_or_output	abi
+G08-NATIVE-001	try	1	OK	1	rdi -> rax/rdx
+G08-NATIVE-002	try	2	OK	2	rdi -> rax/rdx
+G08-NATIVE-003	try	7	OK	7	rdi -> rax/rdx
+G08-NATIVE-004	try	42	OK	42	rdi -> rax/rdx
+G08-NATIVE-005	try	INT64_MAX	OK	INT64_MAX	rdi -> rax/rdx
+G08-NATIVE-006	try	0	ERR	1	rdi -> rax/rdx
+G08-NATIVE-007	try	-1	ERR	1	rdi -> rax/rdx
+G08-NATIVE-008	try	INT64_MIN	ERR	1	rdi -> rax/rdx
+G08-NATIVE-009	isOk	OK	-	1	rdi -> rax
+G08-NATIVE-010	isOk	ERR	-	0	rdi -> rax
+G08-NATIVE-011	isErr	OK	-	0	rdi -> rax
+G08-NATIVE-012	isErr	ERR	-	1	rdi -> rax
+G08-NATIVE-013	unwrapOr	OK(7),9	-	7	rdi/rsi/rdx -> rax
+G08-NATIVE-014	unwrapOr	ERR(1),9	-	9	rdi/rsi/rdx -> rax

@@ -45,4 +45,8 @@ NEBOC_ABI_FUNCTION neboc_operator_precedence_explain
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
  ret
 
+; Tooling-facing name for the same bounded parse grouping explanation.
+NEBOC_ABI_FUNCTION neboc_explain_parse_tree
+ jmp neboc_operator_precedence_explain
+
 section .note.GNU-stack noalloc noexec nowrite progbits

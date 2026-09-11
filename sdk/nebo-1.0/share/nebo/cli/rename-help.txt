@@ -1,0 +1,17 @@
+usage: neboc rename [-h] (--preview | --apply) [--allow-breaking]
+                    [--workspace WORKSPACE] [--revision REVISION]
+                    [--deadline-ms DEADLINE_MS]
+                    selector new_name
+
+positional arguments:
+  selector
+  new_name
+
+options:
+  -h, --help            show this help message and exit
+  --preview
+  --apply
+  --allow-breaking
+  --workspace WORKSPACE
+  --revision REVISION
+  --deadline-ms DEADLINE_MS

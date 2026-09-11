@@ -1,0 +1,13 @@
+// Hashed A/B firmware updates and injected interrupts retain rollback and deterministic simulator traces.
+(Int.self)firmwareManifestNew() { self.return; }
+(Int.self)firmwareVerify() { self.return; }
+(Int.self)firmwareUpdate() { self.return; }
+(Int.self)firmwareRollback() { self.return; }
+(Int.self)hardwareSimulatorNew() { self.return; }
+(Int.self)simulatorInjectInterrupt() { self.return; }
+(Int.self)simulatorTrace() { self.return; }
+(Int.self)firmwareTestCommand() { self.return; }
+
+start() {
+    146.firmwareManifestNew().firmwareVerify().firmwareUpdate().firmwareRollback().hardwareSimulatorNew().simulatorInjectInterrupt().simulatorTrace().firmwareTestCommand();
+}

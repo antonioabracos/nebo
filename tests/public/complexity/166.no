@@ -1,0 +1,7 @@
+// Closes RF116 locally while leaving release and successor actions untouched.
+start() {
+    RenderPlan;
+    3610;
+    output.stdout().stderr().target("rf116-closeout").plain().visual().headlessEvent();
+    lifecycle.event("integration-conformance").payload("roadmap-closeout").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

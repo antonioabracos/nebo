@@ -1,0 +1,2 @@
+(Int.self)case_pass(){0.return;}
+(Int.self)case_fail(){1.return;}

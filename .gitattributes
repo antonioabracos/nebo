@@ -1,0 +1,6 @@
+# Preserve normative tables, Markdown hard breaks and pinned regression bytes.
+docs/specifications/nebo-language/NEBO-SYMBOL-AND-OPERATOR-REGISTRY-v1.0.md whitespace=-trailing-space
+docs/specifications/nebo-language/NEBO-SYMBOL-AND-OPERATOR-REGISTRY-v1.0.tsv whitespace=-trailing-space
+docs/specifications/nebo-language/NEBO-SYMBOL-AND-OPERATOR-REGISTRY-v1.0/*.tsv whitespace=-trailing-space
+tests/public/complexity/001.no whitespace=-trailing-space
+tests/console-visual-polish/typography_frame_dump.asm whitespace=-blank-at-eof

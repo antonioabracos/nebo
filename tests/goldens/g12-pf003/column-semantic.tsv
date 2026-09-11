@@ -1,0 +1,11 @@
+case	operation	expected
+S01	len	4
+S02	index0	1
+S03	index3	4
+S04	sum	10
+S05	signed_sum	14
+S06	min	-2
+S07	max	9
+S08	count_missing	0
+S09	bounds	NEBO-COLUMN-ROW-TABLE-E-DATASET-COLUMN-INDEX-OUT-OF-BOUNDS
+S10	overflow	NEBO-COLUMN-ROW-TABLE-E-DATASET-COLUMN-OVERFLOW

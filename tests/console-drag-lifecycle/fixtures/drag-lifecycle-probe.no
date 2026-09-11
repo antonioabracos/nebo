@@ -1,0 +1,3 @@
+start() {
+    "Drag Lifecycle Probe".console();
+}

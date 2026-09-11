@@ -1,0 +1,2 @@
+generic<T> (T.value)key() where T: Hash + Eq { value.return; }
+start() { 43.key(); }

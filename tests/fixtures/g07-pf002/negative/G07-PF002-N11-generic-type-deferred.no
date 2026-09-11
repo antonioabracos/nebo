@@ -1,0 +1,6 @@
+generic<T: Scalar> struct Box {
+    T.value;
+}
+
+start() {
+}

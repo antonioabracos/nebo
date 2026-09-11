@@ -1,0 +1,7 @@
+start() {
+    Option<Int>(Some(41)).value;
+    match(value) {
+        Some(payload) -> payload.return;
+        None() -> 0.return;
+    }
+}

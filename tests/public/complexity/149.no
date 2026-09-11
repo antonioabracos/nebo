@@ -1,0 +1,7 @@
+// Structured, plot, table, and text renderers share explicit capabilities.
+start() {
+    RenderPlan;
+    3503;
+    output.stdout().stderr().target("console-abi-service").plain().visual().headlessEvent();
+    lifecycle.event("renderer-plugin").payload("kv-section-summary-plot-table-text-renderers").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

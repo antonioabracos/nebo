@@ -18,7 +18,7 @@ NEBOC_ABI_FUNCTION neboc_operator_machine_parity
  mov r8,0xcbf29ce484222325
  xor r9d,r9d
 .hash:
- cmp r9d,9
+ cmp r9d,11
  jae .store
  xor r8,[rdi+r9*8]
  mov rax,0x100000001b3
@@ -28,7 +28,7 @@ NEBOC_ABI_FUNCTION neboc_operator_machine_parity
 .store:
  mov [rdx+NEBOC_OPERATOR_RENDER_FORMAT_OFFSET],rsi
  mov [rdx+NEBOC_OPERATOR_RENDER_FACT_HASH_OFFSET],r8
- mov qword [rdx+NEBOC_OPERATOR_RENDER_FIELD_COUNT_OFFSET],9
+ mov qword [rdx+NEBOC_OPERATOR_RENDER_FIELD_COUNT_OFFSET],11
  mov rax,[rdi+NEBOC_OPERATOR_DIAG_CODE_OFFSET]
  mov [rdx+NEBOC_OPERATOR_RENDER_CODE_OFFSET],rax
  mov rax,[rdi+NEBOC_OPERATOR_DIAG_START_OFFSET]

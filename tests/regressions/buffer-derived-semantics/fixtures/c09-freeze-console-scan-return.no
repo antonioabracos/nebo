@@ -1,0 +1,10 @@
+start() {
+    "C09".console().scan().input;
+    Buffer.zeroed(4).packet;
+    packet.set(0, 1).old0;
+    packet.set(1, 2).old1;
+    packet.set(2, 3).old2;
+    packet.set(3, 4).old3;
+    packet.freeze().frozen;
+    frozen.byteLength().return;
+}

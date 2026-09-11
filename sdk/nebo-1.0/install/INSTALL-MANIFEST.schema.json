@@ -1,0 +1,85 @@
+{
+  "$comment": "The semantic verifier additionally rejects duplicate paths, file/directory collisions, byte-budget overflow and missing/inconsistent MANIFEST.json ownership.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "format": {
+      "const": "NEBO-INSTALL-MANIFEST-v1"
+    },
+    "install_profile": {
+      "enum": [
+        "user",
+        "prefix",
+        "system-local"
+      ]
+    },
+    "owned": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "component": {
+            "maxLength": 100,
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "0644",
+              "0755"
+            ]
+          },
+          "path": {
+            "maxLength": 200,
+            "pattern": "^(?!\\.nebo-sdk(?:/|$))(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$",
+            "type": "string"
+          },
+          "role": {
+            "maxLength": 100,
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "size": {
+            "maximum": 134217728,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "path",
+          "sha256",
+          "size",
+          "mode"
+        ],
+        "type": "object"
+      },
+      "maxItems": 20001,
+      "minItems": 1,
+      "type": "array"
+    },
+    "profile": {
+      "maxLength": 100,
+      "minLength": 1,
+      "type": "string"
+    },
+    "source_manifest_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "version": {
+      "maxLength": 100,
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "format",
+    "source_manifest_sha256",
+    "version",
+    "profile",
+    "owned"
+  ],
+  "title": "Nebo local install ownership manifest",
+  "type": "object"
+}

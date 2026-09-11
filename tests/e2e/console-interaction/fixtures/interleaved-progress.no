@@ -1,0 +1,7 @@
+start() {
+    "A: ".console().a;
+    "B: ".console().b;
+    a.scan().valorA;
+    b.scan().valorB;
+    // Conformance driver interleaves both native event streams.
+}

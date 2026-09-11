@@ -1,0 +1,9 @@
+NEBO-PROTOCOL-SCHEMA-V1
+protocol Echo 1
+message EchoRequest
+field 1 required text value 1
+field 2 repeated u64 tags 8
+message EchoResponse
+field 1 required text value 1
+rpc 1 unary Echo EchoRequest EchoResponse idempotent
+rpc 2 server_stream EchoMany EchoRequest EchoResponse

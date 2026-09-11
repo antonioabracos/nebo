@@ -1,4 +1,4 @@
-; MACHINE-LEARNING-NEURON-NETWORK-E-MODEL-F05 bounded sorted index and explainable planner.
+; RF46-G32-F05 bounded sorted index and explainable planner.
 bits 64
 default rel
 %include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"

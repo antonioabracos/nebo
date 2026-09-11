@@ -1,0 +1,5 @@
+start() {
+    Int.seed;
+    0.seed;
+    missing;
+}

@@ -1,0 +1,1 @@
+start() { Rune('N').invalid; }

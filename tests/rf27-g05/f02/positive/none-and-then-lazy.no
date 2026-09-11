@@ -1,0 +1,5 @@
+start() {
+  Option<Int>(None()).source;
+  source.andThen(Some(8)).mapped;
+  mapped.isNone().return;
+}

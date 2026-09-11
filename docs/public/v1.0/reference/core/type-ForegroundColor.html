@@ -1,0 +1,34 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ForegroundColor</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>ForegroundColor</h1><p>The intrinsic foreground-color behavior identity.</p><pre>Identity: type:ForegroundColor (INTRINSIC_TYPE)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: EDITION_1_BOUNDED_NATIVE_AND_SOURCE_PROFILE</pre><h2>Syntax or signature</h2><pre>ForegroundColor
+Native TypeId: 8 (not SymbolId)</pre><h2>Logical layout</h2><p>A typed Console role descriptor, not an arbitrary user-definable behavior implementation.</p><h2>Construction and members</h2><p>Use Console.fg with an admitted Color or channel profile; a bare Color is not a Console option.</p><h2>Protocols and ownership</h2><p>The behavior retains the Color receiver type. Applying a foreground option changes the selected Console node; it does not mutate global output state or grant an additional capability.</p><h2>Errors, limits and target</h2><p>Use x86_64 Linux System V ELF for the executed examples. Incompatible types reject before publication; bounds and ownership checks precede an invalid read, mutation or drop. Internal descriptor layouts are not portable ABI promises.</p><h2>Executed examples</h2><h3>console:fg-17; expected 23</h3><pre><code>start(){&quot;seed&quot;.console(Console.fg(Color.rgb(17,29,53)));23.return;}</code></pre><p>Oracle: {&quot;console_text_utf8&quot;: &quot;seed&quot;, &quot;independent_builds&quot;: 2, &quot;kinds&quot;: [2], &quot;process_exit&quot;: 23, &quot;publications&quot;: 1, &quot;runtime_sha256&quot;: &quot;e244fa9df9ef05337a5d047af94c4a3480b0cbe622e9ee2ec0eb473a761dc085&quot;}</p><h2>Rejected examples</h2><h3>console:fg-type; expected NEBO_TYPE_MISMATCH</h3><pre><code>start(){Console.fg(17);23.return;}</code></pre><p>Oracle: {&quot;artifact_publication&quot;: &quot;REJECTED&quot;, &quot;compiler_exit&quot;: 1, &quot;diagnostic&quot;: &quot;NEBO_TYPE_MISMATCH&quot;}</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;case_id&quot;: &quot;metadata:prelude-declarations&quot;,
+    &quot;category&quot;: &quot;metadata&quot;,
+    &quot;declarations&quot;: 11,
+    &quot;interface_sha256&quot;: &quot;910170b1ccabf964a1186892ee9f4395f1b52c1e6b5cc7683f68ee2904de0933&quot;,
+    &quot;symbol_ids&quot;: [
+      &quot;0xb479812d2b532b1f&quot;,
+      &quot;0xa827441931b3ac13&quot;,
+      &quot;0x4f5f6793880ecdcc&quot;,
+      &quot;0x6134016fa73ad75e&quot;,
+      &quot;0xbbaa81a7272b4f17&quot;,
+      &quot;0x334a76a70563dd44&quot;,
+      &quot;0x34c249cdf79d7ac9&quot;,
+      &quot;0xaf1313c7a67a4790&quot;,
+      &quot;0xbd6f63ce5a3969ee&quot;,
+      &quot;0xe388cf778a8af553&quot;,
+      &quot;0x1c582e96c672743f&quot;
+    ]
+  },
+  {
+    &quot;base&quot;: 7,
+    &quot;case_id&quot;: &quot;types:type-8&quot;,
+    &quot;category&quot;: &quot;native-type&quot;,
+    &quot;flags&quot;: 26,
+    &quot;kind&quot;: 8,
+    &quot;observed_sha256&quot;: &quot;b149ca1a86bc44da348717a54426476bea452c5ad40128cc6a33b1dcf19d74e0&quot;,
+    &quot;type_id&quot;: 8
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a> <a href="type-Void.html">type-Void</a> <a href="type-Bool.html">type-Bool</a> <a href="type-Int.html">type-Int</a> <a href="type-Text.html">type-Text</a></nav><h2>Provenance</h2><ul><li>compiler/semantic/types/type_table.inc — SHA-256 a104864da8c77b21c4186ba1cdcf8d40800c464a8edbcccf31fc1ed57b4cf528</li><li>compiler/semantic/types/type_table.asm — SHA-256 1c04c832d2df1cd5900cf37fa73aa91884c79d7754d1e85c8ce29fa473e227b3</li><li>tests/rf204/G170/console_public_test.py — SHA-256 4ff1b67ea212ce82443057d944c9993e64ad919fe90faadb19f0cb6014f4cff5</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

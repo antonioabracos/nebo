@@ -1,12 +1,24 @@
 {
+  "archive_policy": "USTAR; sorted paths; uid/gid/mtime=0; file modes 0644 or 0755",
   "components": [
     "compiler",
-    "runtime",
-    "interfaces",
-    "diagnostics",
     "docs",
+    "editor",
     "examples",
-    "sdk-metadata"
+    "licenses",
+    "metadata",
+    "prelude",
+    "runtime",
+    "stdlib",
+    "stdlib-functional-freeze",
+    "targets",
+    "toolchain",
+    "tooling"
+  ],
+  "external_tools": [
+    "nasm",
+    "ld",
+    "python3"
   ],
   "network_required": false,
   "profile": "sdk",

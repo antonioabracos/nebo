@@ -1,0 +1,7 @@
+(Int.self)size(Slice<Int>.values) { values.length().return; }
+(Int.self)work() {
+    Array<Int,3> [-4,0,9].source;
+    source.asSlice().view;
+    self.size(view).return;
+}
+start() { 0.work().return; }

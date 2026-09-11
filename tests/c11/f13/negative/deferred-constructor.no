@@ -1,0 +1,4 @@
+start() {
+    Matrix<Int>.identity(2).matrix;
+    matrix.sum();
+}

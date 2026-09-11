@@ -1,0 +1,8 @@
+(Tensor<Int>.self)makeTensor() {
+    Tensor<Int>.filled(Tuple.of(2, 3), 5).tensor;
+    tensor.return;
+}
+start() {
+    0.makeTensor().result;
+    result.sum();
+}

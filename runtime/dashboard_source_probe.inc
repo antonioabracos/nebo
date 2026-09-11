@@ -1,0 +1,7 @@
+%ifndef NEBO_G099_SOURCE_PROBE_INC
+%define NEBO_G099_SOURCE_PROBE_INC 1
+%ifndef NEBO_G099_SOURCE_PROBE_IMPLEMENTATION
+extern nebo_g099_source_probe
+extern nebo_g099_negative_probe
+%endif
+%endif

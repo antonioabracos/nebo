@@ -3,5 +3,8 @@
 %include "compiler/semantic/tensor/tensor_reduce_contract.inc"
 %ifndef NEBO_TENSOR_AXIS_REDUCE_IMPLEMENTATION
 extern nebo_tensor_reduce_axes_f64
+extern nebo_tensor_argmax_axis_f64
+extern nebo_tensor_all_axis_bool
+extern nebo_tensor_any_axis_bool
 %endif
 %endif

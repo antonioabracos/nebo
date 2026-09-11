@@ -1,4 +1,4 @@
-; INTEGRAIS-NUMERICOS-E-SIMBOLICOS-FECHAR-BINDER-GRAMMAR-PARA-INTEGRAIS-E-VARIABLE-DOMAIN-BINDING-COM-CONTRATO-IMPLEMENTACAO-EVIDENCE-FACTUAL-REGRESSOES-DOS-SUBSTRATOS-AFETADOS-DETERMINISMO-E-OPEN-P0-0-OPEN-P1-0-OPEN-P2-0-F01 — native integral plan metadata, not frontend syntax activation.
+; INTEGRAIS-NUMERICOS-E-SIMBOLICOS-FECHAR-BINDER-GRAMMAR-PARA-INTEGRAIS-E-VARIABLE-DOMAIN-BINDING-COM-CONTRATO-IMPLEMENTACAO-EVIDENCE-FACTUAL-REGRESSOES-DOS-SUBSTRATOS-AFETADOS-DETERMINISMO-E-OPEN-P0-0-OPEN-P1-0-OPEN-P2-0-F01 — failure-atomic native plan used by the live source binder vertical.
 bits 64
 default rel
 
@@ -13,13 +13,20 @@ global integral_plan
 ; rdi=variable tag,rsi=domain[lower,upper],rdx=config[method,tolerance,budget],
 ; rcx=out[variable,lower,upper,method,tolerance,budget,orientation].
 integral_plan:
+    test rcx, rcx
+    jz .domain
+    mov qword [rcx], 0
+    mov qword [rcx + 8], 0
+    mov qword [rcx + 16], 0
+    mov qword [rcx + 24], 0
+    mov qword [rcx + 32], 0
+    mov qword [rcx + 40], 0
+    mov qword [rcx + 48], 0
     test rdi, rdi
     jz .domain
     test rsi, rsi
     jz .domain
     test rdx, rdx
-    jz .domain
-    test rcx, rcx
     jz .domain
     mov r8, [rsi]
     mov r9, [rsi + 8]

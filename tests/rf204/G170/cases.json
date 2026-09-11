@@ -1,0 +1,380 @@
+{
+  "schema": 1,
+  "target": "x86_64-systemv-elf-linux",
+  "cases": [
+    {
+      "id": "S01",
+      "front": "F01",
+      "surface": "Bytes.fromValues/4",
+      "source": "examples/rf204/G170/RF204-G170-S01.no",
+      "exit": 4,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "S02",
+      "front": "F02",
+      "surface": "Int.add",
+      "source": "examples/rf204/G170/RF204-G170-S02.no",
+      "exit": 46,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "S03",
+      "front": "F03",
+      "surface": "Int.mutable.assign",
+      "source": "examples/rf204/G170/RF204-G170-S03.no",
+      "exit": 15,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "S04",
+      "front": "F04",
+      "surface": "function.receiver-call",
+      "source": "examples/rf204/G170/RF204-G170-S04.no",
+      "exit": 42,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "S05",
+      "front": "F05",
+      "surface": "module.import",
+      "source": "examples/rf204/G170/RF204-G170-S05.no",
+      "exit": 78,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless",
+      "units": [
+        "tests/rf204/G170/units/helper.no",
+        "tests/rf204/G170/units/delta.no"
+      ]
+    },
+    {
+      "id": "S06",
+      "front": "F06",
+      "surface": "Option.expect",
+      "source": "examples/rf204/G170/RF204-G170-S06.no",
+      "exit": 53,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "S07",
+      "front": "F07",
+      "surface": "List.at",
+      "source": "examples/rf204/G170/RF204-G170-S07.no",
+      "exit": 31,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "S08",
+      "front": "F08",
+      "surface": "Text.codepointCount",
+      "source": "examples/rf204/G170/RF204-G170-S08.no",
+      "exit": 3,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "S09",
+      "front": "F09",
+      "surface": "std.math.max",
+      "source": "examples/rf204/G170/RF204-G170-S09.no",
+      "exit": 29,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "S10",
+      "front": "F10",
+      "surface": "Console.typed-document",
+      "source": "examples/rf204/G170/RF204-G170-S10.no",
+      "exit": 0,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless",
+      "kinds": [
+        2,
+        4,
+        5
+      ],
+      "text": "Olá73false"
+    },
+    {
+      "id": "S11",
+      "front": "F11",
+      "surface": "Text.scan",
+      "source": "examples/rf204/G170/RF204-G170-S11.no",
+      "exit": 0,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless",
+      "kinds": [
+        2
+      ],
+      "text": "Ana",
+      "stdin": "Ana\n",
+      "prompt": "Input: "
+    },
+    {
+      "id": "S12",
+      "front": "F12",
+      "surface": "List.at.changed-operand",
+      "source": "examples/rf204/G170/RF204-G170-S12.no",
+      "exit": 59,
+      "category": "metamorphic",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "constant",
+      "front": "F03",
+      "surface": "Int.ConstBinding",
+      "source": "tests/rf204/G170/cases/constant.no",
+      "exit": 13,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "loop",
+      "front": "F04",
+      "surface": "while.store",
+      "source": "tests/rf204/G170/cases/loop.no",
+      "exit": 10,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "list-empty",
+      "front": "F07",
+      "surface": "List.new.length",
+      "source": "tests/rf204/G170/cases/list-empty.no",
+      "exit": 0,
+      "category": "boundary",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "list-single",
+      "front": "F07",
+      "surface": "List.from.at",
+      "source": "tests/rf204/G170/cases/list-single.no",
+      "exit": 83,
+      "category": "boundary",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "math-max-changed",
+      "front": "F09",
+      "surface": "std.math.max.changed-operand",
+      "source": "tests/rf204/G170/cases/math-max-changed.no",
+      "exit": 71,
+      "category": "metamorphic",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "math-abs",
+      "front": "F09",
+      "surface": "std.math.abs",
+      "source": "tests/rf204/G170/cases/math-abs.no",
+      "exit": 37,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "console-text",
+      "front": "F10",
+      "surface": "Console.console-text",
+      "source": "tests/rf204/G170/cases/console-text.no",
+      "exit": 0,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless",
+      "kinds": [
+        2
+      ],
+      "text": "Nebo"
+    },
+    {
+      "id": "console-int",
+      "front": "F10",
+      "surface": "Console.console-int",
+      "source": "tests/rf204/G170/cases/console-int.no",
+      "exit": 0,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless",
+      "kinds": [
+        4
+      ],
+      "text": "42"
+    },
+    {
+      "id": "console-bool",
+      "front": "F10",
+      "surface": "Console.console-bool",
+      "source": "tests/rf204/G170/cases/console-bool.no",
+      "exit": 0,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless",
+      "kinds": [
+        5
+      ],
+      "text": "true"
+    },
+    {
+      "id": "console-int-changed",
+      "front": "F10",
+      "surface": "Console.console-int-changed",
+      "source": "tests/rf204/G170/cases/console-int-changed.no",
+      "exit": 0,
+      "category": "metamorphic",
+      "profile": "linux-x86_64-static-headless",
+      "kinds": [
+        4
+      ],
+      "text": "97"
+    },
+    {
+      "id": "scan-text-changed",
+      "front": "F11",
+      "surface": "Text.scan.changed-input",
+      "source": "examples/rf204/G170/RF204-G170-S11.no",
+      "exit": 0,
+      "category": "metamorphic",
+      "profile": "linux-x86_64-static-headless",
+      "kinds": [
+        2
+      ],
+      "text": "Beatriz",
+      "stdin": "Beatriz\n",
+      "prompt": "Input: "
+    },
+    {
+      "id": "scan-text-eof",
+      "front": "F11",
+      "surface": "Text.scan.EOF",
+      "source": "examples/rf204/G170/RF204-G170-S11.no",
+      "exit": 174,
+      "category": "boundary",
+      "profile": "linux-x86_64-static-headless",
+      "stdout": "Input: "
+    },
+    {
+      "id": "math-min",
+      "front": "F09",
+      "surface": "std.math.math-min",
+      "source": "tests/rf204/G170/cases/math-min.no",
+      "exit": 11,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "math-clamp",
+      "front": "F09",
+      "surface": "std.math.math-clamp",
+      "source": "tests/rf204/G170/cases/math-clamp.no",
+      "exit": 41,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "math-clamp-signed",
+      "front": "F09",
+      "surface": "std.math.math-clamp-signed",
+      "source": "tests/rf204/G170/cases/math-clamp-signed.no",
+      "exit": 215,
+      "category": "boundary",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "math-implicit",
+      "front": "F09",
+      "surface": "std.math.math-implicit",
+      "source": "tests/rf204/G170/cases/math-implicit.no",
+      "exit": 29,
+      "category": "positive",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "math-trivia",
+      "front": "F09",
+      "surface": "std.math.math-trivia",
+      "source": "tests/rf204/G170/cases/math-trivia.no",
+      "exit": 29,
+      "category": "metamorphic",
+      "profile": "linux-x86_64-static-headless"
+    },
+    {
+      "id": "math-return",
+      "front": "F09",
+      "surface": "std.math.public-body-return",
+      "source": "tests/rf204/G170/reproducers/math-return.no",
+      "exit": 23,
+      "category": "adversarial",
+      "profile": "linux-x86_64-static-headless"
+    }
+  ],
+  "negative": [
+    {
+      "id": "negative-syntax",
+      "front": "F02",
+      "surface": "syntax.delimiter",
+      "source": "tests/rf204/G170/cases/negative-syntax.no",
+      "code": "NEBO_PARSE_UNEXPECTED_TOKEN"
+    },
+    {
+      "id": "math-arity",
+      "front": "F09",
+      "surface": "std.math.associated-rejection",
+      "source": "tests/rf204/G170/cases/math-arity.no",
+      "code": "NEBO_PARSE_UNEXPECTED_TOKEN"
+    },
+    {
+      "id": "math-extra-argument",
+      "front": "F09",
+      "surface": "std.math.associated-rejection",
+      "source": "tests/rf204/G170/cases/math-extra-argument.no",
+      "code": "NEBO_PARSE_UNEXPECTED_TOKEN"
+    },
+    {
+      "id": "math-trailing",
+      "front": "F09",
+      "surface": "std.math.associated-rejection",
+      "source": "tests/rf204/G170/cases/math-trailing.no",
+      "code": "NEBO_PARSE_UNEXPECTED_TOKEN"
+    },
+    {
+      "id": "math-undeclared",
+      "front": "F09",
+      "surface": "std.math.associated-rejection",
+      "source": "tests/rf204/G170/cases/math-undeclared.no",
+      "code": "NEBO_PARSE_UNEXPECTED_TOKEN"
+    },
+    {
+      "id": "math-unknown",
+      "front": "F09",
+      "surface": "std.math.associated-rejection",
+      "source": "tests/rf204/G170/cases/math-unknown.no",
+      "code": "NEBO_PARSE_UNEXPECTED_TOKEN"
+    },
+    {
+      "id": "math-truncated",
+      "front": "F09",
+      "surface": "std.math.associated-rejection",
+      "source": "tests/rf204/G170/cases/math-truncated.no",
+      "code": "NEBO_PARSE_UNEXPECTED_TOKEN"
+    },
+    {
+      "id": "math-range",
+      "front": "F09",
+      "surface": "std.math.associated-rejection",
+      "source": "tests/rf204/G170/cases/math-range.no",
+      "code": "NEBO_PARSE_UNEXPECTED_TOKEN"
+    },
+    {
+      "id": "math-min-int",
+      "front": "F09",
+      "surface": "std.math.associated-rejection",
+      "source": "tests/rf204/G170/cases/math-min-int.no",
+      "code": "NEBO_PARSE_UNEXPECTED_TOKEN"
+    }
+  ]
+}

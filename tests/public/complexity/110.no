@@ -1,0 +1,7 @@
+// A receiver-first plan drives all five bounded internal log levels.
+start() {
+    RenderPlan;
+    3101;
+    output.stdout().stderr().target("observability-service").plain().visual().headlessEvent();
+    lifecycle.event("log-progress-timeline").payload("log-levels").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

@@ -1,0 +1,5 @@
+start() {
+    Int.counter;
+    if (true) { 1.counter; } else { 2.counter; }
+    counter;
+}

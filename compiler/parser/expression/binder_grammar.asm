@@ -5,34 +5,7 @@ default rel
 %include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"
 %include "compiler/support/status/status_codes.inc"
 %include "compiler/parser/expression/operator_precedence.inc"
-
-%define NEBOC_BINDER_KIND_SUM 1
-%define NEBOC_BINDER_KIND_PRODUCT 2
-%define NEBOC_BINDER_KIND_INTEGRAL 3
-%define NEBOC_BINDER_KIND_QUANTIFIER 4
-%define NEBOC_BINDER_KIND_DOMAIN 5
-%define NEBOC_BINDER_KIND_COUNT 5
-
-%define NEBOC_BINDER_REQUEST_KIND_OFFSET 0
-%define NEBOC_BINDER_REQUEST_DOMAIN_PROOF_OFFSET 8
-%define NEBOC_BINDER_REQUEST_CLAUSE_COUNT_OFFSET 16
-%define NEBOC_BINDER_REQUEST_NESTING_OFFSET 24
-%define NEBOC_BINDER_REQUEST_SOURCE_START_OFFSET 32
-%define NEBOC_BINDER_REQUEST_SOURCE_END_OFFSET 40
-%define NEBOC_BINDER_REQUEST_FLAGS_OFFSET 48
-%define NEBOC_BINDER_REQUEST_VALIDATED_OFFSET 56
-%define NEBOC_BINDER_REQUEST_SIZE 64
-
-%define NEBOC_BINDER_MAX_CLAUSES 8
-%define NEBOC_BINDER_MAX_NESTING 64
-%define NEBOC_BINDER_DOMAIN_PROOF_PRESENT 1
-
-%define BINDER_SPEC_KIND_OFFSET 0
-%define BINDER_SPEC_NAME_OFFSET 8
-%define BINDER_SPEC_NAME_LENGTH_OFFSET 16
-%define BINDER_SPEC_MAX_CLAUSES_OFFSET 24
-%define BINDER_SPEC_FLAGS_OFFSET 32
-%define BINDER_SPEC_SIZE 40
+%include "compiler/parser/expression/binder_grammar.inc"
 
 section .rodata
 name_sum: db "sum"
@@ -88,7 +61,7 @@ NEBOC_ABI_FUNCTION neboc_binder_grammar_spec
  cmp rdi,NEBOC_BINDER_KIND_COUNT
  ja .missing
  dec rdi
- imul rdi,BINDER_SPEC_SIZE
+ imul rdi,NEBOC_BINDER_SPEC_SIZE
  lea rax,[rel binder_specs]
  add rax,rdi
  ret
@@ -100,7 +73,13 @@ NEBOC_ABI_FUNCTION neboc_binder_grammar_limits
  mov eax,NEBOC_BINDER_MAX_CLAUSES
  mov edx,NEBOC_BINDER_MAX_NESTING
  mov ecx,NEBOC_BINDER_REQUEST_SIZE
- mov r8d,BINDER_SPEC_SIZE
+ mov r8d,NEBOC_BINDER_SPEC_SIZE
+ mov r9d,NEBOC_BINDER_GRAMMAR_SCHEMA_VERSION
  ret
+
+; parseDomainGrammar is deliberately fail-closed: proof and bounds are
+; validated, but inactive binder spellings are not promoted by this group.
+NEBOC_ABI_FUNCTION neboc_parse_domain_grammar
+ jmp neboc_binder_grammar_validate
 
 section .note.GNU-stack noalloc noexec nowrite progbits

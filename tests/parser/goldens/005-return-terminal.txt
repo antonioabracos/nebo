@@ -1,0 +1,3 @@
+root: ReturnTerminal
+child: CallExpr(1.soma(2))
+argument-count: 1

@@ -1,0 +1,15 @@
+// General columns retain dtype, missing state and checked aggregates.
+start() {
+    Column<Int> [17, 29, 71, 83].bounded;
+    bounded.sum().console();
+    Column<Int>.from([17, 29, 71]).column;
+    column.get(1).expect("cell").console();
+    column.sum().console();
+    column.min().console();
+    column.max().console();
+    column.countMissing().console();
+    column.cast<UInt>().unsigned;
+    unsigned.cast<Int>().roundtrip;
+    roundtrip.sum().console();
+    92.return;
+}

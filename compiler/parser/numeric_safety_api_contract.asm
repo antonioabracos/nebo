@@ -172,6 +172,20 @@ NEBOC_ABI_FUNCTION neboc_numeric_safety_api_contract
  call seguranca_numerica_conversoes_e_overflow_name_equal
  test eax,eax
  jnz .is_negative_zero
+ mov rdi,r13
+ mov rsi,r14
+ lea rdx,[rel name_wrapping_add]
+ mov ecx,name_wrapping_add_len
+ call seguranca_numerica_conversoes_e_overflow_name_equal
+ test eax,eax
+ jnz .wrapping_add
+ mov rdi,r13
+ mov rsi,r14
+ lea rdx,[rel name_saturating_add]
+ mov ecx,name_saturating_add_len
+ call seguranca_numerica_conversoes_e_overflow_name_equal
+ test eax,eax
+ jnz .saturating_add
 
  ; Explicitly forbidden aliases.
  mov rdi,r13
@@ -234,20 +248,6 @@ NEBOC_ABI_FUNCTION neboc_numeric_safety_api_contract
  jnz .deferred_api
  mov rdi,r13
  mov rsi,r14
- lea rdx,[rel name_wrapping_add]
- mov ecx,name_wrapping_add_len
- call seguranca_numerica_conversoes_e_overflow_name_equal
- test eax,eax
- jnz .deferred_api
- mov rdi,r13
- mov rsi,r14
- lea rdx,[rel name_saturating_add]
- mov ecx,name_saturating_add_len
- call seguranca_numerica_conversoes_e_overflow_name_equal
- test eax,eax
- jnz .deferred_api
- mov rdi,r13
- mov rsi,r14
  lea rdx,[rel name_parse_int]
  mov ecx,name_parse_int_len
  call seguranca_numerica_conversoes_e_overflow_name_equal
@@ -298,6 +298,20 @@ NEBOC_ABI_FUNCTION neboc_numeric_safety_api_contract
  jne .arguments_not_allowed
  cmp qword [r12+neboc_seguranca_numerica_conversoes_e_overflow_API_RECEIVER_TYPE_OFFSET],NEBOC_TYPE_ID_FLOAT
  jne .receiver_must_be_float
+ jmp .success
+.wrapping_add:
+ mov ebx,NEBOC_API_METHOD_INT_WRAPPING_ADD
+ jmp .overflow_policy
+.saturating_add:
+ mov ebx,NEBOC_API_METHOD_INT_SATURATING_ADD
+.overflow_policy:
+ mov [r12+neboc_seguranca_numerica_conversoes_e_overflow_API_METHOD_ID_OFFSET],rbx
+ mov qword [r12+neboc_seguranca_numerica_conversoes_e_overflow_API_RESULT_TYPE_OFFSET],NEBOC_TYPE_ID_INT
+ mov qword [r12+neboc_seguranca_numerica_conversoes_e_overflow_API_FLAGS_OFFSET],NEBOC_API_FLAGS_OVERFLOW_POLICY
+ cmp qword [r12+neboc_seguranca_numerica_conversoes_e_overflow_API_ARGUMENT_COUNT_OFFSET],1
+ jne .arguments_not_allowed
+ cmp qword [r12+neboc_seguranca_numerica_conversoes_e_overflow_API_RECEIVER_TYPE_OFFSET],NEBOC_TYPE_ID_INT
+ jne .receiver_must_be_int
  jmp .success
 
 .implicit_coercion:

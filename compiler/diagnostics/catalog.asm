@@ -63,9 +63,9 @@ n_int_overflow: db 'NEBO_LEX_INT_OVERFLOW'
 n_int_overflow_len equ $-n_int_overflow
 m_int_overflow: db 'integer literal exceeds signed 64-bit range'
 m_int_overflow_len equ $-m_int_overflow
-n_block_comment: db 'NEBO_LEX_UNSUPPORTED_BLOCK_COMMENT'
+n_block_comment: db 'NEBO_LEX_UNTERMINATED_BLOCK_COMMENT'
 n_block_comment_len equ $-n_block_comment
-m_block_comment: db 'block comments are not supported in Nebo v0.1'
+m_block_comment: db 'unterminated nested block comment'
 m_block_comment_len equ $-m_block_comment
 n_duplicate_start: db 'NEBO_PARSE_DUPLICATE_START'
 n_duplicate_start_len equ $-n_duplicate_start
@@ -689,6 +689,52 @@ n_tuple_duplicate: db 'NEBO_TUPLE_DUPLICATE_BINDING'
 n_tuple_duplicate_len equ $-n_tuple_duplicate
 m_tuple_duplicate: db 'Tuple destructuring binding is already initialized in this scope'
 m_tuple_duplicate_len equ $-m_tuple_duplicate
+n_unicode_confusable: db 'NEBO_SOURCE_UNICODE_CONFUSABLE'
+n_unicode_confusable_len equ $-n_unicode_confusable
+m_unicode_confusable: db 'confusable Unicode source spelling is forbidden; use the canonical ASCII replacement from the note'
+m_unicode_confusable_len equ $-m_unicode_confusable
+n_unicode_bidi: db 'NEBO_SOURCE_BIDI_CONTROL'
+n_unicode_bidi_len equ $-n_unicode_bidi
+m_unicode_bidi: db 'bidirectional control is forbidden in source syntax; remove the code point shown in the note'
+m_unicode_bidi_len equ $-m_unicode_bidi
+n_unicode_invisible: db 'NEBO_SOURCE_INVISIBLE_SEPARATOR'
+n_unicode_invisible_len equ $-n_unicode_invisible
+m_unicode_invisible: db 'invisible source separator is forbidden; use visible ASCII separation'
+m_unicode_invisible_len equ $-m_unicode_invisible
+n_unicode_combining: db 'NEBO_SOURCE_COMBINING_MARK'
+n_unicode_combining_len equ $-n_unicode_combining
+m_unicode_combining: db 'combining mark is forbidden in source syntax; use an exact visible token spelling'
+m_unicode_combining_len equ $-m_unicode_combining
+n_unicode_malformed: db 'NEBO_SOURCE_MALFORMED_UTF8'
+n_unicode_malformed_len equ $-n_unicode_malformed
+m_unicode_malformed: db 'source is not strict UTF-8; replace or remove the invalid byte sequence'
+m_unicode_malformed_len equ $-m_unicode_malformed
+n_reserved_symbol: db 'NEBO_LEX_RESERVED_SYMBOL'
+n_reserved_symbol_len equ $-n_reserved_symbol
+m_reserved_symbol: db 'symbol spelling is RESERVED and has no executable semantics'
+m_reserved_symbol_len equ $-m_reserved_symbol
+n_rejected_form: db 'NEBO_LEX_REJECTED_FORM'
+n_rejected_form_len equ $-n_rejected_form
+m_rejected_form: db 'source form is REJECTED; use the explicit canonical migration'
+m_rejected_form_len equ $-m_rejected_form
+n_block_comment_depth: db 'NEBO_LEX_BLOCK_COMMENT_DEPTH'
+n_block_comment_depth_len equ $-n_block_comment_depth
+m_block_comment_depth: db 'nested block comment exceeds the maximum depth of 64'
+m_block_comment_depth_len equ $-m_block_comment_depth
+
+n_owner_moved: db 'NEBO_USE_AFTER_MOVE'
+n_owner_moved_len equ $-n_owner_moved
+m_owner_moved: db 'value was moved, dropped or released before this read'
+m_owner_moved_len equ $-m_owner_moved
+n_owner_copy: db 'NEBO_COPY_UNIQUE'
+n_owner_copy_len equ $-n_owner_copy
+m_owner_copy: db 'owned value cannot be copied implicitly; move or clone it explicitly'
+m_owner_copy_len equ $-m_owner_copy
+
+n_owner_borrow: db 'NEBO_BORROW_CONFLICT'
+n_owner_borrow_len equ $-n_owner_borrow
+m_owner_borrow: db 'mutation or transfer conflicts with an active lexical borrow'
+m_owner_borrow_len equ $-m_owner_borrow
 
 align 8
 catalog:
@@ -862,6 +908,24 @@ catalog:
  dq n_tuple_depth,n_tuple_depth_len,m_tuple_depth,m_tuple_depth_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
  dq n_tuple_receiver,n_tuple_receiver_len,m_tuple_receiver,m_tuple_receiver_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
  dq n_tuple_duplicate,n_tuple_duplicate_len,m_tuple_duplicate,m_tuple_duplicate_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_NAME
+ dq n_unicode_confusable,n_unicode_confusable_len,m_unicode_confusable,m_unicode_confusable_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_SECURITY
+ dq n_unicode_bidi,n_unicode_bidi_len,m_unicode_bidi,m_unicode_bidi_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_SECURITY
+ dq n_unicode_invisible,n_unicode_invisible_len,m_unicode_invisible,m_unicode_invisible_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_SECURITY
+ dq n_unicode_combining,n_unicode_combining_len,m_unicode_combining,m_unicode_combining_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_SECURITY
+ dq n_unicode_malformed,n_unicode_malformed_len,m_unicode_malformed,m_unicode_malformed_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_SECURITY
+ dq n_reserved_symbol,n_reserved_symbol_len,m_reserved_symbol,m_reserved_symbol_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_LEX
+ dq n_rejected_form,n_rejected_form_len,m_rejected_form,m_rejected_form_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_LEX
+ dq n_block_comment_depth,n_block_comment_depth_len,m_block_comment_depth,m_block_comment_depth_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_LEX
+ dq n_owner_moved,n_owner_moved_len,m_owner_moved,m_owner_moved_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_owner_copy,n_owner_copy_len,m_owner_copy,m_owner_copy_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_owner_borrow,n_owner_borrow_len,m_owner_borrow,m_owner_borrow_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+ dq n_public_const_write,n_public_const_write_len,m_public_const_write,m_public_const_write_len,NEBOC_DIAGNOSTIC_SEVERITY_ERROR,NEBOC_DIAGNOSTIC_PHASE_TYPE
+
+; Public projection of the native ConstBinding write/mutability policy.
+n_public_const_write: db 'NEBO_CONST_WRITE_FORBIDDEN'
+n_public_const_write_len equ $-n_public_const_write
+m_public_const_write: db 'ConstBinding is immutable and cannot be marked mutable or reassigned'
+m_public_const_write_len equ $-m_public_const_write
 
 section .text
 ; catalog_lookup(code_id, out_entry*)

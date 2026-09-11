@@ -1,0 +1,13 @@
+// Seeded bounded sampling drives local generation and releases cache on cancel.
+(Int.self)samplerGreedy() { self.return; }
+(Int.self)samplerTemperature() { self.return; }
+(Int.self)samplerTopK() { self.return; }
+(Int.self)samplerTopP() { self.return; }
+(Int.self)samplerRepetitionPenalty() { self.return; }
+(Int.self)generatorNew() { self.return; }
+(Int.self)generatorGenerate() { self.return; }
+(Int.self)generatorCancel() { self.return; }
+
+start() {
+    57.samplerGreedy().samplerTemperature().samplerTopK().samplerTopP().samplerRepetitionPenalty().generatorNew().generatorGenerate().generatorCancel();
+}

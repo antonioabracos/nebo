@@ -1,0 +1,9 @@
+(Result<Int,Int>.context)propagate(Result<Int,Int>.value) {
+    Result<Int,Int>(Ok(9)).guard;
+    guard.drop();
+    guard.drop();
+    value?.return;
+}
+start() {
+    Result<Int,Int>(Ok(0)).propagate(Result<Int,Int>(Ok(42))).get().return;
+}

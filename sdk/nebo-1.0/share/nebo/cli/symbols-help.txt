@@ -1,0 +1,29 @@
+usage: neboc symbols [-h] [--json] [--index INDEX] [--name NAME]
+                     [--receiver RECEIVER] [--module MODULE] [--limit LIMIT]
+                     [--revision REVISION] [--edition EDITION]
+                     [--target TARGET] [--context-effect CONTEXT_EFFECT]
+                     [--context-capability CONTEXT_CAPABILITY]
+                     [--context-constraint CONTEXT_CONSTRAINT]
+                     [--memory-budget MEMORY_BUDGET]
+                     [--deadline-ms DEADLINE_MS]
+                     workspace
+
+positional arguments:
+  workspace
+
+options:
+  -h, --help            show this help message and exit
+  --json
+  --index INDEX
+  --name NAME
+  --receiver RECEIVER
+  --module MODULE
+  --limit LIMIT
+  --revision REVISION
+  --edition EDITION
+  --target TARGET
+  --context-effect CONTEXT_EFFECT
+  --context-capability CONTEXT_CAPABILITY
+  --context-constraint CONTEXT_CONSTRAINT
+  --memory-budget MEMORY_BUDGET
+  --deadline-ms DEADLINE_MS

@@ -1,0 +1,8 @@
+start() {
+    Buffer.zeroed(4).codes;
+    codes.set(3, 104).old;
+    codes.get(3).inside;
+    codes.get(4).outside;
+    outside.isNone().outsideNone;
+    inside.unwrapOr(0).return;
+}

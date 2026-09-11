@@ -1,0 +1,6 @@
+start() {
+    "defer".owner;
+    owner.deferDrop().first;
+    owner.deferDrop().second;
+    0;
+}

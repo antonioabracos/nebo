@@ -1,0 +1,4 @@
+enum Number { Empty, Value(Int) }
+start() {
+    Number.Value(41).discriminant().return;
+}

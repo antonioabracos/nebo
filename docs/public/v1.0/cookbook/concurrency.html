@@ -1,0 +1,12 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bounded tasks and channels</title><link rel="stylesheet" href="../assets/style.css"></head><body><a href="#main">Skip to content</a><nav aria-label="Home"><a href="../index.html">Nebo documentation home</a></nav><main id="main"><h1>Bounded tasks and channels</h1><p>A noncapturing callback runs through the bounded native task profile and returns 73. A separate capacity-two channel returns 89 and is then closed.</p><p>The current material concurrency profile is bounded and is not promoted to stable by this recipe. Futures have consumption rules and channels distinguish full, empty and closed states. No claim of parallel scaling, unbounded tasks or real-time scheduling is made.</p><p>Imports: the current implicit prelude. Required effects/capabilities: bounded local task/channel runtime state. No network, live display, external credentials or device capability is used.</p><h2>Complete Nebo source</h2><pre><code>// A noncapturing task and channel use separate lifetimes.
+(Int.index)work(){(index+73).return;}start(){Task.spawn(work).f;Channel&lt;Int&gt;.bounded(2).c;c.trySend(89).get();f.await().get().console();c.tryReceive().get().console();c.close();61.return;}
+</code></pre><h2>Inputs and independent expectations</h2><pre>{
+  &quot;expected_exit&quot;: 61,
+  &quot;kinds&quot;: [
+    4,
+    4
+  ],
+  &quot;text&quot;: {
+    &quot;bytes_hex&quot;: &quot;37333839&quot;
+  }
+}</pre></main></body></html>

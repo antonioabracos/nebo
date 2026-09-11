@@ -1,0 +1,5 @@
+start() {
+  1.left.mutable;
+  2.right.mutable;
+  left = right = 3;
+}

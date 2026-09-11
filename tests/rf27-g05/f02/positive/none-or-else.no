@@ -1,0 +1,5 @@
+start() {
+  Option<Int>(None()).missing;
+  missing.orElse(9).recovered;
+  recovered.get().return;
+}

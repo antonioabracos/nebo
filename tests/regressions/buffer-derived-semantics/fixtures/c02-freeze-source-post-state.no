@@ -1,0 +1,6 @@
+start() {
+    Buffer.zeroed(4).packet;
+    packet.set(3, 4).old;
+    packet.freeze().frozen;
+    packet.at(3).return;
+}

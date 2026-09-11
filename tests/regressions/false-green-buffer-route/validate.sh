@@ -74,7 +74,7 @@ for mode in check emit-asm build; do
     set -e
     test "$rc" -eq 1
     test ! -e "$artifact"
-    rg -q 'source validation failed|NEBO_PARSE_UNEXPECTED_TOKEN' "$stderr"
+    rg -q 'error NEBO_PARSE_UNEXPECTED_TOKEN:' "$stderr"
 done
 
 test "$(rg -c '^    call nebo_runtime_scan_console_handle$' "$tmp/r-a-one-scan-explicit-return.asm")" -eq 1

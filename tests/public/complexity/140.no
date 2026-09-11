@@ -1,0 +1,7 @@
+// Replay validates the recording handle before producing a deterministic snapshot.
+start() {
+    RenderPlan;
+    3403;
+    output.stdout().stderr().target("export-privacy-service").plain().visual().headlessEvent();
+    lifecycle.event("privacy-audited").payload("replay-and-snapshot-integrity").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

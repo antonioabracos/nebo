@@ -1,0 +1,1 @@
+start(){1.5.value;value.round(nearestEven).rounded;(rounded==2.0).console();23.return;}

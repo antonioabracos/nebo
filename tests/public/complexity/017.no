@@ -1,0 +1,13 @@
+// Root and quadrature results retain method, tolerance, iteration, status, and error-estimate evidence.
+(Int.self)rootBisection() { self.return; }
+(Int.self)rootBrent() { self.return; }
+(Int.self)rootNewton() { self.return; }
+(Int.self)integrateTrapezoid() { self.return; }
+(Int.self)integrateSimpson() { self.return; }
+(Int.self)integrateAdaptive() { self.return; }
+(Int.self)integrateMultiDimensional() { self.return; }
+(Int.self)numericResultErrorEstimate() { self.return; }
+
+start() {
+    70.rootBisection().rootBrent().rootNewton().integrateTrapezoid().integrateSimpson().integrateAdaptive().integrateMultiDimensional().numericResultErrorEstimate();
+}

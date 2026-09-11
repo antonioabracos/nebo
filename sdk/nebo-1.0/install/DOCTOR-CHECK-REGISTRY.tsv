@@ -1,0 +1,11 @@
+check_id	required	observation	statuses
+sdk.integrity	YES	owned hashes sizes modes or unpacked bundle verifier	OK|CORRUPT_OR_MISSING
+compiler.neboc	YES	native ELF and executable launcher	OK|INVALID_EXECUTABLE|CORRUPT_OR_MISSING
+toolchain.nasm	YES	local provenance fingerprint	OK|MISSING_EXECUTABLE|FINGERPRINT_MISMATCH|UNSAFE_EXECUTABLE
+toolchain.ld	YES	local provenance fingerprint	OK|MISSING_EXECUTABLE|FINGERPRINT_MISMATCH|UNSAFE_EXECUTABLE
+toolchain.python3	YES	local provenance fingerprint	OK|MISSING_EXECUTABLE|FINGERPRINT_MISMATCH|UNSAFE_EXECUTABLE
+targets.host	YES	declared target and current host	OK|UNSUPPORTED_TARGET|CORRUPT_OR_MISSING
+permissions.prefix	YES	owned readable/searchable root with no group/world write	OK|UNSAFE_PERMISSIONS|INACCESSIBLE
+display.x11	NO	configuration syntax only; connection unprobed	NOT_CONFIGURED|CONFIGURED_UNPROBED|UNSUPPORTED_DISPLAY
+packages.integrity	WHEN_REQUESTED	local pinned lock and native package verifier	OK|NOT_REQUESTED|CORRUPT_OR_MISSING
+network.external	NO	no network operation	NOT_USED

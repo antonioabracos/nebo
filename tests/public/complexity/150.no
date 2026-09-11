@@ -1,0 +1,7 @@
+// Emit operations consume checked plans and publish deterministic receipts.
+start() {
+    RenderPlan;
+    3504;
+    output.stdout().stderr().target("console-abi-service").plain().visual().headlessEvent();
+    lifecycle.event("renderer-plugin").payload("emit-plot-table-text-generic-value").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

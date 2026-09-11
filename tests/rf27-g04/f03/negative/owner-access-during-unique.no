@@ -1,0 +1,5 @@
+start() {
+    5.owner;
+    owner.borrowUnique().view;
+    owner;
+}

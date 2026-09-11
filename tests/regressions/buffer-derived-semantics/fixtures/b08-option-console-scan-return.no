@@ -1,0 +1,7 @@
+start() {
+    "B08".console().scan().input;
+    Buffer.zeroed(4).codes;
+    codes.get(9).option;
+    option.isNone().none;
+    option.unwrapOr(255).return;
+}

@@ -1,0 +1,6 @@
+callable a(Int.value) capture copy 1 { capture.return; }
+callable b(Int.value) capture copy 2 { capture.return; }
+callable c(Int.value) capture copy 3 { capture.return; }
+callable d(Int.value) capture copy 4 { capture.return; }
+callable e(Int.value) capture copy 5 { capture.return; }
+start() { a.call(1).drop().return; }

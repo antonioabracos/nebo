@@ -1,0 +1,13 @@
+// Timestamped signals retain bounded windows and expose explicit DSP transforms.
+(Int.self)signalBufferNew() { self.return; }
+(Int.self)signalPush() { self.return; }
+(Int.self)signalWindow() { self.return; }
+(Int.self)signalResample() { self.return; }
+(Int.self)signalDecimate() { self.return; }
+(Int.self)signalInterpolate() { self.return; }
+(Int.self)signalSpectrum() { self.return; }
+(Int.self)signalStatistics() { self.return; }
+
+start() {
+    41.signalBufferNew().signalPush().signalWindow().signalResample().signalDecimate().signalInterpolate().signalSpectrum().signalStatistics();
+}

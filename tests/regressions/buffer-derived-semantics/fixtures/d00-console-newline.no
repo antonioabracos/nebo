@@ -1,0 +1,4 @@
+start() {
+    "A\nB".console();
+    0.return;
+}

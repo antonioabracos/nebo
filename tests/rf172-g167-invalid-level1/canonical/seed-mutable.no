@@ -1,0 +1,5 @@
+start() {
+    170.value.mutable;
+    value += 4;
+    value.return;
+}

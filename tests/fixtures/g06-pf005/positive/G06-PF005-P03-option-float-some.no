@@ -1,0 +1,5 @@
+start() {
+    Option<Float>(Some(1.5)).maybe;
+    maybe.isSome().present;
+    maybe.unwrapOr(2.5).value;
+}

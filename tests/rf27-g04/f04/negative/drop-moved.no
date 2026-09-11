@@ -1,0 +1,6 @@
+start() {
+    "move".owner;
+    owner.move().moved;
+    owner.drop().bad;
+    0;
+}

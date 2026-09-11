@@ -7,7 +7,70 @@ default rel
 %include "runtime/console_call.inc"
 %include "runtime/render_intent.inc"
 global nebo_render_intent_build
+global nebo_console_render_plan_is_safe
 section .text
+; rdi=RenderPlan. A safe plan is ready, bounded, target-valid, normalized by
+; strictly increasing option kind, and capability-authorized. The current
+; scalar option profile cannot carry secret-bearing payload metadata.
+nebo_console_render_plan_is_safe:
+    test rdi, rdi
+    jz .safe_invalid
+    cmp qword [rdi + NEBO_RENDER_PLAN_STATE_OFFSET], NEBO_RENDER_PLAN_READY
+    jne .safe_invalid
+    mov rcx, [rdi + NEBO_RENDER_PLAN_COUNT_OFFSET]
+    cmp rcx, NEBOC_MAX_CONSOLE_OPTIONS
+    ja .safe_budget
+    mov rdx, [rdi + NEBO_RENDER_PLAN_OPTIONS_OFFSET]
+    test rcx, rcx
+    jz .safe_target
+    test rdx, rdx
+    jz .safe_invalid
+.safe_target:
+    mov r8, [rdi + NEBO_RENDER_PLAN_TARGET_OFFSET]
+    cmp r8, NEBO_COLOR_TARGET_HEADLESS
+    jb .safe_invalid
+    cmp r8, NEBO_COLOR_TARGET_LIVE
+    ja .safe_invalid
+    mov r8, [rdi + NEBO_RENDER_PLAN_EFFECTS_OFFSET]
+    mov r9, r8
+    and r9, ~NEBO_CONSOLE_EFFECT_ALL
+    jnz .safe_effect
+    mov r10, [rdi + NEBO_RENDER_PLAN_CAPABILITIES_OFFSET]
+    not r10
+    test r8, r10
+    jnz .safe_effect
+    xor r8d, r8d
+    xor r9d, r9d
+.safe_option:
+    cmp r8, rcx
+    jae .safe_ok
+    imul r10, r8, NEBO_OPTION_VALUE_SIZE
+    mov r11, [rdx + r10 + NEBO_OPTION_VALUE_KIND_OFFSET]
+    cmp r11, 1
+    jb .safe_invalid
+    cmp r11, 32
+    ja .safe_invalid
+    cmp r11, r9
+    jbe .safe_order
+    mov r9, r11
+    inc r8
+    jmp .safe_option
+.safe_ok:
+    xor eax, eax
+    ret
+.safe_order:
+    mov eax, NEBO_RENDER_INTENT_ORDER
+    ret
+.safe_effect:
+    mov eax, NEBO_RENDER_INTENT_EFFECT
+    ret
+.safe_budget:
+    mov eax, NEBO_OPTIONS_BUDGET
+    ret
+.safe_invalid:
+    mov eax, NEBO_OPTIONS_INVALID
+    ret
+
 ; rdi=intent, rsi=out RenderPlan. Semantic digest covers normalized options.
 nebo_render_intent_build:
     push rbx

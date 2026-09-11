@@ -15,6 +15,11 @@ global integral_adaptive_decide_i64
 integral_adaptive_decide_i64:
     test r9, r9
     jz .domain_return
+    mov qword [r9], 0
+    mov qword [r9 + 8], 0
+    mov qword [r9 + 16], 0
+    mov qword [r9 + 24], 0
+    mov qword [r9 + 32], 0
     test rdx, rdx
     js .domain
     test rcx, rcx

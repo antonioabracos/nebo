@@ -61,7 +61,7 @@ format_needle_start: db 'global _start',10
 format_needle_start_end:
 format_needle_start_bridge: db 'extern nebo_runtime_start',10
 format_needle_start_bridge_end:
-format_needle_entry: db '_start:',10,'    lea rdi, [rel nebo_fn_1]',10,'    call nebo_runtime_start',10
+format_needle_entry: db '_start:',10,'    lea rdi, [rel nebo_fn_1]',10,'    mov rsi, rsp',10,'    call nebo_runtime_start',10
 format_needle_entry_end:
 function_body: db '    xor eax, eax',10,'    ret',10
 function_body_end:
@@ -357,12 +357,22 @@ scenario_9:
  add rsp,16
  test eax,eax
  jnz test_fail
- cmp qword [rel invocation+NEBOC_TOOLCHAIN_INVOCATION_ARGC_OFFSET],14
+ cmp qword [rel invocation+NEBOC_TOOLCHAIN_INVOCATION_ARGC_OFFSET],15
  jne test_fail
  cmp qword [rel invocation+NEBOC_TOOLCHAIN_INVOCATION_ARGV_LENS_OFFSET+7*8],2
  jne test_fail
  mov rax,[rel invocation+NEBOC_TOOLCHAIN_INVOCATION_ARGV_PTRS_OFFSET+7*8]
  cmp word [rax],0x782d
+ jne test_fail
+ cmp qword [rel invocation+NEBOC_TOOLCHAIN_INVOCATION_ARGV_LENS_OFFSET+14*8],13
+ jne test_fail
+ mov rax,[rel invocation+NEBOC_TOOLCHAIN_INVOCATION_ARGV_PTRS_OFFSET+14*8]
+ mov rdx,0x6365732d63672d2d
+ cmp qword [rax],rdx
+ jne test_fail
+ cmp dword [rax+8],0x6e6f6974
+ jne test_fail
+ cmp word [rax+12],0x73
  jne test_fail
  lea rdi,[rel toolchain]
  lea rsi,[rel invocation]

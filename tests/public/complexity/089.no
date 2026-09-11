@@ -1,0 +1,6 @@
+// Enforces scan privacy and fails closed on incompatible schema versions.
+start() {
+    RenderPlan;
+    1309;
+    protocol.event("console.scan.request").event("console.scan.response").event("console.scan.validation_failed").event("console.scan.cancelled").event("console.scan.timeout").payload("secure-version-check").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

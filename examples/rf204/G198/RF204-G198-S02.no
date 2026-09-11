@@ -1,0 +1,4 @@
+// Pin three real modules in an offline package store and rebuild their exported values.
+module app;
+import { import "project.core".left; import "project.util".right; }.values;
+start values.token + values.delta;

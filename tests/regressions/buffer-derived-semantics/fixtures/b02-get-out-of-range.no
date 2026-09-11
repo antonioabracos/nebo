@@ -1,0 +1,5 @@
+start() {
+    Buffer.zeroed(4).codes;
+    codes.get(9).option;
+    option.unwrapOr(255).return;
+}

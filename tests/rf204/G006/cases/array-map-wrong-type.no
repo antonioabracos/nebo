@@ -1,0 +1,2 @@
+callable keep(Bool.value) capture none { value.return; }
+start() { Array<Int, 2> [4, 9].a; a.map(keep).b; b.at(0); }

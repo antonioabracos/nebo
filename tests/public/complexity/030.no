@@ -1,0 +1,13 @@
+// GPIO and serial buses expose configured direction, observed pin values, bounded transfers, and deadlines.
+(Int.self)pinOutput() { self.return; }
+(Int.self)pinInput() { self.return; }
+(Int.self)pinWrite() { self.return; }
+(Int.self)pinRead() { self.return; }
+(Int.self)spiOpen() { self.return; }
+(Int.self)i2cOpen() { self.return; }
+(Int.self)uartOpen() { self.return; }
+(Int.self)busTransfer() { self.return; }
+
+start() {
+    92.pinOutput().pinInput().pinWrite().pinRead().spiOpen().i2cOpen().uartOpen().busTransfer();
+}

@@ -1,0 +1,4 @@
+status: INVALID_SOURCE
+diagnostic: NEBO_PARSE_MISSING_SEMICOLON
+synchronization: EOF consumed
+ast: one recovered ErrorNode

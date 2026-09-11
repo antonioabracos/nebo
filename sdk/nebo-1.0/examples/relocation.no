@@ -1,0 +1,3 @@
+// A typed receiver keeps the same meaning after relocating the SDK.
+(Int.value)adjust(){(value*3+5).return;}
+start(){17.adjust().answer;answer.return;}

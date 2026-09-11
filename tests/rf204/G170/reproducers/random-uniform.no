@@ -1,0 +1,7 @@
+// An explicit local seed owns the PRNG; no entropy or external capability is used.
+start() {
+    Random.seed(17).random;
+    random.uniform(10.0, 20.0).value;
+    "${value:fixed(6)}".console();
+    23.return;
+}

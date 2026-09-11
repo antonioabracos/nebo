@@ -1,0 +1,12 @@
+{
+  "schema": "NEBO-RELEASE-ASSET-NAMES-v1",
+  "version": "1.1.0",
+  "edition": "1.0",
+  "assets": [
+    {"profile": "source", "name": "nebo-1.1.0-source.tar"},
+    {"profile": "sdk", "name": "nebo-1.1.0-sdk-linux-x86_64.tar"},
+    {"profile": "docs", "name": "nebo-1.1.0-docs-offline.tar"},
+    {"profile": "tooling", "name": "nebo-1.1.0-tooling-linux-x86_64.tar"},
+    {"profile": "package", "name": "nebo-1.1.0-packages-offline.tar"}
+  ]
+}

@@ -1,0 +1,13 @@
+// An edge handler consumes explicit event, call, input, state, snapshot, metric, and policy data.
+(Int.self)edgeFunctionFrom() { self.return; }
+(Int.self)edgeHandle() { self.return; }
+(Int.self)edgeBudget() { self.return; }
+(Int.self)edgeState() { self.return; }
+(Int.self)edgeSnapshot() { self.return; }
+(Int.self)edgeRunLocal() { self.return; }
+(Int.self)edgeMetrics() { self.return; }
+(Int.self)edgeVerifyPolicy() { self.return; }
+
+start() {
+    91.edgeFunctionFrom().edgeHandle().edgeBudget().edgeState().edgeSnapshot().edgeRunLocal().edgeMetrics().edgeVerifyPolicy();
+}

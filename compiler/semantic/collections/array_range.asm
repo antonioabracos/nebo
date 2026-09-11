@@ -6,23 +6,29 @@ default rel
 %include "compiler/support/status/status_codes.inc"
 %include "compiler/tokens/token.inc"
 %include "compiler/tokens/token_kind.inc"
+%include "compiler/tokens/operator_registry.inc"
 %include "compiler/parser/statements/statements.inc"
 %include "compiler/semantic/collections/array_range.inc"
 %include "compiler/semantic/collections/slice_view.inc"
+%include "compiler/lowering/operators/mathematical_range.inc"
+%include "compiler/semantic/operators/core_option_range_flow_registry.inc"
 
 extern neboc_slice_create
 extern neboc_slice_subslice
 extern neboc_slice_view_validate
 extern neboc_slice_read
 extern neboc_slice_sum
+extern neboc_slice_product
 extern neboc_slice_release
 extern neboc_slice_mutation_probe
 extern neboc_slice_cleanup
 extern neboc_statement_parse_for_header
+extern neboc_mathematical_range_plan
 
 section .rodata
 n_array: db "Array"
 n_array_len equ $-n_array
+n_console_style: db "style"
 n_range: db "Range"
 n_range_len equ $-n_range
 n_slice: db "Slice"
@@ -55,12 +61,42 @@ n_mutable: db "mutable"
 n_mutable_len equ $-n_mutable
 n_sum: db "sum"
 n_sum_len equ $-n_sum
+n_product: db "product"
+n_product_len equ $-n_product
+n_sum_mapped: db "sumMapped"
+n_sum_mapped_len equ $-n_sum_mapped
+n_sum_filtered: db "sumFiltered"
+n_sum_filtered_len equ $-n_sum_filtered
+n_sum_deterministic: db "sumTree"
+n_sum_deterministic_len equ $-n_sum_deterministic
+n_sum_pairwise: db "sumPairwise"
+n_sum_pairwise_len equ $-n_sum_pairwise
+n_sum_kahan: db "sumKahan"
+n_sum_kahan_len equ $-n_sum_kahan
+n_sum_neumaier: db "sumNeumaier"
+n_sum_neumaier_len equ $-n_sum_neumaier
 n_release: db "release"
 n_release_len equ $-n_release
 n_mutate: db "mutate"
 n_mutate_len equ $-n_mutate
 n_in: db "in"
 n_in_len equ $-n_in
+n_iterator: db "iterator"
+n_iterator_len equ $-n_iterator
+n_next: db "next"
+n_next_len equ $-n_next
+n_size_hint: db "sizeHint"
+n_size_hint_len equ $-n_size_hint
+n_map: db "map"
+n_map_len equ $-n_map
+n_callable: db "callable"
+n_callable_len equ $-n_callable
+n_value: db "value"
+n_value_len equ $-n_value
+n_capture: db "capture"
+n_capture_len equ $-n_capture
+n_none: db "none"
+n_none_len equ $-n_none
 n_type: db "type"
 n_type_len equ $-n_type
 n_newtype: db "newtype"
@@ -119,6 +155,79 @@ NEBOC_ABI_FUNCTION neboc_array_range_recognize
  mov ecx,(NEBOC_FOR_MAX_LOOPS*NEBOC_FOR_RECORD_SIZE)/8
  xor eax,eax
  rep stosq
+ ; G002 iterator protocol expressions are AST-owned values rather than the
+ ; legacy compile-time collection-record route.  Yield the whole source to
+ ; the binding vertical whenever the explicit protocol entry point appears.
+ xor ebx,ebx
+.g002_iterator_scan:
+ cmp rbx,r14
+ jae .g002_iterator_scan_done
+ ; A named iterator separates construction from protocol use:
+ ;   Range.exclusive(...).iterator().cursor;
+ ;   cursor.next().value;
+ ; The old same-chain probe below cannot see that relationship after the
+ ; binding terminal.  Any exact zero-argument `next()` or `sizeHint()` suffix
+ ; is nevertheless G002 protocol syntax, so yield the complete source to the
+ ; shared AST/binding owner before this collection pass materializes `cursor`
+ ; as a legacy Range record and rejects the method as an unknown collection
+ ; suffix.
+ mov rdi,rbx
+ lea rsi,[rel n_next]
+ mov edx,n_next_len
+ call ar_token_match
+ test eax,eax
+ jnz .g002_named_iterator_probe
+ mov rdi,rbx
+ lea rsi,[rel n_size_hint]
+ mov edx,n_size_hint_len
+ call ar_token_match
+ test eax,eax
+ jz .g002_iterator_constructor_probe
+.g002_named_iterator_probe:
+ test rbx,rbx
+ jz .g002_iterator_constructor_probe
+ lea rax,[rbx-1]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_DOT
+ jne .g002_iterator_constructor_probe
+ lea rax,[rbx+1]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_LPAREN
+ jne .g002_iterator_constructor_probe
+ lea rax,[rbx+2]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_RPAREN
+ je .not_owned
+.g002_iterator_constructor_probe:
+ mov rdi,rbx
+ lea rsi,[rel n_iterator]
+ mov edx,n_iterator_len
+ call ar_token_match
+ test eax,eax
+ jz .g002_iterator_next
+ ; A chained iterator protocol operation belongs to G002's shared AST owner.
+ ; A bare iterator() value may remain in this collection owner and supports
+ ; the Range observers below without materializing the progression.
+ lea rax,[rbx+3]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_DOT
+ jne .g002_iterator_next
+ lea rdi,[rbx+4]
+ lea rsi,[rel n_next]
+ mov edx,n_next_len
+ call ar_token_match
+ test eax,eax
+ jnz .not_owned
+ lea rdi,[rbx+4]
+ lea rsi,[rel n_size_hint]
+ mov edx,n_size_hint_len
+ call ar_token_match
+ test eax,eax
+ jnz .not_owned
+.g002_iterator_next:
+ inc rbx
+ jmp .g002_iterator_scan
+.g002_iterator_scan_done:
  ; Claim only structural Array<...> or Range.<constructor> tokens. Historical
  ; colecoes_primitivas exact profiles run first in the driver and remain authoritative.
  xor ebx,ebx
@@ -127,6 +236,26 @@ NEBOC_ABI_FUNCTION neboc_array_range_recognize
  jae .not_owned
  mov rax,rbx
  call ar_kind_at
+ cmp rax,NEBOC_TOKEN_RESERVED_LBRACKET
+ jne .claim_typed
+ test rbx,rbx
+ jz .claim_next
+ lea rax,[rbx-1]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_LBRACE
+ je .claimed
+ cmp rax,NEBOC_TOKEN_SEMICOLON
+ je .claimed
+ jmp .claim_next
+.claim_typed:
+ cmp rax,NEBOC_TOKEN_RANGE_INCLUSIVE
+ je .claimed
+ cmp rax,NEBOC_TOKEN_RANGE_EXCLUSIVE_END
+ je .claimed
+ cmp rax,NEBOC_TOKEN_RANGE_EXCLUSIVE_START
+ je .claimed
+ cmp rax,NEBOC_TOKEN_RANGE_EXCLUSIVE
+ je .claimed
  cmp rax,NEBOC_TOKEN_IDENTIFIER
  jne .claim_next
  mov rdi,rbx
@@ -181,6 +310,12 @@ NEBOC_ABI_FUNCTION neboc_array_range_recognize
  call ar_token_match
  test eax,eax
  jz .claim_next
+ ; A range passed to Console.style is a typed selection expression. Its
+ ; dynamic endpoints belong to Program, not this constant collection plan.
+ mov rdi,rbx
+ call ar_is_style_selection
+ test eax,eax
+ jnz .claim_next
  lea rax,[rbx+1]
  call ar_kind_at
  cmp rax,NEBOC_TOKEN_DOT
@@ -209,6 +344,12 @@ NEBOC_ABI_FUNCTION neboc_array_range_recognize
  ; let the body scanner erase the former fail-closed header behavior.
  cmp rax,NEBOC_TOKEN_IDENTIFIER
  jne .top_advance
+ mov rdi,[r12+NEBOC_AR_CURSOR_OFFSET]
+ lea rsi,[rel n_callable]
+ mov edx,n_callable_len
+ call ar_token_match
+ test eax,eax
+ jnz .skip_top_level_callable
  mov rdi,[r12+NEBOC_AR_CURSOR_OFFSET]
  lea rsi,[rel n_type]
  mov edx,n_type_len
@@ -263,6 +404,11 @@ NEBOC_ABI_FUNCTION neboc_array_range_recognize
 .top_advance:
  inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
  jmp .top_level
+.skip_top_level_callable:
+ call ar_skip_callable_declaration
+ test eax,eax
+ jnz .done
+ jmp .top_level
 .skip_top_level_linear_nominal:
  ; Alias/newtype declarations have already passed the nominal vertical.  They
  ; are semicolon-terminated and have no collection-owned body to reinterpret.
@@ -316,9 +462,22 @@ NEBOC_ABI_FUNCTION neboc_array_range_recognize
  je .syntax
  cmp rax,NEBOC_TOKEN_KW_FOR
  je .for_statement
+ cmp rax,NEBOC_TOKEN_LPAREN
+ je .range_candidate
+ cmp rax,NEBOC_TOKEN_INTEGER
+ je .range_candidate
+ cmp rax,NEBOC_TOKEN_MINUS
+ jne .statement_identifier
+.range_candidate:
+ call ar_starts_symbolic_range
+ test eax,eax
+ jnz .collection_statement
+.statement_identifier:
  ; Collection declarations and established collection operations stay under
  ; this semantic owner.  Other statements are authenticated by the shared AST
  ; and are skipped here so the general-body backend can own them.
+ cmp rax,NEBOC_TOKEN_RESERVED_LBRACKET
+ je .collection_statement
  cmp rax,NEBOC_TOKEN_IDENTIFIER
  jne .general_statement
  mov rdi,[r12+NEBOC_AR_CURSOR_OFFSET]
@@ -341,6 +500,9 @@ NEBOC_ABI_FUNCTION neboc_array_range_recognize
  call ar_parse_statement
  test eax,eax
  jnz .done
+ call ar_peek_kind
+ cmp rax,NEBOC_TOKEN_SEMICOLON
+ jne .general_statement
  mov edi,NEBOC_TOKEN_SEMICOLON
  call ar_expect
  test eax,eax
@@ -366,6 +528,7 @@ NEBOC_ABI_FUNCTION neboc_array_range_recognize
  jnz .done
  jmp .top_level
 .finish_program:
+.finish_program_flags_ready:
  mov rdi,r12
  call neboc_slice_cleanup
  test eax,eax
@@ -445,6 +608,27 @@ ar_parse_for:
  mov rax,[rsp+64+NEBOC_STMT_SCRATCH1_OFFSET]
  mov [rsp],rax
  mov [r13+NEBOC_FOR_ITEM_TOKEN_OFFSET],rax
+ mov rax,[rsp+64+NEBOC_STMT_SCRATCH3_OFFSET]
+ mov [r13+NEBOC_FOR_INDEX_TOKEN_OFFSET],rax
+ mov rax,[rsp+64+NEBOC_STMT_SCRATCH4_OFFSET]
+ mov [r13+NEBOC_FOR_FILTER_LHS_TOKEN_OFFSET],rax
+ cmp rax,-1
+ je .filter_ready
+ mov rdi,rax
+ mov rsi,[rsp]
+ call ar_name_equal
+ test eax,eax
+ jz .type
+ mov rax,[rsp+64+NEBOC_STMT_SCRATCH5_OFFSET]
+ call ar_kind_at
+ mov [r13+NEBOC_FOR_FILTER_OPERATOR_OFFSET],rax
+ mov rax,[rsp+64+NEBOC_STMT_SCRATCH6_OFFSET]
+ call ar_token_ptr
+ test rax,rax
+ jz .internal
+ mov rax,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ mov [r13+NEBOC_FOR_FILTER_VALUE_OFFSET],rax
+.filter_ready:
  mov r15,[rsp+64+NEBOC_STMT_SCRATCH2_OFFSET]
  mov rax,[rsp+64+NEBOC_STMT_INDEX_OFFSET]
  mov [r12+NEBOC_AR_CURSOR_OFFSET],rax
@@ -566,7 +750,19 @@ ar_parse_for:
  mov rsi,[rsp]
  call ar_name_equal
  test eax,eax
+ jnz .return_item_candidate
+ cmp qword [r13+NEBOC_FOR_INDEX_TOKEN_OFFSET],-1
+ je .general_body
+ mov rdi,[r12+NEBOC_AR_CURSOR_OFFSET]
+ mov rsi,[r13+NEBOC_FOR_INDEX_TOKEN_OFFSET]
+ call ar_name_equal
+ test eax,eax
  jz .general_body
+ mov qword [rsp+32],NEBOC_FOR_ACTION_RETURN_INDEX
+ jmp .return_candidate
+.return_item_candidate:
+ mov qword [rsp+32],NEBOC_FOR_ACTION_RETURN_ITEM
+.return_candidate:
  ; Preserve the legacy iterator.return action only when it is the complete
  ; body.  Any additional statement selects the general-body route.
  mov rax,[r12+NEBOC_AR_CURSOR_OFFSET]
@@ -602,7 +798,8 @@ ar_parse_for:
  call ar_expect
  test eax,eax
  jnz .syntax_override
- mov qword [r13+NEBOC_FOR_ACTION_OFFSET],NEBOC_FOR_ACTION_RETURN_ITEM
+ mov rax,[rsp+32]
+ mov [r13+NEBOC_FOR_ACTION_OFFSET],rax
  jmp .body_done
 .break_candidate:
  mov rax,[r12+NEBOC_AR_CURSOR_OFFSET]
@@ -812,7 +1009,13 @@ ar_skip_general_statement:
  mov edx,n_range_len
  call ar_token_match
  test eax,eax
- jnz .parse_collection
+ jz .lookup_collection
+ mov rdi,[r12+NEBOC_AR_CURSOR_OFFSET]
+ call ar_is_style_selection
+ test eax,eax
+ jnz .advance
+ jmp .parse_collection
+.lookup_collection:
  mov rdi,[r12+NEBOC_AR_CURSOR_OFFSET]
  call ar_find_binding
  test rax,rax
@@ -908,6 +1111,162 @@ ar_skip_general_for_body:
  pop rbx
  ret
 
+; EAX=1 only when the current statement begins with a signed literal range.
+; This is a non-mutating ownership probe; general scalar statements stay on
+; the shared AST route.
+ar_starts_symbolic_range:
+ mov rdx,[r12+NEBOC_AR_CURSOR_OFFSET]
+ mov rax,rdx
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_LPAREN
+ jne .sign
+ inc rdx
+.sign:
+ mov rax,rdx
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_MINUS
+ jne .integer
+ inc rdx
+.integer:
+ mov rax,rdx
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_INTEGER
+ jne .no
+ inc rdx
+ mov rax,rdx
+ call ar_kind_at
+ mov r10,rax
+ NEBOC_CORE_ORF_CLASSIFY r10,r11,.no
+ cmp r11,NEBOC_OPERATOR_ID_NSR_CORE_043
+ je .yes
+ cmp r11,NEBOC_OPERATOR_ID_NSR_CORE_044
+ je .yes
+ cmp r11,NEBOC_OPERATOR_ID_NSR_CORE_045
+ je .yes
+ cmp r11,NEBOC_OPERATOR_ID_NSR_CORE_046
+ je .yes
+.no:
+ xor eax,eax
+ ret
+.yes:
+ mov eax,1
+ ret
+
+; Parse `(start <range-token> end)` and materialize the same bounded Range<Int>
+; record used by the Range.* API.  The independent range plan owns endpoint
+; evaluation, inclusion, direction and eager-cardinality limits.
+ar_parse_symbolic_range:
+ push rbx
+ push r13
+ push r14
+ push r15
+ sub rsp,104
+ mov qword [rsp+80],0
+ call ar_peek_kind
+ cmp rax,NEBOC_TOKEN_LPAREN
+ jne .start
+ mov qword [rsp+80],1
+ inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
+.start:
+ call ar_parse_signed_int
+ test edx,edx
+ jnz .fail
+ mov [rsp+64],rax
+ call ar_peek_kind
+ mov r10,rax
+ NEBOC_CORE_ORF_CLASSIFY r10,r11,.syntax
+ cmp r11,NEBOC_OPERATOR_ID_NSR_CORE_043
+ je .inclusive
+ cmp r11,NEBOC_OPERATOR_ID_NSR_CORE_044
+ je .exclusive_end
+ cmp r11,NEBOC_OPERATOR_ID_NSR_CORE_045
+ je .exclusive_start
+ cmp r11,NEBOC_OPERATOR_ID_NSR_CORE_046
+ jne .syntax
+ mov qword [rsp+88],NEBOC_RANGE_EXCLUSIVE
+ jmp .operator
+.inclusive:
+ mov qword [rsp+88],NEBOC_RANGE_INCLUSIVE
+ jmp .operator
+.exclusive_end:
+ mov qword [rsp+88],NEBOC_RANGE_EXCLUSIVE_END
+ jmp .operator
+.exclusive_start:
+ mov qword [rsp+88],NEBOC_RANGE_EXCLUSIVE_START
+.operator:
+ inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
+ call ar_parse_signed_int
+ test edx,edx
+ jnz .fail
+ mov [rsp+72],rax
+ cmp qword [rsp+80],0
+ je .planned
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ar_expect
+ test eax,eax
+ jnz .fail
+.planned:
+ mov rdi,[rsp+88]
+ mov rsi,[rsp+64]
+ mov rdx,[rsp+72]
+ mov rcx,rsp
+ call neboc_mathematical_range_plan
+ test eax,eax
+ jnz .range
+ call ar_alloc_binding
+ test rax,rax
+ jz .fail
+ mov r13,rax
+ mov qword [r13+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_RANGE
+ mov qword [r13+NEBOC_AR_BIND_TYPE_OFFSET],NEBOC_AR_TYPE_RANGE_INT
+ mov rax,[rsp+NEBOC_RANGE_CARDINALITY_OFFSET]
+ mov [r13+NEBOC_AR_BIND_COUNT_OFFSET],rax
+ shl rax,3
+ mov [r13+NEBOC_AR_BIND_SIZE_OFFSET],rax
+ mov qword [r13+NEBOC_AR_BIND_STRIDE_OFFSET],8
+ mov rax,[rsp+NEBOC_RANGE_START_OFFSET]
+ cmp qword [rsp+NEBOC_RANGE_INCLUDE_START_OFFSET],0
+ jne .start_ready
+ cmp qword [rsp+NEBOC_RANGE_CARDINALITY_OFFSET],0
+ je .start_ready
+ add rax,[rsp+NEBOC_RANGE_STEP_OFFSET]
+ jo .range
+.start_ready:
+ mov [r13+NEBOC_AR_BIND_START_OFFSET],rax
+ mov rax,[rsp+NEBOC_RANGE_END_OFFSET]
+ mov [r13+NEBOC_AR_BIND_END_OFFSET],rax
+ mov rax,[rsp+NEBOC_RANGE_STEP_OFFSET]
+ mov [r13+NEBOC_AR_BIND_STEP_OFFSET],rax
+ mov qword [r13+NEBOC_AR_BIND_FLAGS_OFFSET],NEBOC_AR_RANGE_SYMBOLIC
+ cmp qword [rsp+NEBOC_RANGE_INCLUDE_END_OFFSET],0
+ je .flags_ready
+ or qword [r13+NEBOC_AR_BIND_FLAGS_OFFSET],NEBOC_AR_RANGE_INCLUSIVE
+.flags_ready:
+ inc qword [r12+NEBOC_AR_RANGE_COUNT_OFFSET]
+ inc qword [r12+NEBOC_AR_CONSTRUCT_COUNT_OFFSET]
+ mov rdi,r13
+ call ar_hash_binding
+ mov [r13+NEBOC_AR_BIND_HASH_OFFSET],rax
+ mov rax,r13
+ jmp .done
+.syntax:
+ mov esi,NEBOC_AR_DIAG_SYNTAX
+ jmp .error
+.range:
+ mov esi,NEBOC_AR_DIAG_RANGE
+.error:
+ mov rdx,[r12+NEBOC_AR_CURSOR_OFFSET]
+ call ar_error
+.fail:
+ xor eax,eax
+.done:
+ add rsp,104
+ pop r15
+ pop r14
+ pop r13
+ pop rbx
+ ret
+
 ; Parse one constructor/binding operation or one access expression.
 %undef call
 ar_parse_statement:
@@ -918,7 +1277,19 @@ ar_parse_statement:
  sub rsp,24
  xor r15d,r15d
  mov qword [rsp+8],0
+ mov rax,[r12+NEBOC_AR_CURSOR_OFFSET]
+ call ar_token_ptr
+ mov rax,[rax+NEBOC_TOKEN_START_OFFSET]
+ mov [rsp+16],rax
  call ar_peek_kind
+ cmp rax,NEBOC_TOKEN_RESERVED_LBRACKET
+ je .array
+ cmp rax,NEBOC_TOKEN_LPAREN
+ je .symbolic_range
+ cmp rax,NEBOC_TOKEN_INTEGER
+ je .symbolic_range
+ cmp rax,NEBOC_TOKEN_MINUS
+ je .symbolic_range
  cmp rax,NEBOC_TOKEN_IDENTIFIER
  jne .syntax
  mov r14,[r12+NEBOC_AR_CURSOR_OFFSET]
@@ -952,8 +1323,18 @@ ar_parse_statement:
  test rax,rax
  jz .fail
  mov r13,rax
+ mov rax,[rsp+16]
+ mov [r13+NEBOC_AR_BIND_SOURCE_OFFSET],rax
+ jmp .suffix
+.symbolic_range:
+ call ar_parse_symbolic_range
+ test rax,rax
+ jz .fail
+ mov r13,rax
 .suffix:
  call ar_peek_kind
+ cmp rax,NEBOC_TOKEN_RESERVED_LBRACKET
+ je .legacy_at
  cmp rax,NEBOC_TOKEN_RESERVED_EQUAL
  je .element_assignment_tail
  cmp rax,NEBOC_TOKEN_DOT
@@ -1009,6 +1390,48 @@ ar_parse_statement:
  test eax,eax
  jnz .sum
  mov rdi,r14
+ lea rsi,[rel n_sum_pairwise]
+ mov edx,n_sum_pairwise_len
+ call ar_token_match
+ test eax,eax
+ jnz .sum
+ mov rdi,r14
+ lea rsi,[rel n_sum_kahan]
+ mov edx,n_sum_kahan_len
+ call ar_token_match
+ test eax,eax
+ jnz .sum
+ mov rdi,r14
+ lea rsi,[rel n_sum_neumaier]
+ mov edx,n_sum_neumaier_len
+ call ar_token_match
+ test eax,eax
+ jnz .sum
+ mov rdi,r14
+ lea rsi,[rel n_product]
+ mov edx,n_product_len
+ call ar_token_match
+ test eax,eax
+ jnz .product
+ mov rdi,r14
+ lea rsi,[rel n_sum_mapped]
+ mov edx,n_sum_mapped_len
+ call ar_token_match
+ test eax,eax
+ jnz .sum_mapped
+ mov rdi,r14
+ lea rsi,[rel n_sum_filtered]
+ mov edx,n_sum_filtered_len
+ call ar_token_match
+ test eax,eax
+ jnz .sum_filtered
+ mov rdi,r14
+ lea rsi,[rel n_sum_deterministic]
+ mov edx,n_sum_deterministic_len
+ call ar_token_match
+ test eax,eax
+ jnz .sum_deterministic
+ mov rdi,r14
  lea rsi,[rel n_release]
  mov edx,n_release_len
  call ar_token_match
@@ -1026,6 +1449,18 @@ ar_parse_statement:
  call ar_token_match
  test eax,eax
  jnz .mutable
+ mov rdi,r14
+ lea rsi,[rel n_map]
+ mov edx,n_map_len
+ call ar_token_match
+ test eax,eax
+ jnz .map
+ mov rdi,r14
+ lea rsi,[rel n_iterator]
+ mov edx,n_iterator_len
+ call ar_token_match
+ test eax,eax
+ jnz .iterator
  ; Any other identifier is the language's one-shot `.name` binding terminal.
  cmp qword [r13+NEBOC_AR_BIND_NAME_OFFSET],NEBOC_AR_UNBOUND_NAME
  jne .syntax
@@ -1046,6 +1481,42 @@ ar_parse_statement:
  or qword [r13+NEBOC_AR_BIND_FLAGS_OFFSET],NEBOC_AR_ARRAY_MUTABLE
  or qword [r12+NEBOC_AR_FOR_FLAGS_OFFSET],NEBOC_AR_FOR_FLAG_GENERAL_BODY|NEBOC_AR_FOR_FLAG_DYNAMIC_AT|NEBOC_AR_FOR_FLAG_MUTABLE_ARRAY
  inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
+ jmp .suffix
+.map:
+ or qword [r12+NEBOC_AR_FOR_FLAGS_OFFSET],NEBOC_AR_FOR_FLAG_MAP
+ cmp qword [r13+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_ARRAY
+ jne .type
+ inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ar_expect
+ test eax,eax
+ jnz .fail
+ call ar_peek_kind
+ cmp rax,NEBOC_TOKEN_IDENTIFIER
+ jne .syntax
+ mov rbx,[r12+NEBOC_AR_CURSOR_OFFSET]
+ inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ar_expect
+ test eax,eax
+ jnz .fail
+ mov rdi,r13
+ mov rsi,rbx
+ call ar_map_array
+ test rax,rax
+ jz .fail
+ mov r13,rax
+ jmp .suffix
+.iterator:
+ cmp qword [r13+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_RANGE
+ jne .type
+ inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
+ call ar_expect_empty_call
+ test eax,eax
+ jnz .fail
+ or qword [r13+NEBOC_AR_BIND_FLAGS_OFFSET],NEBOC_AR_RANGE_ITERATOR
+ or qword [r12+NEBOC_AR_FOR_FLAGS_OFFSET],NEBOC_AR_FOR_FLAG_RANGE_ITERATOR
+ inc qword [r12+NEBOC_AR_ACCESS_COUNT_OFFSET]
  jmp .suffix
 .element_assignment_tail:
  ; The shared AST/type backend owns the RHS and the exact writable-target
@@ -1068,12 +1539,50 @@ ar_parse_statement:
  test edx,edx
  jnz .fail
  mov [r13+NEBOC_AR_BIND_STEP_OFFSET],rax
+ mov rdi,r13
+ call ar_range_length
+ test edx,edx
+ jnz .fail
+ mov [r13+NEBOC_AR_BIND_COUNT_OFFSET],rax
  mov edi,NEBOC_TOKEN_RPAREN
  call ar_expect
  test eax,eax
  jnz .fail
  jmp .suffix
+.legacy_at:
+ or qword [r12+NEBOC_AR_FOR_FLAGS_OFFSET],NEBOC_AR_FOR_FLAG_LEGACY_INDEX|NEBOC_AR_FOR_FLAG_GENERAL_BODY
+ cmp qword [r13+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_ARRAY
+ jne .type
+ cmp qword [r13+NEBOC_AR_BIND_TYPE_OFFSET],NEBOC_AR_TYPE_INT
+ jne .type
+ cmp qword [r13+NEBOC_AR_BIND_COUNT_OFFSET],4
+ jne .type
+ test qword [r13+NEBOC_AR_BIND_FLAGS_OFFSET],NEBOC_AR_ARRAY_MUTABLE
+ jnz .type
+ mov qword [rsp+8],1
+ inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
+ call ar_peek_kind
+ cmp rax,NEBOC_TOKEN_INTEGER
+ jne .dynamic
+ mov rax,[r12+NEBOC_AR_CURSOR_OFFSET]
+ call ar_token_ptr
+ mov rbx,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_RESERVED_RBRACKET
+ call ar_expect
+ test eax,eax
+ jnz .fail
+ jmp .at_value
 .at:
+ ; Both spellings use this canonical owner even for composition and errors.
+ cmp qword [r13+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_ARRAY
+ jne .at_kind
+ cmp qword [r13+NEBOC_AR_BIND_TYPE_OFFSET],NEBOC_AR_TYPE_INT
+ jne .at_kind
+ cmp qword [r13+NEBOC_AR_BIND_COUNT_OFFSET],4
+ jne .at_kind
+ or qword [r12+NEBOC_AR_FOR_FLAGS_OFFSET],NEBOC_AR_FOR_FLAG_LEGACY_INDEX
+.at_kind:
  mov rax,[r13+NEBOC_AR_BIND_KIND_OFFSET]
  cmp rax,NEBOC_AR_KIND_ARRAY
  je .at_parse
@@ -1103,6 +1612,7 @@ ar_parse_statement:
  call ar_expect
  test eax,eax
  jnz .fail
+.at_value:
  cmp qword [r13+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_SLICE_PARAMETER
  je .parameter_at
  cmp qword [r13+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_SLICE
@@ -1239,9 +1749,15 @@ ar_parse_statement:
  call ar_range_length
  test edx,edx
  jnz .fail
+ test rax,rax
+ jz .contains_empty
  mov rdi,r13
  mov rsi,rbx
  call ar_range_contains
+ jmp .contains_ready
+.contains_empty:
+ xor eax,eax
+.contains_ready:
  mov qword [r12+NEBOC_AR_RESULT_TYPE_OFFSET],NEBOC_AR_TYPE_BOOL
  mov [r12+NEBOC_AR_RESULT_VALUE_OFFSET],rax
  inc qword [r12+NEBOC_AR_ACCESS_COUNT_OFFSET]
@@ -1340,6 +1856,97 @@ ar_parse_statement:
  mov rax,[rsp]
  mov qword [r12+NEBOC_AR_RESULT_TYPE_OFFSET],NEBOC_AR_TYPE_INT
  mov [r12+NEBOC_AR_RESULT_VALUE_OFFSET],rax
+ or r15d,1
+ jmp .material_scalar_suffix
+.product:
+ cmp qword [r13+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_SLICE
+ jne .type
+ inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
+ call ar_expect_empty_call
+ test eax,eax
+ jnz .fail
+ mov rdi,r12
+ mov rsi,r13
+ mov rdx,rsp
+ call neboc_slice_product
+ test eax,eax
+ jnz .fail
+ mov rax,[rsp]
+ mov qword [r12+NEBOC_AR_RESULT_TYPE_OFFSET],NEBOC_AR_TYPE_INT
+ mov [r12+NEBOC_AR_RESULT_VALUE_OFFSET],rax
+ or r15d,1
+ jmp .material_scalar_suffix
+.sum_mapped:
+ cmp qword [r13+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_SLICE
+ jne .type
+ inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ar_expect
+ test eax,eax
+ jnz .fail
+ call ar_parse_signed_int
+ test edx,edx
+ jnz .fail
+ mov edi,NEBOC_TOKEN_COMMA
+ call ar_expect
+ test eax,eax
+ jnz .fail
+ call ar_parse_signed_int
+ test edx,edx
+ jnz .fail
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ar_expect
+ test eax,eax
+ jnz .fail
+ jmp .reduction_scalar
+.sum_filtered:
+ cmp qword [r13+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_SLICE
+ jne .type
+ inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ar_expect
+ test eax,eax
+ jnz .fail
+ call ar_parse_signed_int
+ test edx,edx
+ jnz .fail
+ test rax,rax
+ jz .range
+ mov edi,NEBOC_TOKEN_COMMA
+ call ar_expect
+ test eax,eax
+ jnz .fail
+ call ar_parse_signed_int
+ test edx,edx
+ jnz .fail
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ar_expect
+ test eax,eax
+ jnz .fail
+ jmp .reduction_scalar
+.sum_deterministic:
+ cmp qword [r13+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_SLICE
+ jne .type
+ inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call ar_expect
+ test eax,eax
+ jnz .fail
+ call ar_parse_signed_int
+ test edx,edx
+ jnz .fail
+ test rax,rax
+ jle .range
+ cmp rax,64
+ ja .range
+ mov edi,NEBOC_TOKEN_RPAREN
+ call ar_expect
+ test eax,eax
+ jnz .fail
+.reduction_scalar:
+ mov qword [r12+NEBOC_AR_RESULT_TYPE_OFFSET],NEBOC_AR_TYPE_INT
+ mov qword [r12+NEBOC_AR_RESULT_VALUE_OFFSET],0
+ inc qword [r12+NEBOC_AR_ACCESS_COUNT_OFFSET]
  or r15d,1
  jmp .material_scalar_suffix
 .release:
@@ -1543,12 +2150,307 @@ ar_create_s04_subslice:
  ret
 
 ; Parse Array<scalar,N> followed by a literal or `.filled(value)`.
+; Skip one canonical top-level callable declaration without interpreting its
+; body as the Program body.  The transform itself is authenticated lazily by
+; ar_map_array, so unrelated callable declarations remain harmless.
+ar_skip_callable_declaration:
+ push rbx
+ sub rsp,8
+ xor ebx,ebx
+.scan:
+ call ar_peek_kind
+ cmp rax,NEBOC_TOKEN_EOF
+ je .bad
+ cmp rax,NEBOC_TOKEN_LBRACE
+ jne .close
+ inc rbx
+ inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
+ jmp .scan
+.close:
+ cmp rax,NEBOC_TOKEN_RBRACE
+ jne .advance
+ test rbx,rbx
+ jz .bad
+ dec rbx
+ inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
+ test rbx,rbx
+ jnz .scan
+ xor eax,eax
+ jmp .done
+.advance:
+ inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
+ jmp .scan
+.bad:
+ mov esi,NEBOC_AR_DIAG_SYNTAX
+ mov rdx,[r12+NEBOC_AR_CURSOR_OFFSET]
+ call ar_error
+.done:
+ add rsp,8
+ pop rbx
+ ret
+
+; RDI=array record, RSI=callable-name token -> mapped array record or zero.
+; The bounded callable grammar is the same receiver-independent declaration
+; used by the public callable surface:
+;   callable f(Int.value) capture none { (value + 3).return; }
+; Identity bodies (`value.return;`) are valid for every supported element
+; type.  The transform is parsed from tokens and evaluated for every element;
+; no fixture/path identity participates in ownership.
+ar_map_array:
+ push rbx
+ push r13
+ push r14
+ push r15
+ sub rsp,32
+ mov r13,rdi
+ mov r14,rsi
+ mov qword [rsp],0             ; 0 identity, 1 checked Int add
+ mov qword [rsp+8],0           ; addend
+ xor ebx,ebx
+.find:
+ cmp rbx,[r12+NEBOC_AR_TOKEN_COUNT_OFFSET]
+ jae .type
+ mov rdi,rbx
+ lea rsi,[rel n_callable]
+ mov edx,n_callable_len
+ call ar_token_match
+ test eax,eax
+ jz .next
+ lea rdi,[rbx+1]
+ mov rsi,r14
+ call ar_name_equal
+ test eax,eax
+ jnz .candidate
+.next:
+ inc rbx
+ jmp .find
+.candidate:
+ mov [rsp+16],rbx
+ lea rax,[rbx+2]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_LPAREN
+ jne .syntax
+ mov rax,[r13+NEBOC_AR_BIND_TYPE_OFFSET]
+ cmp rax,NEBOC_AR_TYPE_INT
+ je .type_int
+ cmp rax,NEBOC_AR_TYPE_BOOL
+ je .type_bool
+ cmp rax,NEBOC_AR_TYPE_CHAR
+ je .type_char
+ jmp .type
+.type_int:
+ lea rdi,[rbx+3]
+ lea rsi,[rel n_int]
+ mov edx,n_int_len
+ jmp .type_match
+.type_bool:
+ lea rdi,[rbx+3]
+ lea rsi,[rel n_bool]
+ mov edx,n_bool_len
+ jmp .type_match
+.type_char:
+ lea rdi,[rbx+3]
+ lea rsi,[rel n_char]
+ mov edx,n_char_len
+.type_match:
+ call ar_token_match
+ test eax,eax
+ jz .type
+ lea rax,[rbx+4]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_DOT
+ jne .syntax
+ lea rdi,[rbx+5]
+ lea rsi,[rel n_value]
+ mov edx,n_value_len
+ call ar_token_match
+ test eax,eax
+ jz .syntax
+ lea rax,[rbx+6]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_RPAREN
+ jne .syntax
+ lea rdi,[rbx+7]
+ lea rsi,[rel n_capture]
+ mov edx,n_capture_len
+ call ar_token_match
+ test eax,eax
+ jz .syntax
+ lea rdi,[rbx+8]
+ lea rsi,[rel n_none]
+ mov edx,n_none_len
+ call ar_token_match
+ test eax,eax
+ jz .syntax
+ lea rax,[rbx+9]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_LBRACE
+ jne .syntax
+ ; Identity body.
+ lea rdi,[rbx+10]
+ lea rsi,[rel n_value]
+ mov edx,n_value_len
+ call ar_token_match
+ test eax,eax
+ jnz .identity_tail
+ ; Checked Int-add body.
+ cmp qword [r13+NEBOC_AR_BIND_TYPE_OFFSET],NEBOC_AR_TYPE_INT
+ jne .type
+ lea rax,[rbx+10]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_LPAREN
+ jne .syntax
+ lea rdi,[rbx+11]
+ lea rsi,[rel n_value]
+ mov edx,n_value_len
+ call ar_token_match
+ test eax,eax
+ jz .syntax
+ lea rax,[rbx+12]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_PLUS
+ jne .syntax
+ lea rax,[rbx+13]
+ call ar_token_ptr
+ test rax,rax
+ jz .syntax
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_INTEGER
+ jne .type
+ mov rax,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ mov [rsp+8],rax
+ mov qword [rsp],1
+ lea rax,[rbx+14]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_RPAREN
+ jne .syntax
+ lea rax,[rbx+15]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_DOT
+ jne .syntax
+ lea rax,[rbx+16]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_KW_RETURN
+ jne .syntax
+ lea rax,[rbx+17]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_SEMICOLON
+ jne .syntax
+ lea rax,[rbx+18]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_RBRACE
+ jne .syntax
+ lea rax,[rbx+19]
+ mov [rsp+24],rax
+ jmp .materialize
+.identity_tail:
+ lea rax,[rbx+11]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_DOT
+ jne .syntax
+ lea rax,[rbx+12]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_KW_RETURN
+ jne .syntax
+ lea rax,[rbx+13]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_SEMICOLON
+ jne .syntax
+ lea rax,[rbx+14]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_RBRACE
+ jne .syntax
+ lea rax,[rbx+15]
+ mov [rsp+24],rax
+.materialize:
+ call ar_alloc_binding
+ test rax,rax
+ jz .fail
+ mov r15,rax
+ mov rdi,r15
+ mov rsi,r13
+ mov ecx,NEBOC_AR_BIND_QWORDS
+ rep movsq
+ mov rax,[rsp+16]
+ mov [r15+NEBOC_AR_BIND_CALLBACK_BEGIN_OFFSET],rax
+ mov rax,[rsp+24]
+ mov [r15+NEBOC_AR_BIND_CALLBACK_END_OFFSET],rax
+ mov qword [r15+NEBOC_AR_BIND_NAME_OFFSET],NEBOC_AR_UNBOUND_NAME
+ mov rax,[r12+NEBOC_AR_VALUE_COUNT_OFFSET]
+ mov [r15+NEBOC_AR_BIND_DATA_INDEX_OFFSET],rax
+ mov rcx,rax
+ add rcx,[r13+NEBOC_AR_BIND_COUNT_OFFSET]
+ jc .capacity
+ cmp rcx,[r12+NEBOC_AR_VALUE_CAPACITY_OFFSET]
+ ja .capacity
+ xor ebx,ebx
+.element:
+ cmp rbx,[r13+NEBOC_AR_BIND_COUNT_OFFSET]
+ jae .mapped
+ mov rax,[r13+NEBOC_AR_BIND_DATA_INDEX_OFFSET]
+ add rax,rbx
+ mov rdx,[r12+NEBOC_AR_VALUES_OFFSET]
+ mov rax,[rdx+rax*8]
+ cmp qword [rsp],0
+ je .store
+ add rax,[rsp+8]
+ jo .overflow
+.store:
+ mov rcx,[r15+NEBOC_AR_BIND_DATA_INDEX_OFFSET]
+ add rcx,rbx
+ mov [rdx+rcx*8],rax
+ inc rbx
+ jmp .element
+.mapped:
+ mov rax,[r13+NEBOC_AR_BIND_COUNT_OFFSET]
+ add [r12+NEBOC_AR_VALUE_COUNT_OFFSET],rax
+ inc qword [r12+NEBOC_AR_ARRAY_COUNT_OFFSET]
+ inc qword [r12+NEBOC_AR_CONSTRUCT_COUNT_OFFSET]
+ mov rdi,r15
+ call ar_hash_binding
+ mov [r15+NEBOC_AR_BIND_HASH_OFFSET],rax
+ mov rax,r15
+ jmp .done
+.capacity:
+ mov esi,NEBOC_AR_DIAG_VALUE_CAPACITY
+ jmp .error
+.overflow:
+ mov esi,NEBOC_AR_DIAG_RANGE
+ jmp .error
+.type:
+ mov esi,NEBOC_AR_DIAG_TYPE
+ jmp .error
+.syntax:
+ mov esi,NEBOC_AR_DIAG_SYNTAX
+.error:
+ mov rdx,r14
+ call ar_error
+.fail:
+ xor eax,eax
+.done:
+ add rsp,32
+ pop r15
+ pop r14
+ pop r13
+ pop rbx
+ ret
+
 ar_parse_array:
  push rbx
  push r13
  push r14
  push r15
  sub rsp,24
+ call ar_peek_kind
+ cmp rax,NEBOC_TOKEN_RESERVED_LBRACKET
+ jne .typed
+ ; The shipped unannotated literal is exactly immutable Array<Int,4>.
+ ; Reuse the canonical allocation, scalar parser, layout and bounds owner.
+ or qword [r12+NEBOC_AR_FOR_FLAGS_OFFSET],NEBOC_AR_FOR_FLAG_LEGACY_INDEX|NEBOC_AR_FOR_FLAG_GENERAL_BODY
+ mov qword [rsp],NEBOC_AR_TYPE_INT
+ mov qword [rsp+8],8
+ mov ebx,4
+ jmp .allocate
+.typed:
  inc qword [r12+NEBOC_AR_CURSOR_OFFSET]
  mov edi,NEBOC_TOKEN_LESS
  call ar_expect
@@ -1576,6 +2478,7 @@ ar_parse_array:
  call ar_expect
  test eax,eax
  jnz .fail
+.allocate:
  call ar_alloc_binding
  test rax,rax
  jz .fail
@@ -1938,6 +2841,14 @@ ar_range_length:
  push r15
  sub rsp,8
  mov r13,rdi
+ test qword [r13+NEBOC_AR_BIND_FLAGS_OFFSET],NEBOC_AR_RANGE_SYMBOLIC
+ jz .nonempty
+ cmp qword [r13+NEBOC_AR_BIND_COUNT_OFFSET],0
+ jne .nonempty
+ xor eax,eax
+ xor edx,edx
+ jmp .done
+.nonempty:
  mov rbx,[r13+NEBOC_AR_BIND_START_OFFSET]
  mov r14,[r13+NEBOC_AR_BIND_END_OFFSET]
  mov r15,[r13+NEBOC_AR_BIND_STEP_OFFSET]
@@ -2163,6 +3074,9 @@ ar_alloc_binding:
  imul rax,NEBOC_AR_BIND_SIZE
  add rax,[r12+NEBOC_AR_BINDINGS_OFFSET]
  mov qword [rax+NEBOC_AR_BIND_NAME_OFFSET],NEBOC_AR_UNBOUND_NAME
+ mov qword [rax+NEBOC_AR_BIND_SOURCE_OFFSET],-1
+ mov qword [rax+NEBOC_AR_BIND_CALLBACK_BEGIN_OFFSET],-1
+ mov qword [rax+NEBOC_AR_BIND_CALLBACK_END_OFFSET],-1
  inc qword [r12+NEBOC_AR_BINDING_COUNT_OFFSET]
  ret
 .limit:
@@ -2513,3 +3427,31 @@ ar_error:
  ret
 
 section .note.GNU-stack noalloc noexec nowrite progbits
+
+; Exact receiver.style(Range...) argument position, independent of the
+; receiver's spelling. The typed Console owner validates the receiver, range
+; constructor, endpoints and role; this legacy owner must not consume it.
+section .text
+ar_is_style_selection:
+ push rbx
+ mov rbx,rdi
+ cmp rbx,3
+ jb .no
+ lea rax,[rbx-1]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_LPAREN
+ jne .no
+ lea rax,[rbx-3]
+ call ar_kind_at
+ cmp rax,NEBOC_TOKEN_DOT
+ jne .no
+ lea rdi,[rbx-2]
+ lea rsi,[rel n_console_style]
+ mov edx,5
+ call ar_token_match
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop rbx
+ ret

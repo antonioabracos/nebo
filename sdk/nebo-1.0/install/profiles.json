@@ -1,6 +1,11 @@
 {
+  "active_prefix_mode": "0700",
   "default": "user",
   "dotfiles_edited": false,
+  "no_root_default": true,
+  "parent_owner": "invoking-uid",
+  "parent_required": true,
+  "parent_write_policy": "no-group-or-world-write",
   "profiles": {
     "prefix": {
       "destination": "EXPLICIT_PREFIX",
@@ -8,12 +13,13 @@
       "root_required": false
     },
     "system-local": {
-      "destination": "/usr/local",
+      "destination": "EXPLICIT_DEDICATED_LEAF_PREFIX",
       "implicit": false,
+      "required_option": "--allow-system-local",
       "root_required": "MAY_REQUIRE_EXTERNAL_ADMIN"
     },
     "user": {
-      "destination": "EXPLICIT_USER_PREFIX",
+      "destination": "EXPLICIT_PREFIX_OR_HOME/.local/opt/nebo",
       "mode": "0755/0644",
       "root_required": false
     }

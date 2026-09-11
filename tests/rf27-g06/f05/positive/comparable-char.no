@@ -1,0 +1,7 @@
+generic<T: Comparable> (T.value)ordered() {
+    value.return;
+}
+
+start() {
+    'x'.ordered();
+}

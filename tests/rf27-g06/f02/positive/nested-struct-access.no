@@ -1,0 +1,14 @@
+struct Inner {
+    Int.value;
+}
+
+struct Outer {
+    Inner.inner;
+    Bool.ready;
+}
+
+start() {
+    Inner { value: 5 }.inner;
+    Outer { inner: inner, ready: true }.outer;
+    outer.inner.value;
+}

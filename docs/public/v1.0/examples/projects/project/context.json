@@ -1,0 +1,7 @@
+{
+  "expected_exit": 94,
+  "units": {
+    "core.no": "module core;export public token = 29;\n",
+    "facade.no": "module facade;export import \"project.core\" { token; }.source;\n"
+  }
+}

@@ -1,0 +1,13 @@
+// Replicas expose bounded change ranges, atomic application, causal gaps, peer state, status, and checkpoints.
+(Int.self)replicaOpen() { self.return; }
+(Int.self)replicaLocalVersion() { self.return; }
+(Int.self)replicaChangesSince() { self.return; }
+(Int.self)replicaApply() { self.return; }
+(Int.self)replicaPending() { self.return; }
+(Int.self)replicaPeers() { self.return; }
+(Int.self)replicaStatus() { self.return; }
+(Int.self)replicaCheckpoint() { self.return; }
+
+start() {
+    51.replicaOpen().replicaLocalVersion().replicaChangesSince().replicaApply().replicaPending().replicaPeers().replicaStatus().replicaCheckpoint();
+}

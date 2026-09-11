@@ -1,0 +1,25 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>std.prelude.Error</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>std.prelude.Error</h1><p>A structured diagnostic value with retained identity and context.</p><pre>Identity: prelude:1:Error (SERIALIZED_SYMBOL_ID)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: EDITION_1_BOUNDED
+Serialized SymbolId: 0x4f5f6793880ecdcc</pre><h2>Syntax or signature</h2><pre>Error(code, category, sourceId, spanStart, spanEnd, causeId)</pre><h2>Origin and explicit import</h2><p>Implicit origin: PRELUDE. Original module: std.core. Explicit alternative: import &quot;std.core&quot; { Error; }.explicit; --no-prelude removes implicit visibility. Import every referenced prelude name explicitly; imports grant no capability.</p><h2>Behavior, methods and protocols</h2><p>code/category/source/span/cause fields preserve their typed integer values. message renders the category; withContext produces contextual messages without overwriting another live Error.</p><h2>Ownership and effects</h2><p>Owns retained contextual text. Inspection does not publish output; console is an explicit sink.</p><h2>Errors and limits</h2><p>Invalid spans or argument types reject. Context message capacity is bounded; the current measured pool boundary is 4084 context bytes for the filesystem message prefix.</p><h2>Executed examples</h2><h3>local:prelude-Error; expected 41</h3><pre><code>start(){Error(7101,1,50,2,8,0).x;x.code().console();41.return;}</code></pre><p>Oracle: {&quot;console_text_utf8&quot;: &quot;7101&quot;, &quot;independent_builds&quot;: 2, &quot;kinds&quot;: [4], &quot;process_exit&quot;: 41, &quot;runtime_sha256&quot;: &quot;d1a5fa4b276abef6cff544eb3d3ab11a8b64bbe1156b43f77269ee27f764423c&quot;}</p><h2>Rejected examples</h2><h3>local:hidden-Error; expected NEBO-RF166-G163-002</h3><pre><code>start(){Error(7101,1,50,2,8,0).x;x.code().console();41.return;}</code></pre><p>Oracle: {&quot;artifact_publication&quot;: &quot;REJECTED&quot;, &quot;compiler_exit&quot;: 1, &quot;diagnostic&quot;: &quot;NEBO-RF166-G163-002&quot;, &quot;no_prelude&quot;: true}</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;case_id&quot;: &quot;metadata:prelude-declarations&quot;,
+    &quot;category&quot;: &quot;metadata&quot;,
+    &quot;declarations&quot;: 11,
+    &quot;interface_sha256&quot;: &quot;910170b1ccabf964a1186892ee9f4395f1b52c1e6b5cc7683f68ee2904de0933&quot;,
+    &quot;symbol_ids&quot;: [
+      &quot;0xb479812d2b532b1f&quot;,
+      &quot;0xa827441931b3ac13&quot;,
+      &quot;0x4f5f6793880ecdcc&quot;,
+      &quot;0x6134016fa73ad75e&quot;,
+      &quot;0xbbaa81a7272b4f17&quot;,
+      &quot;0x334a76a70563dd44&quot;,
+      &quot;0x34c249cdf79d7ac9&quot;,
+      &quot;0xaf1313c7a67a4790&quot;,
+      &quot;0xbd6f63ce5a3969ee&quot;,
+      &quot;0xe388cf778a8af553&quot;,
+      &quot;0x1c582e96c672743f&quot;
+    ]
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a> <a href="Option.html">Option</a> <a href="Result.html">Result</a> <a href="Ordering.html">Ordering</a> <a href="Range.html">Range</a></nav><h2>Provenance</h2><ul><li>sdk/interfaces/prelude/std.prelude.ni — SHA-256 910170b1ccabf964a1186892ee9f4395f1b52c1e6b5cc7683f68ee2904de0933</li><li>sdk/interfaces/prelude/stdlib-registry.json — SHA-256 a70407bf8b12d694da501b3a9b515c6a7760c03eeb72ab6b6580e79db731c922</li><li>compiler/sdk/prelude.py — SHA-256 edcc9b51c6e6683d3d208a033c3c9f3bda4d70b0ca63d38b9bd362a31cdd1ad3</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

@@ -25,7 +25,7 @@ neboc_scan_feature_validate:
     jg .invalid
     cmp esi, SCAN_KIND_TEXT
     jl .invalid
-    cmp esi, SCAN_KIND_MULTILINE
+    cmp esi, SCAN_KIND_MAX
     jg .invalid
     cmp ecx, SCAN_MAX_INPUT_BYTES
     ja .limit
@@ -241,8 +241,11 @@ neboc_scan_parse_int:
     test rdx, rdx
     jnz .parse_limit
     add rax, r10
-    jo .parse_limit
+    jc .parse_limit
+    ; Accumulate an unsigned magnitude. A negative Int64 additionally owns
+    ; magnitude 2^63; only that signed endpoint may exceed INT64_MAX.
     mov rdx, 0x7fffffffffffffff
+    add rdx, rcx
     cmp rax, rdx
     ja .parse_limit
     mov r9, rax

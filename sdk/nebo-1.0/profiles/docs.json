@@ -1,0 +1,14 @@
+{
+  "archive_policy": "USTAR; sorted paths; uid/gid/mtime=0; file modes 0644 or 0755",
+  "components": [
+    "docs",
+    "examples",
+    "licenses",
+    "metadata",
+    "stdlib-functional-freeze"
+  ],
+  "external_tools": [],
+  "network_required": false,
+  "profile": "docs",
+  "target": "linux-x86_64-systemv-elf-static"
+}

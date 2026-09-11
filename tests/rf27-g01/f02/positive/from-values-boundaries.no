@@ -1,0 +1,3 @@
+start() {
+    Bytes.fromValues(0, 1, 254, 255).byteLength().return;
+}

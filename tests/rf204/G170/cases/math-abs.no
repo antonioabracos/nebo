@@ -1,0 +1,2 @@
+// Independent atomic runtime case.
+start() { std.math.abs(-37).return; }

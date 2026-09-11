@@ -1,0 +1,7 @@
+// Timeline event and stream adapters reuse the canonical observability model.
+start() {
+    RenderPlan;
+    3106;
+    output.stdout().stderr().target("observability-service").plain().visual().headlessEvent();
+    lifecycle.event("log-progress-timeline").payload("timeline-events-stream").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

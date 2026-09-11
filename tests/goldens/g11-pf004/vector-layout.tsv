@@ -1,0 +1,15 @@
+property	value	state
+element_size	8	FROZEN_INTERNAL
+element_count	4	FROZEN_INTERNAL
+size	32	FROZEN_INTERNAL
+alignment	8	FROZEN_INTERNAL
+stride	8	FROZEN_INTERNAL
+offset_0	0	FROZEN_INTERNAL
+offset_1	8	FROZEN_INTERNAL
+offset_2	16	FROZEN_INTERNAL
+offset_3	24	FROZEN_INTERNAL
+metadata_size	0	FROZEN_INTERNAL
+allocation_count	0	FROZEN_INTERNAL
+ownership	copy_only	FROZEN_INTERNAL
+arithmetic	checked_sum_and_dot	FROZEN_INTERNAL
+public_ffi_abi	none	FROZEN_INTERNAL

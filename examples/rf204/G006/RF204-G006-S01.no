@@ -1,0 +1,19 @@
+// User structs have source-order fields and deterministic target layout.
+// default() creates an independent zero value; update() returns a new copy.
+struct Point {
+    Int.x;
+    Int.y;
+}
+
+// Receiver-first functions are associated with the exact nominal TypeKey.
+(Point.self)yValue() {
+    self.y.return;
+}
+
+start() {
+    Point.default().origin;
+    origin.update(x: 7, y: 11).shifted;
+    Point.layout().facts;
+    facts.at<0>().byteSize;
+    shifted.yValue();
+}

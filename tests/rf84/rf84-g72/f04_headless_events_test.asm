@@ -1,0 +1,4 @@
+%define G072_FEATURE_ID 7204
+%define G072_TARGET_TOKEN RENDER_TARGET_TOKEN_EVENT
+%define G072_TARGET_AUX RENDER_EVENT_JSONL
+%include "tests/rf84/rf84-g72/target_front_test.inc"

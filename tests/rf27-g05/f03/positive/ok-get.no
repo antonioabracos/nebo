@@ -1,0 +1,4 @@
+start() {
+  Result<Int,Bool>(Ok(42)).value;
+  value.get().return;
+}

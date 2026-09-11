@@ -1,0 +1,5 @@
+start() {
+    "Nebo".implicit_text;
+    Text("Nebo").explicit_text;
+    if (implicit_text == explicit_text) { 0; } else { 1; }
+}

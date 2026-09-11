@@ -1,0 +1,4 @@
+start() {
+    "Idade: ".scan().idade;
+    "Nome: ".scan().nome;
+}

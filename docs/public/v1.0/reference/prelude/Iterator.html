@@ -1,0 +1,32 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>std.prelude.Iterator</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>std.prelude.Iterator</h1><p>The prelude iteration protocol associated with admitted for iteration.</p><pre>Identity: prelude:1:Iterator (SERIALIZED_SYMBOL_ID)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: EDITION_1_BOUNDED
+Serialized SymbolId: 0xaf1313c7a67a4790</pre><h2>Syntax or signature</h2><pre>for (item in boundRange) { item.console(); }</pre><h2>Origin and explicit import</h2><p>Implicit origin: PRELUDE. Original module: std.core. Explicit alternative: import &quot;std.core&quot; { Iterator; }.explicit; --no-prelude removes implicit visibility. Import every referenced prelude name explicitly; imports grant no capability.</p><h2>Behavior, methods and protocols</h2><p>The bounded source profile iterates an already bound iterable and applies break/continue and the optional finite filter. Iterator is a protocol identity, not a public Iterator(...) constructor.</p><h2>Ownership and effects</h2><p>Iteration must respect the owner lifetime and cleanup of the iterable. The protocol import grants no capability.</p><h2>Errors and limits</h2><p>No arbitrary iterator constructor or generic Iterator constraint is promised. Disabling the prelude removes the protocol from the injected resolver; Range must be explicitly imported for the example.</p><h2>Negative example applicability</h2><p>No distinct source trigger is asserted for this definition. The associated native/CLI boundary tests below are supplementary evidence, not a fabricated source rejection.</p><h2>Executed examples</h2><h3>local:prelude-Iterator; expected 14</h3><pre><code>start(){Range.exclusive(2,6).items;0.total.mutable;for(item in items){total+=item;}total.return;}</code></pre><p>Oracle: {&quot;independent_builds&quot;: 2, &quot;process_exit&quot;: 14, &quot;runtime_sha256&quot;: &quot;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855&quot;}</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;case_id&quot;: &quot;metadata:prelude-declarations&quot;,
+    &quot;category&quot;: &quot;metadata&quot;,
+    &quot;declarations&quot;: 11,
+    &quot;interface_sha256&quot;: &quot;910170b1ccabf964a1186892ee9f4395f1b52c1e6b5cc7683f68ee2904de0933&quot;,
+    &quot;symbol_ids&quot;: [
+      &quot;0xb479812d2b532b1f&quot;,
+      &quot;0xa827441931b3ac13&quot;,
+      &quot;0x4f5f6793880ecdcc&quot;,
+      &quot;0x6134016fa73ad75e&quot;,
+      &quot;0xbbaa81a7272b4f17&quot;,
+      &quot;0x334a76a70563dd44&quot;,
+      &quot;0x34c249cdf79d7ac9&quot;,
+      &quot;0xaf1313c7a67a4790&quot;,
+      &quot;0xbd6f63ce5a3969ee&quot;,
+      &quot;0xe388cf778a8af553&quot;,
+      &quot;0x1c582e96c672743f&quot;
+    ]
+  },
+  {
+    &quot;case_id&quot;: &quot;local:hidden-Iterator&quot;,
+    &quot;category&quot;: &quot;SDK&quot;,
+    &quot;enabled_symbol_id&quot;: &quot;0xaf1313c7a67a4790&quot;,
+    &quot;injected_when_disabled&quot;: false,
+    &quot;scope&quot;: &quot;resolver visibility; no public named constructor&quot;
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a> <a href="Option.html">Option</a> <a href="Result.html">Result</a> <a href="Error.html">Error</a> <a href="Ordering.html">Ordering</a></nav><h2>Provenance</h2><ul><li>sdk/interfaces/prelude/std.prelude.ni — SHA-256 910170b1ccabf964a1186892ee9f4395f1b52c1e6b5cc7683f68ee2904de0933</li><li>sdk/interfaces/prelude/stdlib-registry.json — SHA-256 a70407bf8b12d694da501b3a9b515c6a7760c03eeb72ab6b6580e79db731c922</li><li>compiler/sdk/prelude.py — SHA-256 edcc9b51c6e6683d3d208a033c3c9f3bda4d70b0ca63d38b9bd362a31cdd1ad3</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

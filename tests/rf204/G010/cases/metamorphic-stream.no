@@ -1,0 +1,1 @@
+(Int.self)transform(){(self+7).return;}(Int.self)emit(){self.console();}start(){Stream<Int>.from([29,71]).stream;stream.map(transform).mapped;mapped.sink(emit).console();102.return;}

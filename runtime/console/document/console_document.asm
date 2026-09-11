@@ -22,6 +22,7 @@ global nebo_console_document_apply_command
 global nebo_console_document_audit_links
 global nebo_console_document_copy_plain_text
 global nebo_console_document_state_hash
+global nebo_console_document_clear
 
 %macro NEBO_DOCUMENT_HASH_QWORD 1
     mov rdx, %1
@@ -35,6 +36,60 @@ global nebo_console_document_state_hash
 %endmacro
 
 section .text
+
+; Clear a settled output document, preserving its owner and monotonic revision.
+; Input nodes have external routing references, so their live document cannot
+; be reset through this output-only operation. All checks precede mutation.
+nebo_console_document_clear:
+ push rbx
+ push r12
+ push r13
+ mov rbx,rdi
+ call nebo_console_document_validate
+ test eax,eax
+ jnz .done
+ mov r12,[rbx+NEBO_CONSOLE_DOCUMENT_REVISION_OFFSET]
+ cmp r12,-1
+ je .limit
+ mov r13,[rbx+NEBO_CONSOLE_DOCUMENT_OWNER_DOMAIN_PTR_OFFSET]
+ mov rdx,[rbx+NEBO_CONSOLE_DOCUMENT_NODE_STORE_PTR_OFFSET]
+ mov rcx,[rbx+NEBO_CONSOLE_DOCUMENT_NODE_COUNT_OFFSET]
+.nodes:
+ test rcx,rcx
+ jz .reset
+ cmp dword [rdx+NEBO_CONSOLE_NODE_KIND_OFFSET],NEBO_CONSOLE_NODE_KIND_INPUT_ROW
+ jae .busy
+ add rdx,NEBO_CONSOLE_NODE_HEADER_SIZE
+ dec rcx
+ jmp .nodes
+.reset:
+ mov rdi,rbx
+ mov rsi,[rbx+NEBO_CONSOLE_DOCUMENT_HANDLE_OFFSET]
+ mov rdx,[rbx+NEBO_CONSOLE_DOCUMENT_NODE_STORE_PTR_OFFSET]
+ mov rcx,[rbx+NEBO_CONSOLE_DOCUMENT_NODE_CAPACITY_OFFSET]
+ mov r8,[rbx+NEBO_CONSOLE_DOCUMENT_TEXT_STORE_PTR_OFFSET]
+ mov r9,[rbx+NEBO_CONSOLE_DOCUMENT_TEXT_CAPACITY_OFFSET]
+ call nebo_console_document_init
+ test eax,eax
+ jnz .done
+ mov [rbx+NEBO_CONSOLE_DOCUMENT_OWNER_DOMAIN_PTR_OFFSET],r13
+ inc r12
+ mov [rbx+NEBO_CONSOLE_DOCUMENT_REVISION_OFFSET],r12
+ mov [rbx+NEBO_CONSOLE_DOCUMENT_DIRTY_REVISION_OFFSET],r12
+ mov rdi,rbx
+ call nebo_console_document_state_hash
+ xor eax,eax
+ jmp .done
+.limit:
+ mov eax,NEBO_CONSOLE_STATUS_LIMIT_EXCEEDED
+ jmp .done
+.busy:
+ mov eax,NEBO_CONSOLE_STATUS_BAD_STATE
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
 
 ; Internal failure publisher. RDI=document*, ESI=status, EDX=error.
 nebo_console_document_set_failure_internal:

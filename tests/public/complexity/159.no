@@ -1,0 +1,7 @@
+// Exercises the RF52 compiler substrate gate with deterministic diagnostics policy.
+start() {
+    RenderPlan;
+    3603;
+    output.stdout().stderr().target("rf116-closeout").plain().visual().headlessEvent();
+    lifecycle.event("integration-conformance").payload("rf52-substrate-audit").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

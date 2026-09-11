@@ -1,0 +1,6 @@
+(Result<Bool,Int>.context)propagate(Result<Bool,Int>.value) {
+    value?.return;
+}
+start() {
+    Result<Bool,Int>(Ok(false)).propagate(Result<Bool,Int>(Ok(true))).get().return;
+}

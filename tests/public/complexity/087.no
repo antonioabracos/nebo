@@ -1,0 +1,6 @@
+// Round-trips transported fields through an independent consumer boundary.
+start() {
+    RenderPlan;
+    1307;
+    protocol.event("console.text").event("console.table").event("console.dashboard").event("console.scan.response").payload("consumer-round-trip").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

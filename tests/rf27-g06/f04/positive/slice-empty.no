@@ -1,0 +1,5 @@
+start() {
+  Array<Char,0> [].empty;
+  empty.asSlice().view;
+  view.length().return;
+}

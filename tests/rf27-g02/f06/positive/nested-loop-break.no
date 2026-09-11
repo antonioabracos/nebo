@@ -1,0 +1,11 @@
+start() {
+  0.counter.mutable;
+  loop {
+    loop {
+      counter += 1;
+      break;
+    }
+    break;
+  }
+  counter;
+}

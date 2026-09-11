@@ -1,0 +1,6 @@
+(Result<Int,Int>.c)p(Result<Int,Int>.v) {
+  v?.return;
+}
+start() {
+  Result<Int,Int>(Ok(0)).p(Result<Int,Int>(Err(9))).getErr().return;
+}

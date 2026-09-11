@@ -1,0 +1,7 @@
+// Semantic states preserve accessible labels even when visual styling is unavailable.
+start() {
+    RenderPlan;
+    503;
+    state.ok().success().warn().warning().error().fail().info().debug();
+    state.trace().blocked().todo().done().skip().pending().critical().neutral();
+}

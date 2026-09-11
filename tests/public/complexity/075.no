@@ -1,0 +1,13 @@
+// Retry, timeout, idempotency, compensation, and saga intervention remain explicit.
+(Int.self)stepRetry() { self.return; }
+(Int.self)stepTimeout() { self.return; }
+(Int.self)stepIdempotencyKey() { self.return; }
+(Int.self)stepCompensate() { self.return; }
+(Int.self)sagaNew() { self.return; }
+(Int.self)sagaExecute() { self.return; }
+(Int.self)sagaStatus() { self.return; }
+(Int.self)sagaManualIntervention() { self.return; }
+
+start() {
+    96.stepRetry().stepTimeout().stepIdempotencyKey().stepCompensate().sagaNew().sagaExecute().sagaStatus().sagaManualIntervention();
+}

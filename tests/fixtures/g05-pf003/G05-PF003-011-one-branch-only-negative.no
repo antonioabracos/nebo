@@ -1,0 +1,9 @@
+start() {
+    Int.result;
+    if (true) {
+        1.result;
+    } else {
+        0;
+    }
+    result;
+}

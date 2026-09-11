@@ -314,4 +314,182 @@ NEBOC_ABI_FUNCTION neboc_iterator_mutation_gate
 .gate_invalid:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
  ret
+
+; enumerate(iter*) authenticates the iterator. The indexed value is produced
+; by next_enumerated so the base Iterator ABI remains reusable.
+NEBOC_ABI_FUNCTION neboc_iterator_enumerate
+ sub rsp,8
+ lea rsi,[rsp]
+ call neboc_iterator_size_hint
+ add rsp,8
+ ret
+
+; next_enumerated(iter*, out_index*, out_value*, found*) publishes the current
+; monotonic index and delegates element authentication/copying to next().
+NEBOC_ABI_FUNCTION neboc_iterator_next_enumerated
+ test rdi,rdi
+ jz .enumerated_invalid
+ test rsi,rsi
+ jz .enumerated_invalid
+ test rdx,rdx
+ jz .enumerated_invalid
+ test rcx,rcx
+ jz .enumerated_invalid
+ push r12
+ push r13
+ push r14
+ push r15
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ mov r15,rcx
+ mov rax,[r12+NEBOC_ITER_INDEX_OFFSET]
+ push rax
+ mov rsi,r14
+ mov rdx,r15
+ call neboc_iterator_next
+ pop rdx
+ test eax,eax
+ jnz .enumerated_done
+ cmp qword [r15],0
+ je .enumerated_done
+ mov [r13],rdx
+.enumerated_done:
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ ret
+.enumerated_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+; skip(iter*, count) advances without reading or materializing elements.
+NEBOC_ABI_FUNCTION neboc_iterator_skip
+ push r12
+ push r13
+ sub rsp,8
+ mov r12,rdi
+ mov r13,rsi
+ lea rsi,[rsp]
+ call neboc_iterator_size_hint
+ test eax,eax
+ jnz .skip_done
+ mov rax,[rsp]
+ cmp r13,rax
+ cmova r13,rax
+ add [r12+NEBOC_ITER_INDEX_OFFSET],r13
+ xor eax,eax
+.skip_done:
+ add rsp,8
+ pop r13
+ pop r12
+ ret
+
+; take(iter*, count) narrows the authenticated remaining range lazily.
+NEBOC_ABI_FUNCTION neboc_iterator_take
+ push r12
+ push r13
+ sub rsp,8
+ mov r12,rdi
+ mov r13,rsi
+ lea rsi,[rsp]
+ call neboc_iterator_size_hint
+ test eax,eax
+ jnz .take_done
+ mov rax,[rsp]
+ cmp r13,rax
+ cmova r13,rax
+ add r13,[r12+NEBOC_ITER_INDEX_OFFSET]
+ mov [r12+NEBOC_ITER_LENGTH_OFFSET],r13
+ xor eax,eax
+.take_done:
+ add rsp,8
+ pop r13
+ pop r12
+ ret
+
+; collect(iter*, destination_empty_list*) validates all capacity and type
+; requirements before consuming the iterator or mutating the destination.
+NEBOC_ABI_FUNCTION neboc_iterator_collect_list
+ test rdi,rdi
+ jz .collect_invalid
+ test rsi,rsi
+ jz .collect_invalid
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,40
+ mov r12,rdi
+ mov r13,rsi
+ mov rax,[r12+NEBOC_ITER_INDEX_OFFSET]
+ mov [rsp+16],rax
+ lea rsi,[rsp]
+ call neboc_iterator_size_hint
+ test eax,eax
+ jnz .collect_done
+ mov rdi,r13
+ call neboc_list_validate
+ test eax,eax
+ jnz .collect_done
+ bt qword [r13+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .collect_source
+ cmp qword [r13+NEBOC_LIST_LENGTH_OFFSET],0
+ jne .collect_source
+ mov rax,[rsp]
+ cmp rax,[r13+NEBOC_LIST_CAPACITY_OFFSET]
+ ja .collect_limit
+ cmp rax,NEBOC_LIST_MAX_ELEMENTS
+ ja .collect_limit
+ cmp qword [r12+NEBOC_ITER_STRIDE_OFFSET],0
+ je .collect_source
+ mov rcx,[r12+NEBOC_ITER_STRIDE_OFFSET]
+ cmp rcx,[r13+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ jne .collect_source
+ xor ebx,ebx
+.collect_loop:
+ cmp rbx,[rsp]
+ jae .collect_ok
+ mov rax,rbx
+ imul rax,[r13+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov r14,[r13+NEBOC_LIST_DATA_OFFSET]
+ add r14,rax
+ mov rdi,r12
+ mov rsi,r14
+ lea rdx,[rsp+8]
+ call neboc_iterator_next
+ test eax,eax
+ jnz .collect_fail
+ cmp qword [rsp+8],1
+ jne .collect_source
+ inc rbx
+ jmp .collect_loop
+.collect_ok:
+ mov rax,[rsp]
+ mov [r13+NEBOC_LIST_LENGTH_OFFSET],rax
+ test rax,rax
+ jz .collect_success
+ inc qword [r13+NEBOC_LIST_GENERATION_OFFSET]
+.collect_success:
+ xor eax,eax
+ jmp .collect_done
+.collect_source:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .collect_fail
+.collect_limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+.collect_fail:
+ mov rcx,[rsp+16]
+ mov [r12+NEBOC_ITER_INDEX_OFFSET],rcx
+.collect_done:
+ add rsp,40
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+.collect_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
 section .note.GNU-stack noalloc noexec nowrite progbits

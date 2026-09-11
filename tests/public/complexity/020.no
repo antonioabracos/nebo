@@ -1,0 +1,13 @@
+// Continuous optimizers retain method state, bounds, constraints, termination status, gradient norm, and optimality evidence.
+(Int.self)continuousOptimizerGradientDescent() { self.return; }
+(Int.self)continuousOptimizerLbfgs() { self.return; }
+(Int.self)continuousOptimizerAdam() { self.return; }
+(Int.self)optimizerBounds() { self.return; }
+(Int.self)optimizerConstraints() { self.return; }
+(Int.self)optimizerMinimize() { self.return; }
+(Int.self)solutionGradientNorm() { self.return; }
+(Int.self)solutionOptimalityReport() { self.return; }
+
+start() {
+    121.continuousOptimizerGradientDescent().continuousOptimizerLbfgs().continuousOptimizerAdam().optimizerBounds().optimizerConstraints().optimizerMinimize().solutionGradientNorm().solutionOptimalityReport();
+}

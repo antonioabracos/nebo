@@ -1,0 +1,7 @@
+// Exercises the RF27 substrate gate without introducing a second Console API.
+start() {
+    RenderPlan;
+    3602;
+    output.stdout().stderr().target("rf116-closeout").plain().visual().headlessEvent();
+    lifecycle.event("integration-conformance").payload("rf27-substrate-audit").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

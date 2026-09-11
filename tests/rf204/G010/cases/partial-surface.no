@@ -1,0 +1,2 @@
+// Individual operations compose without requiring every group method.
+start(){Table.fromColumns([Tuple.of("age",Column<Int>.from([17]))]).table;table.rowCount().return;}

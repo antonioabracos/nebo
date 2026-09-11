@@ -1,0 +1,6 @@
+// Models the complete scan lifecycle while keeping response data redacted.
+start() {
+    RenderPlan;
+    1305;
+    protocol.event("console.scan.request").event("console.scan.response").event("console.scan.validation_failed").event("console.scan.cancelled").event("console.scan.timeout").payload("scan-lifecycle").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

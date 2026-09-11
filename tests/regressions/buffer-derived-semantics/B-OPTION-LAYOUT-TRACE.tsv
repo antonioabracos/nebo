@@ -1,0 +1,6 @@
+FIXTURE	GET_INDEX	TAG	PAYLOAD	OBSERVATION	RESULT	SLOT_POLICY
+B01	2	SOME	103	unwrapOr(0)	103	exact get initializer replay
+B02	9	NONE	0	unwrapOr(255)	255	literal fallback materialized
+B04	0	SOME	0	isSome + unwrapOr(99)	true + 0	tag distinct from zero payload
+B05	2 then 9	SOME then NONE	103 then 0	first after second	103	independent lexical identities
+B06	2	SOME	103	repeated tag/value observations	stable	nondestructive

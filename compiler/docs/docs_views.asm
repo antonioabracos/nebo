@@ -1,71 +1,30 @@
-; NEBOC-DOCS-REFERENCIA-LOCAL-CROSS-LINKS-SEARCH-E-DOCUMENTACAO-VERSIONADA-F05: Version/edition/target/stability views
-; Bounded native semantic-documentation kernel.
-; rdi=input bytes, rsi=length, rdx=caller-owned 24-byte result.
-; Success publishes digest, length, and stable operation tag atomically.
-; Failure publishes nothing. No allocation, I/O, libc, network, or effects.
+; RF166-G159-F05 Edition/target/stability availability view owner.
 bits 64
 default rel
-
+%include "compiler/docs/docs.inc"
 global neboc_docs_views
-
-%define DOC_MAX_INPUT 4096
-%define DOC_TAG 37
-%define hover_FNV_OFFSET 0xcbf29ce484222325
-%define hover_FNV_PRIME  0x100000001b3
-
 section .text
 align 16
 neboc_docs_views:
-    test rdi, rdi
-    jz .argument
-    test rdx, rdx
-    jz .argument
-    test rdx, 7
-    jnz .argument
-    test rsi, rsi
-    jz .length
-    cmp rsi, DOC_MAX_INPUT
-    ja .length
-    lea rax, [rdi + rsi]
-    cmp rax, rdi
-    jb .length
-
-    mov rax, hover_FNV_OFFSET
-    mov r8, hover_FNV_PRIME
-    xor ecx, ecx
-.scan:
-    cmp rcx, rsi
-    jae .publish
-    movzx r9d, byte [rdi + rcx]
-    test r9b, r9b
-    jz .encoding
-    cmp r9b, 0x7f
-    ja .encoding
-    xor rax, r9
-    imul rax, r8
-    inc rcx
-    jmp .scan
-.publish:
-    xor rax, DOC_TAG
-    mov qword [rdx], rax
-    mov qword [rdx + 8], rsi
-    mov qword [rdx + 16], DOC_TAG
-    xor eax, eax
-    xor edx, edx
-    ret
-.argument:
-    mov eax, 1
-    mov edx, 1
-    ret
-.length:
-    mov eax, 2
-    mov edx, 2
-    ret
-.encoding:
-    mov eax, 3
-    mov edx, 3
-    ret
-.keyword:
-    mov eax, 4
-    mov edx, 4
-    ret
+ DOCS_VALIDATE_REQUEST NEBOC_DOCS_OP_VIEWS,.validated
+.validated:
+ cmp qword [rdi+NEBOC_DOCS_GRAPH_DIGEST_OFFSET],0
+ je .contract
+ cmp qword [rdi+NEBOC_DOCS_EDITION_OFFSET],1
+ jne .policy
+ cmp qword [rdi+NEBOC_DOCS_TARGET_OFFSET],0
+ je .policy
+ mov rax,[rdi+NEBOC_DOCS_STABILITY_COUNT_OFFSET]
+ cmp rax,[rdi+NEBOC_DOCS_SYMBOL_COUNT_OFFSET]
+ ja .contract
+ mov rax,[rdi+NEBOC_DOCS_GRAPH_DIGEST_OFFSET]
+ xor rax,[rdi+NEBOC_DOCS_TARGET_OFFSET]
+ xor rax,[rdi+NEBOC_DOCS_EDITION_OFFSET]
+ DOCS_PUBLISH rax,NEBOC_DOCS_CLASS_VIEW,[rdi+NEBOC_DOCS_EDITION_OFFSET],[rdi+NEBOC_DOCS_TARGET_OFFSET],[rdi+NEBOC_DOCS_STABILITY_COUNT_OFFSET]
+.contract:
+ mov eax,NEBOC_DOCS_STATUS_CONTRACT
+ ret
+.policy:
+ mov eax,NEBOC_DOCS_STATUS_POLICY
+ ret
+section .note.GNU-stack noalloc noexec nowrite progbits

@@ -1,0 +1,4 @@
+type alias Switch = Bool;
+start() {
+    true.return;
+}

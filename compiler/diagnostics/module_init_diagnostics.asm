@@ -7,9 +7,9 @@ section .text
 NEBOC_ABI_FUNCTION neboc_module_init_diagnostic
  test rsi,rsi
  jz .arg
- cmp rdi,1
+ cmp rdi,NEBOC_INIT_REASON_HIDDEN_EFFECT
  jb .source
- cmp rdi,6
+ cmp rdi,NEBOC_INIT_REASON_STATE
  ja .source
  mov eax,NEBOC_INIT_DIAG_BASE
  add eax,edi

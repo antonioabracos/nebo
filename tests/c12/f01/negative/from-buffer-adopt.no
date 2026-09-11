@@ -1,0 +1,6 @@
+start() {
+    Array<Int,6> [1, 2, 3, 4, 5, 6].owner;
+    owner.asSlice().source;
+    Tensor<Int>.fromBuffer(source, Tuple.of(2, 3), true).tensor;
+    0;
+}

@@ -1,0 +1,15 @@
+contract_version=0
+target=x86_64-systemv-elf-linux
+format=IEEE754_BINARY64
+bit_width=64
+storage_size=8
+storage_alignment=8
+parameter_class=XMM
+return_class=XMM
+abi_version=0
+state=INTERNAL_PROTOTYPE_FROZEN
+nan=PAYLOAD_PRESERVED
+infinity=PRESERVED
+signed_zero=PRESERVED
+fast_math=FORBIDDEN
+public_codegen=NOT_AUTHORIZED_IN_G01_PF004

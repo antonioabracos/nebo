@@ -1,0 +1,5 @@
+start() {
+  50.counter.mutable;
+  counter -= 8;
+  counter;
+}

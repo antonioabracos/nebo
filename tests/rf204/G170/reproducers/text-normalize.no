@@ -1,0 +1,5 @@
+// The transformed bytes must reach Console before the explicit status.
+start() {
+    "é".normalizeNfc().console();
+    23.return;
+}

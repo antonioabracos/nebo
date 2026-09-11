@@ -196,13 +196,16 @@ nom_type_at:
 ; RAX=index -> EAX type id, RDX value. Zero type means not a literal.
 %define call NEBOC_ABI_FUNCTION_SCOPED_CALL
 nom_literal_at:
+ mov r10,rax
  call nom_token_ptr
  test rax,rax
  jz .none
  mov rcx,[rax+NEBOC_TOKEN_KIND_OFFSET]
  mov rdx,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ cmp rcx,NEBOC_TOKEN_MINUS
+ je .negative
  cmp rcx,NEBOC_TOKEN_INTEGER
- je .int
+ je .positive_int
  cmp rcx,NEBOC_TOKEN_CHAR
  je .char
  cmp rcx,NEBOC_TOKEN_FLOAT
@@ -217,6 +220,22 @@ nom_literal_at:
  xor eax,eax
  xor edx,edx
  ret
+.negative:
+ lea rax,[r10+1]
+ call nom_token_ptr
+ test rax,rax
+ jz .none
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_INTEGER
+ jne .none
+ mov rdx,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ mov rcx,0x8000000000000000
+ cmp rdx,rcx
+ ja .none
+ neg rdx
+ jmp .int
+.positive_int:
+ test rdx,rdx
+ js .none
 .int: mov eax,NEBOC_NOM_TYPE_INT
  ret
 .char: mov eax,NEBOC_NOM_TYPE_CHAR
@@ -582,15 +601,19 @@ nom_scan_operations:
  jz .next
  mov r13d,1
  or qword [r12+NEBOC_NOM_FLAGS_OFFSET],NEBOC_NOM_FLAG_CONSTRUCTED
- cmp qword [r12+NEBOC_NOM_PAYLOAD_TYPE_OFFSET],0
- jne .next
  lea rax,[r14+2]
  call nom_literal_at
  test eax,eax
  jz .next
+ cmp rax,[r12+NEBOC_NOM_UNDERLYING_TYPE_OFFSET]
+ jne .constructor_payload_error
  mov [r12+NEBOC_NOM_PAYLOAD_TYPE_OFFSET],rax
  mov [r12+NEBOC_NOM_PAYLOAD_VALUE_OFFSET],rdx
  jmp .next
+.constructor_payload_error:
+ lea rax,[r14+2]
+ mov [r12+NEBOC_NOM_ERROR_TOKEN_OFFSET],rax
+ jmp .payload_error
 .enum_construct:
  cmp qword [r12+NEBOC_NOM_KIND_OFFSET],NEBOC_NOM_KIND_ENUM
  je .enum_owner_construct

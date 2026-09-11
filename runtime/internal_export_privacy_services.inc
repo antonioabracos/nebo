@@ -1,14 +1,136 @@
-%ifndef nebo_servicos_visual_export_e_visual_privacy_record_replay_INTERNAL_CONTRACTS_INC
-%define nebo_servicos_visual_export_e_visual_privacy_record_replay_INTERNAL_CONTRACTS_INC 1
-%define NEBO_INTERNAL_ERR_INVALID -22
-%define NEBO_INTERNAL_ERR_BOUNDS -75
-%define servicos_visual_export_e_visual_privacy_record_replay_export_text_html_image_CONTRACT 1
-%define servicos_visual_export_e_visual_privacy_record_replay_record_stoprecord_CONTRACT 1
-%define servicos_visual_export_e_visual_privacy_record_replay_replay_snapshot_CONTRACT 1
-%define servicos_visual_export_e_visual_privacy_record_replay_redactfields_mask_CONTRACT 1
-%define servicos_visual_export_e_visual_privacy_record_replay_allow_deny_CONTRACT 1
-%define servicos_visual_export_e_visual_privacy_record_replay_policy_apply_report_CONTRACT 1
-%define servicos_visual_export_e_visual_privacy_record_replay_migration_to_receiver_host_service_CONTRACT 1
-%define servicos_visual_export_e_visual_privacy_record_replay_retention_permissions_audit_CONTRACT 1
-%define servicos_visual_export_e_visual_privacy_record_replay_closeout_CONTRACT 1
+%ifndef NEBO_INTERNAL_EXPORT_PRIVACY_SERVICES_INC
+%define NEBO_INTERNAL_EXPORT_PRIVACY_SERVICES_INC 1
+
+; G114 is an internal host-service layer. Public programs keep using the
+; receiver-first RenderPlan surface; no public visual.* namespace is added.
+%define NEBO_G114_SPEC_VERSION 1
+%define NEBO_G114_MATURITY_INTERNAL_EXPORT_PRIVACY_SERVICES_GREEN 2
+
+%define NEBO_G114_OK 0
+%define NEBO_G114_ERROR_INVALID -1
+%define NEBO_G114_ERROR_BOUNDS -2
+%define NEBO_G114_ERROR_VERSION -3
+%define NEBO_G114_ERROR_TARGET -4
+%define NEBO_G114_ERROR_POLICY -5
+%define NEBO_G114_ERROR_LIFETIME -6
+%define NEBO_G114_ERROR_PATH -7
+%define NEBO_G114_ERROR_CAPABILITY -8
+%define NEBO_G114_ERROR_STATE -9
+%define NEBO_G114_ERROR_RETENTION -10
+%define NEBO_G114_ERROR_PERMISSION -11
+%define NEBO_G114_ERROR_INTEGRITY -12
+
+%define NEBO_G114_TARGET_HEADLESS 1
+%define NEBO_G114_TARGET_LIVE 2
+
+%define NEBO_G114_PRIVACY_PUBLIC 1
+%define NEBO_G114_PRIVACY_SENSITIVE 2
+%define NEBO_G114_PRIVACY_SECRET 3
+
+%define NEBO_G114_CAPABILITY_EXPORT 1
+%define NEBO_G114_CAPABILITY_RECORD 2
+%define NEBO_G114_CAPABILITY_PRIVACY 4
+%define NEBO_G114_CAPABILITY_AUDIT 8
+%define NEBO_G114_CAPABILITY_ALL 15
+
+%define NEBO_G114_POLICY_ALLOW 1
+%define NEBO_G114_POLICY_DENY 2
+%define NEBO_G114_POLICY_REDACT 3
+%define NEBO_G114_POLICY_MASK 4
+
+%define NEBO_G114_STATE_NONE 0
+%define NEBO_G114_STATE_OPEN 1
+%define NEBO_G114_STATE_CLOSED 2
+%define NEBO_G114_STATE_REPLAYED 3
+%define NEBO_G114_STATE_SNAPSHOT 4
+%define NEBO_G114_STATE_REDACTED 5
+%define NEBO_G114_STATE_MASKED 6
+%define NEBO_G114_STATE_ALLOWED 7
+%define NEBO_G114_STATE_DENIED 8
+%define NEBO_G114_STATE_POLICY 9
+%define NEBO_G114_STATE_APPLIED 10
+%define NEBO_G114_STATE_REPORT 11
+
+%define NEBO_G114_EXPORT_TEXT 1
+%define NEBO_G114_EXPORT_HTML 2
+%define NEBO_G114_EXPORT_IMAGE 3
+%define NEBO_G114_RECORD 4
+%define NEBO_G114_STOP_RECORD 5
+%define NEBO_G114_REPLAY 6
+%define NEBO_G114_SNAPSHOT 7
+%define NEBO_G114_REDACT_FIELDS 8
+%define NEBO_G114_MASK 9
+%define NEBO_G114_ALLOW 10
+%define NEBO_G114_DENY 11
+%define NEBO_G114_POLICY 12
+%define NEBO_G114_APPLY 13
+%define NEBO_G114_REPORT 14
+%define NEBO_G114_OPERATION_COUNT 14
+
+%define NEBO_G114_MAX_PAYLOAD_UNITS 1048576
+%define NEBO_G114_MAX_IMAGE_UNITS 262144
+%define NEBO_G114_MAX_RETENTION_TICKS 3650
+%define NEBO_G114_PERMISSION_READ 1
+%define NEBO_G114_PERMISSION_WRITE 2
+%define NEBO_G114_PERMISSION_AUDIT 4
+%define NEBO_G114_PERMISSION_ALL 7
+%define NEBO_G114_FLAG_HTML_SANITIZED 0x1000000000000000
+%define NEBO_G114_FLAG_FIELDS_SELECTED 0x2000000000000000
+%define NEBO_G114_REQUIRED_FLAGS 0x3000000000000000
+
+; Borrowed, pointer-free request specification (128 bytes).
+%define NEBO_G114_SPEC_VERSION_OFFSET 0
+%define NEBO_G114_SPEC_TARGET_OFFSET 8
+%define NEBO_G114_SPEC_PATH_DIGEST_OFFSET 16
+%define NEBO_G114_SPEC_PAYLOAD_DIGEST_OFFSET 24
+%define NEBO_G114_SPEC_PAYLOAD_UNITS_OFFSET 32
+%define NEBO_G114_SPEC_GENERATION_OFFSET 40
+%define NEBO_G114_SPEC_OWNER_GENERATION_OFFSET 48
+%define NEBO_G114_SPEC_VIEW_GENERATION_OFFSET 56
+%define NEBO_G114_SPEC_PRIVACY_OFFSET 64
+%define NEBO_G114_SPEC_CAPABILITIES_OFFSET 72
+%define NEBO_G114_SPEC_POLICY_ACTION_OFFSET 80
+%define NEBO_G114_SPEC_RETENTION_OFFSET 88
+%define NEBO_G114_SPEC_PERMISSION_OFFSET 96
+%define NEBO_G114_SPEC_RECORD_HANDLE_OFFSET 104
+%define NEBO_G114_SPEC_SOURCE_DIGEST_OFFSET 112
+%define NEBO_G114_SPEC_FLAGS_OFFSET 120
+%define NEBO_G114_SPEC_SIZE 128
+
+; Caller-owned, pointer-free service receipt (128 bytes).
+%define NEBO_G114_RECEIPT_OPERATION_OFFSET 0
+%define NEBO_G114_RECEIPT_TARGET_OFFSET 8
+%define NEBO_G114_RECEIPT_STATE_OFFSET 16
+%define NEBO_G114_RECEIPT_ARTIFACT_DIGEST_OFFSET 24
+%define NEBO_G114_RECEIPT_AUDIT_DIGEST_OFFSET 32
+%define NEBO_G114_RECEIPT_PAYLOAD_UNITS_OFFSET 40
+%define NEBO_G114_RECEIPT_GENERATION_OFFSET 48
+%define NEBO_G114_RECEIPT_PRIVACY_OFFSET 56
+%define NEBO_G114_RECEIPT_CAPABILITIES_OFFSET 64
+%define NEBO_G114_RECEIPT_POLICY_ACTION_OFFSET 72
+%define NEBO_G114_RECEIPT_RETENTION_OFFSET 80
+%define NEBO_G114_RECEIPT_PERMISSION_OFFSET 88
+%define NEBO_G114_RECEIPT_RECORD_HANDLE_OFFSET 96
+%define NEBO_G114_RECEIPT_SOURCE_DIGEST_OFFSET 104
+%define NEBO_G114_RECEIPT_MATURITY_OFFSET 112
+%define NEBO_G114_RECEIPT_FLAGS_OFFSET 120
+%define NEBO_G114_RECEIPT_SIZE 128
+
+%ifndef NEBO_G114_EXPORT_PRIVACY_IMPLEMENTATION
+extern nebo_g114_export_text
+extern nebo_g114_export_html
+extern nebo_g114_export_image
+extern nebo_g114_record
+extern nebo_g114_stop_record
+extern nebo_g114_replay
+extern nebo_g114_snapshot
+extern nebo_g114_redact_fields
+extern nebo_g114_mask
+extern nebo_g114_allow
+extern nebo_g114_deny
+extern nebo_g114_policy
+extern nebo_g114_apply
+extern nebo_g114_report
+%endif
+
 %endif

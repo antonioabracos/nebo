@@ -1,0 +1,2 @@
+callable value(Int.value) capture none { value.return; }
+start() { callback(value, true).return; }

@@ -1,0 +1,2 @@
+(Int.self)pick(Int.index) { Array<Int,3> [5,7,9].owner; owner.asSlice().values; values.at(index).return; }
+start() { 0.pick(2).return; }

@@ -1,0 +1,7 @@
+shape_id	canonical_shape	operation	state
+G10-S01	[1, 2, 3, 4]	literal	PF002_CONTRACT
+G10-S02	Array<Int,4> [1, 2, 3, 4]	explicit_literal	PF002_CONTRACT
+G10-S03	values[0]	constant_index_zero	PF002_CONTRACT
+G10-S04	values[3]	constant_index_last	PF002_CONTRACT
+G10-S05	values.len	length_observer	PF002_CONTRACT
+G10-S06	values[1] + values[2]	read_composition	PF002_CONTRACT

@@ -25,6 +25,7 @@
 %ifndef NEBO_MATRIX_CONTRACT_IMPLEMENTATION
 extern nebo_matrix_init_owned
 extern nebo_matrix_validate
+extern nebo_matrix_validate_finite_f64
 extern nebo_matrix_validate_view_owner
 %endif
 %endif

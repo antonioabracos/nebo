@@ -1,0 +1,3 @@
+case_id	source	minimized_source	expected	baseline_diagnostic	runtime_exit
+PRE-G173-RESULT-PUBLIC	examples/evolution/rf27-g05/typed-propagation.no	tests/pre-g173-bridge/result/typed-propagation-minimized.no	PASS	NEBO-BINDINGS-CONSTANTES-MUTABILIDADE-E-DEFINITE-ASSIGNMENT-018	9
+PRE-G173-SLICE-PUBLIC	examples/evolution/rf27-g06/borrowed-slice.no	tests/pre-g173-bridge/slice/borrowed-slice-minimized.no	PASS	NEBO-COLECOES-PRIMITIVAS-MUTATION-DEFERRED	20

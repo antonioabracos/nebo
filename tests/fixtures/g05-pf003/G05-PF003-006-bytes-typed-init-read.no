@@ -1,0 +1,5 @@
+start() {
+    Bytes.payload;
+    Bytes.empty().payload;
+    payload.byteLength();
+}

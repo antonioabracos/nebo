@@ -1,0 +1,22 @@
+{
+  "core_always_on": 47,
+  "current_entry": null,
+  "domain_gated": 80,
+  "entries_activated_by_installation": 0,
+  "entries_total": 185,
+  "installation_state": "INSTALLED_NOT_EXECUTED",
+  "next_entry": null,
+  "registry_id": "NEBO-SYMBOL-AND-OPERATOR-REGISTRY",
+  "registry_md_sha256": "57af3b338cb24ea116ec680a0da2b2f2182a95314f1b6bcd778456d6da1830d2",
+  "registry_tsv_sha256": "b7e5694ceadf30ccffb4077c994fe230d2a10201b64dc6e9e218bdcf4b157f14",
+  "rejected": 26,
+  "reserved": 23,
+  "schema": "NEBO-SYMBOL-OPERATOR-REGISTRY-CURSOR-v1",
+  "unicode_alias": 9,
+  "updated_by": "POST-G204-EXPLICIT-PUBLIC-1.0.1-COMPATIBILITY-DECISION",
+  "version": "1.0",
+  "compatibility_entries": [
+    "../NSR-RES-015-PUBLIC-1.0.1-COMPATIBILITY.json"
+  ],
+  "prior_installation_tsv_sha256": "a6f6cd1fbda1b6ee77934fa24a3b1f654ae16c657a1bd2a1c9c61444f5d72f2a"
+}

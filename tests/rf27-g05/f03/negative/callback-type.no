@@ -1,0 +1,5 @@
+start() {
+  Result<Int,Bool>(Ok(1)).value;
+  value.map(false).mapped;
+  mapped.get().return;
+}

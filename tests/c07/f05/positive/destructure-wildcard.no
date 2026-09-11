@@ -1,0 +1,1 @@
+start() { Tuple.of(1).one; one.destructure(_); one.length().return; }

@@ -41,13 +41,16 @@ nebo_angle_suffix_classify:
     mov edx, NEBO_QUANTITY_ERR_SYNTAX
     cmp edi, 0x00b0
     jne .done
-    mov ecx, NEBO_QCTX_HAS_COMPLETE_OPERAND | NEBO_QCTX_DOMAIN_ENABLED
-    and esi, ecx
-    cmp esi, ecx
-    jne .done
+    test esi, NEBO_QCTX_HAS_COMPLETE_OPERAND
+    jz .done
+    test esi, NEBO_QCTX_DOMAIN_ENABLED
+    jz .domain_error
     mov eax, NEBO_UNIT_MILLIDEGREE
     xor edx, edx
 .done:
+    ret
+.domain_error:
+    mov edx, NEBO_QUANTITY_ERR_DOMAIN
     ret
 
 section .note.GNU-stack noalloc noexec nowrite progbits

@@ -1,0 +1,23 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>diagnostic options</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>diagnostic options</h1><p>The public check command forwards bounded --max-errors (1..64), exclusive --fail-fast/--keep-going, human/short --show-fixes and --path-style relative/workspace/absolute to the native diagnostic owner. Duplicated options, incompatible modes and out-of-range arguments reject as usage errors before artifact publication.</p><pre>Identity: N1-diagnostic-options (NORMATIVE_RULE)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: EDITION_1_BOUNDED_NORMATIVE</pre><h2>Syntax or signature</h2><pre>N1-diagnostic-options — EDITION_1_BOUNDED_NORMATIVE</pre><h2>Scope and constraints</h2><p>The public check command forwards bounded --max-errors (1..64), exclusive --fail-fast/--keep-going, human/short --show-fixes and --path-style relative/workspace/absolute to the native diagnostic owner. Duplicated options, incompatible modes and out-of-range arguments reject as usage errors before artifact publication.</p><h2>Use and remediation</h2><p>Follow the admitted forms in the individual syntax and operator references. Keep source order and type identity; make imports and capability grants explicit. A native supplemental contract does not introduce source constructors or widen target support.</p><h2>Executed examples</h2><h3>cli:unchanged-no-option-runtime; expected 23</h3><pre><code>start(){(17+6).return;}</code></pre><p>Oracle: {&quot;independent_builds&quot;: 2, &quot;process_exit&quot;: 23, &quot;runtime_sha256&quot;: &quot;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855&quot;}</p><h2>Rejected examples</h2><h3>cli:default; expected NEBO_NAME_UNDEFINED</h3><pre><code>start(){Int.x;absent.x;23.return;}</code></pre><p>Oracle: {&quot;artifact_publication&quot;: &quot;REJECTED&quot;, &quot;compiler_exit&quot;: 1, &quot;diagnostic&quot;: &quot;NEBO_NAME_UNDEFINED&quot;}</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;case_id&quot;: &quot;cli:build-option-0&quot;,
+    &quot;category&quot;: &quot;negative&quot;,
+    &quot;exit&quot;: 2,
+    &quot;observed_sha256&quot;: &quot;80df32ecedd07d3781243cfc2da8c7c4971d459a9f40572cd8cde258fbd5877f&quot;
+  },
+  {
+    &quot;case_id&quot;: &quot;cli:build-option-1&quot;,
+    &quot;category&quot;: &quot;negative&quot;,
+    &quot;exit&quot;: 2,
+    &quot;observed_sha256&quot;: &quot;80df32ecedd07d3781243cfc2da8c7c4971d459a9f40572cd8cde258fbd5877f&quot;
+  },
+  {
+    &quot;case_id&quot;: &quot;cli:build-option-2&quot;,
+    &quot;category&quot;: &quot;negative&quot;,
+    &quot;exit&quot;: 2,
+    &quot;observed_sha256&quot;: &quot;80df32ecedd07d3781243cfc2da8c7c4971d459a9f40572cd8cde258fbd5877f&quot;
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a> <a href="rule-allocation-budget.html">rule-allocation-budget</a> <a href="rule-arithmetic-failures.html">rule-arithmetic-failures</a> <a href="rule-output-capacity.html">rule-output-capacity</a> <a href="rule-recursion-budget.html">rule-recursion-budget</a></nav><h2>Provenance</h2><ul><li>docs/public/v1.0/language/specification/NORMATIVE-RULE-REGISTRY.tsv — SHA-256 2d2d4324cf615c0970e3dca2f4197cde9e32b445e0337dd8179967dc0cff2d16</li><li>compiler/driver/cli/linux-x86_64/cli_driver.asm — SHA-256 0005784201af6835cb78990bd7f0800aa5b745fb813a6bd744934254766560ed</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

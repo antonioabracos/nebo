@@ -11,9 +11,13 @@ global integrate_samples_trapezoid_i64
 ; rdi=samples,rsi=count>=2,rdx=step numerator,rcx=positive step denominator,
 ; r8=result[status,numerator,denominator,evaluations].
 integrate_samples_trapezoid_i64:
-    test rdi, rdi
-    jz .domain
     test r8, r8
+    jz .domain_return
+    mov qword [r8], 0
+    mov qword [r8 + 8], 0
+    mov qword [r8 + 16], 0
+    mov qword [r8 + 24], 0
+    test rdi, rdi
     jz .domain
     cmp rsi, 2
     jb .domain
@@ -52,8 +56,6 @@ integrate_samples_trapezoid_i64:
     mov rax, INTEGRAL_ERR_OVERFLOW
     ret
 .domain:
-    test r8, r8
-    jz .domain_return
     mov qword [r8], INTEGRAL_ERR_DOMAIN
 .domain_return:
     mov rax, INTEGRAL_ERR_DOMAIN

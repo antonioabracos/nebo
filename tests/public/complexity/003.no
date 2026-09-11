@@ -1,0 +1,13 @@
+// Event stores preserve identity, exact versions, replay state, snapshots, subscriptions, metadata, and verification.
+(Int.self)eventStoreOpen() { self.return; }
+(Int.self)storeAppend() { self.return; }
+(Int.self)storeRead() { self.return; }
+(Int.self)storeReplay() { self.return; }
+(Int.self)storeSnapshot() { self.return; }
+(Int.self)storeSubscribe() { self.return; }
+(Int.self)eventMetadata() { self.return; }
+(Int.self)storeVerify() { self.return; }
+
+start() {
+    33.eventStoreOpen().storeAppend().storeRead().storeReplay().storeSnapshot().storeSubscribe().eventMetadata().storeVerify();
+}

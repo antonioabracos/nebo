@@ -1,0 +1,7 @@
+start() {
+    "first".first;
+    "second".second;
+    first.deferDrop().firstScheduled;
+    second.deferDrop().secondScheduled;
+    11;
+}

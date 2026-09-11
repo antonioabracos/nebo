@@ -1,0 +1,12 @@
+start() {
+    Text.label;
+    "Nebo".label;
+    label;
+    Char.letter;
+    'A'.letter;
+    letter;
+    Bytes.payload;
+    Bytes.empty().payload;
+    payload;
+    0;
+}

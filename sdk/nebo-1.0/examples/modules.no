@@ -1,0 +1,2 @@
+// Resolve a separate provider through the packaged module and prelude owners.
+module app;import "project.facade" { token; }.values;start(){(values.token*2+9).return;}

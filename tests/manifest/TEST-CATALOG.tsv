@@ -1,0 +1,327 @@
+test_id	domain	test_type	sequence	scenario	expected	evidence_type	gate	primary_front	implementation_state	case_path
+NEBO-ABI-CONTRACT-001	ABI	CONTRACT	001	Internal ABI version	match	binary-report	P0	MF033	IMPLEMENTED	tests/cases/NEBO-ABI-CONTRACT-001.sh
+NEBO-ABI-CONTRACT-002	ABI	CONTRACT	002	stack alignment	conforme target	native-test	P0	MF033	IMPLEMENTED	tests/cases/NEBO-ABI-CONTRACT-002.sh
+NEBO-ABI-CONTRACT-003	ABI	CONTRACT	003	preserved registers	preservados	native-test	P0	MF033	IMPLEMENTED	tests/cases/NEBO-ABI-CONTRACT-003.sh
+NEBO-ABI-CONTRACT-004	ABI	CONTRACT	004	argument passing	valores corretos	native-test	P0	MF033	IMPLEMENTED	tests/cases/NEBO-ABI-CONTRACT-004.sh
+NEBO-ABI-CONTRACT-005	ABI	CONTRACT	005	return values	corretos	native-test	P0	MF033	IMPLEMENTED	tests/cases/NEBO-ABI-CONTRACT-005.sh
+NEBO-ABI-CONTRACT-006	ABI	CONTRACT	006	runtime thunk	ABI traduzida	native-test	P0	MF033	IMPLEMENTED	tests/cases/NEBO-ABI-CONTRACT-006.sh
+NEBO-ABI-NEG-007	ABI	NEG	007	target tuple incompleta	rejeitada	diagnostic-golden	P0	MF031	IMPLEMENTED	tests/cases/NEBO-ABI-NEG-007.sh
+NEBO-ABI-NEG-008	ABI	NEG	008	runtime version mismatch	falha clara	native-log	P0	MF033	IMPLEMENTED	tests/cases/NEBO-ABI-NEG-008.sh
+NEBO-ABI-PORTABILITY-012	ABI	PORTABILITY	012	common ABI suite	target certificado	conformance-report	P0	MF059	IMPLEMENTED	tests/cases/NEBO-ABI-PORTABILITY-012.sh
+NEBO-AST-CONTRACT-001	AST	CONTRACT	001	AST sem info semântica duplicada	side tables usadas	static-report	P1	MF020	IMPLEMENTED	tests/cases/NEBO-AST-CONTRACT-001.sh
+NEBO-AST-CONTRACT-002	AST	CONTRACT	002	NodeIds válidos	zero pointer IDs	audit-report	P0	MF020	IMPLEMENTED	tests/cases/NEBO-AST-CONTRACT-002.sh
+NEBO-AST-CONTRACT-003	AST	CONTRACT	003	AST imutável após parser	hash estável	hash-report	P1	MF020	IMPLEMENTED	tests/cases/NEBO-AST-CONTRACT-003.sh
+NEBO-AST-CONTRACT-004	AST	CONTRACT	004	Type table completa	todos nós relevantes	semantic-report	P0	MF025	IMPLEMENTED	tests/cases/NEBO-AST-CONTRACT-004.sh
+NEBO-AST-CONTRACT-005	AST	CONTRACT	005	Effect table completa	calls classificadas	semantic-report	P0	MF025	IMPLEMENTED	tests/cases/NEBO-AST-CONTRACT-005.sh
+NEBO-AST-CONTRACT-006	AST	CONTRACT	006	Route table completa	console/scan completos	semantic-report	P0	MF025	IMPLEMENTED	tests/cases/NEBO-AST-CONTRACT-006.sh
+NEBO-AST-CONTRACT-007	AST	CONTRACT	007	Dependency table completa	Pending completos	semantic-report	P0	MF025	IMPLEMENTED	tests/cases/NEBO-AST-CONTRACT-007.sh
+NEBO-AST-DETERMINISM-009	AST	DETERMINISM	009	FunctionPlan estável	golden igual	lowering-golden	P0	MF025	IMPLEMENTED	tests/cases/NEBO-AST-DETERMINISM-009.sh
+NEBO-AST-DOC_AUDIT-010	AST	DOC_AUDIT	010	sem HIR/MIR/LIR obrigatória	zero camada não aprovada	inventory	P1	MF020	IMPLEMENTED	tests/cases/NEBO-AST-DOC_AUDIT-010.sh
+NEBO-AST-NEG-008	AST	NEG	008	AST error chega a codegen	bloqueado	audit-report	P0	MF020	IMPLEMENTED	tests/cases/NEBO-AST-NEG-008.sh
+NEBO-BEHAVIOR-CONTRACT-005	BEHAVIOR	CONTRACT	005	behavior entre valores	posições preservadas	behavior-golden	P0	MF024	IMPLEMENTED	tests/cases/NEBO-BEHAVIOR-CONTRACT-005.sh
+NEBO-BEHAVIOR-CONTRACT-006	BEHAVIOR	CONTRACT	006	behavior no início/fim	mesmo binding	behavior-golden	P0	MF024	IMPLEMENTED	tests/cases/NEBO-BEHAVIOR-CONTRACT-006.sh
+NEBO-BEHAVIOR-CONTRACT-007	BEHAVIOR	CONTRACT	007	avaliação left-to-right	trace correta	event-trace	P1	MF024	IMPLEMENTED	tests/cases/NEBO-BEHAVIOR-CONTRACT-007.sh
+NEBO-BEHAVIOR-CONTRACT-011	BEHAVIOR	CONTRACT	011	RED.color descriptor	constante válida	semantic-golden	P1	MF024	IMPLEMENTED	tests/cases/NEBO-BEHAVIOR-CONTRACT-011.sh
+NEBO-BEHAVIOR-DETERMINISM-012	BEHAVIOR	DETERMINISM	012	ApplicationOrder	ordem estável	behavior-golden	P1	MF024	IMPLEMENTED	tests/cases/NEBO-BEHAVIOR-DETERMINISM-012.sh
+NEBO-BEHAVIOR-NEG-008	BEHAVIOR	NEG	008	behavior não suportada	diagnostic	diagnostic-golden	P0	MF024	IMPLEMENTED	tests/cases/NEBO-BEHAVIOR-NEG-008.sh
+NEBO-BEHAVIOR-NEG-009	BEHAVIOR	NEG	009	duas colors	conflito	diagnostic-golden	P0	MF024	IMPLEMENTED	tests/cases/NEBO-BEHAVIOR-NEG-009.sh
+NEBO-BEHAVIOR-NEG-010	BEHAVIOR	NEG	010	behavior com efeito	rejeitada	diagnostic-golden	P0	MF024	IMPLEMENTED	tests/cases/NEBO-BEHAVIOR-NEG-010.sh
+NEBO-BUILD-STATIC_ASM-001	BUILD	STATIC_ASM	001	fontes compiler-owned são Assembly	zero C/C++/Rust	inventory	P0	MF002	IMPLEMENTED	tests/cases/NEBO-BUILD-STATIC_ASM-001.sh
+NEBO-BUILD-STATIC_ASM-002	BUILD	STATIC_ASM	002	runtime-owned code é Assembly	zero C runtime	inventory	P0	MF002	IMPLEMENTED	tests/cases/NEBO-BUILD-STATIC_ASM-002.sh
+NEBO-BUILD-STATIC_ASM-003	BUILD	STATIC_ASM	003	build sem compilador C instalado	build PASS	command-log	P0	MF002	IMPLEMENTED	tests/cases/NEBO-BUILD-STATIC_ASM-003.sh
+NEBO-BUILD-STATIC_ASM-004	BUILD	STATIC_ASM	004	símbolos externos aprovados	zero biblioteca proibida	symbol-report	P0	MF002	IMPLEMENTED	tests/cases/NEBO-BUILD-STATIC_ASM-004.sh
+NEBO-BUILD-STATIC_ASM-005	BUILD	STATIC_ASM	005	sem libc	link inspection PASS	binary-report	P0	MF002	IMPLEMENTED	tests/cases/NEBO-BUILD-STATIC_ASM-005.sh
+NEBO-BUILD-STATIC_ASM-006	BUILD	STATIC_ASM	006	build reproduzível	hashes iguais	hash-report	P0	MF005	IMPLEMENTED	tests/cases/NEBO-BUILD-STATIC_ASM-006.sh
+NEBO-BUILD-STATIC_ASM-007	BUILD	STATIC_ASM	007	flags/tool versions registadas	manifest completo	manifest	P1	MF005	IMPLEMENTED	tests/cases/NEBO-BUILD-STATIC_ASM-007.sh
+NEBO-BUILD-STATIC_ASM-008	BUILD	STATIC_ASM	008	permissões/artefactos corretos	sem executáveis inesperados	inventory	P1	MF005	IMPLEMENTED	tests/cases/NEBO-BUILD-STATIC_ASM-008.sh
+NEBO-CALL-CONTRACT-001	CALL	CONTRACT	001	receiver correto	função resolvida	semantic-golden	P0	MF023	IMPLEMENTED	tests/cases/NEBO-CALL-CONTRACT-001.sh
+NEBO-CALL-NEG-002	CALL	NEG	002	receiver inválido	diagnostic	diagnostic-golden	P0	MF023	IMPLEMENTED	tests/cases/NEBO-CALL-NEG-002.sh
+NEBO-CALL-NEG-003	CALL	NEG	003	aridade errada	diagnostic	diagnostic-golden	P1	MF023	IMPLEMENTED	tests/cases/NEBO-CALL-NEG-003.sh
+NEBO-CALL-NEG-004	CALL	NEG	004	tipo posicional errado	diagnostic	diagnostic-golden	P0	MF023	IMPLEMENTED	tests/cases/NEBO-CALL-NEG-004.sh
+NEBO-CLI-DETERMINISM-010	CLI	DETERMINISM	010	ordem de opções equivalente	mesmo resultado	hash-report	P1	MF035	IMPLEMENTED	tests/cases/NEBO-CLI-DETERMINISM-010.sh
+NEBO-CLI-E2E-001	CLI	E2E	001	neboc --help	exit 0 e ajuda estável	stdout-golden	P1	MF035	IMPLEMENTED	tests/cases/NEBO-CLI-E2E-001.sh
+NEBO-CLI-E2E-002	CLI	E2E	002	neboc --version	versão determinística	stdout-golden	P1	MF035	IMPLEMENTED	tests/cases/NEBO-CLI-E2E-002.sh
+NEBO-CLI-E2E-006	CLI	E2E	006	check válido	sem toolchain	trace	P0	MF035	IMPLEMENTED	tests/cases/NEBO-CLI-E2E-006.sh
+NEBO-CLI-E2E-007	CLI	E2E	007	emit-asm válido	assembly criado	artifact-hash	P0	MF035	IMPLEMENTED	tests/cases/NEBO-CLI-E2E-007.sh
+NEBO-CLI-E2E-008	CLI	E2E	008	build válido	artefacto nativo	artifact	P0	MF035	IMPLEMENTED	tests/cases/NEBO-CLI-E2E-008.sh
+NEBO-CLI-NEG-003	CLI	NEG	003	comando desconhecido	usage error	diagnostic-golden	P1	MF035	IMPLEMENTED	tests/cases/NEBO-CLI-NEG-003.sh
+NEBO-CLI-NEG-004	CLI	NEG	004	ficheiro em falta	IO diagnostic	diagnostic-golden	P1	MF035	IMPLEMENTED	tests/cases/NEBO-CLI-NEG-004.sh
+NEBO-CLI-NEG-005	CLI	NEG	005	extensão não .no	política explícita	diagnostic-golden	P2	MF035	IMPLEMENTED	tests/cases/NEBO-CLI-NEG-005.sh
+NEBO-CLI-NEG-009	CLI	NEG	009	output não gravável	erro controlado	diagnostic-golden	P1	MF035	IMPLEMENTED	tests/cases/NEBO-CLI-NEG-009.sh
+NEBO-CODEGEN-DETERMINISM-013	CODEGEN	DETERMINISM	013	labels estáveis	hash igual	hash-report	P0	MF032	IMPLEMENTED	tests/cases/NEBO-CODEGEN-DETERMINISM-013.sh
+NEBO-CODEGEN-E2E-014	CODEGEN	E2E	014	artefacto exit 0	execução nativa	native-log	P0	MF036	IMPLEMENTED	tests/cases/NEBO-CODEGEN-E2E-014.sh
+NEBO-CODEGEN-E2E-015	CODEGEN	E2E	015	overflow runtime	trap controlada	native-log	P0	MF037	IMPLEMENTED	tests/cases/NEBO-CODEGEN-E2E-015.sh
+NEBO-CODEGEN-E2E-016	CODEGEN	E2E	016	division zero	trap controlada	native-log	P0	MF037	IMPLEMENTED	tests/cases/NEBO-CODEGEN-E2E-016.sh
+NEBO-CODEGEN-GOLDEN-001	CODEGEN	GOLDEN	001	start vazio	assembly determinístico	asm-golden	P0	MF032	IMPLEMENTED	tests/cases/NEBO-CODEGEN-GOLDEN-001.sh
+NEBO-CODEGEN-GOLDEN-002	CODEGEN	GOLDEN	002	Int literal	emissão correta	asm-golden	P0	MF032	IMPLEMENTED	tests/cases/NEBO-CODEGEN-GOLDEN-002.sh
+NEBO-CODEGEN-GOLDEN-003	CODEGEN	GOLDEN	003	arithmetic	instruções corretas	asm-golden	P0	MF037	IMPLEMENTED	tests/cases/NEBO-CODEGEN-GOLDEN-003.sh
+NEBO-CODEGEN-GOLDEN-004	CODEGEN	GOLDEN	004	comparison Bool	resultado 0/1	asm-golden	P0	MF037	IMPLEMENTED	tests/cases/NEBO-CODEGEN-GOLDEN-004.sh
+NEBO-CODEGEN-GOLDEN-005	CODEGEN	GOLDEN	005	if branches	labels corretas	asm-golden	P0	MF039	IMPLEMENTED	tests/cases/NEBO-CODEGEN-GOLDEN-005.sh
+NEBO-CODEGEN-GOLDEN-006	CODEGEN	GOLDEN	006	function call	ABI correta	asm-golden	P0	MF033	IMPLEMENTED	tests/cases/NEBO-CODEGEN-GOLDEN-006.sh
+NEBO-CODEGEN-GOLDEN-007	CODEGEN	GOLDEN	007	Text data	bytes sem injection	asm-golden	P0	MF032	IMPLEMENTED	tests/cases/NEBO-CODEGEN-GOLDEN-007.sh
+NEBO-CODEGEN-GOLDEN-008	CODEGEN	GOLDEN	008	default console lowering	runtime calls corretas	asm-golden	P0	MF034	IMPLEMENTED	tests/cases/NEBO-CODEGEN-GOLDEN-008.sh
+NEBO-CODEGEN-GOLDEN-009	CODEGEN	GOLDEN	009	named console lowering	handle guardado	asm-golden	P0	MF034	IMPLEMENTED	tests/cases/NEBO-CODEGEN-GOLDEN-009.sh
+NEBO-CODEGEN-GOLDEN-010	CODEGEN	GOLDEN	010	anonymous scan lowering	Pending/continuation	asm-golden	P0	MF034	IMPLEMENTED	tests/cases/NEBO-CODEGEN-GOLDEN-010.sh
+NEBO-CODEGEN-NEG-011	CODEGEN	NEG	011	unresolved symbol	emissão bloqueada	audit-report	P0	MF032	IMPLEMENTED	tests/cases/NEBO-CODEGEN-NEG-011.sh
+NEBO-CODEGEN-SECURITY-012	CODEGEN	SECURITY	012	source text como assembler	escaped/data only	asm-audit	P0	MF032	IMPLEMENTED	tests/cases/NEBO-CODEGEN-SECURITY-012.sh
+NEBO-CONCURRENCY-CONTRACT-001	CONCURRENCY	CONTRACT	001	single writer	zero mutação externa	race-audit	P0	MF050	IMPLEMENTED	tests/cases/NEBO-CONCURRENCY-CONTRACT-001.sh
+NEBO-CONCURRENCY-CONTRACT-002	CONCURRENCY	CONTRACT	002	FIFO por Console	ordem preservada	event-trace	P0	MF050	IMPLEMENTED	tests/cases/NEBO-CONCURRENCY-CONTRACT-002.sh
+NEBO-CONCURRENCY-CONTRACT-003	CONCURRENCY	CONTRACT	003	dois Consoles progridem	sem bloqueio	event-trace	P0	MF055	IMPLEMENTED	tests/cases/NEBO-CONCURRENCY-CONTRACT-003.sh
+NEBO-CONCURRENCY-CONTRACT-004	CONCURRENCY	CONTRACT	004	vários scans mesmo Console	event loop partilhado	event-trace	P0	MF050	IMPLEMENTED	tests/cases/NEBO-CONCURRENCY-CONTRACT-004.sh
+NEBO-CONCURRENCY-CONTRACT-005	CONCURRENCY	CONTRACT	005	ordinary function	sem domain novo	semantic/runtime-trace	P0	MF050	IMPLEMENTED	tests/cases/NEBO-CONCURRENCY-CONTRACT-005.sh
+NEBO-CONCURRENCY-CONTRACT-006	CONCURRENCY	CONTRACT	006	queue pressure	backpressure controlado	stress-report	P0	MF050	IMPLEMENTED	tests/cases/NEBO-CONCURRENCY-CONTRACT-006.sh
+NEBO-CONCURRENCY-CONTRACT-010	CONCURRENCY	CONTRACT	010	fairness	sem starvation permanente	stress-report	P1	MF050	IMPLEMENTED	tests/cases/NEBO-CONCURRENCY-CONTRACT-010.sh
+NEBO-CONCURRENCY-DETERMINISM-009	CONCURRENCY	DETERMINISM	009	mesma event trace	mesmo state	state-golden	P0	MF050	IMPLEMENTED	tests/cases/NEBO-CONCURRENCY-DETERMINISM-009.sh
+NEBO-CONCURRENCY-SECURITY-007	CONCURRENCY	SECURITY	007	ENTER não perdido	Pending resolve	stress-report	P0	MF050	IMPLEMENTED	tests/cases/NEBO-CONCURRENCY-SECURITY-007.sh
+NEBO-CONCURRENCY-SECURITY-008	CONCURRENCY	SECURITY	008	close race	sem use-after-free	stress-report	P0	MF050	IMPLEMENTED	tests/cases/NEBO-CONCURRENCY-SECURITY-008.sh
+NEBO-CONSOLE-DETERMINISM-010	CONSOLE	DETERMINISM	010	Console IDs lógicos	ordem estável	state-golden	P1	MF041	IMPLEMENTED	tests/cases/NEBO-CONSOLE-DETERMINISM-010.sh
+NEBO-CONSOLE-HEADLESS-001	CONSOLE	HEADLESS	001	primeiro default	uma slot ativa	state-golden	P0	MF041	IMPLEMENTED	tests/cases/NEBO-CONSOLE-HEADLESS-001.sh
+NEBO-CONSOLE-HEADLESS-002	CONSOLE	HEADLESS	002	reuse default	mesma generation	state-golden	P0	MF041	IMPLEMENTED	tests/cases/NEBO-CONSOLE-HEADLESS-002.sh
+NEBO-CONSOLE-HEADLESS-003	CONSOLE	HEADLESS	003	named a/b	slots diferentes	state-golden	P0	MF041	IMPLEMENTED	tests/cases/NEBO-CONSOLE-HEADLESS-003.sh
+NEBO-CONSOLE-HEADLESS-004	CONSOLE	HEADLESS	004	anonymous chains	slots diferentes	state-golden	P0	MF041	IMPLEMENTED	tests/cases/NEBO-CONSOLE-HEADLESS-004.sh
+NEBO-CONSOLE-HEADLESS-005	CONSOLE	HEADLESS	005	handle generation	stale rejeitado	state-golden	P0	MF041	IMPLEMENTED	tests/cases/NEBO-CONSOLE-HEADLESS-005.sh
+NEBO-CONSOLE-HEADLESS-006	CONSOLE	HEADLESS	006	default fecha e recria	nova generation	state-golden	P0	MF041	IMPLEMENTED	tests/cases/NEBO-CONSOLE-HEADLESS-006.sh
+NEBO-CONSOLE-HEADLESS-008	CONSOLE	HEADLESS	008	resource max Consoles	limit controlado	runtime-trace	P1	MF041	IMPLEMENTED	tests/cases/NEBO-CONSOLE-HEADLESS-008.sh
+NEBO-CONSOLE-HEADLESS-009	CONSOLE	HEADLESS	009	logical create before mount	commands aceites	event-trace	P1	MF041	IMPLEMENTED	tests/cases/NEBO-CONSOLE-HEADLESS-009.sh
+NEBO-CONSOLE-NEG-007	CONSOLE	NEG	007	handle inválido	diagnostic	runtime-trace	P0	MF041	IMPLEMENTED	tests/cases/NEBO-CONSOLE-NEG-007.sh
+NEBO-CONTROL-CONTRACT-003	CONTROL	CONTRACT	003	short-circuit &&	direita não executa	event-trace	P0	MF024	IMPLEMENTED	tests/cases/NEBO-CONTROL-CONTRACT-003.sh
+NEBO-CONTROL-CONTRACT-004	CONTROL	CONTRACT	004	short-circuit lógico OR	direita não executa	event-trace	P0	MF024	IMPLEMENTED	tests/cases/NEBO-CONTROL-CONTRACT-004.sh
+NEBO-CONTROL-CONTRACT-006	CONTROL	CONTRACT	006	scope de ramo	binding não escapa	diagnostic-golden	P1	MF024	IMPLEMENTED	tests/cases/NEBO-CONTROL-CONTRACT-006.sh
+NEBO-CONTROL-E2E-001	CONTROL	E2E	001	if true	ramo true	native-output	P0	MF039	IMPLEMENTED	tests/cases/NEBO-CONTROL-E2E-001.sh
+NEBO-CONTROL-E2E-002	CONTROL	E2E	002	if false else	ramo else	native-output	P0	MF039	IMPLEMENTED	tests/cases/NEBO-CONTROL-E2E-002.sh
+NEBO-CONTROL-NEG-005	CONTROL	NEG	005	if Int	type diagnostic	diagnostic-golden	P0	MF024	IMPLEMENTED	tests/cases/NEBO-CONTROL-NEG-005.sh
+NEBO-DOC-DOC_AUDIT-001	DOC	DOC_AUDIT	001	Carta v0.2 existe e está aprovada	autoridade identificada	report	P0	MF001	IMPLEMENTED	tests/cases/NEBO-DOC-DOC_AUDIT-001.sh
+NEBO-DOC-DOC_AUDIT-002	DOC	DOC_AUDIT	002	Core Spec referencia Carta correta	sem autoridade antiga	report	P0	MF001	IMPLEMENTED	tests/cases/NEBO-DOC-DOC_AUDIT-002.sh
+NEBO-DOC-DOC_AUDIT-003	DOC	DOC_AUDIT	003	Console Spec referencia Core/Carta	cadeia coerente	report	P0	MF001	IMPLEMENTED	tests/cases/NEBO-DOC-DOC_AUDIT-003.sh
+NEBO-DOC-DOC_AUDIT-004	DOC	DOC_AUDIT	004	Architectures referenciam Specs atuais	cadeia coerente	report	P0	MF001	IMPLEMENTED	tests/cases/NEBO-DOC-DOC_AUDIT-004.sh
+NEBO-DOC-DOC_AUDIT-005	DOC	DOC_AUDIT	005	v0.1 rejeitada não é normativa	zero uso como autoridade	grep-report	P0	MF001	IMPLEMENTED	tests/cases/NEBO-DOC-DOC_AUDIT-005.sh
+NEBO-DOC-DOC_AUDIT-006	DOC	DOC_AUDIT	006	READY_TO_CODE não emitido	gate bloqueado	report	P0	MF001	IMPLEMENTED	tests/cases/NEBO-DOC-DOC_AUDIT-006.sh
+NEBO-DOC-DOC_AUDIT-007	DOC	DOC_AUDIT	007	decisões normativas mapeadas	unmapped=0	traceability	P0	MF001	IMPLEMENTED	tests/cases/NEBO-DOC-DOC_AUDIT-007.sh
+NEBO-DOC-DOC_AUDIT-008	DOC	DOC_AUDIT	008	documentos sem fences/tabelas quebradas	Markdown válido	lint-report	P1	MF001	IMPLEMENTED	tests/cases/NEBO-DOC-DOC_AUDIT-008.sh
+NEBO-DOCUMENT-HEADLESS-001	DOCUMENT	HEADLESS	001	Text append	TextNodes em ordem	document-golden	P0	MF043	IMPLEMENTED	tests/cases/NEBO-DOCUMENT-HEADLESS-001.sh
+NEBO-DOCUMENT-HEADLESS-002	DOCUMENT	HEADLESS	002	duas calls default	OlaNebo	document-golden	P0	MF043	IMPLEMENTED	tests/cases/NEBO-DOCUMENT-HEADLESS-002.sh
+NEBO-DOCUMENT-HEADLESS-003	DOCUMENT	HEADLESS	003	\n	LineBreak lógico	document-golden	P0	MF043	IMPLEMENTED	tests/cases/NEBO-DOCUMENT-HEADLESS-003.sh
+NEBO-DOCUMENT-HEADLESS-004	DOCUMENT	HEADLESS	004	sem espaço implícito	conteúdo exato	document-golden	P0	MF043	IMPLEMENTED	tests/cases/NEBO-DOCUMENT-HEADLESS-004.sh
+NEBO-DOCUMENT-HEADLESS-005	DOCUMENT	HEADLESS	005	Int render	decimal	draw-golden	P1	MF043	IMPLEMENTED	tests/cases/NEBO-DOCUMENT-HEADLESS-005.sh
+NEBO-DOCUMENT-HEADLESS-006	DOCUMENT	HEADLESS	006	Bool render	true/false	draw-golden	P1	MF043	IMPLEMENTED	tests/cases/NEBO-DOCUMENT-HEADLESS-006.sh
+NEBO-DOCUMENT-HEADLESS-007	DOCUMENT	HEADLESS	007	transaction fail	árvore não parcial	event-trace	P0	MF043	IMPLEMENTED	tests/cases/NEBO-DOCUMENT-HEADLESS-007.sh
+NEBO-DOCUMENT-HEADLESS-008	DOCUMENT	HEADLESS	008	node links	sem ciclos	audit-report	P0	MF043	IMPLEMENTED	tests/cases/NEBO-DOCUMENT-HEADLESS-008.sh
+NEBO-DOCUMENT-HEADLESS-009	DOCUMENT	HEADLESS	009	cursor após append	posição correta	document-golden	P0	MF043	IMPLEMENTED	tests/cases/NEBO-DOCUMENT-HEADLESS-009.sh
+NEBO-DOCUMENT-HEADLESS-010	DOCUMENT	HEADLESS	010	coalescing opcional	semântica igual	document-golden	P1	MF043	IMPLEMENTED	tests/cases/NEBO-DOCUMENT-HEADLESS-010.sh
+NEBO-E2E-E2E-001	E2E	E2E	001	start vazio	artefacto executa	native-evidence	P0	MF036	IMPLEMENTED	tests/cases/NEBO-E2E-E2E-001.sh
+NEBO-E2E-E2E-002	E2E	E2E	002	2.soma(3)	resultado 5	native-evidence	P0	MF038	IMPLEMENTED	tests/cases/NEBO-E2E-E2E-002.sh
+NEBO-E2E-E2E-003	E2E	E2E	003	if/else	output esperado	native-evidence	P0	MF039	IMPLEMENTED	tests/cases/NEBO-E2E-E2E-003.sh
+NEBO-E2E-E2E-004	E2E	E2E	004	Ola default	uma janela	visual+trace	P0	MF054	IMPLEMENTED	tests/cases/NEBO-E2E-E2E-004.sh
+NEBO-E2E-E2E-005	E2E	E2E	005	Ola+Tudo bem	concatenado	visual+document	P0	MF054	IMPLEMENTED	tests/cases/NEBO-E2E-E2E-005.sh
+NEBO-E2E-E2E-006	E2E	E2E	006	newline	duas linhas	visual+document	P0	MF054	IMPLEMENTED	tests/cases/NEBO-E2E-E2E-006.sh
+NEBO-E2E-E2E-007	E2E	E2E	007	named a/b	duas janelas	visual+trace	P0	MF054	IMPLEMENTED	tests/cases/NEBO-E2E-E2E-007.sh
+NEBO-E2E-E2E-008	E2E	E2E	008	musica/programacao scans	janelas independentes	visual+trace	P0	MF055	IMPLEMENTED	tests/cases/NEBO-E2E-E2E-008.sh
+NEBO-E2E-E2E-009	E2E	E2E	009	duas anonymous chains	duas janelas	visual+trace	P0	MF055	IMPLEMENTED	tests/cases/NEBO-E2E-E2E-009.sh
+NEBO-E2E-E2E-010	E2E	E2E	010	default scan único	input funcional	visual+trace	P0	MF055	IMPLEMENTED	tests/cases/NEBO-E2E-E2E-010.sh
+NEBO-E2E-E2E-011	E2E	E2E	011	múltiplos scans default	ambos ativos	visual+trace	P0	MF055	IMPLEMENTED	tests/cases/NEBO-E2E-E2E-011.sh
+NEBO-E2E-E2E-012	E2E	E2E	012	preencher segundo primeiro	bindings corretos	visual+trace	P0	MF055	IMPLEMENTED	tests/cases/NEBO-E2E-E2E-012.sh
+NEBO-E2E-E2E-013	E2E	E2E	013	Pending continuation	só dependente avança	trace	P0	MF048	IMPLEMENTED	tests/cases/NEBO-E2E-E2E-013.sh
+NEBO-E2E-E2E-014	E2E	E2E	014	close uma janela	outra continua	visual+trace	P0	MF055	IMPLEMENTED	tests/cases/NEBO-E2E-E2E-014.sh
+NEBO-E2E-E2E-015	E2E	E2E	015	RED.color	texto vermelho	visual+draw	P0	MF054	IMPLEMENTED	tests/cases/NEBO-E2E-E2E-015.sh
+NEBO-E2E-E2E-016	E2E	E2E	016	invalid source	diagnostic, sem artefacto	diagnostic+filesystem	P0	MF040	IMPLEMENTED	tests/cases/NEBO-E2E-E2E-016.sh
+NEBO-EFFECT-CONTRACT-007	EFFECT	CONTRACT	007	função pura	PURE	semantic-golden	P1	MF024	IMPLEMENTED	tests/cases/NEBO-EFFECT-CONTRACT-007.sh
+NEBO-EFFECT-CONTRACT-008	EFFECT	CONTRACT	008	wrapper console	CONSOLE_EFFECT	semantic-golden	P0	MF024	IMPLEMENTED	tests/cases/NEBO-EFFECT-CONTRACT-008.sh
+NEBO-EFFECT-CONTRACT-009	EFFECT	CONTRACT	009	wrapper scan	SCAN_EFFECT	semantic-golden	P0	MF024	IMPLEMENTED	tests/cases/NEBO-EFFECT-CONTRACT-009.sh
+NEBO-EFFECT-NEG-010	EFFECT	NEG	010	função comum thread-capable	rejeitada	audit-report	P0	MF024	IMPLEMENTED	tests/cases/NEBO-EFFECT-NEG-010.sh
+NEBO-FORMAT-CONTRACT-009	FORMAT	CONTRACT	009	sections/symbols válidos	inspector PASS	binary-report	P0	MF034	IMPLEMENTED	tests/cases/NEBO-FORMAT-CONTRACT-009.sh
+NEBO-FORMAT-CONTRACT-010	FORMAT	CONTRACT	010	artefacto sem C dependencies	inspection PASS	binary-report	P0	MF034	IMPLEMENTED	tests/cases/NEBO-FORMAT-CONTRACT-010.sh
+NEBO-FORMAT-DETERMINISM-011	FORMAT	DETERMINISM	011	mesmo build	binário igual	hash-report	P0	MF034	IMPLEMENTED	tests/cases/NEBO-FORMAT-DETERMINISM-011.sh
+NEBO-HOST-CONTRACT-001	HOST	CONTRACT	001	Core usa tabela HostServices	zero syscall/import direto	static-report	P0	MF006	IMPLEMENTED	tests/cases/NEBO-HOST-CONTRACT-001.sh
+NEBO-HOST-CONTRACT-002	HOST	CONTRACT	002	read parcial	leitura completa/controlada	fake-trace	P1	MF006	IMPLEMENTED	tests/cases/NEBO-HOST-CONTRACT-002.sh
+NEBO-HOST-CONTRACT-007	HOST	CONTRACT	007	temp cleanup	sem resíduos inesperados	filesystem-report	P1	MF006	IMPLEMENTED	tests/cases/NEBO-HOST-CONTRACT-007.sh
+NEBO-HOST-DETERMINISM-008	HOST	DETERMINISM	008	clock fake	testes determinísticos	trace	P1	MF006	IMPLEMENTED	tests/cases/NEBO-HOST-DETERMINISM-008.sh
+NEBO-HOST-NEG-003	HOST	NEG	003	file open falha	status+diagnostic	fake-trace	P1	MF006	IMPLEMENTED	tests/cases/NEBO-HOST-NEG-003.sh
+NEBO-HOST-NEG-004	HOST	NEG	004	memory reserve falha	OOM controlado	fake-trace	P0	MF006	IMPLEMENTED	tests/cases/NEBO-HOST-NEG-004.sh
+NEBO-HOST-NEG-006	HOST	NEG	006	tool output excessivo	limite controlado	fake-trace	P1	MF006	IMPLEMENTED	tests/cases/NEBO-HOST-NEG-006.sh
+NEBO-HOST-SECURITY-005	HOST	SECURITY	005	process spawn usa argv	sem shell injection	audit-report	P0	MF006	IMPLEMENTED	tests/cases/NEBO-HOST-SECURITY-005.sh
+NEBO-INPUT-CONTRACT-014	INPUT	CONTRACT	014	resolved não reedita	estado imutável	state-golden	P1	MF048	IMPLEMENTED	tests/cases/NEBO-INPUT-CONTRACT-014.sh
+NEBO-INPUT-CONTRACT-015	INPUT	CONTRACT	015	um focus por janela	invariante	audit-report	P0	MF047	IMPLEMENTED	tests/cases/NEBO-INPUT-CONTRACT-015.sh
+NEBO-INPUT-HEADLESS-001	INPUT	HEADLESS	001	Text.scan sem default	cria default+InputRow	document-golden	P0	MF046	IMPLEMENTED	tests/cases/NEBO-INPUT-HEADLESS-001.sh
+NEBO-INPUT-HEADLESS-002	INPUT	HEADLESS	002	Text.scan após output	nova linha	layout-golden	P0	MF046	IMPLEMENTED	tests/cases/NEBO-INPUT-HEADLESS-002.sh
+NEBO-INPUT-HEADLESS-003	INPUT	HEADLESS	003	Console.scan	input inline	layout-golden	P0	MF046	IMPLEMENTED	tests/cases/NEBO-INPUT-HEADLESS-003.sh
+NEBO-INPUT-HEADLESS-004	INPUT	HEADLESS	004	console().scan	input inline anónimo	layout-golden	P0	MF046	IMPLEMENTED	tests/cases/NEBO-INPUT-HEADLESS-004.sh
+NEBO-INPUT-HEADLESS-005	INPUT	HEADLESS	005	cursor após input	próxima linha	document-golden	P0	MF046	IMPLEMENTED	tests/cases/NEBO-INPUT-HEADLESS-005.sh
+NEBO-INPUT-HEADLESS-006	INPUT	HEADLESS	006	múltiplos inputs	todos PENDING	state-golden	P0	MF046	IMPLEMENTED	tests/cases/NEBO-INPUT-HEADLESS-006.sh
+NEBO-INPUT-HEADLESS-007	INPUT	HEADLESS	007	click segundo input	focus segundo	event-trace	P0	MF047	IMPLEMENTED	tests/cases/NEBO-INPUT-HEADLESS-007.sh
+NEBO-INPUT-HEADLESS-008	INPUT	HEADLESS	008	escrever UTF-8	buffer válido	state-golden	P1	MF047	IMPLEMENTED	tests/cases/NEBO-INPUT-HEADLESS-008.sh
+NEBO-INPUT-HEADLESS-009	INPUT	HEADLESS	009	Backspace/Delete	buffer correto	state-golden	P1	MF047	IMPLEMENTED	tests/cases/NEBO-INPUT-HEADLESS-009.sh
+NEBO-INPUT-HEADLESS-010	INPUT	HEADLESS	010	Tab/Shift+Tab	ordem documento	event-trace	P1	MF047	IMPLEMENTED	tests/cases/NEBO-INPUT-HEADLESS-010.sh
+NEBO-INPUT-HEADLESS-011	INPUT	HEADLESS	011	ENTER segundo primeiro	binding correto	event-trace	P0	MF048	IMPLEMENTED	tests/cases/NEBO-INPUT-HEADLESS-011.sh
+NEBO-INPUT-HEADLESS-012	INPUT	HEADLESS	012	empty submit	resolve Text vazio	event-trace	P1	MF048	IMPLEMENTED	tests/cases/NEBO-INPUT-HEADLESS-012.sh
+NEBO-INPUT-NEG-013	INPUT	NEG	013	input acima limite	erro, Pending continua	event-trace	P0	MF048	IMPLEMENTED	tests/cases/NEBO-INPUT-NEG-013.sh
+NEBO-LAYOUT-HEADLESS-001	LAYOUT	HEADLESS	001	chrome/content separados	boxes corretas	layout-golden	P0	MF044	IMPLEMENTED	tests/cases/NEBO-LAYOUT-HEADLESS-001.sh
+NEBO-LAYOUT-HEADLESS-002	LAYOUT	HEADLESS	002	wrap Text	linhas corretas	layout-golden	P1	MF044	IMPLEMENTED	tests/cases/NEBO-LAYOUT-HEADLESS-002.sh
+NEBO-LAYOUT-HEADLESS-003	LAYOUT	HEADLESS	003	inline prompt/input	mesma linha	layout-golden	P0	MF044	IMPLEMENTED	tests/cases/NEBO-LAYOUT-HEADLESS-003.sh
+NEBO-LAYOUT-HEADLESS-004	LAYOUT	HEADLESS	004	InputRow	linha própria	layout-golden	P0	MF044	IMPLEMENTED	tests/cases/NEBO-LAYOUT-HEADLESS-004.sh
+NEBO-LAYOUT-HEADLESS-005	LAYOUT	HEADLESS	005	resize	reflow sem perder state	layout-golden	P0	MF044	IMPLEMENTED	tests/cases/NEBO-LAYOUT-HEADLESS-005.sh
+NEBO-LEX-DETERMINISM-015	LEX	DETERMINISM	015	mesma source	tokens byte-equivalent	hash-report	P0	MF015	IMPLEMENTED	tests/cases/NEBO-LEX-DETERMINISM-015.sh
+NEBO-LEX-GOLDEN-001	LEX	GOLDEN	001	tokens básicos	kinds/spans corretos	token-golden	P0	MF014	IMPLEMENTED	tests/cases/NEBO-LEX-GOLDEN-001.sh
+NEBO-LEX-GOLDEN-002	LEX	GOLDEN	002	keywords ativas	tokens reservados	token-golden	P0	MF014	IMPLEMENTED	tests/cases/NEBO-LEX-GOLDEN-002.sh
+NEBO-LEX-GOLDEN-003	LEX	GOLDEN	003	keywords diferidas	tokens próprios	token-golden	P1	MF014	IMPLEMENTED	tests/cases/NEBO-LEX-GOLDEN-003.sh
+NEBO-LEX-GOLDEN-004	LEX	GOLDEN	004	identificadores ASCII	tokens corretos	token-golden	P0	MF014	IMPLEMENTED	tests/cases/NEBO-LEX-GOLDEN-004.sh
+NEBO-LEX-GOLDEN-006	LEX	GOLDEN	006	integer max/min	payload correto	token-golden	P0	MF015	IMPLEMENTED	tests/cases/NEBO-LEX-GOLDEN-006.sh
+NEBO-LEX-GOLDEN-008	LEX	GOLDEN	008	string escapes	bytes corretos	token-golden	P0	MF015	IMPLEMENTED	tests/cases/NEBO-LEX-GOLDEN-008.sh
+NEBO-LEX-GOLDEN-012	LEX	GOLDEN	012	comentário //	ignorado corretamente	token-golden	P1	MF014	IMPLEMENTED	tests/cases/NEBO-LEX-GOLDEN-012.sh
+NEBO-LEX-GOLDEN-014	LEX	GOLDEN	014	operadores compostos	longest match	token-golden	P0	MF014	IMPLEMENTED	tests/cases/NEBO-LEX-GOLDEN-014.sh
+NEBO-LEX-NEG-005	LEX	NEG	005	identificador Unicode	diagnostic v0.1	diagnostic-golden	P1	MF015	IMPLEMENTED	tests/cases/NEBO-LEX-NEG-005.sh
+NEBO-LEX-NEG-007	LEX	NEG	007	integer overflow	NEBO_LEX_INT_OVERFLOW	diagnostic-golden	P0	MF015	IMPLEMENTED	tests/cases/NEBO-LEX-NEG-007.sh
+NEBO-LEX-NEG-009	LEX	NEG	009	escape /n	não é newline	diagnostic-or-token-golden	P1	MF015	IMPLEMENTED	tests/cases/NEBO-LEX-NEG-009.sh
+NEBO-LEX-NEG-010	LEX	NEG	010	escape desconhecido	NEBO_LEX_INVALID_ESCAPE	diagnostic-golden	P0	MF015	IMPLEMENTED	tests/cases/NEBO-LEX-NEG-010.sh
+NEBO-LEX-NEG-011	LEX	NEG	011	string não terminada	diagnostic	diagnostic-golden	P0	MF015	IMPLEMENTED	tests/cases/NEBO-LEX-NEG-011.sh
+NEBO-LEX-NEG-013	LEX	NEG	013	comentário bloco	feature não suportada	diagnostic-golden	P1	MF015	IMPLEMENTED	tests/cases/NEBO-LEX-NEG-013.sh
+NEBO-LIFECYCLE-CONTRACT-010	LIFECYCLE	CONTRACT	010	última janela fecha	runtime termina quando seguro	runtime-trace	P1	MF049	IMPLEMENTED	tests/cases/NEBO-LIFECYCLE-CONTRACT-010.sh
+NEBO-LIFECYCLE-HEADLESS-001	LIFECYCLE	HEADLESS	001	create→mount→visible	transições válidas	event-trace	P0	MF049	IMPLEMENTED	tests/cases/NEBO-LIFECYCLE-HEADLESS-001.sh
+NEBO-LIFECYCLE-HEADLESS-002	LIFECYCLE	HEADLESS	002	minimize	Pending preservado	event-trace	P1	MF049	IMPLEMENTED	tests/cases/NEBO-LIFECYCLE-HEADLESS-002.sh
+NEBO-LIFECYCLE-HEADLESS-003	LIFECYCLE	HEADLESS	003	maximize/restore	geometria preservada	event-trace	P1	MF049	IMPLEMENTED	tests/cases/NEBO-LIFECYCLE-HEADLESS-003.sh
+NEBO-LIFECYCLE-HEADLESS-004	LIFECYCLE	HEADLESS	004	close sem Pending	CLOSED seguro	event-trace	P0	MF049	IMPLEMENTED	tests/cases/NEBO-LIFECYCLE-HEADLESS-004.sh
+NEBO-LIFECYCLE-HEADLESS-005	LIFECYCLE	HEADLESS	005	close com Pending	CANCELLED	event-trace	P0	MF049	IMPLEMENTED	tests/cases/NEBO-LIFECYCLE-HEADLESS-005.sh
+NEBO-LIFECYCLE-HEADLESS-006	LIFECYCLE	HEADLESS	006	dependentes cancelados	sem execução	event-trace	P0	MF049	IMPLEMENTED	tests/cases/NEBO-LIFECYCLE-HEADLESS-006.sh
+NEBO-LIFECYCLE-HEADLESS-007	LIFECYCLE	HEADLESS	007	outro Console continua	independente	event-trace	P0	MF049	IMPLEMENTED	tests/cases/NEBO-LIFECYCLE-HEADLESS-007.sh
+NEBO-LIFECYCLE-SECURITY-008	LIFECYCLE	SECURITY	008	late event generation antiga	descartado	event-trace	P0	MF049	IMPLEMENTED	tests/cases/NEBO-LIFECYCLE-SECURITY-008.sh
+NEBO-LIFECYCLE-SECURITY-009	LIFECYCLE	SECURITY	009	reclaim antes de drain	bloqueado	audit-report	P0	MF049	IMPLEMENTED	tests/cases/NEBO-LIFECYCLE-SECURITY-009.sh
+NEBO-MEM-DETERMINISM-007	MEM	DETERMINISM	007	StringId determinístico	IDs iguais	golden	P1	MF009	IMPLEMENTED	tests/cases/NEBO-MEM-DETERMINISM-007.sh
+NEBO-MEM-NEG-002	MEM	NEG	002	arena overflow	status OOM/limit	asm-test	P0	MF007	IMPLEMENTED	tests/cases/NEBO-MEM-NEG-002.sh
+NEBO-MEM-NEG-005	MEM	NEG	005	buffer size overflow	erro controlado	asm-test	P0	MF008	IMPLEMENTED	tests/cases/NEBO-MEM-NEG-005.sh
+NEBO-MEM-SECURITY-008	MEM	SECURITY	008	stale arena generation	uso inválido detetado	asm-test	P0	MF007	IMPLEMENTED	tests/cases/NEBO-MEM-SECURITY-008.sh
+NEBO-MEM-UNIT_ASM-001	MEM	UNIT_ASM	001	arena allocate alinhado	pointer válido	asm-test	P0	MF007	IMPLEMENTED	tests/cases/NEBO-MEM-UNIT_ASM-001.sh
+NEBO-MEM-UNIT_ASM-003	MEM	UNIT_ASM	003	mark/rewind	estado restaurado	asm-test	P1	MF007	IMPLEMENTED	tests/cases/NEBO-MEM-UNIT_ASM-003.sh
+NEBO-MEM-UNIT_ASM-004	MEM	UNIT_ASM	004	buffer grow	conteúdo preservado	asm-test	P0	MF008	IMPLEMENTED	tests/cases/NEBO-MEM-UNIT_ASM-004.sh
+NEBO-MEM-UNIT_ASM-006	MEM	UNIT_ASM	006	slice bounds	sem acesso fora	asm-test	P0	MF007	IMPLEMENTED	tests/cases/NEBO-MEM-UNIT_ASM-006.sh
+NEBO-NAME-CONTRACT-001	NAME	CONTRACT	001	binding visível depois da declaração	resolve	semantic-golden	P0	MF021	IMPLEMENTED	tests/cases/NEBO-NAME-CONTRACT-001.sh
+NEBO-NAME-CONTRACT-005	NAME	CONTRACT	005	função declarada depois	resolve	semantic-golden	P0	MF021	IMPLEMENTED	tests/cases/NEBO-NAME-CONTRACT-005.sh
+NEBO-NAME-CONTRACT-007	NAME	CONTRACT	007	receiver e parâmetro	symbols corretos	semantic-golden	P0	MF021	IMPLEMENTED	tests/cases/NEBO-NAME-CONTRACT-007.sh
+NEBO-NAME-DETERMINISM-008	NAME	DETERMINISM	008	SymbolIds	IDs estáveis	semantic-golden	P1	MF021	IMPLEMENTED	tests/cases/NEBO-NAME-DETERMINISM-008.sh
+NEBO-NAME-NEG-002	NAME	NEG	002	uso antes da declaração	undefined	diagnostic-golden	P1	MF021	IMPLEMENTED	tests/cases/NEBO-NAME-NEG-002.sh
+NEBO-NAME-NEG-003	NAME	NEG	003	duplicado no scope	duplicate	diagnostic-golden	P0	MF021	IMPLEMENTED	tests/cases/NEBO-NAME-NEG-003.sh
+NEBO-NAME-NEG-004	NAME	NEG	004	shadowing interno	forbidden	diagnostic-golden	P1	MF021	IMPLEMENTED	tests/cases/NEBO-NAME-NEG-004.sh
+NEBO-NAME-NEG-006	NAME	NEG	006	palavra reservada como nome	rejeitada	diagnostic-golden	P1	MF021	IMPLEMENTED	tests/cases/NEBO-NAME-NEG-006.sh
+NEBO-PARSE-DETERMINISM-015	PARSE	DETERMINISM	015	AST IDs	ordem determinística	ast-golden	P0	MF020	IMPLEMENTED	tests/cases/NEBO-PARSE-DETERMINISM-015.sh
+NEBO-PARSE-GOLDEN-001	PARSE	GOLDEN	001	start vazio	AST correta	ast-golden	P0	MF016	IMPLEMENTED	tests/cases/NEBO-PARSE-GOLDEN-001.sh
+NEBO-PARSE-GOLDEN-002	PARSE	GOLDEN	002	função receiver-first	AST correta	ast-golden	P0	MF016	IMPLEMENTED	tests/cases/NEBO-PARSE-GOLDEN-002.sh
+NEBO-PARSE-GOLDEN-003	PARSE	GOLDEN	003	cadeia multiline	igual à linha única	ast-golden	P0	MF016	IMPLEMENTED	tests/cases/NEBO-PARSE-GOLDEN-003.sh
+NEBO-PARSE-GOLDEN-004	PARSE	GOLDEN	004	binding terminal	nó correto	ast-golden	P0	MF017	IMPLEMENTED	tests/cases/NEBO-PARSE-GOLDEN-004.sh
+NEBO-PARSE-GOLDEN-005	PARSE	GOLDEN	005	.return	nó terminal correto	ast-golden	P0	MF017	IMPLEMENTED	tests/cases/NEBO-PARSE-GOLDEN-005.sh
+NEBO-PARSE-GOLDEN-006	PARSE	GOLDEN	006	precedência aritmética	árvore correta	ast-golden	P0	MF017	IMPLEMENTED	tests/cases/NEBO-PARSE-GOLDEN-006.sh
+NEBO-PARSE-GOLDEN-007	PARSE	GOLDEN	007	if/else	AST correta	ast-golden	P0	MF018	IMPLEMENTED	tests/cases/NEBO-PARSE-GOLDEN-007.sh
+NEBO-PARSE-GOLDEN-008	PARSE	GOLDEN	008	else if	AST correta	ast-golden	P1	MF018	IMPLEMENTED	tests/cases/NEBO-PARSE-GOLDEN-008.sh
+NEBO-PARSE-NEG-009	PARSE	NEG	009	semicolon ausente	diagnostic	diagnostic-golden	P1	MF019	IMPLEMENTED	tests/cases/NEBO-PARSE-NEG-009.sh
+NEBO-PARSE-NEG-010	PARSE	NEG	010	dois start	parse/semantic diagnostic	diagnostic-golden	P0	MF016	IMPLEMENTED	tests/cases/NEBO-PARSE-NEG-010.sh
+NEBO-PARSE-NEG-011	PARSE	NEG	011	statement top-level	rejeitado	diagnostic-golden	P0	MF016	IMPLEMENTED	tests/cases/NEBO-PARSE-NEG-011.sh
+NEBO-PARSE-NEG-012	PARSE	NEG	012	while reservado	unsupported control	diagnostic-golden	P1	MF018	IMPLEMENTED	tests/cases/NEBO-PARSE-NEG-012.sh
+NEBO-PARSE-NEG-013	PARSE	NEG	013	condicao.if	invalid chain	diagnostic-golden	P1	MF018	IMPLEMENTED	tests/cases/NEBO-PARSE-NEG-013.sh
+NEBO-PARSE-NEG-014	PARSE	NEG	014	nesting acima do limite	LIMIT_EXCEEDED	diagnostic-golden	P0	MF019	IMPLEMENTED	tests/cases/NEBO-PARSE-NEG-014.sh
+NEBO-PENDING-CONTRACT-001	PENDING	CONTRACT	001	scan cria Pending<Text>	record correto	dependency-golden	P0	MF029	IMPLEMENTED	tests/cases/NEBO-PENDING-CONTRACT-001.sh
+NEBO-PENDING-CONTRACT-002	PENDING	CONTRACT	002	consumer Text cria edge	edge correta	dependency-golden	P0	MF029	IMPLEMENTED	tests/cases/NEBO-PENDING-CONTRACT-002.sh
+NEBO-PENDING-CONTRACT-003	PENDING	CONTRACT	003	unrelated Pending não bloqueia	fluxo independente	event-trace	P0	MF029	IMPLEMENTED	tests/cases/NEBO-PENDING-CONTRACT-003.sh
+NEBO-PENDING-CONTRACT-004	PENDING	CONTRACT	004	source order dependents	ordem preservada	event-trace	P1	MF029	IMPLEMENTED	tests/cases/NEBO-PENDING-CONTRACT-004.sh
+NEBO-PENDING-CONTRACT-006	PENDING	CONTRACT	006	cancel propagates	dependentes cancelados	event-trace	P0	MF030	IMPLEMENTED	tests/cases/NEBO-PENDING-CONTRACT-006.sh
+NEBO-PENDING-CONTRACT-008	PENDING	CONTRACT	008	continuation ID determinístico	golden igual	dependency-golden	P1	MF029	IMPLEMENTED	tests/cases/NEBO-PENDING-CONTRACT-008.sh
+NEBO-PENDING-CONTRACT-009	PENDING	CONTRACT	009	captures mínimas	apenas valores usados	lowering-golden	P1	MF029	IMPLEMENTED	tests/cases/NEBO-PENDING-CONTRACT-009.sh
+NEBO-PENDING-NEG-005	PENDING	NEG	005	cycle estático	diagnostic	diagnostic-golden	P0	MF029	IMPLEMENTED	tests/cases/NEBO-PENDING-NEG-005.sh
+NEBO-PENDING-NEG-007	PENDING	NEG	007	duplicate resolution	erro interno controlado	runtime-trace	P0	MF030	IMPLEMENTED	tests/cases/NEBO-PENDING-NEG-007.sh
+NEBO-PENDING-SECURITY-010	PENDING	SECURITY	010	Pending órfão no exit	diagnostic/controlado	runtime-trace	P0	MF030	IMPLEMENTED	tests/cases/NEBO-PENDING-SECURITY-010.sh
+NEBO-PERF-PERFORMANCE-001	PERF	PERFORMANCE	001	lexer throughput	baseline registada	benchmark	P2	MF058	IMPLEMENTED	tests/cases/NEBO-PERF-PERFORMANCE-001.sh
+NEBO-PERF-PERFORMANCE-002	PERF	PERFORMANCE	002	parser throughput	baseline registada	benchmark	P2	MF058	IMPLEMENTED	tests/cases/NEBO-PERF-PERFORMANCE-002.sh
+NEBO-PERF-PERFORMANCE-003	PERF	PERFORMANCE	003	peak compiler memory	baseline	benchmark	P2	MF058	IMPLEMENTED	tests/cases/NEBO-PERF-PERFORMANCE-003.sh
+NEBO-PERF-PERFORMANCE-004	PERF	PERFORMANCE	004	build latency	baseline	benchmark	P2	MF058	IMPLEMENTED	tests/cases/NEBO-PERF-PERFORMANCE-004.sh
+NEBO-PERF-PERFORMANCE-005	PERF	PERFORMANCE	005	Console logical create	baseline	benchmark	P2	MF058	IMPLEMENTED	tests/cases/NEBO-PERF-PERFORMANCE-005.sh
+NEBO-PERF-PERFORMANCE-006	PERF	PERFORMANCE	006	first frame	baseline	benchmark	P2	MF058	IMPLEMENTED	tests/cases/NEBO-PERF-PERFORMANCE-006.sh
+NEBO-PERF-PERFORMANCE-007	PERF	PERFORMANCE	007	input latency	baseline	benchmark	P2	MF058	IMPLEMENTED	tests/cases/NEBO-PERF-PERFORMANCE-007.sh
+NEBO-PERF-PERFORMANCE-008	PERF	PERFORMANCE	008	multi-window scaling	baseline	benchmark	P2	MF058	IMPLEMENTED	tests/cases/NEBO-PERF-PERFORMANCE-008.sh
+NEBO-PERF-PERFORMANCE-009	PERF	PERFORMANCE	009	memory per Console/Input	baseline	benchmark	P2	MF058	IMPLEMENTED	tests/cases/NEBO-PERF-PERFORMANCE-009.sh
+NEBO-PERF-PERFORMANCE-010	PERF	PERFORMANCE	010	regressão acima do budget	gate conforme decisão	benchmark-report	P1	MF058	IMPLEMENTED	tests/cases/NEBO-PERF-PERFORMANCE-010.sh
+NEBO-PLATFORM-CONTRACT-001	PLATFORM	CONTRACT	001	capabilities obrigatórias	todas presentes	adapter-report	P0	MF051	IMPLEMENTED	tests/cases/NEBO-PLATFORM-CONTRACT-001.sh
+NEBO-PLATFORM-CONTRACT-002	PLATFORM	CONTRACT	002	events normalizados	common model	event-trace	P0	MF051	IMPLEMENTED	tests/cases/NEBO-PLATFORM-CONTRACT-002.sh
+NEBO-PLATFORM-CONTRACT-003	PLATFORM	CONTRACT	003	handles opacos	zero leak nativo	static-report	P0	MF051	IMPLEMENTED	tests/cases/NEBO-PLATFORM-CONTRACT-003.sh
+NEBO-PLATFORM-CONTRACT-004	PLATFORM	CONTRACT	004	custom chrome	sem menus nativos	visual-evidence	P0	MF051	IMPLEMENTED	tests/cases/NEBO-PLATFORM-CONTRACT-004.sh
+NEBO-PLATFORM-NATIVE-005	PLATFORM	NATIVE	005	minimize	ação real	native-log	P1	MF052	IMPLEMENTED	tests/cases/NEBO-PLATFORM-NATIVE-005.sh
+NEBO-PLATFORM-NATIVE-006	PLATFORM	NATIVE	006	maximize/restore	ação real	native-log	P1	MF052	IMPLEMENTED	tests/cases/NEBO-PLATFORM-NATIVE-006.sh
+NEBO-PLATFORM-NATIVE-007	PLATFORM	NATIVE	007	close	pipeline correto	native-log	P0	MF052	IMPLEMENTED	tests/cases/NEBO-PLATFORM-NATIVE-007.sh
+NEBO-PLATFORM-NATIVE-008	PLATFORM	NATIVE	008	mouse/keyboard	events corretos	native-log	P0	MF053	IMPLEMENTED	tests/cases/NEBO-PLATFORM-NATIVE-008.sh
+NEBO-PLATFORM-NEG-011	PLATFORM	NEG	011	capability ausente	target não certificado	diagnostic	P0	MF051	IMPLEMENTED	tests/cases/NEBO-PLATFORM-NEG-011.sh
+NEBO-PLATFORM-PORTABILITY-009	PLATFORM	PORTABILITY	009	common headless suite	PASS	conformance-report	P0	MF059	IMPLEMENTED	tests/cases/NEBO-PLATFORM-PORTABILITY-009.sh
+NEBO-PLATFORM-PORTABILITY-010	PLATFORM	PORTABILITY	010	sem fork semântico	resultados equivalentes	cross-platform-report	P0	MF059	IMPLEMENTED	tests/cases/NEBO-PLATFORM-PORTABILITY-010.sh
+NEBO-PLATFORM-SECURITY-012	PLATFORM	SECURITY	012	late native callback	generation protege	stress-report	P0	MF059	IMPLEMENTED	tests/cases/NEBO-PLATFORM-SECURITY-012.sh
+NEBO-RELEASE-RESTORE-001	RELEASE	RESTORE	001	clean build	PASS	command-log	P0	MF062	IMPLEMENTED	tests/cases/NEBO-RELEASE-RESTORE-001.sh
+NEBO-RELEASE-RESTORE-002	RELEASE	RESTORE	002	test suite completa	PASS	test-report	P0	MF062	IMPLEMENTED	tests/cases/NEBO-RELEASE-RESTORE-002.sh
+NEBO-RELEASE-RESTORE-003	RELEASE	RESTORE	003	checksums	PASS	hash-report	P0	MF063	IMPLEMENTED	tests/cases/NEBO-RELEASE-RESTORE-003.sh
+NEBO-RELEASE-RESTORE-004	RELEASE	RESTORE	004	package sem C/libc	inspection PASS	binary-report	P0	MF063	IMPLEMENTED	tests/cases/NEBO-RELEASE-RESTORE-004.sh
+NEBO-RELEASE-RESTORE-005	RELEASE	RESTORE	005	extração limpa	fileset correto	inventory	P0	MF063	IMPLEMENTED	tests/cases/NEBO-RELEASE-RESTORE-005.sh
+NEBO-RELEASE-RESTORE-006	RELEASE	RESTORE	006	build após restore	hashes iguais	hash-report	P0	MF063	IMPLEMENTED	tests/cases/NEBO-RELEASE-RESTORE-006.sh
+NEBO-RELEASE-RESTORE-007	RELEASE	RESTORE	007	common conformance	PASS	conformance-report	P0	MF062	IMPLEMENTED	tests/cases/NEBO-RELEASE-RESTORE-007.sh
+NEBO-RELEASE-RESTORE-008	RELEASE	RESTORE	008	target conformance	PASS	conformance-report	P0	MF062	IMPLEMENTED	tests/cases/NEBO-RELEASE-RESTORE-008.sh
+NEBO-RELEASE-RESTORE-009	RELEASE	RESTORE	009	open P0/P1	zero	audit-report	P0	MF062	IMPLEMENTED	tests/cases/NEBO-RELEASE-RESTORE-009.sh
+NEBO-RELEASE-RESTORE-010	RELEASE	RESTORE	010	READY_TO_CODE scope	evidência humana antes de implementação	gate-report	P0	MF064	IMPLEMENTED	tests/cases/NEBO-RELEASE-RESTORE-010.sh
+NEBO-RENDER-DETERMINISM-013	RENDER	DETERMINISM	013	fake font/surface	buffer igual	pixel-hash	P1	MF045	IMPLEMENTED	tests/cases/NEBO-RENDER-DETERMINISM-013.sh
+NEBO-RENDER-GOLDEN-006	RENDER	GOLDEN	006	clear preto	draw commands	draw-golden	P0	MF045	IMPLEMENTED	tests/cases/NEBO-RENDER-GOLDEN-006.sh
+NEBO-RENDER-GOLDEN-007	RENDER	GOLDEN	007	borda cinzenta	draw commands	draw-golden	P0	MF045	IMPLEMENTED	tests/cases/NEBO-RENDER-GOLDEN-007.sh
+NEBO-RENDER-GOLDEN-008	RENDER	GOLDEN	008	três controlos	draw/semantic tree	draw-golden	P0	MF045	IMPLEMENTED	tests/cases/NEBO-RENDER-GOLDEN-008.sh
+NEBO-RENDER-GOLDEN-009	RENDER	GOLDEN	009	RED.color	apenas nó receiver	draw-golden	P0	MF045	IMPLEMENTED	tests/cases/NEBO-RENDER-GOLDEN-009.sh
+NEBO-RENDER-GOLDEN-011	RENDER	GOLDEN	011	caret focus	draw commands	draw-golden	P1	MF045	IMPLEMENTED	tests/cases/NEBO-RENDER-GOLDEN-011.sh
+NEBO-RENDER-GOLDEN-012	RENDER	GOLDEN	012	input resolved	estado visual	draw-golden	P1	MF045	IMPLEMENTED	tests/cases/NEBO-RENDER-GOLDEN-012.sh
+NEBO-RENDER-NEG-010	RENDER	NEG	010	renderer missing	diagnostic controlado	runtime-trace	P0	MF045	IMPLEMENTED	tests/cases/NEBO-RENDER-NEG-010.sh
+NEBO-ROUTE-CONTRACT-001	ROUTE	CONTRACT	001	value.console()	DEFAULT_CONSOLE	route-golden	P0	MF027	IMPLEMENTED	tests/cases/NEBO-ROUTE-CONTRACT-001.sh
+NEBO-ROUTE-CONTRACT-002	ROUTE	CONTRACT	002	value.console().a	NAMED_INDEPENDENT	route-golden	P0	MF027	IMPLEMENTED	tests/cases/NEBO-ROUTE-CONTRACT-002.sh
+NEBO-ROUTE-CONTRACT-003	ROUTE	CONTRACT	003	Text.scan().x	SCAN_DEFAULT	route-golden	P0	MF027	IMPLEMENTED	tests/cases/NEBO-ROUTE-CONTRACT-003.sh
+NEBO-ROUTE-CONTRACT-004	ROUTE	CONTRACT	004	a.scan().x	SCAN_NAMED	route-golden	P0	MF027	IMPLEMENTED	tests/cases/NEBO-ROUTE-CONTRACT-004.sh
+NEBO-ROUTE-CONTRACT-005	ROUTE	CONTRACT	005	value.console().scan().x	ANONYMOUS	route-golden	P0	MF027	IMPLEMENTED	tests/cases/NEBO-ROUTE-CONTRACT-005.sh
+NEBO-ROUTE-CONTRACT-006	ROUTE	CONTRACT	006	duas named	IDs lógicos diferentes	route-golden	P0	MF027	IMPLEMENTED	tests/cases/NEBO-ROUTE-CONTRACT-006.sh
+NEBO-ROUTE-CONTRACT-007	ROUTE	CONTRACT	007	duas anonymous	routes diferentes	route-golden	P0	MF027	IMPLEMENTED	tests/cases/NEBO-ROUTE-CONTRACT-007.sh
+NEBO-ROUTE-CONTRACT-012	ROUTE	CONTRACT	012	routing não fica para runtime	metadata completa	static-report	P0	MF027	IMPLEMENTED	tests/cases/NEBO-ROUTE-CONTRACT-012.sh
+NEBO-ROUTE-DETERMINISM-011	ROUTE	DETERMINISM	011	mesma source	route IDs estáveis	route-golden	P0	MF027	IMPLEMENTED	tests/cases/NEBO-ROUTE-DETERMINISM-011.sh
+NEBO-ROUTE-NEG-008	ROUTE	NEG	008	binding de console duplicado	diagnostic	diagnostic-golden	P1	MF028	IMPLEMENTED	tests/cases/NEBO-ROUTE-NEG-008.sh
+NEBO-ROUTE-NEG-009	ROUTE	NEG	009	scan sem binding	diagnostic	diagnostic-golden	P0	MF028	IMPLEMENTED	tests/cases/NEBO-ROUTE-NEG-009.sh
+NEBO-ROUTE-NEG-010	ROUTE	NEG	010	receiver scan inválido	diagnostic	diagnostic-golden	P0	MF028	IMPLEMENTED	tests/cases/NEBO-ROUTE-NEG-010.sh
+NEBO-SECURITY-FUZZ-001	SECURITY	FUZZ	001	bytes aleatórios lexer	sem crash/hang	fuzz-report	P0	MF056	IMPLEMENTED	tests/cases/NEBO-SECURITY-FUZZ-001.sh
+NEBO-SECURITY-FUZZ-002	SECURITY	FUZZ	002	tokens malformados parser	sem crash/hang	fuzz-report	P0	MF056	IMPLEMENTED	tests/cases/NEBO-SECURITY-FUZZ-002.sh
+NEBO-SECURITY-FUZZ-003	SECURITY	FUZZ	003	AST limits	erro controlado	fuzz-report	P0	MF056	IMPLEMENTED	tests/cases/NEBO-SECURITY-FUZZ-003.sh
+NEBO-SECURITY-FUZZ-004	SECURITY	FUZZ	004	deep nesting	limit	fuzz-report	P0	MF056	IMPLEMENTED	tests/cases/NEBO-SECURITY-FUZZ-004.sh
+NEBO-SECURITY-FUZZ-005	SECURITY	FUZZ	005	long strings	limit	fuzz-report	P0	MF056	IMPLEMENTED	tests/cases/NEBO-SECURITY-FUZZ-005.sh
+NEBO-SECURITY-FUZZ-006	SECURITY	FUZZ	006	event stream aleatório	invariantes preservados	fuzz-report	P0	MF057	IMPLEMENTED	tests/cases/NEBO-SECURITY-FUZZ-006.sh
+NEBO-SECURITY-FUZZ-007	SECURITY	FUZZ	007	input Unicode malformado	rejeitado	fuzz-report	P0	MF057	IMPLEMENTED	tests/cases/NEBO-SECURITY-FUZZ-007.sh
+NEBO-SECURITY-SECURITY-011	SECURITY	SECURITY	011	tool argument injection	bloqueada	security-report	P0	MF056	IMPLEMENTED	tests/cases/NEBO-SECURITY-SECURITY-011.sh
+NEBO-SECURITY-SECURITY-012	SECURITY	SECURITY	012	path traversal output	bloqueado	security-report	P0	MF056	IMPLEMENTED	tests/cases/NEBO-SECURITY-SECURITY-012.sh
+NEBO-SECURITY-SECURITY-013	SECURITY	SECURITY	013	race detector methodology	zero race conhecida	stress-report	P0	MF057	IMPLEMENTED	tests/cases/NEBO-SECURITY-SECURITY-013.sh
+NEBO-SECURITY-SECURITY-014	SECURITY	SECURITY	014	resource storm Consoles	limit	stress-report	P0	MF057	IMPLEMENTED	tests/cases/NEBO-SECURITY-SECURITY-014.sh
+NEBO-SECURITY-SECURITY-015	SECURITY	SECURITY	015	queue exhaustion	controlled fail	stress-report	P0	MF057	IMPLEMENTED	tests/cases/NEBO-SECURITY-SECURITY-015.sh
+NEBO-SECURITY-STATIC_ASM-008	SECURITY	STATIC_ASM	008	stack alignment/functions	audit PASS	asm-audit	P0	MF056	IMPLEMENTED	tests/cases/NEBO-SECURITY-STATIC_ASM-008.sh
+NEBO-SECURITY-STATIC_ASM-009	SECURITY	STATIC_ASM	009	executable stack	proibida	binary-report	P0	MF056	IMPLEMENTED	tests/cases/NEBO-SECURITY-STATIC_ASM-009.sh
+NEBO-SECURITY-STATIC_ASM-010	SECURITY	STATIC_ASM	010	writable+executable region	proibida	binary-report	P0	MF056	IMPLEMENTED	tests/cases/NEBO-SECURITY-STATIC_ASM-010.sh
+NEBO-SOURCE-DETERMINISM-008	SOURCE	DETERMINISM	008	path lógico sem absoluto	golden estável	diagnostic-golden	P1	MF012	IMPLEMENTED	tests/cases/NEBO-SOURCE-DETERMINISM-008.sh
+NEBO-SOURCE-GOLDEN-001	SOURCE	GOLDEN	001	UTF-8 válido	SourceFile correto	source-golden	P0	MF011	IMPLEMENTED	tests/cases/NEBO-SOURCE-GOLDEN-001.sh
+NEBO-SOURCE-GOLDEN-004	SOURCE	GOLDEN	004	LF	LineMap correto	line-map-golden	P1	MF012	IMPLEMENTED	tests/cases/NEBO-SOURCE-GOLDEN-004.sh
+NEBO-SOURCE-GOLDEN-005	SOURCE	GOLDEN	005	CRLF	mesmas linhas lógicas	line-map-golden	P1	MF012	IMPLEMENTED	tests/cases/NEBO-SOURCE-GOLDEN-005.sh
+NEBO-SOURCE-NEG-002	SOURCE	NEG	002	BOM	diagnostic conforme política	diagnostic-golden	P1	MF011	IMPLEMENTED	tests/cases/NEBO-SOURCE-NEG-002.sh
+NEBO-SOURCE-NEG-003	SOURCE	NEG	003	UTF-8 inválido	NEBO_LEX_INVALID_UTF8	diagnostic-golden	P0	MF011	IMPLEMENTED	tests/cases/NEBO-SOURCE-NEG-003.sh
+NEBO-SOURCE-NEG-007	SOURCE	NEG	007	source acima do limite	LIMIT_EXCEEDED	diagnostic-golden	P1	MF011	IMPLEMENTED	tests/cases/NEBO-SOURCE-NEG-007.sh
+NEBO-SOURCE-UNIT_ASM-006	SOURCE	UNIT_ASM	006	offset→linha/coluna	resultado correto	asm-test	P0	MF012	IMPLEMENTED	tests/cases/NEBO-SOURCE-UNIT_ASM-006.sh
+NEBO-TOOLCHAIN-CONTRACT-001	TOOLCHAIN	CONTRACT	001	assembler version probe	compatível	command-log	P1	MF034	IMPLEMENTED	tests/cases/NEBO-TOOLCHAIN-CONTRACT-001.sh
+NEBO-TOOLCHAIN-CONTRACT-002	TOOLCHAIN	CONTRACT	002	linker version probe	compatível	command-log	P1	MF034	IMPLEMENTED	tests/cases/NEBO-TOOLCHAIN-CONTRACT-002.sh
+NEBO-TOOLCHAIN-CONTRACT-009	TOOLCHAIN	CONTRACT	009	keep-temp	artefactos preservados	filesystem-report	P2	MF035	IMPLEMENTED	tests/cases/NEBO-TOOLCHAIN-CONTRACT-009.sh
+NEBO-TOOLCHAIN-CONTRACT-010	TOOLCHAIN	CONTRACT	010	cleanup normal	sem resíduos	filesystem-report	P1	MF035	IMPLEMENTED	tests/cases/NEBO-TOOLCHAIN-CONTRACT-010.sh
+NEBO-TOOLCHAIN-NEG-003	TOOLCHAIN	NEG	003	assembler ausente	erro claro	diagnostic-golden	P0	MF034	IMPLEMENTED	tests/cases/NEBO-TOOLCHAIN-NEG-003.sh
+NEBO-TOOLCHAIN-NEG-004	TOOLCHAIN	NEG	004	linker ausente	erro claro	diagnostic-golden	P0	MF034	IMPLEMENTED	tests/cases/NEBO-TOOLCHAIN-NEG-004.sh
+NEBO-TOOLCHAIN-NEG-005	TOOLCHAIN	NEG	005	assembler falha	stderr capturado	command-log	P1	MF034	IMPLEMENTED	tests/cases/NEBO-TOOLCHAIN-NEG-005.sh
+NEBO-TOOLCHAIN-NEG-006	TOOLCHAIN	NEG	006	linker falha	artefacto incompleto removido	filesystem-report	P1	MF034	IMPLEMENTED	tests/cases/NEBO-TOOLCHAIN-NEG-006.sh
+NEBO-TOOLCHAIN-SECURITY-007	TOOLCHAIN	SECURITY	007	path com espaços	argv correto	command-log	P1	MF034	IMPLEMENTED	tests/cases/NEBO-TOOLCHAIN-SECURITY-007.sh
+NEBO-TOOLCHAIN-SECURITY-008	TOOLCHAIN	SECURITY	008	argument injection	não executada	security-report	P0	MF034	IMPLEMENTED	tests/cases/NEBO-TOOLCHAIN-SECURITY-008.sh
+NEBO-TYPE-CONTRACT-001	TYPE	CONTRACT	001	Int signed 64-bit	tipo correto	semantic-golden	P0	MF022	IMPLEMENTED	tests/cases/NEBO-TYPE-CONTRACT-001.sh
+NEBO-TYPE-CONTRACT-002	TYPE	CONTRACT	002	Bool sem truthiness	if exige Bool	diagnostic-golden	P0	MF022	IMPLEMENTED	tests/cases/NEBO-TYPE-CONTRACT-002.sh
+NEBO-TYPE-CONTRACT-003	TYPE	CONTRACT	003	Text UTF-8	tipo correto	semantic-golden	P0	MF022	IMPLEMENTED	tests/cases/NEBO-TYPE-CONTRACT-003.sh
+NEBO-TYPE-CONTRACT-004	TYPE	CONTRACT	004	Console first-class	tipo correto	semantic-golden	P0	MF022	IMPLEMENTED	tests/cases/NEBO-TYPE-CONTRACT-004.sh
+NEBO-TYPE-CONTRACT-005	TYPE	CONTRACT	005	scan retorna Pending<Text>	tipo correto	semantic-golden	P0	MF022	IMPLEMENTED	tests/cases/NEBO-TYPE-CONTRACT-005.sh
+NEBO-TYPE-CONTRACT-009	TYPE	CONTRACT	009	return inferido Int	signature Int	semantic-golden	P0	MF023	IMPLEMENTED	tests/cases/NEBO-TYPE-CONTRACT-009.sh
+NEBO-TYPE-CONTRACT-010	TYPE	CONTRACT	010	sem return	Void	semantic-golden	P1	MF023	IMPLEMENTED	tests/cases/NEBO-TYPE-CONTRACT-010.sh
+NEBO-TYPE-CONTRACT-014	TYPE	CONTRACT	014	checked overflow constante	compile diagnostic	diagnostic-golden	P0	MF022	IMPLEMENTED	tests/cases/NEBO-TYPE-CONTRACT-014.sh
+NEBO-TYPE-CONTRACT-015	TYPE	CONTRACT	015	division trunc zero	resultado correto	native-output	P1	MF022	IMPLEMENTED	tests/cases/NEBO-TYPE-CONTRACT-015.sh
+NEBO-TYPE-NEG-006	TYPE	NEG	006	coerção Int→Bool	rejeitada	diagnostic-golden	P0	MF022	IMPLEMENTED	tests/cases/NEBO-TYPE-NEG-006.sh
+NEBO-TYPE-NEG-007	TYPE	NEG	007	Bool arithmetic	rejeitada	diagnostic-golden	P1	MF022	IMPLEMENTED	tests/cases/NEBO-TYPE-NEG-007.sh
+NEBO-TYPE-NEG-008	TYPE	NEG	008	Text + Text	não suportado	diagnostic-golden	P1	MF022	IMPLEMENTED	tests/cases/NEBO-TYPE-NEG-008.sh
+NEBO-TYPE-NEG-011	TYPE	NEG	011	returns inconsistentes	diagnostic	diagnostic-golden	P0	MF023	IMPLEMENTED	tests/cases/NEBO-TYPE-NEG-011.sh
+NEBO-TYPE-NEG-012	TYPE	NEG	012	bind Void	diagnostic	diagnostic-golden	P1	MF023	IMPLEMENTED	tests/cases/NEBO-TYPE-NEG-012.sh
+NEBO-TYPE-NEG-013	TYPE	NEG	013	recursão	feature diferida	diagnostic-golden	P1	MF023	IMPLEMENTED	tests/cases/NEBO-TYPE-NEG-013.sh

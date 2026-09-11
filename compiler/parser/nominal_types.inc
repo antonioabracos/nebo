@@ -17,6 +17,9 @@
 %define NEBOC_NOM_PAYLOAD_TYPE_OFFSET 104
 %define NEBOC_NOM_PAYLOAD_VALUE_OFFSET 112
 %define NEBOC_NOM_RESULT_OFFSET 120
+; Failure-only token provenance. A rejected request has no publishable result;
+; successful semantic analysis replaces this slot with its typed result.
+%define NEBOC_NOM_ERROR_TOKEN_OFFSET NEBOC_NOM_RESULT_OFFSET
 %define NEBOC_NOM_SIZE_OFFSET 128
 %define NEBOC_NOM_ALIGN_OFFSET 136
 %define NEBOC_NOM_PAYLOAD_OFFSET_OFFSET 144

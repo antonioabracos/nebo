@@ -1,0 +1,3 @@
+code=NEBO_LEX_INVALID_UTF8
+path=src/invalid.no
+offset=2

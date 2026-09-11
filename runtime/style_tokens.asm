@@ -104,6 +104,11 @@ nebo_style_registry_validate:
     mov rdi, [r10 + NEBO_STYLE_TOKEN_EFFECTS_OFFSET]
     test rdi, ~NEBO_STYLE_OPTIONAL_ALL
     jnz .token_invalid
+    mov rdi, [r10 + NEBO_STYLE_TOKEN_ROLE_OFFSET]
+    cmp rdi, NEBO_ROLE_FOREGROUND
+    jb .token_invalid
+    cmp rdi, NEBO_ROLE_MAX
+    ja .token_invalid
     xor rax, r9
     imul rax, r11
     xor rax, [r10 + NEBO_STYLE_TOKEN_DECORATIONS_OFFSET]
@@ -193,6 +198,9 @@ nebo_style_colors_validate:
     jb .colors_target
     cmp r8, NEBO_COLOR_TARGET_LIVE
     ja .colors_target
+    mov rax, [rdi + NEBO_STYLE_COLORS_CAPABILITIES_OFFSET]
+    test rax, ~(NEBO_COLOR_CAP_ALPHA | NEBO_COLOR_CAP_BLEND | NEBO_COLOR_CAP_TRUECOLOR)
+    jnz .colors_invalid
     xor r9d, r9d
 .colors_loop:
     cmp r9, 3
@@ -244,12 +252,19 @@ nebo_style_font_resolve:
     mov rcx, [rdi + NEBO_FONT_ID_OFFSET]
     test rcx, rcx
     jz .font_invalid
+    cmp rcx, NEBO_FONT_MAX_ID
+    ja .font_limit
     mov rdx, [rdi + NEBO_FONT_SIZE_OFFSET]
     test rdx, rdx
     jle .font_invalid
     movsxd r8, edx
     cmp r8, rdx
     jne .font_limit
+    cmp rdx, NEBO_FONT_MAX_SIZE
+    ja .font_limit
+    mov rax, [rdi + NEBO_FONT_CAPABILITIES_OFFSET]
+    test rax, ~NEBO_FONT_CAP_CUSTOM
+    jnz .font_invalid
     mov r8, [rdi + NEBO_FONT_TARGET_OFFSET]
     cmp r8, NEBO_COLOR_TARGET_HEADLESS
     jb .font_target
@@ -306,6 +321,9 @@ nebo_style_fallback_resolve:
     mov r8, [rdi + NEBO_FALLBACK_COLOR_PRESENT_OFFSET]
     cmp r8, 1
     ja .fallback_invalid
+    mov rax, [rdi + NEBO_FALLBACK_CAPABILITIES_OFFSET]
+    test rax, ~NEBO_PROFILE_CAP_ALL
+    jnz .fallback_invalid
     mov r9, rcx
     test rcx, NEBO_PROFILE_HIGH_CONTRAST
     jz .fallback_ascii
@@ -350,7 +368,10 @@ nebo_style_accessibility_validate:
     jz .a11y_invalid
     test rsi, rsi
     jz .a11y_invalid
-    test qword [rdi + NEBO_A11Y_FLAGS_OFFSET], NEBO_A11Y_SENSITIVE
+    mov rax, [rdi + NEBO_A11Y_FLAGS_OFFSET]
+    test rax, ~NEBO_A11Y_SENSITIVE
+    jnz .a11y_invalid
+    test rax, NEBO_A11Y_SENSITIVE
     jnz .a11y_privacy
     mov rcx, [rdi + NEBO_A11Y_ROLE_OFFSET]
     cmp rcx, NEBO_A11Y_ROLE_MIN

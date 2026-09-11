@@ -1,0 +1,11 @@
+diagnostic	trigger	message	help
+NEBO-VETORES-MATRIZES-TENSORES-E-COMPUTACAO-CIENTIFICA-VECTOR-ARITY	vector does not contain exactly four elements	Vector<Int> requires exactly four elements	provide four Int elements
+NEBO-VETORES-MATRIZES-TENSORES-E-COMPUTACAO-CIENTIFICA-VECTOR-ELEMENT-TYPE	element is not Int	Vector<Int> elements must be Int	replace the element with an Int
+NEBO-VETORES-MATRIZES-TENSORES-E-COMPUTACAO-CIENTIFICA-VECTOR-INDEX-OUT-OF-BOUNDS	index is outside 0 through 3	Vector<Int> index is out of bounds	use a constant index from 0 through 3
+NEBO-VETORES-MATRIZES-TENSORES-E-COMPUTACAO-CIENTIFICA-VECTOR-CONSTANT-INDEX-REQUIRED	index is not a literal constant	bounded Vector index must be constant	use a constant index from 0 through 3
+NEBO-VETORES-MATRIZES-TENSORES-E-COMPUTACAO-CIENTIFICA-VECTOR-DTYPE-DEFERRED	dtype or profile flags are unsupported	only dense CPU Vector<Int> is available	use Int and the bounded dense CPU profile
+NEBO-VETORES-MATRIZES-TENSORES-E-COMPUTACAO-CIENTIFICA-MATRIX-DEFERRED	Matrix form	Matrix is deferred	use the bounded Vector<Int> profile
+NEBO-VETORES-MATRIZES-TENSORES-E-COMPUTACAO-CIENTIFICA-TENSOR-DEFERRED	Tensor form	Tensor is deferred	use the bounded Vector<Int> profile
+NEBO-VETORES-MATRIZES-TENSORES-E-COMPUTACAO-CIENTIFICA-DEVICE-DEFERRED	device or GPU transfer	device transfer is deferred	use the CPU profile
+NEBO-VETORES-MATRIZES-TENSORES-E-COMPUTACAO-CIENTIFICA-SPARSE-DEFERRED	sparse storage form	sparse Vector storage is deferred	use a dense four-element literal
+NEBO-VETORES-MATRIZES-TENSORES-E-COMPUTACAO-CIENTIFICA-VECTOR-OVERFLOW	checked sum or dot overflows Int	Vector arithmetic overflows Int	use values whose checked result fits Int

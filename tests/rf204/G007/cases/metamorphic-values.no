@@ -1,0 +1,8 @@
+start() {
+    Deque<Int>.new().deque;
+    deque.pushBack(23);
+    deque.pushFront(17);
+    deque.pushBack(29);
+    deque.popFront().front;
+    deque.popBack();
+}

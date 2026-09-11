@@ -1,0 +1,3 @@
+root: Block
+child: IfStmt
+else-child: IfStmt(flag=ELSE_IF)

@@ -1,0 +1,11 @@
+%ifndef NEBO_SLASH_CORE_SOURCE_PROBE_INC
+%define NEBO_SLASH_CORE_SOURCE_PROBE_INC 1
+
+%ifndef NEBO_SLASH_CORE_SOURCE_PROBE_IMPLEMENTATION
+ extern nebo_slash_core_source_probe
+ extern nebo_slash_core_negative_probe
+ extern nebo_slash_core_render_transcript
+ extern nebo_slash_core_template
+%endif
+
+%endif

@@ -1,0 +1,5 @@
+start() {
+    Bytes.fromValues(1, 2, 3, 4).source;
+    source.clone().cloned;
+    cloned.byteLength();
+}

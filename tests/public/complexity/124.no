@@ -1,0 +1,7 @@
+// Sampling and row or column limits reuse canonical bounded data owners.
+start() {
+    RenderPlan;
+    3206;
+    output.stdout().stderr().target("chart-table-service").plain().visual().headlessEvent();
+    lifecycle.event("chart-table").payload("sample-row-column-limits").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

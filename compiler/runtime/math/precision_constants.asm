@@ -4,7 +4,7 @@ default rel
 %include "compiler/semantic/types/typed_quantity_contract.inc"
 
 %define NEBO_CONSTANT_PI       1
-%define NEBO_CONSTANT_E        2
+%define NEBO_CONSTANT_TAU      2
 %define NEBO_PRECISION_F64     64
 
 section .text
@@ -16,9 +16,9 @@ nebo_precision_constant_bits:
     jne .precision
     cmp edi, NEBO_CONSTANT_PI
     je .pi
-    cmp edi, NEBO_CONSTANT_E
+    cmp edi, NEBO_CONSTANT_TAU
     jne .domain
-    mov rax, 0x4005bf0a8b145769  ; correctly rounded e
+    mov rax, 0x401921fb54442d18  ; correctly rounded tau
     xor edx, edx
     ret
 .pi:

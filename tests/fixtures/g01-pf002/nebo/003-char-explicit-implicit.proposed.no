@@ -1,0 +1,5 @@
+// G01-PF002 contract fixture; executable support is deferred.
+start() {
+    Char('A').explicit_char;
+    'A'.implicit_char;
+}

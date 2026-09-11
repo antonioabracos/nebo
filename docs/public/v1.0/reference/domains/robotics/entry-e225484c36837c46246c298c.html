@@ -1,0 +1,28 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>robotics — model.discretize(period,method)</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>robotics — model.discretize(period,method)</h1><p>Deterministic DSP/PID/replay model; no physical actuator, sensor or hard real-time proof; original observation: explicit Euler period governs discrete A and B matrices; SDK bounds: {&quot;MAX_LOOP_TICKS&quot;:512,&quot;MAX_MATRIX_DIMENSION&quot;:16,&quot;MAX_SAMPLES&quot;:4096,&quot;MAX_TRANSFORM_POINTS&quot;:256}</p><pre>Identity: owner:G041:G041-S04-06 (DOMAIN_CONTRACT_ID)
+Edition: 1
+Target: PYTHON_CPU_REFERENCE
+Availability: EXPERIMENTAL</pre><h2>Syntax or signature</h2><pre>StateSpace.discretize(self, period: float, method: str) -&gt; &#x27;StateSpace&#x27;</pre><h2>Reference-model API</h2><p>The signature describes the Python reference model. Parameters and return annotations belong to that model; they are not an admitted Nebo spelling.</p><h2>Complete executable Python example</h2><p>Run python3 -B tests/rf204/G041/sdk_oracle.py from the repository root with only synthetic inputs. Set G020_TMP and G021_TMP to an empty private temporary directory for the two checkpoint suites. This program contains the setup and independent assertions for the model. The line excerpt below is not a standalone program. No native Nebo binding is inferred.</p><h2>Availability and maturity</h2><p>EXPERIMENTAL; evidence SDK_REFERENCE_MODEL. Documentation does not promote this identity to stable. Public and owner namespaces are separate contracts.</p><h2>Limits and lifecycle</h2><p>Deterministic DSP/PID/replay model; no physical actuator, sensor or hard real-time proof; original observation: explicit Euler period governs discrete A and B matrices; SDK bounds: {&quot;MAX_LOOP_TICKS&quot;:512,&quot;MAX_MATRIX_DIMENSION&quot;:16,&quot;MAX_SAMPLES&quot;:4096,&quot;MAX_TRANSFORM_POINTS&quot;:256}</p><h2>Privacy, dependencies and authority</h2><p>Capability: SYNTHETIC_LOCAL_DATA. Gate: NONE. Import grants capability: NO. Use synthetic local data. Hardware claim: NO. Security assurance: NO. RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE. SDK buffers and handles follow the owner lifecycle and reject invalid/released inputs where specified. No downloaded models, secrets, external network or device access is needed for the documented local proofs.</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;classification&quot;: {
+      &quot;capability&quot;: &quot;SYNTHETIC_LOCAL_DATA&quot;,
+      &quot;core&quot;: &quot;NO&quot;,
+      &quot;evidence_level&quot;: &quot;SDK_REFERENCE_MODEL&quot;,
+      &quot;external_gate&quot;: &quot;NONE&quot;,
+      &quot;hardware_claim&quot;: &quot;NO&quot;,
+      &quot;import_grants_capability&quot;: &quot;NO&quot;,
+      &quot;legal&quot;: &quot;RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE&quot;,
+      &quot;security_assurance&quot;: &quot;NO&quot;,
+      &quot;target&quot;: &quot;PYTHON_CPU_REFERENCE&quot;,
+      &quot;tier&quot;: &quot;EXPERIMENTAL&quot;
+    }
+  },
+  {
+    &quot;excerpt&quot;: &quot;208:     continuous = StateSpace.define(((0.0, 1.0), (-1.0, -0.2)), ((0.0,), (1.0,)), ((1.0, 0.0),), ((0.0,),), 0.0)\n209:     discrete = continuous.discretize(0.05, \&quot;forward-euler\&quot;)\n210:     surface(\&quot;G041-S04-06\&quot;, discrete.sample_time == 0.05 and close(discrete.A[0][1], 0.05), discrete.A)\n211:     identification = SystemIdentification.fit(\n212:         {\&quot;input\&quot;: (0.0, 1.0, 0.0, 2.0, 1.0), \&quot;output\&quot;: (1.0, 0.5, 2.25, 1.125, 4.5625)},&quot;,
+    &quot;executed_assertions&quot;: 151,
+    &quot;execution&quot;: &quot;SDK_REFERENCE_MODEL_ONLY&quot;,
+    &quot;language&quot;: &quot;python&quot;,
+    &quot;line&quot;: 209,
+    &quot;source_path&quot;: &quot;tests/rf204/G041/sdk_oracle.py&quot;,
+    &quot;source_sha256&quot;: &quot;0e7332b6c17b6bea3d12acf99b8d30146c1de0f9e251c125610ed3b4b4b0352f&quot;
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a></nav><h2>Provenance</h2><ul><li>compiler/sdk/robotics.py — SHA-256 64712fe32815fb4d6e89a66a733128363aba505b47895c2a1e5ad4f004fa268d</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

@@ -1,0 +1,7 @@
+// Opens and closes a bounded window context with exactly-once cleanup evidence.
+start() {
+    RenderPlan;
+    1403;
+    output.stdout().stderr().target("window-lifecycle").plain().visual().headlessEvent();
+    lifecycle.event("window.open-close").payload("640x480").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

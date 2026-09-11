@@ -1,0 +1,2 @@
+(Int.self)work() { Array<Int,2> [4,9].values; values.at(true).return; }
+start() { 0.work().return; }

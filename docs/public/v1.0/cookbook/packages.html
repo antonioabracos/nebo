@@ -1,0 +1,9 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Consume two explicit package values</title><link rel="stylesheet" href="../assets/style.css"></head><body><a href="#main">Skip to content</a><nav aria-label="Home"><a href="../index.html">Nebo documentation home</a></nav><main id="main"><h1>Consume two explicit package values</h1><p>The consumer reads token=61 from sample.core and delta=47 from sample.util, yielding 108. The workspace stores exact versions and no capabilities. Offline restore requires the exact lock SHA-256.</p><p>The package profile admits Edition 1, x86_64-systemv-elf-linux, up to three source roots/modules and two direct dependencies. Freeze derives material interfaces. A changed source value changes the content identity and executable result; a stale digest must reject before output publication.</p><p>Imports: explicit project imports with the two supplied provider units. Required effects/capabilities: none beyond computation and local allocation. No network, live display, external credentials or device capability is used.</p><h2>Complete Nebo source</h2><pre><code>// The companion workspace supplies two independently pinned packages.
+module app;import { import &quot;project.core&quot;.left; import &quot;project.util&quot;.right; }.values;start values.token + values.delta;
+</code></pre><h2>Inputs and independent expectations</h2><pre>{
+  &quot;expected_exit&quot;: 108,
+  &quot;units&quot;: {
+    &quot;core.no&quot;: &quot;module core;export public token = 61;\n&quot;,
+    &quot;util.no&quot;: &quot;module util;export public delta = 47;\n&quot;
+  }
+}</pre></main></body></html>

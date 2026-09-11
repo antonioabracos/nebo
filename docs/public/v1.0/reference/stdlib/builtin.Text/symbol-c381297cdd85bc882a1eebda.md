@@ -1,0 +1,77 @@
+# builtin.Text — ${utilizador.nome}
+
+Ordinary token/AST expression children; native pure-only effect policy with resolved callee bodies; static G059 nodes and G062 profiles; 64 segments, 16 nested quotes, 4096 source-content bytes; native named-product fields preserve declared types/offsets and source order (8 declarations/8 fields); native-token tooling preserves literals and exposes expressions; rename uses existing G162 receiver-method SymbolIds; privacy remains a separate obligation Int64/Bool/binary64/Unicode scalar values; checked arithmetic; lexical evaluation once
+
+```text
+Identity: g061-format:${utilizador.nome} (QUALIFIED_INTRINSIC_OR_REGISTRY_ID)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: STABLE_1_0
+```
+
+## Syntax or signature
+
+```text
+${utilizador.nome}
+Ordinary token/AST expression children; native pure-only effect policy with resolved callee bodies; static G059 nodes and G062 profiles; 64 segments, 16 nested quotes, 4096 source-content bytes; native named-product fields preserve declared types/offsets and source order (8 declarations/8 fields); native-token tooling preserves literals and exposes expressions; rename uses existing G162 receiver-method SymbolIds; privacy remains a separate obligation Int64/Bool/binary64/Unicode scalar values; checked arithmetic; lexical evaluation once
+```
+
+## Ownership and complexity
+
+Exact typed owner contract; no copy/borrow/clone capability inferred from spelling Ordinary token/AST expression children; native pure-only effect policy with resolved callee bodies; static G059 nodes and G062 profiles; 64 segments, 16 nested quotes, 4096 source-content bytes; native named-product fields preserve declared types/offsets and source order (8 declarations/8 fields); native-token tooling preserves literals and exposes expressions; rename uses existing G162 receiver-method SymbolIds; privacy remains a separate obligation Int64/Bool/binary64/Unicode scalar values; checked arithmetic; lexical evaluation once
+
+## Effects, capabilities and sandbox
+
+Per expression: pure computation plus explicit observed sinks; NO_IMPLICIT_GRANT. Import grants capability: NO.
+
+## Availability and errors
+
+Edition 1; x86_64-systemv-elf-linux; BOUNDED_PUBLIC_EXECUTED_WITHIN_LIMITS. Ordinary token/AST expression children; native pure-only effect policy with resolved callee bodies; static G059 nodes and G062 profiles; 64 segments, 16 nested quotes, 4096 source-content bytes; native named-product fields preserve declared types/offsets and source order (8 declarations/8 fields); native-token tooling preserves literals and exposes expressions; rename uses existing G162 receiver-method SymbolIds; privacy remains a separate obligation Int64/Bool/binary64/Unicode scalar values; checked arithmetic; lexical evaluation once Use the declared operand and receiver domain; source rejection publishes no executable.
+
+## Identity and aliases
+
+CORRECTED_FORMAT_CONTRACT_ROW. Identity kind: QUALIFIED_INTRINSIC_OR_REGISTRY_ID. SymbolId: NOT_SERIALIZED. Alias entries describe the same qualified operation; they do not create another runtime API.
+
+## Executed examples
+
+### composite:typed-struct-inline; expected 23
+
+```nebo
+struct User { Text.name; Int.age; }start(){"${User {name:"Nebo",age:29}.age}".console();23.return;}
+```
+
+Oracle: {"capabilities": {"console": "RETAINED_DOCUMENT", "filesystem": "EXPLICIT_SCRATCH_EFFECT_ORACLE", "network": "DENIED_BY_SECCOMP"}, "console_text_utf8": "29", "filesystem_effects": {}, "independent_builds": 2, "kinds": \[2\], "process_exit": 23, "publications": 1, "runtime_determinism": "BYTE_IDENTICAL", "runtime_sha256": "663477a19b76a507a5dd89e68b540d3c22536830be08c01a56a7601fd2f7b1ea", "text": {"bytes_hex": "3239"}}
+
+## Rejected examples
+
+### composite:typed-struct-wrong-text; expected NEBO_TYPE_MISMATCH
+
+```nebo
+struct User { Text.name; Int.age; }start(){User {name:23,age:29}.x;"${23}".console();23.return;}
+```
+
+Oracle: {"artifact_publication": "REJECTED", "compiler_exit": 1, "diagnostic": "NEBO_TYPE_MISMATCH"}
+
+## Related entries
+
+[Index](index.md)
+
+- [symbol-744da926f94929d16c738e1a](symbol-744da926f94929d16c738e1a.md)
+
+## Provenance
+
+- sdk/contracts/stdlib/STDLIB-STABLE-CATALOG.tsv — SHA-256 a66eec0cbb7f0a99f20ae489208f1ba1106cd2c327e475daf406d615e3e55bab
+
+- compiler/semantic/bindings/binding_vertical.asm — SHA-256 47e3a89c66a2251ca2b8c30eb3faa17078d71a74751d9aafe2ae89f9d23561ce
+
+- compiler/driver/cli/linux-x86_64/scalar_program.inc — SHA-256 54bad41b6d43ffc48c264adae8a0a776071c6a3917abaf05520344e11ae6afbe
+
+- compiler/codegen/functions/x86_64/function_codegen.asm — SHA-256 944358cec673b2132c51b5c4b5842edaf4cf9ce157b23d83892449fbb12487f7
+
+- runtime/core/runtime_core.asm — SHA-256 9786591602649f222e73dc91ea2449fba1c98d2e504ae779208caf7373e06797
+
+- tests/rf204/G170/composite_test.py — SHA-256 55ac93ae5384e68a22489d0b68dbd8acc1cb83ed7fdb2b3b2a1b5c71de6f01f3
+
+- tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0
+
+- tests/rf204/G170/text_test.py — SHA-256 2a6be89787726ec8c3e4acbcb2c728b82e1c9fc7acc8a2680f2d830648448f52

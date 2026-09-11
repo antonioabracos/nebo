@@ -24,6 +24,8 @@ NEBOC_ABI_FUNCTION neboc_option_lower
  sub rsp,8
  mov r12,rdi
  mov r13,rsi
+ cmp qword [r12+NEBOC_OPTION_EFFECT_COUNT_OFFSET],32
+ ja .source
  cmp qword [r12+NEBOC_OPTION_FOUND_OFFSET],1
  jne .source
  cmp qword [r12+NEBOC_OPTION_DIAGNOSTIC_OFFSET],0
@@ -80,6 +82,10 @@ NEBOC_ABI_FUNCTION neboc_option_lower
  mov [r13+NEBOC_OPTION_PLAN_MAX_LAYOUT_SIZE_OFFSET],rax
  mov rax,[r12+NEBOC_OPTION_LAYOUT_ALIGN_OFFSET]
  mov [r13+NEBOC_OPTION_PLAN_MAX_LAYOUT_ALIGN_OFFSET],rax
+ lea rsi,[r12+NEBOC_OPTION_EFFECT_COUNT_OFFSET]
+ lea rdi,[r13+NEBOC_OPTION_PLAN_EFFECT_COUNT_OFFSET]
+ mov ecx,1+32*4
+ rep movsq
  mov rdi,r13
  mov ecx,NEBOC_OPTION_PLAN_HASHED_BYTES
  call hash_bytes
@@ -113,6 +119,10 @@ NEBOC_ABI_FUNCTION neboc_result_lower
  sub rsp,8
  mov r12,rdi
  mov r13,rsi
+ cmp qword [r12+NEBOC_RESULT_EFFECT_COUNT_OFFSET],32
+ ja .source
+ cmp qword [r12+NEBOC_RESULT_TEXT_USED_OFFSET],NEBOC_RESULT_TEXT_CAPACITY
+ ja .source
  cmp qword [r12+NEBOC_RESULT_FOUND_OFFSET],1
  jne .source
  cmp qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_RESULT_DIAGNOSTIC_OFFSET],0
@@ -220,8 +230,12 @@ NEBOC_ABI_FUNCTION neboc_result_lower
  jne .source
  cmp qword [r12+NEBOC_RESULT_LAYOUT_ALIGN_OFFSET],NEBOC_ERROR_LAYOUT_ALIGN
  jne .source
- cmp qword [r12+NEBOC_RESULT_OUTPUT_TYPE_OFFSET],NEBOC_RESULT_TYPE_INT
+ mov rax,[r12+NEBOC_RESULT_OUTPUT_TYPE_OFFSET]
+ cmp rax,NEBOC_RESULT_TYPE_INT
+ je .error_output_ready
+ cmp rax,NEBOC_RESULT_TYPE_BOOL
  jne .source
+.error_output_ready:
  cmp qword [r12+NEBOC_RESULT_ACTIVE_TAG_OFFSET],NEBOC_OPTION_RESULT_PLAN_RESULT_TAG_ERR
  jne .source
 .error_ready:
@@ -250,6 +264,10 @@ NEBOC_ABI_FUNCTION neboc_result_lower
  mov [r13+NEBOC_RESULT_PLAN_MAX_LAYOUT_ALIGN_OFFSET],rax
  mov rax,[r12+NEBOC_RESULT_ACTIVE_TAG_OFFSET]
  mov [r13+NEBOC_RESULT_PLAN_ACTIVE_TAG_OFFSET],rax
+ lea rsi,[r12+NEBOC_RESULT_EFFECT_COUNT_OFFSET]
+ lea rdi,[r13+NEBOC_RESULT_PLAN_EFFECT_COUNT_OFFSET]
+ mov ecx,2+32*4+4096/8
+ rep movsq
  mov rdi,r13
  mov ecx,NEBOC_RESULT_PLAN_HASHED_BYTES
  call hash_bytes

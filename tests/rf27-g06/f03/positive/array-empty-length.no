@@ -1,0 +1,4 @@
+start() {
+  Array<Char,0> [].empty;
+  empty.length().return;
+}

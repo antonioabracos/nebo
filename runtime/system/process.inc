@@ -23,5 +23,7 @@
  extern nebo_process_spawn
  extern nebo_process_wait
  extern nebo_process_terminate
+ extern nebo_environment_get
+ extern nebo_environment_arguments
 %endif
 %endif

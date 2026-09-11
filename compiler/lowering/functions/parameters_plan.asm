@@ -105,9 +105,34 @@ NEBOC_ABI_FUNCTION neboc_parameters_lower
  cmp qword [r12+NEBOC_CALLABLE_ENV_SIZE_OFFSET],0
  jne .source
 .callable_environment_ready:
+ mov rdx,[r12+NEBOC_CALLABLE_SELECTED_BODY_OFFSET]
+ cmp rdx,NEBOC_CALLABLE_BODY_VALUE
+ jb .source
+ cmp rdx,NEBOC_CALLABLE_BODY_SUM
+ ja .source
+ cmp qword [r12+NEBOC_CALLABLE_CAPTURE_MODE_OFFSET],NEBOC_CAPTURE_NONE
+ jne .callable_body_valid
+ cmp rdx,NEBOC_CALLABLE_BODY_VALUE
+ jne .source
+.callable_body_valid:
+ mov rdx,[r12+NEBOC_PARAM_RECORDS_OFFSET]
+ test rdx,rdx
+ jz .source
+ cmp qword [rdx+NEBOC_PARAM_TYPE_OFFSET],neboc_seguranca_numerica_conversoes_e_overflow_TYPE_INT
+ jb .source
+ cmp qword [rdx+NEBOC_PARAM_TYPE_OFFSET],neboc_seguranca_numerica_conversoes_e_overflow_TYPE_CHAR
+ ja .source
  cmp qword [r12+NEBOC_CALLABLE_HASH_OFFSET],0
  je .source
 .callable_ready:
+ cmp qword [r12+NEBOC_PARAM_VARIADIC_COUNT_OFFSET],NEBOC_PARAM_VARIADIC_MAX
+ ja .source
+ mov rax,[r12+NEBOC_PARAM_VARIADIC_INDEX_OFFSET]
+ cmp rax,-1
+ je .variadic_ready
+ cmp rax,[r12+NEBOC_PARAM_COUNT_OFFSET]
+ jae .source
+.variadic_ready:
  mov rdi,r13
  mov ecx,neboc_seguranca_numerica_conversoes_e_overflow_PLAN_QWORDS
  xor eax,eax
@@ -159,6 +184,37 @@ NEBOC_ABI_FUNCTION neboc_parameters_lower
  mov [r13+NEBOC_PLAN_CALLABLE_SELECTED_INDEX_OFFSET],rax
  mov rax,[r12+NEBOC_CALLABLE_HASH_OFFSET]
  mov [r13+NEBOC_PLAN_CALLABLE_HASH_OFFSET],rax
+ mov rax,[r12+NEBOC_PARAM_BORROW_MASK_OFFSET]
+ mov [r13+NEBOC_PLAN_BORROW_MASK_OFFSET],rax
+ mov rax,[r12+NEBOC_PARAM_OWNED_MASK_OFFSET]
+ mov [r13+NEBOC_PLAN_OWNED_MASK_OFFSET],rax
+ mov rax,[r12+NEBOC_PARAM_VARIADIC_INDEX_OFFSET]
+ mov [r13+NEBOC_PLAN_VARIADIC_INDEX_OFFSET],rax
+ mov rax,[r12+NEBOC_PARAM_VARIADIC_COUNT_OFFSET]
+ mov [r13+NEBOC_PLAN_VARIADIC_COUNT_OFFSET],rax
+ xor ecx,ecx
+.copy_variadic_values:
+ cmp ecx,NEBOC_PARAM_VARIADIC_MAX
+ jae .variadic_values_copied
+ lea rax,[r12+NEBOC_PARAM_VARIADIC_VALUES_OFFSET]
+ mov rdx,[rax+rcx*8]
+ lea rax,[r13+NEBOC_PLAN_VARIADIC_VALUES_OFFSET]
+ mov [rax+rcx*8],rdx
+ inc ecx
+ jmp .copy_variadic_values
+.variadic_values_copied:
+ cmp qword [r12+NEBOC_CALLABLE_COUNT_OFFSET],0
+ je .callable_payload_ready
+ mov rax,[r12+NEBOC_CALLABLE_SELECTED_BODY_OFFSET]
+ mov [r13+NEBOC_PLAN_CALLABLE_BODY_OFFSET],rax
+ mov rdx,[r12+NEBOC_PARAM_RECORDS_OFFSET]
+ mov rax,[rdx+NEBOC_PARAM_TYPE_OFFSET]
+ mov [r13+NEBOC_PLAN_CALLABLE_ARGUMENT_TYPE_OFFSET],rax
+ mov rax,[rdx+NEBOC_PARAM_BOUND_VALUE_OFFSET]
+ mov [r13+NEBOC_PLAN_CALLABLE_ARGUMENT_VALUE_OFFSET],rax
+ mov rax,[r12+NEBOC_CALLABLE_CAPTURE_VALUE_OFFSET]
+ mov [r13+NEBOC_PLAN_CALLABLE_CAPTURE_VALUE_OFFSET],rax
+.callable_payload_ready:
  mov rdi,r13
  mov ecx,neboc_seguranca_numerica_conversoes_e_overflow_PLAN_HASHED_BYTES
  call plan_hash

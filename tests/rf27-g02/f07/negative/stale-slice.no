@@ -1,0 +1,8 @@
+start() {
+  Array<Int,3> [1,2,3].owner;
+  owner.asSlice().items;
+  items.release();
+  for (item in items) {
+  }
+  owner.length().return;
+}

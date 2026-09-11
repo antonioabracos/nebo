@@ -1,0 +1,6 @@
+start() {
+    (1.5 + 2.5).sum;
+    (8.0 - 3.0).difference;
+    (2.0 * 4.0).product;
+    (9.0 / 3.0).quotient;
+}

@@ -1,0 +1,7 @@
+// Heatmap, matrix, and confusion adapters preserve exact two-dimensional shape.
+start() {
+    RenderPlan;
+    3203;
+    output.stdout().stderr().target("chart-table-service").plain().visual().headlessEvent();
+    lifecycle.event("chart-table").payload("heatmap-matrix-confusion").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

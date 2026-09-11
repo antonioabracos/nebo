@@ -1,0 +1,7 @@
+// Preserve both native struct fields through ordinary interpolation and exit.
+struct User { Text.name; Int.age; }
+start() {
+    User { name: "Nebo", age: 29 }.person;
+    "${person.name}:${person.age}".console();
+    23.return;
+}

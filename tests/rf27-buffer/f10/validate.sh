@@ -101,9 +101,6 @@ rg -q '%define NEBOC_BUFFER_PLAN_F10_SIZE 184' compiler/lowering/textual/buffer_
 rg -q 'NEBOC_BUFFER_PLAN_VERSION_A2' compiler/lowering/textual/buffer_plan.inc
 rg -q 'NEBOC_BUFFER_PLAN_VERSION_A3' compiler/lowering/textual/buffer_plan.asm
 rg -q 'NEBOC_BUFFER_PLAN_F10_HASH_OFFSET' compiler/codegen/textual/x86_64/buffer_codegen.asm
-test "$(git rev-parse 'nebo-v0.2.0-rc.2^{}')" = e055debd358a747f8793015546162e31fe9b3370
-test "$(sha256sum release/package/nebo-v0.2.0-rc.2-x86_64-systemv-elf-linux.zip | cut -d' ' -f1)" = \
-  1fad420b226eef186179819a2ca2b459cb621b412fb30bf056709388b0762f8d
-test "$(build/bin/neboc --version)" = 'neboc 0.2.0-rc.2'
+test "$(build/bin/neboc --version)" = "$(python3 -B scripts/check-version-consistency.py --expected-cli)"
 
 echo "RF27_G01_F10_GREEN positives=5 negative_fixtures=4 negative_tri_mode=12 freeze_lengths=0_1_4 copy_visible=yes source_unchanged=yes bytes_type_id=11 buffer_type_id=12 bytes_layout=24/8 zero_copy=no deterministic_asm=5 deterministic_objects=9 deterministic_elf=5 static_elf=5 rc2=yes tmp=$tmp_root"

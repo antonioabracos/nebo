@@ -1,0 +1,4 @@
+enum State abiA1 { Idle, Ready }
+start() {
+    State.Ready.discriminant().return;
+}

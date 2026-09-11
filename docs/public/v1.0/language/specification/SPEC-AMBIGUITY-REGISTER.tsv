@@ -1,0 +1,13 @@
+ambiguity_id	subject	finding	resolution	test_id	state
+AMB-001	boolean-spelling	Old chapter advertised and/or as executable aliases	Use &&/||/! and exact Unicode aliases; English words reject	lexical:protected-35	RESOLVED
+AMB-002	runtime-vs-compile	Old limits/type text conflated runtime traps with compile diagnostics	Separate check/emit/build rejection from accepted-program runtime error and atomic sink behavior	composition:filesystem-rename-failure	RESOLVED
+AMB-003	generic-trace	All old rules pointed to one campaign label	Each rule expands to concrete case IDs and verified observations	source:S08	RESOLVED
+AMB-004	for-header	Earlier EBNF admitted arbitrary expressions after in	Current header requires a bound iterable; add index/filter alternatives from the native owner	source:S03	RESOLVED
+AMB-005	list-argument	Earlier structural grammar omitted untyped list arguments to typed constructors	Represent contextual bracketed argument lists without declaring untyped list values	semantics:eval-collection-17	RESOLVED
+AMB-006	nullary-match	Earlier match grammar required a payload identifier inside parentheses	Allow None() without a payload binding and retain finite type/coverage checks	semantics:match-None-0	RESOLVED
+AMB-007	ordinary-import	Earlier ordinary program grammar omitted required stdlib imports	Include native import declarations before ordinary declarations/entry	composition:filesystem-symlink-read	RESOLVED
+AMB-008	doc-expectation	Arbitrary doc labels did not define the bounded test-docs exit oracle	Record and exercise the native exit-N label contract	source:S04	RESOLVED
+AMB-009	historical-proposals	Historical prose and internal symbols could be mistaken for active source APIs	Preserve exact stable/maturity classifications and distinct identity kinds	source:S08	RESOLVED
+AMB-010	stale-composition-imports	Five semantic regression sources lacked now-mandatory std.fs imports	Add explicit imports while retaining the same runtime failure and atomicity oracles	composition:scan-abort-no-file	RESOLVED
+AMB-011	diagnostic-option-routing	Public wrapper rejected native diagnostic recovery and path options, also breaking LSP publication	Forward bounded check options to their native owner; preserve duplicate and combination rejection	cli:limit-64-keep-going	RESOLVED
+AMB-012	module-initialization-boundary	Native dependency initialization ordering could imply admitted effectful imported startup	Separate native topology/rollback guarantees from the public pure profile with zero runtime user initializers	module-graph:pure-dag-17	RESOLVED

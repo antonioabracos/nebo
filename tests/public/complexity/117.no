@@ -1,0 +1,7 @@
+// Limit, window, and dry-run export produce an authenticated value receipt.
+start() {
+    RenderPlan;
+    3108;
+    output.stdout().stderr().target("observability-service").plain().visual().headlessEvent();
+    lifecycle.event("log-progress-timeline").payload("timeline-window-export").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

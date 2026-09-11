@@ -168,9 +168,12 @@ nebo_channel_send:
  push rbx
  push r12
  push r13
+ push r14
+ sub rsp,8
  mov rbx,rdi
  mov r12,rsi
  mov r13,rdx
+ mov r14,r10
 .blocking_send_retry:
  mov rdi,rbx
  mov rsi,r12
@@ -186,15 +189,17 @@ nebo_channel_send:
  test eax,eax
  jnz .blocking_send_return
 .blocking_send_budget:
- test r10,r10
+ test r14,r14
  jz .blocking_send_timeout
- dec r10
+ dec r14
  mov rdi,rbx
  call channel_wait
  jmp .blocking_send_retry
 .blocking_send_timeout:
  mov eax,NEBO_CONCURRENCY_ERROR_TIMEOUT
 .blocking_send_return:
+ add rsp,8
+ pop r14
  pop r13
  pop r12
  pop rbx
@@ -243,8 +248,10 @@ nebo_channel_close_sender:
  je channel_close_again
  mov qword [rdi+NEBO_CHANNEL_SENDERS],0
  mov qword [rdi+NEBO_CHANNEL_STATE],NEBO_CHANNEL_STATE_CLOSED
+ push rbx
  mov rbx,rdi
  call channel_publish
+ pop rbx
  xor eax,eax
  ret
 nebo_channel_close_receiver:
@@ -254,8 +261,10 @@ nebo_channel_close_receiver:
  je channel_close_again
  mov qword [rdi+NEBO_CHANNEL_RECEIVERS],0
  mov qword [rdi+NEBO_CHANNEL_STATE],NEBO_CHANNEL_STATE_CLOSED
+ push rbx
  mov rbx,rdi
  call channel_publish
+ pop rbx
  xor eax,eax
  ret
 channel_close_invalid: mov eax,NEBO_CONCURRENCY_ERROR_INVALID_ARGUMENT
@@ -264,12 +273,11 @@ channel_close_again: mov eax,NEBO_CONCURRENCY_ERROR_ALREADY_COMPLETED
  ret
 
 channel_lock:
- mov rax,1
 .lock_retry:
+ mov eax,1
  xchg rax,[rbx+NEBO_CHANNEL_LOCK]
  test rax,rax
  jz .lock_ok
- mov rax,1
  mov eax,NEBO_LINUX_X86_64_SYS_SCHED_YIELD
  syscall
  mov rax,1
@@ -294,14 +302,24 @@ channel_wait:
  cmp rax,[rcx+NEBO_CHANNEL_BUDGET_MAX_WAITERS]
  jae .wait_limit
  inc qword [rbx+NEBO_CHANNEL_WAITERS]
+ ; A finite waiter budget must also bound the blocking syscall itself.
+ ; Linux FUTEX_WAIT takes a relative timespec; zero means an immediate poll.
+ sub rsp,16
+ mov rax,[rcx+NEBO_CHANNEL_BUDGET_MAX_DEADLINE_NS]
+ xor edx,edx
+ mov ecx,1000000000
+ div rcx
+ mov [rsp],rax
+ mov [rsp+8],rdx
  mov edx,[rbx+NEBO_CHANNEL_GENERATION]
  mov eax,NEBO_LINUX_X86_64_SYS_FUTEX
  lea rdi,[rbx+NEBO_CHANNEL_GENERATION]
  mov esi,NEBO_FUTEX_WAIT_PRIVATE
- xor r10d,r10d
+ mov r10,rsp
  xor r8d,r8d
  xor r9d,r9d
  syscall
+ add rsp,16
  dec qword [rbx+NEBO_CHANNEL_WAITERS]
  xor eax,eax
  ret

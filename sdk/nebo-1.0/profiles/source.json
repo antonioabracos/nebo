@@ -1,0 +1,17 @@
+{
+  "archive_policy": "USTAR; sorted paths; uid/gid/mtime=0; file modes 0644 or 0755",
+  "components": [
+    "licenses",
+    "metadata",
+    "source"
+  ],
+  "external_tools": [
+    "nasm",
+    "ld",
+    "python3",
+    "ninja"
+  ],
+  "network_required": false,
+  "profile": "source",
+  "target": "linux-x86_64-systemv-elf-static"
+}

@@ -5,8 +5,13 @@
 extern nebo_tensor_concat0_f64
 extern nebo_tensor_stack0_f64
 extern nebo_tensor_split0_view
+extern nebo_tensor_concatenate_f64
+extern nebo_tensor_stack_f64
+extern nebo_tensor_split_view
 extern nebo_tensor_pad2d_f64
+extern nebo_tensor_pad_f64
 extern nebo_tensor_matmul2d_f64
+extern nebo_tensor_matmul_f64
 extern nebo_tensor_einsum_reject
 %endif
 %endif

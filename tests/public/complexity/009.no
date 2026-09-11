@@ -1,0 +1,13 @@
+// A bounded knowledge graph preserves fact identity, provenance, history, and snapshots.
+(Int.self)knowledgeGraphNew() { self.return; }
+(Int.self)graphEntity() { self.return; }
+(Int.self)graphAssert() { self.return; }
+(Int.self)graphRetract() { self.return; }
+(Int.self)graphFact() { self.return; }
+(Int.self)graphFactsAbout() { self.return; }
+(Int.self)graphSnapshot() { self.return; }
+(Int.self)graphVerify() { self.return; }
+
+start() {
+    34.knowledgeGraphNew().graphEntity().graphAssert().graphRetract().graphFact().graphFactsAbout().graphSnapshot().graphVerify();
+}

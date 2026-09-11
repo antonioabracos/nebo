@@ -1,0 +1,4 @@
+start() {
+    Option<Int>(None()).value;
+    value.match { None => 0; };
+}

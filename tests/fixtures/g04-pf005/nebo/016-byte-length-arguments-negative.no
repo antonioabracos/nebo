@@ -1,0 +1,1 @@
+start() { "N".byteLength(1).invalid; }

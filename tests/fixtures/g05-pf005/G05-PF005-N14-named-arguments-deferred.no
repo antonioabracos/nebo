@@ -1,0 +1,5 @@
+start() {
+    Int.seed;
+    0.seed;
+    1.soma(valor: 2);
+}

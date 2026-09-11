@@ -1,0 +1,6 @@
+proof_id	source	source_sha256	operation	receiver	fallback	expected_exit
+G08-PF005-P01	tests/fixtures/g08-pf005/positive/G08-PF005-P01-positive-seven.no	449a85092717e83623db6214ec3fcc94cd57ffd95e2c36a7229970eb1d9851b3	unwrapOr	7	1	7
+G08-PF005-P02	tests/fixtures/g08-pf005/positive/G08-PF005-P02-zero-recovers-nine.no	37eb735479f2770a38b997c9124e431cba9bfe694b3c2ab4430cae5ba8a37f72	unwrapOr	0	9	9
+G08-PF005-P03	tests/fixtures/g08-pf005/positive/G08-PF005-P03-positive-is-ok.no	0e660d4b924281a30def3bd218f76d8802e43caadef18687b8984c60a9eb01a6	isOk	42	0	1
+G08-PF005-P04	tests/fixtures/g08-pf005/positive/G08-PF005-P04-zero-is-err.no	8010c62be58ef7c4d3219e940132793b3ead9cc7cbcc2b09f70ddc282f538f72	isErr	0	0	1
+G08-PF005-P05	tests/fixtures/g08-pf005/positive/G08-PF005-P05-minimum-positive.no	5f4fbc649f9f9b781da7a9925b154084b890cdfb37ab28118c5a2c2a8c633fc3	unwrapOr	1	2	1

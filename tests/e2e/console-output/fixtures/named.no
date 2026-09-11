@@ -1,0 +1,4 @@
+start() {
+    "Ola Nebo".console().a;
+    "Tudo bem?".console().b;
+}

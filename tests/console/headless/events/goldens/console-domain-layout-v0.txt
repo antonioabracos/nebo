@@ -1,0 +1,13 @@
+MF042_CONSOLE_DOMAIN_LAYOUT_V0
+scheduler=cooperative-round-robin
+domain_size=256
+queue_header_size=64
+command_descriptor_size=64
+event_descriptor_size=64
+queue_policy=bounded-ring-buffer
+single_writer=domain-owner-only
+native_threads=none-required
+fake_window=opaque-monotonic-u64
+max_active_consoles=64
+max_commands_per_console=65536
+max_events_per_console=65536

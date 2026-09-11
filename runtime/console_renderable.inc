@@ -1,0 +1,34 @@
+%ifndef NEBO_CONSOLE_RENDERABLE_INC
+%define NEBO_CONSOLE_RENDERABLE_INC 1
+
+%include "runtime/render_model.inc"
+
+; ConsoleRenderable request: a canonical type identity selects one registered
+; adapter for the caller-owned value representation.
+%define NEBO_CONSOLE_RENDER_REQUEST_VALUE_OFFSET 0
+%define NEBO_CONSOLE_RENDER_REQUEST_TYPE_OFFSET 8
+%define NEBO_CONSOLE_RENDER_REQUEST_SIZE 16
+
+; ConsoleRenderResult owns its RenderNode snapshot and records the exact
+; ConsoleRenderableKind and schema selected by the closed registry.
+%define NEBO_CONSOLE_RENDER_RESULT_NODE_OFFSET 0
+%define NEBO_CONSOLE_RENDER_RESULT_TYPE_OFFSET 48
+%define NEBO_CONSOLE_RENDER_RESULT_KIND_OFFSET 56
+%define NEBO_CONSOLE_RENDER_RESULT_SCHEMA_OFFSET 64
+%define NEBO_CONSOLE_RENDER_RESULT_STATUS_OFFSET 72
+%define NEBO_CONSOLE_RENDER_RESULT_STATE_OFFSET 80
+%define NEBO_CONSOLE_RENDER_RESULT_SIZE 88
+%define NEBO_CONSOLE_RENDER_RESULT_READY 1
+
+; ConsoleRenderableKind is deliberately identical to the bounded RenderNode
+; family. It classifies adapters and does not create a second type checker.
+%define NEBO_CONSOLE_RENDERABLE_SCALAR NEBO_NODE_SCALAR
+%define NEBO_CONSOLE_RENDERABLE_BUFFER NEBO_NODE_BUFFER
+%define NEBO_CONSOLE_RENDERABLE_COLLECTION NEBO_NODE_COLLECTION
+%define NEBO_CONSOLE_RENDERABLE_TABULAR NEBO_NODE_TABULAR
+%define NEBO_CONSOLE_RENDERABLE_NUMERIC_SHAPE NEBO_NODE_NUMERIC_SHAPE
+%define NEBO_CONSOLE_RENDERABLE_DYNAMIC NEBO_NODE_DYNAMIC
+%define NEBO_CONSOLE_RENDERABLE_MEDIA_METADATA NEBO_NODE_MEDIA_METADATA
+%define NEBO_CONSOLE_RENDERABLE_BUILTIN_COUNT 28
+
+%endif

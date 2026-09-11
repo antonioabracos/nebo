@@ -1,0 +1,6 @@
+// A newly constructed Int/Int dictionary has no resident entries.
+// This valid atomic surface must reach the real dictionary runtime owner.
+start() {
+    Dict<Int, Int>.new().items;
+    items.length().return;
+}

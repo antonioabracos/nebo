@@ -1,0 +1,2 @@
+// Independent atomic runtime case.
+start() { 0.total.mutable; 0.i.mutable; while (i < 5) { total += i; i += 1; } total.return; }

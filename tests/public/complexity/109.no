@@ -1,0 +1,7 @@
+// Closeout composes all console and panel services without opening a live backend.
+start() {
+    RenderPlan;
+    3009;
+    output.stdout().stderr().target("visual-service").plain().visual().headlessEvent();
+    lifecycle.event("console-panel").payload("internal-service-closeout").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

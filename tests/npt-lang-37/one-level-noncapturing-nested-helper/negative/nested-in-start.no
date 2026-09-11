@@ -1,0 +1,1 @@
+start(){ (Int.self)helper(){ self.return; } 7.helper().return; }

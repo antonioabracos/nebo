@@ -1,0 +1,2 @@
+start() {
+    console.write_line("bad\q"

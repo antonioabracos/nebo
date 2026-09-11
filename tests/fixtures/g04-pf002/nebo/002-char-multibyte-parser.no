@@ -1,0 +1,4 @@
+start() {
+    'ç'.latin_char;
+    '😀'.emoji_char;
+}

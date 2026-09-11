@@ -1,0 +1,4 @@
+overload (Int.self)pick(Char.value) where Scalar symbol pick_char { 11.return; }
+overload (Int.self)pick(Bool.value) where Scalar symbol pick_bool { 22.return; }
+overload (Int.self)pick(Scalar.value) where Any symbol pick_scalar { 33.return; }
+start() { 1.pick(true).return; }

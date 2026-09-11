@@ -1,0 +1,5 @@
+start() {
+    9007199254740992.toFloat().exact_2p53;
+    9007199254740993.toFloat().rounded_2p53_plus_one;
+    9223372036854775807.toFloat().maximum;
+}

@@ -1,0 +1,3 @@
+(Int.self)first(){ (Int.self)helper(){ self.return; } self.helper().return; }
+(Int.self)second(){ (Int.self)helper(){ (self+1).return; } self.helper().return; }
+start(){ 3.first().return; }

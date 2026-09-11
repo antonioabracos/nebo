@@ -1,0 +1,2 @@
+(Int.self)sum5(Int.a, Int.b, Int.c, Int.d, Int.e = 5) { (self + a + b + c + d + e).return; }
+start() { 1.sum5(2, 3, 4, 5).return; }

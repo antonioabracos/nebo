@@ -1,0 +1,7 @@
+// Panel creation, lookup, and removal preserve caller ownership and exact cleanup.
+start() {
+    RenderPlan;
+    3005;
+    output.stdout().stderr().target("visual-service").plain().visual().headlessEvent();
+    lifecycle.event("console-panel").payload("panel-create-get-remove").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

@@ -1,0 +1,5 @@
+start() {
+    Result<Float, Char>(Err('x')).result;
+    result.isErr().failed;
+    result.unwrapOr(2.5).value;
+}

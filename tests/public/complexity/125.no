@@ -1,0 +1,7 @@
+// Redaction, sort, and filter summary publish policy metadata, never source values.
+start() {
+    RenderPlan;
+    3207;
+    output.stdout().stderr().target("chart-table-service").plain().visual().headlessEvent();
+    lifecycle.event("chart-table").payload("redact-sort-filter-summary").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

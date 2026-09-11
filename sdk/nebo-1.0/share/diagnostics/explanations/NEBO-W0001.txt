@@ -1,0 +1,6 @@
+NEBO-W0001: compatibility warning
+causes: The construct is valid but has a bounded compatibility concern.
+solutions: Review the warning group and choose an explicit policy.
+positive: neboc check main.no --warn portability
+negative: neboc check main.no --forbid portability --allow portability
+related: NEBO-H0001

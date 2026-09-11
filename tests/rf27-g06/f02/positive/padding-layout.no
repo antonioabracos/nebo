@@ -1,0 +1,10 @@
+struct Aligned {
+    Char.code;
+    Int.count;
+    Bool.ready;
+}
+
+start() {
+    Aligned { code: 'x', count: 12, ready: true }.value;
+    value.count;
+}

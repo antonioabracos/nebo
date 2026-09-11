@@ -1,0 +1,7 @@
+// Loss, metric, and confusion views consume bounded, independently checked data.
+start() {
+    RenderPlan;
+    3306;
+    output.stdout().stderr().target("domain-visual-service").plain().visual().headlessEvent();
+    lifecycle.event("domain-visual").payload("ml-loss-metric-confusion").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

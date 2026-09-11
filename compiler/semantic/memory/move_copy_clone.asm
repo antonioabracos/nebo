@@ -1,4 +1,4 @@
-; Nebo Assembly — TEXT-CHAR-UNICODE-E-BYTES-F02/F03 bounded ownership and borrow vertical
+; Nebo Assembly — public ownership, borrow, lifetime, cleanup and allocation vertical
 bits 64
 default rel
 
@@ -35,6 +35,44 @@ n_close: db "close"
 n_close_len equ $-n_close
 n_is_closed: db "isClosed"
 n_is_closed_len equ $-n_is_closed
+n_is_moved: db "isMoved"
+n_is_moved_len equ $-n_is_moved
+n_is_copy: db "isCopy"
+n_is_copy_len equ $-n_is_copy
+n_drop_required: db "dropRequired"
+n_drop_required_len equ $-n_drop_required
+n_scope: db "scope"
+n_scope_len equ $-n_scope
+n_reborrow: db "reborrow"
+n_reborrow_len equ $-n_reborrow
+n_as_slice: db "asSlice"
+n_as_slice_len equ $-n_as_slice
+n_infer: db "infer"
+n_infer_len equ $-n_infer
+n_outlives: db "outlives"
+n_outlives_len equ $-n_outlives
+n_is_valid_at: db "isValidAt"
+n_is_valid_at_len equ $-n_is_valid_at
+n_escape_analysis: db "escapeAnalysis"
+n_escape_analysis_len equ $-n_escape_analysis
+n_promote_to_heap: db "promoteToHeap"
+n_promote_to_heap_len equ $-n_promote_to_heap
+n_explain: db "explain"
+n_explain_len equ $-n_explain
+n_drop_order: db "dropOrder"
+n_drop_order_len equ $-n_drop_order
+n_on_error: db "onError"
+n_on_error_len equ $-n_on_error
+n_system: db "system"
+n_system_len equ $-n_system
+n_allocate: db "allocate"
+n_allocate_len equ $-n_allocate
+n_deallocate: db "deallocate"
+n_deallocate_len equ $-n_deallocate
+n_with_capacity: db "withCapacity"
+n_with_capacity_len equ $-n_with_capacity
+n_reset: db "reset"
+n_reset_len equ $-n_reset
 n_forget: db "forget"
 n_forget_len equ $-n_forget
 n_bytes: db "Bytes"
@@ -47,6 +85,22 @@ n_from_values: db "fromValues"
 n_from_values_len equ $-n_from_values
 n_byte_length: db "byteLength"
 n_byte_length_len equ $-n_byte_length
+n_int: db "Int"
+n_int_len equ $-n_int
+n_bool: db "Bool"
+n_bool_len equ $-n_bool
+n_char: db "Char"
+n_char_len equ $-n_char
+n_float: db "Float"
+n_float_len equ $-n_float
+n_text: db "Text"
+n_text_len equ $-n_text
+n_allocator: db "Allocator"
+n_allocator_len equ $-n_allocator
+n_arena: db "Arena"
+n_arena_len equ $-n_arena
+n_ownership: db "Ownership"
+n_ownership_len equ $-n_ownership
 
 section .text
 
@@ -71,7 +125,7 @@ NEBOC_ABI_FUNCTION neboc_move_copy_clone_recognize
  test rax,rax
  jz .invalid
  lea rdi,[r12+NEBOC_SEM_FOUND_OFFSET]
- mov ecx,22
+ mov ecx,neboc_text_char_unicode_e_bytes_SEM_REQUEST_QWORDS-8
  xor eax,eax
  rep stosq
  mov rdi,[r12+NEBOC_SEM_SYMBOLS_OFFSET]
@@ -182,6 +236,104 @@ NEBOC_ABI_FUNCTION neboc_move_copy_clone_recognize
  mov rsi,r14
  lea rdx,[rel n_is_closed]
  mov ecx,n_is_closed_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .claimed
+ mov rdi,r12
+ mov rsi,r14
+ lea rdx,[rel n_is_moved]
+ mov ecx,n_is_moved_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .claimed
+ mov rdi,r12
+ mov rsi,r14
+ lea rdx,[rel n_is_copy]
+ mov ecx,n_is_copy_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .claimed
+ mov rdi,r12
+ mov rsi,r14
+ lea rdx,[rel n_drop_required]
+ mov ecx,n_drop_required_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .claimed
+ mov rdi,r12
+ mov rsi,r14
+ lea rdx,[rel n_scope]
+ mov ecx,n_scope_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .claimed
+ mov rdi,r12
+ mov rsi,r14
+ lea rdx,[rel n_reborrow]
+ mov ecx,n_reborrow_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .claimed
+ mov rdi,r12
+ mov rsi,r14
+ lea rdx,[rel n_infer]
+ mov ecx,n_infer_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .claimed
+ mov rdi,r12
+ mov rsi,r14
+ lea rdx,[rel n_outlives]
+ mov ecx,n_outlives_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .claimed
+ mov rdi,r12
+ mov rsi,r14
+ lea rdx,[rel n_is_valid_at]
+ mov ecx,n_is_valid_at_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .claimed
+ mov rdi,r12
+ mov rsi,r14
+ lea rdx,[rel n_escape_analysis]
+ mov ecx,n_escape_analysis_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .claimed
+ mov rdi,r12
+ mov rsi,r14
+ lea rdx,[rel n_promote_to_heap]
+ mov ecx,n_promote_to_heap_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .claimed
+ mov rdi,r12
+ mov rsi,r14
+ lea rdx,[rel n_drop_order]
+ mov ecx,n_drop_order_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .claimed
+ mov rdi,r12
+ mov rsi,r14
+ lea rdx,[rel n_on_error]
+ mov ecx,n_on_error_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .claimed
+ mov rdi,r12
+ mov rsi,r14
+ lea rdx,[rel n_system]
+ mov ecx,n_system_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .claimed
+ mov rdi,r12
+ mov rsi,r14
+ lea rdx,[rel n_with_capacity]
+ mov ecx,n_with_capacity_len
  call rf27g04_token_match
  test eax,eax
  jnz .claimed
@@ -436,6 +588,50 @@ NEBOC_ABI_FUNCTION neboc_ownership_safety_finalize
  pop rbx
  cld
  ret
+
+; explain(request*, report*) -> Status. The report is pointer-free and stable
+; so CLI and IDE consumers can present the same ownership decision and span.
+NEBOC_ABI_FUNCTION neboc_ownership_explain
+ test rdi,rdi
+ jz .invalid
+ test rsi,rsi
+ jz .invalid
+ test rdi,7
+ jnz .invalid
+ test rsi,7
+ jnz .invalid
+ push r12
+ push r13
+ sub rsp,8
+ mov r12,rdi
+ mov r13,rsi
+ mov rdi,r13
+ mov ecx,NEBOC_OWNERSHIP_REPORT_QWORDS
+ xor eax,eax
+ rep stosq
+ mov rax,[r12+neboc_text_char_unicode_e_bytes_SEM_DIAGNOSTIC_OFFSET]
+ mov [r13+NEBOC_OWNERSHIP_REPORT_DIAGNOSTIC_OFFSET],rax
+ mov rax,[r12+neboc_text_char_unicode_e_bytes_SEM_ERROR_START_OFFSET_semantic_memory_native_vertical]
+ mov [r13+NEBOC_OWNERSHIP_REPORT_ERROR_START_OFFSET],rax
+ mov rax,[r12+neboc_text_char_unicode_e_bytes_SEM_ERROR_END_OFFSET_semantic_memory_native_vertical]
+ mov [r13+NEBOC_OWNERSHIP_REPORT_ERROR_END_OFFSET],rax
+ mov rax,[r12+NEBOC_SEM_OPERATION_COUNT_OFFSET]
+ mov [r13+NEBOC_OWNERSHIP_REPORT_OPERATIONS_OFFSET],rax
+ mov rax,[r12+NEBOC_SEM_LIVE_OWNER_COUNT_OFFSET]
+ mov [r13+NEBOC_OWNERSHIP_REPORT_LIVE_OWNERS_OFFSET],rax
+ mov rax,[r12+NEBOC_SEM_CLOSED_OWNER_COUNT_OFFSET]
+ mov [r13+NEBOC_OWNERSHIP_REPORT_CLOSED_OWNERS_OFFSET],rax
+ mov rax,[r12+NEBOC_SEM_CLEANUP_COUNT_OFFSET]
+ mov [r13+NEBOC_OWNERSHIP_REPORT_CLEANUPS_OFFSET],rax
+ mov rax,[r12+NEBOC_SEM_SAFETY_PROOF_HASH_OFFSET]
+ mov [r13+NEBOC_OWNERSHIP_REPORT_PROOF_HASH_OFFSET],rax
+ xor eax,eax
+ add rsp,8
+ pop r13
+ pop r12
+ ret
+.invalid:
+ NEBOC_ABI_RETURN_STATUS NEBOC_STATUS_INVALID_ARGUMENT
 
 ; request*, block node id, lexical depth -> Status
 rf27g04_analyze_block:
@@ -735,10 +931,28 @@ rf27g04_analyze_return:
  je .escape
  cmp rdx,NEBOC_CATEGORY_UNIQUE_BORROW
  je .escape
+ cmp rax,NEBOC_BIND_TYPE_INT
+ je .valid_status
+ cmp rax,NEBOC_BIND_TYPE_BOOL
+ je .valid_status
+ cmp rax,NEBOC_BIND_TYPE_CHAR
+ jne .invalid_status
+.valid_status:
  mov [r12+neboc_text_char_unicode_e_bytes_SEM_RESULT_TYPE_OFFSET_lowering_memory_native_vertical],rax
  mov [r12+NEBOC_SEM_RESULT_VALUE_OFFSET],rcx
  inc qword [r12+NEBOC_SEM_OPERATION_COUNT_OFFSET]
  xor eax,eax
+ jmp .done
+.invalid_status:
+ mov rdi,r12
+ mov rsi,r13
+ call rf27g04_node_ptr
+ mov rcx,[rax+NEBOC_AST_NODE_START_OFFSET]
+ mov [r12+neboc_text_char_unicode_e_bytes_SEM_ERROR_START_OFFSET_semantic_memory_native_vertical],rcx
+ mov rcx,[rax+NEBOC_AST_NODE_END_OFFSET]
+ mov [r12+neboc_text_char_unicode_e_bytes_SEM_ERROR_END_OFFSET_semantic_memory_native_vertical],rcx
+ mov qword [r12+neboc_text_char_unicode_e_bytes_SEM_DIAGNOSTIC_OFFSET],NEBOC_DIAG_INVALID_PROCESS_RETURN
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
  jmp .done
 .escape:
  mov rdi,r12
@@ -789,6 +1003,7 @@ rf27g04_end_scope:
  jz .loop
  mov rdi,r12
  mov rsi,rax
+ mov rdx,[rax+NEBOC_SYMBOL_ORIGIN_NODE_OFFSET]
  call rf27g04_cleanup_symbol
  test eax,eax
  jnz .done
@@ -867,6 +1082,8 @@ rf27g04_analyze_binding:
  mov qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_LIVE
  mov rcx,[rsp+24]
  mov [rax+NEBOC_SYMBOL_VALUE_OFFSET],rcx
+ mov rcx,[rsp+32]
+ mov [rax+NEBOC_SYMBOL_AUX_OFFSET],rcx
  mov rcx,[r12+NEBOC_SEM_SCOPE_DEPTH_OFFSET]
  mov [rax+NEBOC_SYMBOL_SCOPE_DEPTH_OFFSET],rcx
  mov qword [rax+NEBOC_SYMBOL_CLEANUP_FLAGS_OFFSET],0
@@ -922,6 +1139,7 @@ rf27g04_eval_expr:
  mov r12,rdi
  mov r13,rsi
  mov r14,rdx
+ xor r8d,r8d
  mov rdi,r12
  call rf27g04_node_ptr
  test rax,rax
@@ -1099,6 +1317,139 @@ rf27g04_eval_expr:
  jnz .cleanup_is_closed
  mov rdi,r12
  mov rsi,rbx
+ lea rdx,[rel n_is_moved]
+ mov ecx,n_is_moved_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .ownership_is_moved
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_is_copy]
+ mov ecx,n_is_copy_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .type_is_copy
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_drop_required]
+ mov ecx,n_drop_required_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .type_drop_required
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_scope]
+ mov ecx,n_scope_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .borrow_scope
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_reborrow]
+ mov ecx,n_reborrow_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .borrow_reborrow
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_as_slice]
+ mov ecx,n_as_slice_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .borrow_as_slice
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_infer]
+ mov ecx,n_infer_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .lifetime_infer
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_outlives]
+ mov ecx,n_outlives_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .lifetime_outlives
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_is_valid_at]
+ mov ecx,n_is_valid_at_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .reference_is_valid_at
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_escape_analysis]
+ mov ecx,n_escape_analysis_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .resource_escape_analysis
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_promote_to_heap]
+ mov ecx,n_promote_to_heap_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .resource_promote_to_heap
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_explain]
+ mov ecx,n_explain_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .ownership_or_lifetime_explain
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_drop_order]
+ mov ecx,n_drop_order_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .scope_drop_order
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_on_error]
+ mov ecx,n_on_error_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .cleanup_on_error
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_system]
+ mov ecx,n_system_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .allocator_system
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_allocate]
+ mov ecx,n_allocate_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .allocator_or_arena_allocate
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_deallocate]
+ mov ecx,n_deallocate_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .allocator_deallocate
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_with_capacity]
+ mov ecx,n_with_capacity_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .arena_with_capacity
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_reset]
+ mov ecx,n_reset_len
+ call rf27g04_token_match
+ test eax,eax
+ jnz .arena_reset
+ mov rdi,r12
+ mov rsi,rbx
  lea rdx,[rel n_forget]
  mov ecx,n_forget_len
  call rf27g04_token_match
@@ -1133,6 +1484,733 @@ rf27g04_eval_expr:
  test eax,eax
  jnz .byte_length
  jmp .unavailable_token
+
+.ownership_is_moved:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .unavailable_token
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov r11,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r11
+ call rf27g04_find_symbol
+ test rax,rax
+ jz .unavailable_receiver
+ xor ecx,ecx
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],neboc_text_char_unicode_e_bytes_STATE_MOVED
+ sete cl
+ mov eax,NEBOC_BIND_TYPE_BOOL
+ mov edx,NEBOC_CATEGORY_COPY
+ jmp .done
+
+.type_is_copy:
+ mov r10d,1
+ jmp .type_metadata
+.type_drop_required:
+ mov r10d,2
+.type_metadata:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .unavailable_token
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ call rf27g04_type_traits
+ test rax,4
+ jz .unavailable_token
+ xor ecx,ecx
+ test rax,r10
+ setnz cl
+ mov eax,NEBOC_BIND_TYPE_BOOL
+ mov edx,NEBOC_CATEGORY_COPY
+ jmp .done
+
+.borrow_scope:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .unavailable_token
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov r11,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r11
+ call rf27g04_find_symbol
+ test rax,rax
+ jz .unavailable_receiver
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_LIVE
+ jne .borrow_escape_receiver
+ mov rcx,[rax+NEBOC_SYMBOL_CATEGORY_OFFSET]
+ cmp rcx,NEBOC_CATEGORY_SHARED_BORROW
+ je .borrow_scope_ok
+ cmp rcx,NEBOC_CATEGORY_UNIQUE_BORROW
+ jne .unavailable_receiver
+.borrow_scope_ok:
+ mov rcx,[rax+NEBOC_SYMBOL_SCOPE_DEPTH_OFFSET]
+ inc rcx
+ mov eax,NEBOC_BIND_TYPE_INT
+ mov edx,NEBOC_CATEGORY_COPY
+ jmp .done
+
+.borrow_as_slice:
+ mov r10d,2
+ jmp .borrow_derived
+.borrow_reborrow:
+ mov r10d,1
+.borrow_derived:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .unavailable_token
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov r11,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r11
+ call rf27g04_find_symbol
+ test rax,rax
+ jz .unavailable_receiver
+ mov [rsp],rax
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_LIVE
+ jne .borrow_escape_receiver
+ cmp qword [rax+NEBOC_SYMBOL_CATEGORY_OFFSET],NEBOC_CATEGORY_SHARED_BORROW
+ jne .borrow_conflict_receiver
+ mov r8,[rax+NEBOC_SYMBOL_ORIGIN_NODE_OFFSET]
+ test r8,r8
+ jz .internal
+ cmp qword [r8+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_BORROWED_SHARED
+ jne .internal
+ inc qword [r8+NEBOC_SYMBOL_ORIGIN_NODE_OFFSET]
+ mov rcx,[rax+NEBOC_SYMBOL_VALUE_OFFSET]
+ mov edx,NEBOC_CATEGORY_SHARED_BORROW
+ cmp r10,2
+ je .borrow_derived_slice
+ mov rax,[rax+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET]
+ jmp .done
+.borrow_derived_slice:
+ mov eax,NEBOC_BIND_TYPE_BYTES
+ jmp .done
+
+.lifetime_infer:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .unavailable_token
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov r11,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r11
+ call rf27g04_find_symbol
+ test rax,rax
+ jz .unavailable_receiver
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_LIVE
+ jne .borrow_escape_receiver
+ mov rdx,[rax+NEBOC_SYMBOL_CATEGORY_OFFSET]
+ cmp rdx,NEBOC_CATEGORY_SHARED_BORROW
+ je .lifetime_infer_ok
+ cmp rdx,NEBOC_CATEGORY_UNIQUE_BORROW
+ jne .unavailable_receiver
+.lifetime_infer_ok:
+ mov rcx,[rax+NEBOC_SYMBOL_SCOPE_DEPTH_OFFSET]
+ inc rcx
+ mov eax,NEBOC_BIND_TYPE_LIFETIME
+ mov edx,NEBOC_CATEGORY_COPY
+ jmp .done
+
+.lifetime_outlives:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ jne .unavailable_token
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov r11,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r11
+ call rf27g04_find_symbol
+ test rax,rax
+ jz .unavailable_receiver
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET],NEBOC_BIND_TYPE_LIFETIME
+ jne .unavailable_receiver
+ mov [rsp],rax
+ mov rdi,r12
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call rf27g04_node_ptr
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ xor edx,edx
+ call rf27g04_eval_expr
+ cmp rax,NEBOC_BIND_TYPE_LIFETIME
+ jne .unavailable_token
+ mov rax,[rsp]
+ cmp [rax+NEBOC_SYMBOL_VALUE_OFFSET],rcx
+ setbe cl
+ movzx ecx,cl
+ mov eax,NEBOC_BIND_TYPE_BOOL
+ mov edx,NEBOC_CATEGORY_COPY
+ jmp .done
+
+.reference_is_valid_at:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ jne .unavailable_token
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov r11,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r11
+ call rf27g04_find_symbol
+ test rax,rax
+ jz .unavailable_receiver
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_LIVE
+ jne .borrow_escape_receiver
+ mov rdx,[rax+NEBOC_SYMBOL_CATEGORY_OFFSET]
+ cmp rdx,NEBOC_CATEGORY_SHARED_BORROW
+ je .reference_point
+ cmp rdx,NEBOC_CATEGORY_UNIQUE_BORROW
+ jne .unavailable_receiver
+.reference_point:
+ mov [rsp],rax
+ mov rdi,r12
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call rf27g04_node_ptr
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ xor edx,edx
+ call rf27g04_eval_expr
+ cmp rax,NEBOC_BIND_TYPE_INT
+ je .reference_point_type_ok
+ cmp rax,NEBOC_BIND_TYPE_LIFETIME
+ jne .unavailable_token
+.reference_point_type_ok:
+ mov rax,[rsp]
+ mov rdx,[rax+NEBOC_SYMBOL_SCOPE_DEPTH_OFFSET]
+ inc rdx
+ test rcx,rcx
+ jz .reference_invalid
+ cmp rcx,rdx
+ ja .reference_invalid
+ mov ecx,1
+ jmp .reference_result
+.reference_invalid:
+ xor ecx,ecx
+.reference_result:
+ mov eax,NEBOC_BIND_TYPE_BOOL
+ mov edx,NEBOC_CATEGORY_COPY
+ jmp .done
+
+.resource_escape_analysis:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .unavailable_token
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov r11,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r11
+ call rf27g04_find_symbol
+ test rax,rax
+ jz .unavailable_receiver
+ cmp qword [rax+NEBOC_SYMBOL_CATEGORY_OFFSET],NEBOC_CATEGORY_UNIQUE_OWNER
+ jne .unavailable_receiver
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_LIVE
+ je .escape_analysis_ok
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_BORROWED_SHARED
+ je .escape_analysis_ok
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_BORROWED_UNIQUE
+ jne .unavailable_receiver
+.escape_analysis_ok:
+ xor ecx,ecx
+ mov eax,NEBOC_BIND_TYPE_BOOL
+ mov edx,NEBOC_CATEGORY_COPY
+ jmp .done
+
+.resource_promote_to_heap:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .unavailable_token
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov r11,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r11
+ call rf27g04_find_symbol
+ test rax,rax
+ jz .unavailable_receiver
+ mov [rsp],rax
+ cmp qword [rax+NEBOC_SYMBOL_CATEGORY_OFFSET],NEBOC_CATEGORY_UNIQUE_OWNER
+ jne .unavailable_receiver
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_LIVE
+ jne .use_after_move_receiver
+ mov qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],neboc_text_char_unicode_e_bytes_STATE_MOVED
+ inc qword [r12+NEBOC_SEM_MOVE_COUNT_OFFSET]
+ mov r8,[rax+NEBOC_SYMBOL_AUX_OFFSET]
+ mov rcx,[rax+NEBOC_SYMBOL_VALUE_OFFSET]
+ mov rdx,NEBOC_CATEGORY_UNIQUE_OWNER
+ mov rax,[rax+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET]
+ jmp .done
+
+.ownership_or_lifetime_explain:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .unavailable_token
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov r11,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r11
+ call rf27g04_find_symbol
+ test rax,rax
+ jnz .explain_symbol
+ mov rdi,r12
+ mov rsi,r11
+ lea rdx,[rel n_ownership]
+ mov ecx,n_ownership_len
+ call rf27g04_token_match
+ test eax,eax
+ jz .unavailable_receiver
+ mov rcx,[r12+NEBOC_SEM_OPERATION_COUNT_OFFSET]
+ shl rcx,4
+ add rcx,[r12+NEBOC_SEM_CLEANUP_COUNT_OFFSET]
+ add rcx,[r12+NEBOC_SEM_MOVE_COUNT_OFFSET]
+ add rcx,[r12+NEBOC_SEM_COPY_COUNT_OFFSET]
+ add rcx,[r12+NEBOC_SEM_CLONE_COUNT_OFFSET]
+ jmp .explain_result
+.explain_symbol:
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET],NEBOC_BIND_TYPE_LIFETIME
+ je .explain_lifetime
+ mov rdx,[rax+NEBOC_SYMBOL_CATEGORY_OFFSET]
+ cmp rdx,NEBOC_CATEGORY_SHARED_BORROW
+ je .explain_lifetime
+ cmp rdx,NEBOC_CATEGORY_UNIQUE_BORROW
+ jne .unavailable_receiver
+.explain_lifetime:
+ mov rcx,[rax+NEBOC_SYMBOL_VALUE_OFFSET]
+ add rcx,64
+.explain_result:
+ mov eax,NEBOC_BIND_TYPE_INT
+ mov edx,NEBOC_CATEGORY_COPY
+ jmp .done
+
+.scope_drop_order:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .unavailable_token
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov r11,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r11
+ call rf27g04_find_symbol
+ test rax,rax
+ jz .unavailable_receiver
+ mov rcx,[r12+NEBOC_SEM_CLEANUP_COUNT_OFFSET]
+ mov eax,NEBOC_BIND_TYPE_INT
+ mov edx,NEBOC_CATEGORY_COPY
+ jmp .done
+
+.cleanup_on_error:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .unavailable_token
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov r11,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r11
+ call rf27g04_find_symbol
+ test rax,rax
+ jz .unavailable_receiver
+ cmp qword [rax+NEBOC_SYMBOL_CATEGORY_OFFSET],NEBOC_CATEGORY_UNIQUE_OWNER
+ jne .unavailable_receiver
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_LIVE
+ jne .unavailable_receiver
+ test qword [rax+NEBOC_SYMBOL_CLEANUP_FLAGS_OFFSET],NEBOC_CLEANUP_DEFERRED
+ jnz .unavailable_receiver
+ or qword [rax+NEBOC_SYMBOL_CLEANUP_FLAGS_OFFSET],NEBOC_CLEANUP_DEFERRED
+ mov ecx,1
+ mov eax,NEBOC_BIND_TYPE_BOOL
+ mov edx,NEBOC_CATEGORY_COPY
+ jmp .done
+
+.allocator_system:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .unavailable_token
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ lea rdx,[rel n_allocator]
+ mov ecx,n_allocator_len
+ call rf27g04_token_match
+ test eax,eax
+ jz .unavailable_token
+ mov ecx,1
+ mov eax,NEBOC_BIND_TYPE_ALLOCATOR
+ mov edx,NEBOC_CATEGORY_COPY
+ jmp .done
+
+.arena_with_capacity:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ jne .unavailable_token
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov r11,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r11
+ lea rdx,[rel n_arena]
+ mov ecx,n_arena_len
+ call rf27g04_token_match
+ test eax,eax
+ jz .unavailable_token
+ mov rdi,r12
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call rf27g04_node_ptr
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ xor edx,edx
+ call rf27g04_eval_expr
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .allocator_layout
+ test rcx,rcx
+ jz .allocator_layout
+ cmp rcx,1048576
+ ja .allocator_layout
+ mov r8,rcx
+ mov rdi,r12
+ mov esi,NEBOC_OWN_EVENT_ARENA_INIT
+ xor edx,edx
+ xor ecx,ecx
+ mov r9,r13
+ call rf27g04_emit_allocation
+ test eax,eax
+ jnz .internal
+ test r14,r14
+ jnz .temporary_arena_init_ready
+ mov esi,NEBOC_OWN_EVENT_ARENA_DROP
+ call rf27g04_emit_allocation
+ test eax,eax
+ jnz .internal
+.temporary_arena_init_ready:
+ mov rcx,r8
+ mov r8,rcx
+ mov eax,NEBOC_BIND_TYPE_ARENA
+ mov edx,NEBOC_CATEGORY_UNIQUE_OWNER
+ jmp .done
+
+.allocator_or_arena_allocate:
+ mov rax,[r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET]
+ cmp rax,1
+ je .allocation_receiver
+ cmp rax,2
+ jne .unavailable_token
+.allocation_receiver:
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov r11,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r11
+ call rf27g04_find_symbol
+ test rax,rax
+ jz .unavailable_receiver
+ mov [rsp],rax
+ mov rdi,r12
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call rf27g04_node_ptr
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ je .allocation_argument
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+.allocation_argument:
+ mov rdi,r12
+ xor edx,edx
+ call rf27g04_eval_expr
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .allocator_layout
+ test rcx,rcx
+ jz .allocator_layout
+ mov rax,[rsp]
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET],NEBOC_BIND_TYPE_ALLOCATOR
+ je .system_allocation
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET],NEBOC_BIND_TYPE_ARENA
+ jne .unavailable_receiver
+ mov rdx,rcx
+ shl rdx,3
+ shr rdx,3
+ cmp rdx,rcx
+ jne .arena_exhausted
+ shl rcx,3
+ cmp rcx,[rax+NEBOC_SYMBOL_VALUE_OFFSET]
+ ja .arena_exhausted
+ cmp rcx,65536
+ ja .allocator_layout
+ sub [rax+NEBOC_SYMBOL_VALUE_OFFSET],rcx
+ mov r8,rcx
+ mov rcx,rax
+ xor edx,edx
+ mov r9,r13
+ mov rdi,r12
+ mov esi,NEBOC_OWN_EVENT_ARENA_ALLOCATE
+ call rf27g04_emit_allocation
+ test eax,eax
+ jnz .internal
+ mov rax,rcx
+ mov rcx,r8
+ mov r8,rax
+ mov eax,NEBOC_BIND_TYPE_MEMORY_BLOCK
+ mov edx,NEBOC_CATEGORY_ARENA_BLOCK
+ jmp .done
+.system_allocation:
+ cmp rcx,65536
+ ja .allocator_layout
+ mov r8,rcx
+ xor edx,edx
+ xor ecx,ecx
+ mov r9,r13
+ mov rdi,r12
+ mov esi,NEBOC_OWN_EVENT_ALLOCATE
+ call rf27g04_emit_allocation
+ test eax,eax
+ jnz .internal
+ test r14,r14
+ jnz .temporary_allocate_ready
+ mov esi,NEBOC_OWN_EVENT_DEALLOCATE
+ call rf27g04_emit_allocation
+ test eax,eax
+ jnz .internal
+.temporary_allocate_ready:
+ mov rcx,r8
+ mov r8,rcx
+ mov eax,NEBOC_BIND_TYPE_MEMORY_BLOCK
+ mov edx,NEBOC_CATEGORY_UNIQUE_OWNER
+ jmp .done
+
+.allocator_deallocate:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ jne .unavailable_token
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov r11,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r11
+ call rf27g04_find_symbol
+ test rax,rax
+ jz .unavailable_receiver
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET],NEBOC_BIND_TYPE_ALLOCATOR
+ jne .unavailable_receiver
+ mov rdi,r12
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call rf27g04_node_ptr
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov r11,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r11
+ call rf27g04_find_symbol
+ test rax,rax
+ jz .unavailable_receiver
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET],NEBOC_BIND_TYPE_MEMORY_BLOCK
+ jne .unavailable_receiver
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_LIVE
+ je .allocator_deallocate_live
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_BORROWED_SHARED
+ je .borrow_conflict_receiver
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_BORROWED_UNIQUE
+ je .borrow_conflict_receiver
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],neboc_text_char_unicode_e_bytes_STATE_MOVED
+ je .use_after_move_receiver
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],neboc_text_char_unicode_e_bytes_STATE_DROPPED
+ je .double_drop_receiver
+ jmp .unavailable_receiver
+.allocator_deallocate_live:
+ mov rdi,r12
+ mov rsi,rax
+ mov rdx,r13
+ call rf27g04_cleanup_symbol
+ test eax,eax
+ jnz .internal
+ mov ecx,1
+ mov eax,NEBOC_BIND_TYPE_BOOL
+ mov edx,NEBOC_CATEGORY_COPY
+ jmp .done
+
+.arena_reset:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .unavailable_token
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .unavailable_token
+ mov r11,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r11
+ call rf27g04_find_symbol
+ test rax,rax
+ jz .unavailable_receiver
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET],NEBOC_BIND_TYPE_ARENA
+ jne .unavailable_receiver
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_LIVE
+ jne .unavailable_receiver
+ mov [rsp],rax
+ ; Validate every arena-owned block before mutating either the block set or the
+ ; arena cursor. This makes reset failure atomic when any borrow is active.
+ xor r9d,r9d
+ mov r11,[r12+NEBOC_SEM_SYMBOL_COUNT_OFFSET]
+.arena_reset_validate:
+ cmp r9,r11
+ jae .arena_reset_release_start
+ mov r10,r9
+ imul r10,NEBOC_SYMBOL_SIZE
+ add r10,[r12+NEBOC_SEM_SYMBOLS_OFFSET]
+ cmp qword [r10+NEBOC_SYMBOL_CATEGORY_OFFSET],NEBOC_CATEGORY_ARENA_BLOCK
+ jne .arena_reset_validate_next
+ mov rdx,[rsp]
+ cmp [r10+NEBOC_SYMBOL_AUX_OFFSET],rdx
+ jne .arena_reset_validate_next
+ cmp qword [r10+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_BORROWED_SHARED
+ je .arena_reset_borrow_conflict
+ cmp qword [r10+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_BORROWED_UNIQUE
+ je .arena_reset_borrow_conflict
+.arena_reset_validate_next:
+ inc r9
+ jmp .arena_reset_validate
+.arena_reset_release_start:
+ xor r9d,r9d
+.arena_reset_release:
+ cmp r9,r11
+ jae .arena_reset_commit
+ mov r10,r9
+ imul r10,NEBOC_SYMBOL_SIZE
+ add r10,[r12+NEBOC_SEM_SYMBOLS_OFFSET]
+ cmp qword [r10+NEBOC_SYMBOL_CATEGORY_OFFSET],NEBOC_CATEGORY_ARENA_BLOCK
+ jne .arena_reset_release_next
+ mov rdx,[rsp]
+ cmp [r10+NEBOC_SYMBOL_AUX_OFFSET],rdx
+ jne .arena_reset_release_next
+ cmp qword [r10+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_LIVE
+ jne .arena_reset_release_next
+ mov qword [r10+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],NEBOC_STATE_RELEASED
+.arena_reset_release_next:
+ inc r9
+ jmp .arena_reset_release
+.arena_reset_commit:
+ mov rdi,r12
+ mov esi,NEBOC_OWN_EVENT_ARENA_RESET
+ mov rdx,[rsp]
+ xor ecx,ecx
+ xor r8d,r8d
+ mov r9,r13
+ call rf27g04_emit_allocation
+ test eax,eax
+ jnz .internal
+ mov rax,[rsp]
+ mov rcx,[rax+NEBOC_SYMBOL_AUX_OFFSET]
+ mov [rax+NEBOC_SYMBOL_VALUE_OFFSET],rcx
+ mov ecx,1
+ mov eax,NEBOC_BIND_TYPE_BOOL
+ mov edx,NEBOC_CATEGORY_COPY
+ jmp .done
+.arena_reset_borrow_conflict:
+ mov rdi,r12
+ mov esi,NEBOC_DIAG_BORROW_CONFLICT
+ mov rdx,rbx
+ call rf27g04_set_error
+ mov rax,-1
+ jmp .done
+
+.allocator_layout:
+ mov rdi,r12
+ mov esi,NEBOC_DIAG_ALLOCATOR_LAYOUT
+ mov rdx,rbx
+ call rf27g04_set_error
+ mov rax,-1
+ jmp .done
+.arena_exhausted:
+ mov rdi,r12
+ mov esi,NEBOC_DIAG_ARENA_EXHAUSTED
+ mov rdx,rbx
+ call rf27g04_set_error
+ mov rax,-1
+ jmp .done
 
 .ownership_move:
  mov r10d,1
@@ -1182,6 +2260,18 @@ rf27g04_eval_expr:
  je .move_while_borrowed_receiver
  jmp .borrow_conflict_receiver
 .ownership_state_ready:
+ ; The arena is also the lifetime owner of its outstanding block borrows.
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET],NEBOC_BIND_TYPE_ARENA
+ jne .ownership_arena_checked
+ cmp r10,1
+ jne .ownership_arena_checked
+ mov rdi,r12
+ mov rsi,rax
+ call rf27g04_arena_has_borrows
+ test eax,eax
+ jnz .move_while_borrowed_receiver
+ mov rax,[rsp]
+.ownership_arena_checked:
  cmp r10,2
  jne .ownership_not_copy
  cmp qword [rax+NEBOC_SYMBOL_CATEGORY_OFFSET],NEBOC_CATEGORY_UNIQUE_OWNER
@@ -1198,8 +2288,49 @@ rf27g04_eval_expr:
  cmp qword [rax+NEBOC_SYMBOL_CATEGORY_OFFSET],NEBOC_CATEGORY_COPY
  je .ownership_result
  mov qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET],neboc_text_char_unicode_e_bytes_STATE_MOVED
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET],NEBOC_BIND_TYPE_ARENA
+ jne .ownership_result
+ ; Reparent existing blocks to the destination arena symbol before publishing
+ ; that binding. A subsequent reset must invalidate those same blocks.
+ mov rdi,r12
+ mov rsi,rax
+ call rf27g04_arena_move_children
 .ownership_result:
  mov rax,[rsp]
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET],NEBOC_BIND_TYPE_MEMORY_BLOCK
+ je .allocation_transfer
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET],NEBOC_BIND_TYPE_ARENA
+ jne .ownership_value
+.allocation_transfer:
+ cmp r10,2
+ je .ownership_value
+ mov esi,NEBOC_OWN_EVENT_MOVE
+ cmp r10,3
+ jne .allocation_transfer_ready
+ mov esi,NEBOC_OWN_EVENT_CLONE
+.allocation_transfer_ready:
+ mov rdi,r12
+ xor edx,edx
+ mov rcx,rax
+ mov r8,[rax+NEBOC_SYMBOL_AUX_OFFSET]
+ mov r9,r13
+ call rf27g04_emit_allocation
+ test eax,eax
+ jnz .internal
+ test r14,r14
+ jnz .ownership_value
+ mov rax,[rsp]
+ mov esi,NEBOC_OWN_EVENT_DEALLOCATE
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET],NEBOC_BIND_TYPE_ARENA
+ jne .transfer_release
+ mov esi,NEBOC_OWN_EVENT_ARENA_DROP
+.transfer_release:
+ call rf27g04_emit_allocation
+ test eax,eax
+ jnz .internal
+.ownership_value:
+ mov rax,[rsp]
+ mov r8,[rax+NEBOC_SYMBOL_AUX_OFFSET]
  mov rcx,[rax+NEBOC_SYMBOL_VALUE_OFFSET]
  mov rdx,[rax+NEBOC_SYMBOL_CATEGORY_OFFSET]
  mov rax,[rax+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET]
@@ -1397,8 +2528,18 @@ rf27g04_eval_expr:
  jz .unavailable_receiver
  cmp r10,2
  je .cleanup_schedule
+ cmp qword [rax+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET],NEBOC_BIND_TYPE_ARENA
+ jne .cleanup_arena_checked
  mov rdi,r12
  mov rsi,rax
+ call rf27g04_arena_has_borrows
+ test eax,eax
+ jnz .borrow_conflict_receiver
+ mov rax,[rsp]
+.cleanup_arena_checked:
+ mov rdi,r12
+ mov rsi,rax
+ mov rdx,r13
  call rf27g04_cleanup_symbol
  test eax,eax
  jnz .internal
@@ -1611,6 +2752,83 @@ rf27g04_eval_expr:
 
 ; request*, node id -> 1 iff identifier is canonical Bytes.
 %define call NEBOC_ABI_FUNCTION_SCOPED_CALL
+; request*, type-name token -> bit 0 Copy, bit 1 drop-required, bit 2 known.
+rf27g04_type_traits:
+ push rbx
+ push r12
+ push r13
+ sub rsp,8
+ mov r12,rdi
+ mov r13,rsi
+ lea rbx,[rel n_int]
+ mov ecx,n_int_len
+ call .match_copy
+ test eax,eax
+ jnz .copy
+ lea rbx,[rel n_bool]
+ mov ecx,n_bool_len
+ call .match_copy
+ test eax,eax
+ jnz .copy
+ lea rbx,[rel n_char]
+ mov ecx,n_char_len
+ call .match_copy
+ test eax,eax
+ jnz .copy
+ lea rbx,[rel n_float]
+ mov ecx,n_float_len
+ call .match_copy
+ test eax,eax
+ jnz .copy
+ lea rbx,[rel n_bytes]
+ mov ecx,n_bytes_len
+ call .match_copy
+ test eax,eax
+ jnz .copy
+ lea rbx,[rel n_allocator]
+ mov ecx,n_allocator_len
+ call .match_copy
+ test eax,eax
+ jnz .copy
+ lea rbx,[rel n_text]
+ mov ecx,n_text_len
+ call .match_copy
+ test eax,eax
+ jnz .drop
+ lea rbx,[rel n_arena]
+ mov ecx,n_arena_len
+ call .match_copy
+ test eax,eax
+ jnz .drop
+ lea rbx,[rel n_ownership]
+ mov ecx,n_ownership_len
+ call .match_copy
+ test eax,eax
+ jnz .known
+ xor eax,eax
+ jmp .done
+.copy:
+ mov eax,5
+ jmp .done
+.drop:
+ mov eax,6
+ jmp .done
+.known:
+ mov eax,4
+ jmp .done
+.match_copy:
+ mov rdi,r12
+ mov rsi,r13
+ mov rdx,rbx
+ call rf27g04_token_match
+ ret
+.done:
+ add rsp,8
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
 rf27g04_receiver_is_bytes_type:
  push r12
  sub rsp,8
@@ -1664,6 +2882,25 @@ rf27g04_cleanup_symbol:
  jne .internal
  test qword [rsi+NEBOC_SYMBOL_CLEANUP_FLAGS_OFFSET],NEBOC_CLEANUP_REQUIRED
  jz .internal
+ ; Emit the same exactly-once native release as the semantic cleanup ledger.
+ mov eax,NEBOC_OWN_EVENT_DEALLOCATE
+ cmp qword [rsi+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET],NEBOC_BIND_TYPE_MEMORY_BLOCK
+ je .native_release
+ mov eax,NEBOC_OWN_EVENT_ARENA_DROP
+ cmp qword [rsi+neboc_text_char_unicode_e_bytes_SYMBOL_TYPE_OFFSET],NEBOC_BIND_TYPE_ARENA
+ jne .cleanup_ledger
+.native_release:
+ push rsi
+ mov r9,rdx
+ mov rdx,rsi
+ mov esi,eax
+ xor ecx,ecx
+ xor r8d,r8d
+ call rf27g04_emit_allocation
+ pop rsi
+ test eax,eax
+ jnz .internal
+.cleanup_ledger:
  mov rax,[rdi+NEBOC_SEM_CLEANUP_ORDER_HASH_OFFSET]
  mov r8,1099511628211
  mov rcx,[rsi+neboc_text_char_unicode_e_bytes_SYMBOL_NAME_TOKEN_OFFSET]
@@ -1938,6 +3175,152 @@ rf27g04_semantic_hash:
  mov rcx,[rdi+NEBOC_SEM_LAYOUT_ID_OFFSET]
  xor rax,rcx
  imul rax,r8
+ mov r9,NEBOC_SEM_EVENT_COUNT_OFFSET
+.events:
+ mov rcx,[rdi+r9]
+ xor rax,rcx
+ imul rax,r8
+ add r9,8
+ cmp r9,neboc_text_char_unicode_e_bytes_SEM_REQUEST_SIZE_driver_cli_linux_x86_64_native_vertical
+ jb .events
+ ret
+
+
+; Return 1 for a live borrow of any block owned by this arena. Preserve the
+; caller's operation register and diagnostic token; this check mutates nothing.
+%undef call
+rf27g04_arena_has_borrows:
+ push rcx
+ push rdx
+ push r8
+ xor eax,eax
+ xor ecx,ecx
+.loop:
+ cmp rcx,[rdi+NEBOC_SEM_SYMBOL_COUNT_OFFSET]
+ jae .done
+ imul rdx,rcx,NEBOC_SYMBOL_SIZE
+ add rdx,[rdi+NEBOC_SEM_SYMBOLS_OFFSET]
+ cmp qword [rdx+NEBOC_SYMBOL_CATEGORY_OFFSET],NEBOC_CATEGORY_ARENA_BLOCK
+ jne .next
+ cmp [rdx+NEBOC_SYMBOL_AUX_OFFSET],rsi
+ jne .next
+ mov r8,[rdx+neboc_text_char_unicode_e_bytes_SYMBOL_STATE_OFFSET]
+ cmp r8,NEBOC_STATE_BORROWED_SHARED
+ je .borrowed
+ cmp r8,NEBOC_STATE_BORROWED_UNIQUE
+ je .borrowed
+.next:
+ inc rcx
+ jmp .loop
+.borrowed:
+ mov eax,1
+.done:
+ pop r8
+ pop rdx
+ pop rcx
+ ret
+
+rf27g04_arena_move_children:
+ push rcx
+ push rdx
+ push r8
+ mov r8,[rdi+NEBOC_SEM_SYMBOL_COUNT_OFFSET]
+ imul r8,NEBOC_SYMBOL_SIZE
+ add r8,[rdi+NEBOC_SEM_SYMBOLS_OFFSET]
+ xor ecx,ecx
+.loop:
+ cmp rcx,[rdi+NEBOC_SEM_SYMBOL_COUNT_OFFSET]
+ jae .done
+ imul rdx,rcx,NEBOC_SYMBOL_SIZE
+ add rdx,[rdi+NEBOC_SEM_SYMBOLS_OFFSET]
+ cmp qword [rdx+NEBOC_SYMBOL_CATEGORY_OFFSET],NEBOC_CATEGORY_ARENA_BLOCK
+ jne .next
+ cmp [rdx+NEBOC_SYMBOL_AUX_OFFSET],rsi
+ jne .next
+ mov [rdx+NEBOC_SYMBOL_AUX_OFFSET],r8
+.next:
+ inc rcx
+ jmp .loop
+.done:
+ mov rax,rsi
+ pop r8
+ pop rdx
+ pop rcx
+ ret
+
+; request*, opcode, target symbol* (0 = pending binding), owner symbol*,
+; operand, AST node id -> Status. This is a typed plan, never a runtime report.
+; Preserve caller temporaries so evaluation keeps its public value and type.
+%undef call
+rf27g04_emit_allocation:
+ push rbx
+ push r12
+ push rdi
+ push rsi
+ push rdx
+ push rcx
+ push r8
+ push r9
+ push r10
+ push r11
+ sub rsp,8
+ mov r12,rdi
+ mov rbx,[r12+NEBOC_SEM_EVENT_COUNT_OFFSET]
+ cmp rbx,NEBOC_OWNERSHIP_MAX_EVENTS
+ jae .limit
+ imul rbx,NEBOC_OWNERSHIP_EVENT_SIZE
+ lea rbx,[r12+rbx+NEBOC_SEM_EVENTS_OFFSET]
+ mov [rbx],rsi
+ mov rax,[r12+NEBOC_SEM_SYMBOL_COUNT_OFFSET]
+ test rdx,rdx
+ jz .target
+ mov rax,rdx
+ sub rax,[r12+NEBOC_SEM_SYMBOLS_OFFSET]
+ xor edx,edx
+ mov r10d,NEBOC_SYMBOL_SIZE
+ div r10
+.target:
+ cmp rax,NEBOC_SEM_MAX_SYMBOLS
+ jae .limit
+ mov [rbx+8],rax
+ xor eax,eax
+ test rcx,rcx
+ jz .owner
+ mov rax,rcx
+ sub rax,[r12+NEBOC_SEM_SYMBOLS_OFFSET]
+ xor edx,edx
+ mov r10d,NEBOC_SYMBOL_SIZE
+ div r10
+.owner:
+ cmp rax,NEBOC_SEM_MAX_SYMBOLS
+ jae .limit
+ mov [rbx+16],rax
+ mov [rbx+24],r8
+ mov rsi,r9
+ call rf27g04_node_ptr
+ test rax,rax
+ jz .limit
+ mov rcx,[rax+NEBOC_AST_NODE_START_OFFSET]
+ mov [rbx+32],rcx
+ mov rcx,[rax+NEBOC_AST_NODE_END_OFFSET]
+ mov [rbx+40],rcx
+ inc qword [r12+NEBOC_SEM_EVENT_COUNT_OFFSET]
+ xor eax,eax
+ jmp .done
+.limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+.done:
+ add rsp,8
+ pop r11
+ pop r10
+ pop r9
+ pop r8
+ pop rcx
+ pop rdx
+ pop rsi
+ pop rdi
+ pop r12
+ pop rbx
  ret
 
 section .note.GNU-stack noalloc noexec nowrite progbits

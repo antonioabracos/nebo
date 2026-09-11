@@ -1,0 +1,3 @@
+start() {
+    Bytes.fromByte("A").byteLength().return;
+}

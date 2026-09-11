@@ -1,0 +1,6 @@
+proof_id	classification	source_path	contract	expected_check	expected_emit_asm	expected_build	native_bridge
+G01-PF004-P-001	EXECUTABLE_NOW	tests/fixtures/g01-pf004/nebo/001-float-explicit-implicit-runtime.no	explicit_and_implicit_literals_traverse_internal_binary64_prototype	PASS	REJECT	REJECT	3.5_bits_equal_0x400c000000000000
+G01-PF004-P-002	EXECUTABLE_NOW	tests/fixtures/g01-pf004/nebo/002-float-runtime-boundaries.no	42.25_0.125_0.0_materialization_and_ieee_classification	PASS	REJECT	REJECT	NATIVE_SCENARIOS_3_4_5
+G01-PF004-P-003	EXECUTABLE_NOW	tests/fixtures/g01-pf004/nebo/003-float-bounded-prototype-preserves-check.no	prototype_digit_bound_does_not_narrow_pf003_public_check	PASS	REJECT	REJECT	LIMIT_DEFERRED_TO_PF005
+G01-PF004-P-004	EXPECTED_REJECTION	tests/fixtures/g01-pf004/nebo/004-float-int-constructor-rejection.no	no_implicit_Int_to_Float_coercion	REJECT	NOT_RUN	NOT_RUN	NONE
+G01-PF004-P-005	PROPOSED_NOT_EXECUTABLE	tests/fixtures/g01-pf004/nebo/005-float-arithmetic-proposed.no	public_float_operators_belong_to_pf005	REJECT	NOT_RUN	NOT_RUN	NONE

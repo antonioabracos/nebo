@@ -1,0 +1,7 @@
+start() {
+    Result<Int,Bool>(Ok(42)).value;
+    match(value) {
+        Ok(payload) -> other.return;
+        Err(error) -> 0.return;
+    }
+}

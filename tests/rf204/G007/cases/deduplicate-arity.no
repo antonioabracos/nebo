@@ -1,0 +1,9 @@
+(Int.self)same(Int.other) {
+    (self == other).return;
+}
+
+start() {
+    List<Int>.from([3, 3]).items;
+    items.deduplicate(same);
+    items.length();
+}

@@ -1,0 +1,7 @@
+// Shapes distinct Unicode scalars into bounded glyph IDs, advances, and clusters.
+start() {
+    RenderPlan;
+    1408;
+    output.stdout().stderr().target("font-shaping").plain().visual().headlessEvent();
+    lifecycle.event("text.shaped").payload("A-lambda-smile").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

@@ -1,0 +1,9 @@
+(Int.self)renamedTransform() {
+    (self + 4).return;
+}
+
+start() {
+    List<Int>.from([5, 2, 2, 7]).items;
+    items.map(renamedTransform).mapped;
+    mapped.at(0);
+}

@@ -1,0 +1,6 @@
+profile=C09-F10-v1
+mutations=magic,capacity,length,tombstone_sum,hash_mode,generation,key_type,slot_state,slot_hash
+expected_status=INVALID_SOURCE
+restore_after_each=yes
+live_descriptor_mutation_on_failure=no
+budget_cases=9

@@ -18,6 +18,17 @@ NEBOC_ABI_FUNCTION neboc_module_path_validate
  jz .source
  cmp rsi,NEBOC_MODULE_MAX_TEXT
  ja .limit
+ mov r8,rdi
+ add r8,rsi
+ jc .arg
+ mov r9,rdx
+ add r9,8
+ jc .arg
+ cmp rdi,r9
+ jae .range_ok
+ cmp rdx,r8
+ jb .arg
+.range_ok:
  mov rax,0xcbf29ce484222325
  xor ecx,ecx
  mov r8d,1
@@ -70,3 +81,91 @@ NEBOC_ABI_FUNCTION neboc_module_path_validate
 .arg: NEBOC_ABI_RETURN_STATUS NEBOC_STATUS_INVALID_ARGUMENT
 .source: NEBOC_ABI_RETURN_STATUS NEBOC_STATUS_INVALID_SOURCE
 .limit: NEBOC_ABI_RETURN_STATUS NEBOC_STATUS_LIMIT_EXCEEDED
+
+; collision(left*, left_len, right*, right_len, out_equal*) -> status.
+; Non-canonical case/Unicode spellings fail closed before equality is published.
+NEBOC_ABI_FUNCTION neboc_module_path_collision
+ test rdi,rdi
+ jz .collision_arg
+ test rdx,rdx
+ jz .collision_arg
+ test r8,r8
+ jz .collision_arg
+ test r8,7
+ jnz .collision_arg
+ cmp rsi,NEBOC_MODULE_MAX_TEXT
+ ja .collision_limit
+ cmp rcx,NEBOC_MODULE_MAX_TEXT
+ ja .collision_limit
+ mov r9,rdi
+ add r9,rsi
+ jc .collision_arg
+ mov r10,rdx
+ add r10,rcx
+ jc .collision_arg
+ mov r11,r8
+ add r11,8
+ jc .collision_arg
+ cmp rdi,r11
+ jae .collision_left_ok
+ cmp r8,r9
+ jb .collision_arg
+.collision_left_ok:
+ cmp rdx,r11
+ jae .collision_ranges_ok
+ cmp r8,r10
+ jb .collision_arg
+.collision_ranges_ok:
+ push rbx
+ push rbp
+ push r12
+ push r13
+ push r14
+ sub rsp,16
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ mov rbp,rcx
+ mov rbx,r8
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rsp]
+ call neboc_module_path_validate
+ test eax,eax
+ jnz .collision_done
+ mov rdi,r14
+ mov rsi,rbp
+ lea rdx,[rsp+8]
+ call neboc_module_path_validate
+ test eax,eax
+ jnz .collision_done
+ xor r10d,r10d
+ cmp r13,rbp
+ jne .collision_publish
+ mov rax,[rsp]
+ cmp rax,[rsp+8]
+ jne .collision_publish
+ xor ecx,ecx
+.collision_compare:
+ cmp rcx,r13
+ jae .collision_equal
+ mov al,[r12+rcx]
+ cmp al,[r14+rcx]
+ jne .collision_publish
+ inc rcx
+ jmp .collision_compare
+.collision_equal:
+ mov r10d,1
+.collision_publish:
+ mov [rbx],r10
+ xor eax,eax
+.collision_done:
+ add rsp,16
+ pop r14
+ pop r13
+ pop r12
+ pop rbp
+ pop rbx
+ ret
+.collision_arg: NEBOC_ABI_RETURN_STATUS NEBOC_STATUS_INVALID_ARGUMENT
+.collision_limit: NEBOC_ABI_RETURN_STATUS NEBOC_STATUS_LIMIT_EXCEEDED

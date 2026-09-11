@@ -1,0 +1,8 @@
+start() {
+    Int.explicit_value;
+    Int(42).explicit_value;
+    Int.implicit_value;
+    42.implicit_value;
+    explicit_value == implicit_value;
+    0;
+}

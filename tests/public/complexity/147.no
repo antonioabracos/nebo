@@ -1,0 +1,7 @@
+// The versioned registry publishes stable request, receipt, and plugin layouts.
+start() {
+    RenderPlan;
+    3501;
+    output.stdout().stderr().target("console-abi-service").plain().visual().headlessEvent();
+    lifecycle.event("renderer-plugin").payload("versioned-internal-type-abi-registry").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

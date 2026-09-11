@@ -1,0 +1,43 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>probabilistic — neboc probabilistic-report &lt;artifact&gt;</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>probabilistic — neboc probabilistic-report &lt;artifact&gt;</h1><p>Bounded seeded CPU probability model; no statistical certification or unlimited sampling; original observation: authenticated redacted NBPRB001 fields and digest printed; SDK bounds: {&quot;MAX_ACTIONS&quot;:1024,&quot;MAX_CATEGORIES&quot;:4096,&quot;MAX_CHAINS&quot;:16,&quot;MAX_DRAWS&quot;:100000,&quot;MAX_EXACT_STATES&quot;:1000000,&quot;MAX_GRAPH_NODES&quot;:1024,&quot;MAX_LATENTS&quot;:256,&quot;MAX_OUTCOMES&quot;:4096,&quot;MAX_PARTICLES&quot;:100000,&quot;MAX_PLATE_SIZE&quot;:4096}</p><pre>Identity: owner:G037:G037-S07-09 (DOMAIN_CONTRACT_ID)
+Edition: 1
+Target: PYTHON_CPU_REFERENCE
+Availability: EXPERIMENTAL</pre><h2>Syntax or signature</h2><pre>neboc probabilistic-report report.nbpr</pre><h2>Local CLI boundary</h2><p>Reads a fixed 64-byte redacted report; does not perform inference or expose private samples.</p><h2>Invocation and independent observation</h2><p>{&quot;boundary&quot;: &quot;Reads a fixed 64-byte redacted report; does not perform inference or expose private samples.&quot;, &quot;deterministic&quot;: true, &quot;execution&quot;: &quot;LOCAL_CLI_BOUNDARY&quot;, &quot;identity&quot;: &quot;owner:G037:G037-S07-09&quot;, &quot;independent_oracle&quot;: &quot;Exact encoded model=37, inference=4, seed=71, diagnostic=1; privacy redacted.&quot;, &quot;input_context&quot;: {&quot;argv&quot;: [&quot;probabilistic-report&quot;, &quot;report.nbpr&quot;], &quot;files&quot;: {&quot;report.nbpr&quot;: {&quot;bytes_hex&quot;: &quot;4e425052423030310100000000000000010000000000000025000000000000000400000000000000470000000000000001000000000000007197b9709bc893cc&quot;}}}, &quot;owner&quot;: &quot;compiler/driver/cli/linux-x86_64/probabilistic_report_cli.inc&quot;, &quot;result&quot;: &quot;PASS&quot;, &quot;signature&quot;: &quot;neboc probabilistic-report report.nbpr&quot;, &quot;stdout_bytes&quot;: 180, &quot;stdout_sha256&quot;: &quot;4cef18f156e17dc358439ac78109fada8867cf9599206dc9a9a0637ac0634e9c&quot;, &quot;stdout_text&quot;: &quot;probabilistic-report v1\nmodel=0x0000000000000025\ninference=0x0000000000000004\nseed=0x0000000000000047\ndiagnostics=0x0000000000000001\nprovenance=0xcc93c89b70b99771\nprivacy=redacted\n&quot;}</p><h2>Availability and maturity</h2><p>EXPERIMENTAL; evidence SDK_REFERENCE_MODEL. Documentation does not promote this identity to stable. Public and owner namespaces are separate contracts.</p><h2>Limits and lifecycle</h2><p>Bounded seeded CPU probability model; no statistical certification or unlimited sampling; original observation: authenticated redacted NBPRB001 fields and digest printed; SDK bounds: {&quot;MAX_ACTIONS&quot;:1024,&quot;MAX_CATEGORIES&quot;:4096,&quot;MAX_CHAINS&quot;:16,&quot;MAX_DRAWS&quot;:100000,&quot;MAX_EXACT_STATES&quot;:1000000,&quot;MAX_GRAPH_NODES&quot;:1024,&quot;MAX_LATENTS&quot;:256,&quot;MAX_OUTCOMES&quot;:4096,&quot;MAX_PARTICLES&quot;:100000,&quot;MAX_PLATE_SIZE&quot;:4096}</p><h2>Privacy, dependencies and authority</h2><p>Capability: SYNTHETIC_LOCAL_DATA. Gate: NONE. Import grants capability: NO. Use synthetic local data. Hardware claim: NO. Security assurance: NO. RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE. SDK buffers and handles follow the owner lifecycle and reject invalid/released inputs where specified. No downloaded models, secrets, external network or device access is needed for the documented local proofs.</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;classification&quot;: {
+      &quot;capability&quot;: &quot;SYNTHETIC_LOCAL_DATA&quot;,
+      &quot;core&quot;: &quot;NO&quot;,
+      &quot;evidence_level&quot;: &quot;SDK_REFERENCE_MODEL&quot;,
+      &quot;external_gate&quot;: &quot;NONE&quot;,
+      &quot;hardware_claim&quot;: &quot;NO&quot;,
+      &quot;import_grants_capability&quot;: &quot;NO&quot;,
+      &quot;legal&quot;: &quot;RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE&quot;,
+      &quot;security_assurance&quot;: &quot;NO&quot;,
+      &quot;target&quot;: &quot;PYTHON_CPU_REFERENCE&quot;,
+      &quot;tier&quot;: &quot;EXPERIMENTAL&quot;
+    }
+  },
+  {
+    &quot;boundary&quot;: &quot;Reads a fixed 64-byte redacted report; does not perform inference or expose private samples.&quot;,
+    &quot;deterministic&quot;: true,
+    &quot;execution&quot;: &quot;LOCAL_CLI_BOUNDARY&quot;,
+    &quot;identity&quot;: &quot;owner:G037:G037-S07-09&quot;,
+    &quot;independent_oracle&quot;: &quot;Exact encoded model=37, inference=4, seed=71, diagnostic=1; privacy redacted.&quot;,
+    &quot;input_context&quot;: {
+      &quot;argv&quot;: [
+        &quot;probabilistic-report&quot;,
+        &quot;report.nbpr&quot;
+      ],
+      &quot;files&quot;: {
+        &quot;report.nbpr&quot;: {
+          &quot;bytes_hex&quot;: &quot;4e425052423030310100000000000000010000000000000025000000000000000400000000000000470000000000000001000000000000007197b9709bc893cc&quot;
+        }
+      }
+    },
+    &quot;owner&quot;: &quot;compiler/driver/cli/linux-x86_64/probabilistic_report_cli.inc&quot;,
+    &quot;result&quot;: &quot;PASS&quot;,
+    &quot;signature&quot;: &quot;neboc probabilistic-report report.nbpr&quot;,
+    &quot;stdout_bytes&quot;: 180,
+    &quot;stdout_sha256&quot;: &quot;4cef18f156e17dc358439ac78109fada8867cf9599206dc9a9a0637ac0634e9c&quot;,
+    &quot;stdout_text&quot;: &quot;probabilistic-report v1\nmodel=0x0000000000000025\ninference=0x0000000000000004\nseed=0x0000000000000047\ndiagnostics=0x0000000000000001\nprovenance=0xcc93c89b70b99771\nprivacy=redacted\n&quot;
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a></nav><h2>Provenance</h2><ul><li>compiler/driver/cli/linux-x86_64/probabilistic_report_cli.inc — SHA-256 45fc10da6f43345d3171bcf1c6da638381c54516bdb2881df29c5a48e15dc32b</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

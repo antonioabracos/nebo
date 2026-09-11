@@ -1,0 +1,13 @@
+interface	limit	boundary_proof	failure_policy
+native recovery diagnostic default	8	native:mf019/recovery_test:17	No partial diagnostic/AST commit
+native recovery token default	1048576	native:mf019/recovery_test:18	LIMIT_EXCEEDED
+native recovery AST default	1048576	native:mf019/recovery_test:19	LIMIT_EXCEEDED
+native parser nesting	512 limit; 511 accepted	RF172:G169	NEBO_PARSE_NESTING_LIMIT at 512
+public max-errors	1..64	lexical:public recovery;native:recovery_cascade_test	Bounded diagnostics; no source artifact
+block comment depth	64	lexical:comment-boundary;lexical:nested-comment-65	Typed rejection at 65
+formatter source bytes	1048576	tools/rf27-format.py MAX_SOURCE;native symbol_formatter_test	Reject before write
+formatter native tokens	32768	compiler/sdk/token_tooling.py;native symbol_formatter_test	Reject malformed/overflow transport
+formatter compiler child seconds	15	tools/rf27-format.py;formatter fault tests	No write on timeout
+symbol formatter child seconds	15	tools/rf27-format.py;native symbol_formatter_test	No write on failure
+RF172 replay seconds	180	Canonical G169 validator including G168/G167	Timeout is failure
+G174 full validator seconds	900	tests/rf204/G174/validate.sh	Timeout is failure

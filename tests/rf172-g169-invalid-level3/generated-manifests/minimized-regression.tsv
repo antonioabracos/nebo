@@ -1,0 +1,2 @@
+failure_id	classification	original_source	minimized_source	preserved_identity	promotion_state	dependent_replay	state
+RF172-G169-F10-MINIMIZED_REGRESSION	ORACLE	examples/rf204/G169/RF204-G169-S10.no	tests/rf204/G169/minimized.no	NEBO_PARSE_UNEXPECTED_TOKEN:4	PROMOTED_TO_CANONICAL_CORPUS	RF172-G169-F12	MATERIALIZED

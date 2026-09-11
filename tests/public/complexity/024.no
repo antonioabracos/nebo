@@ -1,0 +1,13 @@
+// Variational families publish bounded optimization traces, posterior samples, and reference-chain comparisons.
+(Int.self)variationalFamilyMeanField() { self.return; }
+(Int.self)variationalFamilyFullRank() { self.return; }
+(Int.self)modelInferVariational() { self.return; }
+(Int.self)variationalElbo() { self.return; }
+(Int.self)variationalSample() { self.return; }
+(Int.self)variationalPosterior() { self.return; }
+(Int.self)variationalConvergenceTrace() { self.return; }
+(Int.self)variationalCompareMcmc() { self.return; }
+
+start() {
+    109.variationalFamilyMeanField().variationalFamilyFullRank().modelInferVariational().variationalElbo().variationalSample().variationalPosterior().variationalConvergenceTrace().variationalCompareMcmc();
+}

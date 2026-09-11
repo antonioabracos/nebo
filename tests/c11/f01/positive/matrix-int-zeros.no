@@ -1,0 +1,4 @@
+start() {
+    Matrix<Int>.zeros(2, 3).matrix;
+    6;
+}

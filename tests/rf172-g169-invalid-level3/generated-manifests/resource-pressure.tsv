@@ -1,0 +1,6 @@
+case_id	pressure_class	input_or_oracle	budget	expected_contract	replays	state
+RF172-G169-F07-PROJECT	project graph pressure	RF52-G49-F08 native oracle	bounded native profile	zero crash/hang and deterministic result	2	MATERIALIZED
+RF172-G169-F07-HUGE_SOURCE	source size	generated 1 MiB invalid source	15000 ms,256 MiB	deterministic rejection and zero artefacts	2	MATERIALIZED
+RF172-G169-F07-CANCEL	forced cancellation	generated 16 MiB source	100 us	timeout reaped and zero artefacts	2	MATERIALIZED
+RF172-G169-F07-ALLOCATIONS	arena,intern,compact-ID,cache	RF52-G49-F02 compiler memory oracle	bounded caller-owned buffers	failure atomic OOM and capacity rejection	2	MATERIALIZED
+RF172-G169-F07-ARENA	aligned allocation overflow	RF27-G04-F05 bounded arena oracle	bounded caller-owned buffer	OOM preserves arena state	2	MATERIALIZED

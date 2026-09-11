@@ -1,0 +1,2 @@
+const answer: Int = 42;
+start() { answer; }

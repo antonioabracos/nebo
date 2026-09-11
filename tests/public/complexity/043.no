@@ -1,0 +1,13 @@
+// Resilience policies bound retries, timeouts, circuits, bulkheads, deduplication, metrics, and redacted traces.
+(Int.self)rpcPolicyRetry() { self.return; }
+(Int.self)rpcPolicyTimeout() { self.return; }
+(Int.self)rpcPolicyCircuitBreaker() { self.return; }
+(Int.self)rpcPolicyBulkhead() { self.return; }
+(Int.self)requestIdempotencyKey() { self.return; }
+(Int.self)serverDeduplicate() { self.return; }
+(Int.self)rpcMetrics() { self.return; }
+(Int.self)rpcTrace() { self.return; }
+
+start() {
+    130.rpcPolicyRetry().rpcPolicyTimeout().rpcPolicyCircuitBreaker().rpcPolicyBulkhead().requestIdempotencyKey().serverDeduplicate().rpcMetrics().rpcTrace();
+}

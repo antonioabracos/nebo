@@ -1,0 +1,13 @@
+// Transport maturity is factual while compatibility-gated gateways and in-memory pairs remain deterministic.
+(Int.self)http2TransportOpen() { self.return; }
+(Int.self)quicTransportOpen() { self.return; }
+(Int.self)unixTransportOpen() { self.return; }
+(Int.self)inMemoryTransportPair() { self.return; }
+(Int.self)gatewayMap() { self.return; }
+(Int.self)gatewayTranslate() { self.return; }
+(Int.self)transportCapabilities() { self.return; }
+(Int.self)protocolFuzzCommand() { self.return; }
+
+start() {
+    148.http2TransportOpen().quicTransportOpen().unixTransportOpen().inMemoryTransportPair().gatewayMap().gatewayTranslate().transportCapabilities().protocolFuzzCommand();
+}

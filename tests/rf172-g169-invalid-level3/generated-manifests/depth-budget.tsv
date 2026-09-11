@@ -1,0 +1,3 @@
+case_id	boundary	generated_shape	expected_exit	artefact_policy	timeout_ms	memory_budget_bytes	determinism_replays	state
+RF172-G169-F03-DEPTH_511	511	balanced_parenthesis_chain	0	DETERMINISTIC_ASM_AND_ELF	15000	268435456	2	MATERIALIZED
+RF172-G169-F03-DEPTH_512	512	balanced_parenthesis_chain	1	ZERO_ON_INVALID_WITH_NESTING_LIMIT	15000	268435456	2	MATERIALIZED

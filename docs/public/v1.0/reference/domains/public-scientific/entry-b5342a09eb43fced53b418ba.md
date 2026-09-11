@@ -1,0 +1,86 @@
+# public-scientific — correlation
+
+Actual Int64/binary64 lanes, extent 1..64; checked Int sum, native compensated Float sum, explicit population/sample and linearType7 policies; 1536-byte caller workspace isolates conversion/quantile scratch; source values unchanged; native domain/overflow traps and NaN propagation are observed; no source report or synthetic aggregate
+
+```text
+Identity: public:claim:492add4012b8533e7ead4cb6 (DOMAIN_CONTRACT_ID)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: STABLE_1_0
+```
+
+## Syntax or signature
+
+```text
+correlation
+Actual Int64/binary64 lanes, extent 1..64; checked Int sum, native compensated Float sum, explicit population/sample and linearType7 policies; 1536-byte caller workspace isolates conversion/quantile scratch; source values unchanged; native domain/overflow traps and NaN propagation are observed; no source report or synthetic aggregate
+```
+
+## Availability and maturity
+
+STABLE_1_0; evidence FROZEN_PUBLIC_SOURCE. Documentation does not promote this identity to stable. Public and owner namespaces are separate contracts.
+
+## Limits and lifecycle
+
+Actual Int64/binary64 lanes, extent 1..64; checked Int sum, native compensated Float sum, explicit population/sample and linearType7 policies; 1536-byte caller workspace isolates conversion/quantile scratch; source values unchanged; native domain/overflow traps and NaN propagation are observed; no source report or synthetic aggregate
+
+## Privacy, dependencies and authority
+
+Capability: NONE. Gate: NONE. Import grants capability: NO. Use synthetic local data. Hardware claim: NO. Security assurance: NO. RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE. SDK buffers and handles follow the owner lifecycle and reject invalid/released inputs where specified. No downloaded models, secrets, external network or device access is needed for the documented local proofs.
+
+## Executed examples
+
+### statistics:Float-0-correlation-1; expected 23
+
+```nebo
+start(){Vector<Float> [1.0,2.0,3.0,4.0].a;Vector<Float> [1.0,2.0,3.0,4.0].b;"${a.correlation(b):fixed(6)}".console();23.return;}
+```
+
+Oracle: {"capabilities": {"console": "RETAINED_DOCUMENT", "filesystem": "EXPLICIT_SCRATCH_EFFECT_ORACLE", "network": "DENIED_BY_SECCOMP"}, "console_text_utf8": "1.000000", "filesystem_effects": {}, "independent_builds": 2, "kinds": \[2\], "process_exit": 23, "runtime_determinism": "BYTE_IDENTICAL", "runtime_sha256": "367f2026347cd081dfd46e8086b9d33e9336019c0e4f3f0d5035dbf2f4e0d101", "text": {"bytes_hex": "312e303030303030"}}
+
+## Rejected examples
+
+### statistics:correlation-arity; expected NEBO_TYPE_MISMATCH
+
+```nebo
+start(){Vector<Float> [1.0,2.0,3.0,4.0].a;a.correlation().v;23.return;}
+```
+
+Oracle: {"artifact_publication": "REJECTED", "compiler_exit": 1, "diagnostic": "NEBO_TYPE_MISMATCH"}
+
+## Additional observations and limits
+
+```text
+[
+  {
+    "classification": {
+      "capability": "NONE",
+      "core": "YES",
+      "evidence_level": "FROZEN_PUBLIC_SOURCE",
+      "external_gate": "NONE",
+      "hardware_claim": "NO",
+      "import_grants_capability": "NO",
+      "legal": "RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE",
+      "security_assurance": "NO",
+      "target": "x86_64-systemv-elf-linux",
+      "tier": "STABLE_1_0"
+    }
+  }
+]
+```
+
+## Related entries
+
+[Index](index.md)
+
+## Provenance
+
+- compiler/driver/cli/linux-x86_64/scalar_program.inc — SHA-256 54bad41b6d43ffc48c264adae8a0a776071c6a3917abaf05520344e11ae6afbe
+
+- compiler/codegen/functions/x86_64/function_codegen.asm — SHA-256 944358cec673b2132c51b5c4b5842edaf4cf9ce157b23d83892449fbb12487f7
+
+- runtime/core/runtime_core.asm — SHA-256 9786591602649f222e73dc91ea2449fba1c98d2e504ae779208caf7373e06797
+
+- tests/rf204/G170/statistics_test.py — SHA-256 7e6658ab79542ac12ef604969291368dc14b33f840b5c32d45a289a96955f581
+
+- tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0

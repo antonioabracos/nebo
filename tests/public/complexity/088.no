@@ -1,0 +1,6 @@
+// Rejects missing emission capabilities before publishing a protocol record.
+start() {
+    RenderPlan;
+    1308;
+    protocol.event("console.emit").event("console.text").event("console.table").event("console.plot2d").payload("capability-diagnostic").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

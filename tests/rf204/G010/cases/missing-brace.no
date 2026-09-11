@@ -1,0 +1,9 @@
+start() {
+    105;
+    Dataset.fromTables(parts).dataset;
+    dataset.schema().commonSchema;
+    dataset.partitionCount().partitions;
+    dataset.repartition(reverseStrategy).repartitionedDataset;
+    dataset.scan().lazyPartitionPlan;
+    dataset.collect().boundedRows;
+    dataset.cache(localPolicy).cachedDataset;

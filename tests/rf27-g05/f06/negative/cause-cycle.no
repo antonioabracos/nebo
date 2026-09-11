@@ -1,0 +1,7 @@
+start() {
+  Error(1, 1, 1, 0, 1, 0).first;
+  Error(2, 1, 1, 2, 3, 0).second;
+  first.withCause(second).linked;
+  second.withCause(linked).cycle;
+  cycle.code().return;
+}

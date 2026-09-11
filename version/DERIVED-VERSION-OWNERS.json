@@ -1,0 +1,2744 @@
+{
+  "schema": "NEBO-DERIVED-VERSION-OWNERS-v1",
+  "owners": [
+    {
+      "path": "version/NEBO-VERSION.json",
+      "kind": "json",
+      "fields": {
+        "version": "{version}",
+        "edition": "{edition}"
+      }
+    },
+    {
+      "path": "runtime/NEBO-RUNTIME-IDENTITY.json",
+      "kind": "json",
+      "fields": {
+        "version": "{version}",
+        "edition": "{edition}"
+      }
+    },
+    {
+      "path": "compiler/driver/cli/linux-x86_64/version.inc",
+      "kind": "text",
+      "contains": [
+        "%define NEBO_VERSION_MAJOR {major}\n",
+        "%define NEBO_VERSION_MINOR {minor}\n",
+        "%define NEBO_VERSION_PATCH {patch}\n",
+        "%define NEBO_VERSION_STRING \"{version}\""
+      ]
+    },
+    {
+      "path": "sdk/nebo-1.0/sdk-layout.json",
+      "kind": "json",
+      "fields": {
+        "version": "{version}"
+      }
+    },
+    {
+      "path": "sdk/nebo-1.0/editor/nebo-vscode/package.json",
+      "kind": "json",
+      "fields": {
+        "version": "{version}"
+      }
+    },
+    {
+      "path": "sdk/nebo-1.0/offline/sdk.lock.json",
+      "kind": "json",
+      "fields": {
+        "version": "{version}"
+      }
+    },
+    {
+      "path": "sdk/nebo-1.0/share/nebo/cli/version.txt",
+      "kind": "text",
+      "contains": [
+        "neboc {version}\n"
+      ]
+    },
+    {
+      "path": "compiler/sdk/sdk_builder.py",
+      "kind": "python",
+      "contains": [
+        "from compiler.sdk.version_identity import VERSION, EDITION, identity"
+      ]
+    },
+    {
+      "path": "compiler/sdk/portability.py",
+      "kind": "python",
+      "contains": [
+        "from compiler.sdk.version_identity import CLI"
+      ]
+    },
+    {
+      "path": "compiler/compat/transitions.py",
+      "kind": "python",
+      "contains": [
+        "from compiler.sdk.version_identity import VERSION as CURRENT"
+      ]
+    },
+    {
+      "path": "tools/rf204-g051.py",
+      "kind": "python",
+      "contains": [
+        "from compiler.sdk.version_identity import CLI"
+      ]
+    },
+    {
+      "path": "tools/rf204-g027.py",
+      "kind": "python",
+      "contains": [
+        "from compiler.sdk.version_identity import VERSION"
+      ]
+    },
+    {
+      "path": "README.md",
+      "kind": "text",
+      "contains": [
+        "Source version: `{version}`",
+        "Language Edition: `{edition}`",
+        "Latest published release: `1.0.1`",
+        "Publication status: PULL_REQUEST_CANDIDATE"
+      ]
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "text",
+      "contains": [
+        "## [{version}] - Unreleased"
+      ]
+    },
+    {
+      "path": "docs/releases/NEBO-{version}-RELEASE-NOTES.md",
+      "kind": "text",
+      "contains": [
+        "Version: `{version}`",
+        "Language Edition: `{edition}`"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/releases/NEBO-{version}-RELEASE-NOTES.md",
+      "kind": "copy",
+      "source": "docs/releases/NEBO-{version}-RELEASE-NOTES.md"
+    },
+    {
+      "path": "docs/releases/NEBO-{version}-MIGRATION-GUIDE.md",
+      "kind": "text",
+      "contains": [
+        "Version: `{version}`",
+        "Language Edition: `{edition}`"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/releases/NEBO-{version}-MIGRATION-GUIDE.md",
+      "kind": "copy",
+      "source": "docs/releases/NEBO-{version}-MIGRATION-GUIDE.md"
+    },
+    {
+      "path": "docs/releases/NEBO-{version}-KNOWN-LIMITATIONS.md",
+      "kind": "text",
+      "contains": [
+        "Version: `{version}`",
+        "Language Edition: `{edition}`"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/releases/NEBO-{version}-KNOWN-LIMITATIONS.md",
+      "kind": "copy",
+      "source": "docs/releases/NEBO-{version}-KNOWN-LIMITATIONS.md"
+    },
+    {
+      "path": "docs/public/LANGUAGE-GUIDE.md",
+      "kind": "text",
+      "contains": [
+        "neboc {version}"
+      ]
+    },
+    {
+      "path": "docs/public/REFERENCE.md",
+      "kind": "text",
+      "contains": [
+        "version `{version}`"
+      ]
+    },
+    {
+      "path": "docs/public/INSTALLATION-TARGETS.md",
+      "kind": "text",
+      "contains": [
+        "version is `{version}`"
+      ]
+    },
+    {
+      "path": "docs/public/COMPATIBILITY.md",
+      "kind": "text",
+      "contains": [
+        "identifies as `{version}`"
+      ]
+    },
+    {
+      "path": "docs/public/COOKBOOK.md",
+      "kind": "text",
+      "contains": [
+        "release prepare {version}"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/index.md",
+      "kind": "text",
+      "contains": [
+        "Source version: `{version}`"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/cli-version.json",
+      "kind": "json",
+      "fields": {
+        "observations.0.observed_text": "neboc {version}\n"
+      }
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/cli-version-json.json",
+      "kind": "json",
+      "fields": {
+        "observations.0.observed_json.version": "{version}",
+        "observations.0.observed_json.edition": "{edition}"
+      }
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/cli-version.md",
+      "kind": "text",
+      "contains": [
+        "neboc {version}"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/cli-version.html",
+      "kind": "text",
+      "contains": [
+        "neboc {version}"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/cli-version-json.md",
+      "kind": "text",
+      "contains": [
+        "neboc {version}"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/cli-version-json.html",
+      "kind": "text",
+      "contains": [
+        "neboc {version}"
+      ]
+    },
+    {
+      "path": "version/RELEASE-ASSET-NAMES.json",
+      "kind": "assets",
+      "names": {
+        "source": "nebo-{version}-source.tar",
+        "sdk": "nebo-{version}-sdk-linux-x86_64.tar",
+        "docs": "nebo-{version}-docs-offline.tar",
+        "tooling": "nebo-{version}-tooling-linux-x86_64.tar",
+        "package": "nebo-{version}-packages-offline.tar"
+      }
+    },
+    {
+      "path": "tests/rf204/G010/validate.sh",
+      "kind": "text",
+      "contains": [
+        "scripts/check-version-consistency.py --expected-cli"
+      ]
+    },
+    {
+      "path": "compiler/sdk/operator_tooling.py",
+      "kind": "sha256-pin",
+      "source": "docs/specifications/nebo-language/NEBO-SYMBOL-AND-OPERATOR-REGISTRY-v1.0.tsv",
+      "constant": "REGISTRY_SHA256"
+    },
+    {
+      "path": "README_SOURCE.md",
+      "kind": "text",
+      "contains": [
+        "# Build Nebo {version} from source",
+        "Language Edition: {edition}."
+      ]
+    },
+    {
+      "path": "SOURCE-PROVENANCE.json",
+      "kind": "json",
+      "fields": {
+        "version": "{version}",
+        "edition": "{edition}"
+      }
+    },
+    {
+      "path": "release/PUBLIC-RELEASE-CANDIDATE.env",
+      "kind": "text",
+      "contains": [
+        "\nVERSION={version}\n",
+        "\nEDITION={edition}\n"
+      ]
+    },
+    {
+      "path": "release/PUBLIC-VALIDATION.json",
+      "kind": "json",
+      "fields": {
+        "version": "{version}",
+        "edition": "{edition}"
+      }
+    }
+  ],
+  "references": [
+    {
+      "path": "TOOLCHAIN.json",
+      "classification": "PUBLIC_HOST_TOOL_VERSIONS",
+      "allowed_versions": [
+        "2.16.01",
+        "1.11.1"
+      ]
+    },
+    {
+      "path": "docs/reference/interfaces/NI-SCHEMA-AND-FINGERPRINT-FREEZE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/reference/packages/PACKAGE-MANIFEST-SPEC.md",
+      "classification": "PACKAGE_MANIFEST_EXAMPLE_VERSIONS",
+      "allowed_versions": [
+        "1.0.0",
+        "1.1.0"
+      ]
+    },
+    {
+      "path": "docs/reference/rf148/public-indexing-compatibility.md",
+      "classification": "PUBLISHED_INDEXING_COMPATIBILITY_CONTRACT",
+      "allowed_versions": [
+        "1.0.1",
+        "1.0.1-COMPATIBILITY.json"
+      ]
+    },
+    {
+      "path": "docs/reference/nebo-1.0/g027-readiness.md",
+      "classification": "PUBLIC_TOOLING_SCOPE",
+      "allowed_versions": [
+        "1.1.0",
+        "1.0.1"
+      ]
+    },
+    {
+      "path": "tests/public/*",
+      "classification": "PUBLIC_EXECUTION_ORACLE_AND_POLICY_TEST"
+    },
+    {
+      "path": "sdk/contracts/*",
+      "classification": "PUBLIC_BOUNDED_CONTRACT_METADATA"
+    },
+    {
+      "path": "sdk/nebo-1.0/security/EXTERNAL-SECURITY-REVIEW-GATES.tsv",
+      "classification": "PUBLIC_RELEASE_POLICY_REFERENCE"
+    },
+    {
+      "path": "docs/public/v1.0/releases/NEBO-1.0-*.md",
+      "classification": "HISTORICAL_PUBLIC_RELEASE_LINKS",
+      "allowed_versions": [
+        "1.0.0",
+        "1.0.1",
+        "1.1.0",
+        "1.1.0-RELEASE"
+      ]
+    },
+    {
+      "path": "version/DERIVED-VERSION-OWNERS.json",
+      "classification": "VERSION_POLICY_OR_ADVERSARIAL_TEST"
+    },
+    {
+      "path": "compiler/sdk/version_identity.py",
+      "classification": "VERSION_POLICY_OR_ADVERSARIAL_TEST"
+    },
+    {
+      "path": "scripts/check-version-consistency.py",
+      "classification": "VERSION_POLICY_OR_ADVERSARIAL_TEST"
+    },
+    {
+      "path": "tests/release/version-consistency/*",
+      "classification": "VERSION_POLICY_OR_ADVERSARIAL_TEST"
+    },
+    {
+      "path": "compiler/bootstrap/stage0_trust.tsv",
+      "classification": "HISTORICAL_PINNED_BOOTSTRAP"
+    },
+    {
+      "path": "compiler/lexer/lexer.asm",
+      "classification": "PUBLIC_BASELINE_COMPATIBILITY_AND_AUDIT"
+    },
+    {
+      "path": "compiler/sdk/sdk_lifecycle.py",
+      "classification": "PUBLIC_BASELINE_COMPATIBILITY_AND_AUDIT"
+    },
+    {
+      "path": "docs/reference/rf148/*",
+      "classification": "PUBLIC_BASELINE_COMPATIBILITY_AND_AUDIT"
+    },
+    {
+      "path": "docs/specifications/nebo-language/*",
+      "classification": "PUBLIC_BASELINE_COMPATIBILITY_AND_AUDIT"
+    },
+    {
+      "path": "sdk/interfaces/operators/RF148-CLOSEOUT.md",
+      "classification": "PUBLIC_BASELINE_COMPATIBILITY_AND_AUDIT"
+    },
+    {
+      "path": "docs/public/MIGRATION.md",
+      "classification": "PUBLIC_BASELINE_COMPATIBILITY_AND_AUDIT"
+    },
+    {
+      "path": "docs/public/v1.0/reference/core/operator-NSR-RES-015.*",
+      "classification": "PUBLIC_BASELINE_COMPATIBILITY_AND_AUDIT"
+    },
+    {
+      "path": "docs/public/v1.0/language/specification/03-expressions-operators-control-flow.md",
+      "classification": "PUBLIC_BASELINE_COMPATIBILITY_AND_AUDIT"
+    },
+    {
+      "path": "docs/public/v1.0/language/specification/NEBO-GRAMMAR-1.0.ebnf",
+      "classification": "PUBLIC_BASELINE_COMPATIBILITY_AND_AUDIT"
+    },
+    {
+      "path": "docs/releases/VERSION-DECISION.md",
+      "classification": "PUBLIC_BASELINE_COMPATIBILITY_AND_AUDIT"
+    },
+    {
+      "path": "docs/releases/VERSION-DELTA.tsv",
+      "classification": "PUBLIC_BASELINE_COMPATIBILITY_AND_AUDIT"
+    },
+    {
+      "path": "tests/release/indexing-compatibility/*",
+      "classification": "PUBLIC_BASELINE_COMPATIBILITY_AND_AUDIT"
+    },
+    {
+      "path": "docs/public/v1.0/releases/NEBO-1.0.0-RELEASE-NOTES.md",
+      "classification": "HISTORICAL_RELEASE_PROOF"
+    },
+    {
+      "path": "docs/releases/history/*",
+      "classification": "HISTORICAL_RELEASE_PROOF"
+    },
+    {
+      "path": "scripts/release/nebo-1.0/*",
+      "classification": "HISTORICAL_RELEASE_PROOF"
+    },
+    {
+      "path": "tests/release/nebo-1.0-*",
+      "classification": "HISTORICAL_RELEASE_PROOF"
+    },
+    {
+      "path": "docs/public/v1.0/examples/projects/packages/*/nebo.package.json",
+      "classification": "INDEPENDENT_EXAMPLE_PACKAGE_VERSION"
+    },
+    {
+      "path": "sdk/nebo-1.0/templates/*/nebo.project.json",
+      "classification": "INDEPENDENT_EXAMPLE_PACKAGE_VERSION"
+    },
+    {
+      "path": "docs/public/v1.0/generated/pilot/json/*",
+      "classification": "FROZEN_SOURCE_EXCERPT_OR_EXAMPLE_PACKAGE_VERSION"
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/ai-agents/*",
+      "classification": "FROZEN_SOURCE_EXCERPT_OR_EXAMPLE_PACKAGE_VERSION"
+    },
+    {
+      "path": "scripts/release/candidate.py",
+      "classification": "RELEASE_PROTOCOL_POLICY"
+    },
+    {
+      "path": "compiler/diagnostics/machine.asm",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "compiler/driver/cli/linux-x86_64/cli_driver.asm",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "compiler/sdk/operator_tooling.py",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "compiler/sdk/text_tooling.py",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_BEHAVIOR_CONFLICT.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_BEHAVIOR_CONFLICT.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_BEHAVIOR_CONFLICT.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_BEHAVIOR_EFFECTFUL.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_BEHAVIOR_EFFECTFUL.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_BEHAVIOR_EFFECTFUL.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_BEHAVIOR_NOT_SUPPORTED.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_BEHAVIOR_NOT_SUPPORTED.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_BEHAVIOR_NOT_SUPPORTED.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_BORROW_CONFLICT.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_BORROW_CONFLICT.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_BORROW_CONFLICT.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_ARGUMENT_TYPE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_ARGUMENT_TYPE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_ARGUMENT_TYPE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_ARITY.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_ARITY.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_ARITY.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_DUPLICATE_SIGNATURE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_DUPLICATE_SIGNATURE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_DUPLICATE_SIGNATURE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_INVALID_RECEIVER.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_INVALID_RECEIVER.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_INVALID_RECEIVER.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_NESTED_FUNCTION.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_NESTED_FUNCTION.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_NESTED_FUNCTION.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_RECURSION.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_RECURSION.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_RECURSION.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_RECURSION_FRAME.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_RECURSION_FRAME.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_RECURSION_FRAME.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_RECURSION_NONTAIL.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_RECURSION_NONTAIL.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_RECURSION_NONTAIL.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_RECURSION_SHAPE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_RECURSION_SHAPE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_RECURSION_SHAPE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_RECURSION_SURFACE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_RECURSION_SURFACE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_RECURSION_SURFACE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_UNDEFINED.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_UNDEFINED.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CALL_UNDEFINED.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CLI_USAGE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CLI_USAGE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CLI_USAGE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CONST_WRITE_FORBIDDEN.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CONST_WRITE_FORBIDDEN.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CONST_WRITE_FORBIDDEN.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CONTROL_BRANCH_SCOPE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CONTROL_BRANCH_SCOPE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CONTROL_BRANCH_SCOPE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CONTROL_CONDITION_TYPE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CONTROL_CONDITION_TYPE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_CONTROL_CONDITION_TYPE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_COPY_UNIQUE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_COPY_UNIQUE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_COPY_UNIQUE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_EFFECT_THREAD_CAPABILITY.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_EFFECT_THREAD_CAPABILITY.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_EFFECT_THREAD_CAPABILITY.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_ENTRYPOINT_AMBIGUOUS.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_ENTRYPOINT_AMBIGUOUS.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_ENTRYPOINT_AMBIGUOUS.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_ENTRYPOINT_DUPLICATE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_ENTRYPOINT_DUPLICATE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_ENTRYPOINT_DUPLICATE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_ENTRYPOINT_FORBIDDEN_FOR_TARGET.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_ENTRYPOINT_FORBIDDEN_FOR_TARGET.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_ENTRYPOINT_FORBIDDEN_FOR_TARGET.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_ENTRYPOINT_INVALID_SIGNATURE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_ENTRYPOINT_INVALID_SIGNATURE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_ENTRYPOINT_INVALID_SIGNATURE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_ENTRYPOINT_MISSING.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_ENTRYPOINT_MISSING.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_ENTRYPOINT_MISSING.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_FUNCTION_CALL_CAPACITY.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_FUNCTION_CALL_CAPACITY.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_FUNCTION_CALL_CAPACITY.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_INTERNAL_ERROR.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_INTERNAL_ERROR.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_INTERNAL_ERROR.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_BLOCK_COMMENT_DEPTH.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_BLOCK_COMMENT_DEPTH.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_BLOCK_COMMENT_DEPTH.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_INT_OVERFLOW.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_INT_OVERFLOW.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_INT_OVERFLOW.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_INVALID_CHARACTER.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_INVALID_CHARACTER.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_INVALID_CHARACTER.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_INVALID_ESCAPE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_INVALID_ESCAPE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_INVALID_ESCAPE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_INVALID_UTF8.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_INVALID_UTF8.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_INVALID_UTF8.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_REJECTED_FORM.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_REJECTED_FORM.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_REJECTED_FORM.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_RESERVED_SYMBOL.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_RESERVED_SYMBOL.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_RESERVED_SYMBOL.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_UNTERMINATED_BLOCK_COMMENT.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_UNTERMINATED_BLOCK_COMMENT.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_UNTERMINATED_BLOCK_COMMENT.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_UNTERMINATED_TEXT.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_UNTERMINATED_TEXT.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LEX_UNTERMINATED_TEXT.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LIMIT_EXCEEDED.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LIMIT_EXCEEDED.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_LIMIT_EXCEEDED.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NAME_DUPLICATE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NAME_DUPLICATE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NAME_DUPLICATE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NAME_RESERVED.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NAME_RESERVED.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NAME_RESERVED.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NAME_SHADOW.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NAME_SHADOW.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NAME_SHADOW.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NAME_UNDEFINED.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NAME_UNDEFINED.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NAME_UNDEFINED.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_CALL_BEFORE_DECLARATION.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_CALL_BEFORE_DECLARATION.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_CALL_BEFORE_DECLARATION.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_CAPACITY.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_CAPACITY.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_CAPACITY.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_CAPTURE_UNSUPPORTED.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_CAPTURE_UNSUPPORTED.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_CAPTURE_UNSUPPORTED.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_CONTEXT.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_CONTEXT.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_CONTEXT.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_DUPLICATE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_DUPLICATE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_DUPLICATE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_ESCAPE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_ESCAPE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_ESCAPE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_PARAMETER_UNSUPPORTED.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_PARAMETER_UNSUPPORTED.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_PARAMETER_UNSUPPORTED.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_RECEIVER_UNSUPPORTED.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_RECEIVER_UNSUPPORTED.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_RECEIVER_UNSUPPORTED.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_RECURSION.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_RECURSION.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_RECURSION.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_RECURSIVE_OUTER.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_RECURSIVE_OUTER.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_RECURSIVE_OUTER.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_RETURN_UNSUPPORTED.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_RETURN_UNSUPPORTED.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_RETURN_UNSUPPORTED.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_SCOPE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_SCOPE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_SCOPE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_SURFACE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_SURFACE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_SURFACE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_SYMBOL_COLLISION.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_SYMBOL_COLLISION.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_NESTED_SYMBOL_COLLISION.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_CONTROL_HEADER_DELIMITER.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_CONTROL_HEADER_DELIMITER.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_CONTROL_HEADER_DELIMITER.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_CONTROL_HEADER_PARENS_REQUIRED.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_CONTROL_HEADER_PARENS_REQUIRED.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_CONTROL_HEADER_PARENS_REQUIRED.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_DUPLICATE_START.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_DUPLICATE_START.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_DUPLICATE_START.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_EXPECTED_TOKEN.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_EXPECTED_TOKEN.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_EXPECTED_TOKEN.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_INVALID_CONTROL_CHAIN.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_INVALID_CONTROL_CHAIN.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_INVALID_CONTROL_CHAIN.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_MISSING_SEMICOLON.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_MISSING_SEMICOLON.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_MISSING_SEMICOLON.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_MISSING_START.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_MISSING_START.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_MISSING_START.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_NESTING_LIMIT.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_NESTING_LIMIT.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_NESTING_LIMIT.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_NONASSOCIATIVE_CHAIN.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_NONASSOCIATIVE_CHAIN.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_NONASSOCIATIVE_CHAIN.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_TOP_LEVEL_STATEMENT.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_TOP_LEVEL_STATEMENT.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_TOP_LEVEL_STATEMENT.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_UNEXPECTED_TOKEN.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_UNEXPECTED_TOKEN.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_UNEXPECTED_TOKEN.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_UNSUPPORTED_CONTROL.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_UNSUPPORTED_CONTROL.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_PARSE_UNSUPPORTED_CONTROL.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_BIDI_CONTROL.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_BIDI_CONTROL.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_BIDI_CONTROL.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_BOM_FORBIDDEN.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_BOM_FORBIDDEN.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_BOM_FORBIDDEN.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_COMBINING_MARK.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_COMBINING_MARK.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_COMBINING_MARK.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_INVISIBLE_SEPARATOR.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_INVISIBLE_SEPARATOR.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_INVISIBLE_SEPARATOR.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_MALFORMED_UTF8.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_MALFORMED_UTF8.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_MALFORMED_UTF8.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_TOO_LARGE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_TOO_LARGE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_TOO_LARGE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_UNICODE_CONFUSABLE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_UNICODE_CONFUSABLE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_SOURCE_UNICODE_CONFUSABLE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TOOLCHAIN_FAILED.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TOOLCHAIN_FAILED.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TOOLCHAIN_FAILED.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TUPLE_ARITY.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TUPLE_ARITY.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TUPLE_ARITY.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TUPLE_DUPLICATE_BINDING.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TUPLE_DUPLICATE_BINDING.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TUPLE_DUPLICATE_BINDING.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TUPLE_INDEX_OUT_OF_RANGE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TUPLE_INDEX_OUT_OF_RANGE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TUPLE_INDEX_OUT_OF_RANGE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TUPLE_INVALID_RECEIVER.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TUPLE_INVALID_RECEIVER.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TUPLE_INVALID_RECEIVER.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TUPLE_NESTING_LIMIT.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TUPLE_NESTING_LIMIT.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TUPLE_NESTING_LIMIT.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_CONSTANT_OVERFLOW.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_CONSTANT_OVERFLOW.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_CONSTANT_OVERFLOW.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_DIVISION_BY_ZERO.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_DIVISION_BY_ZERO.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_DIVISION_BY_ZERO.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_INCONSISTENT_RETURN.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_INCONSISTENT_RETURN.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_INCONSISTENT_RETURN.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_MISMATCH.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_MISMATCH.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_MISMATCH.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_MISSING_RETURN.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_MISSING_RETURN.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_MISSING_RETURN.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_TRUTHINESS.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_TRUTHINESS.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_TRUTHINESS.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_UNSUPPORTED_OPERATOR.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_UNSUPPORTED_OPERATOR.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_UNSUPPORTED_OPERATOR.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_VOID_BINDING.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_VOID_BINDING.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_TYPE_VOID_BINDING.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_USE_AFTER_MOVE.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_USE_AFTER_MOVE.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO_USE_AFTER_MOVE.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/cli-message-format.html",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/cli-message-format.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/cli-message-format.md",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/examples/G023.py",
+      "classification": "FROZEN_TEST_TOOLCHAIN_LABEL",
+      "allowed_versions": [
+        "1.0.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/examples/G039.py",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "01.0.0",
+        "1.0.0",
+        "1.2.0",
+        "1.3.0",
+        "2.0.0",
+        "3.1.4"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-4efdbf864f492fbe5d7eba87.html",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "2.0.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-4efdbf864f492fbe5d7eba87.json",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "2.0.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-4efdbf864f492fbe5d7eba87.md",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "2.0.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-76fdb502c60e7a17f206ded7.html",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "2.0.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-76fdb502c60e7a17f206ded7.json",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "2.0.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-76fdb502c60e7a17f206ded7.md",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "2.0.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-95d8ce0faeacc593253ae1d9.html",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "2.0.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-95d8ce0faeacc593253ae1d9.json",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "2.0.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-95d8ce0faeacc593253ae1d9.md",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "2.0.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-a1863b57b91ca8d2c1441b81.html",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "1.2.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-a1863b57b91ca8d2c1441b81.json",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "1.2.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-a1863b57b91ca8d2c1441b81.md",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "1.2.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-a30b5655513d30badef293d9.html",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "1.2.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-a30b5655513d30badef293d9.json",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "1.2.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-a30b5655513d30badef293d9.md",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "1.2.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-d967755c82d70a33e9d10f07.html",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "1.2.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-d967755c82d70a33e9d10f07.json",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "1.2.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-d967755c82d70a33e9d10f07.md",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "1.2.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-dadc42c8555cac1db620262e.html",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "3.1.4"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-dadc42c8555cac1db620262e.json",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "3.1.4"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-dadc42c8555cac1db620262e.md",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "3.1.4"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-e0cceb46058d7e7afde140bb.html",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "3.1.4"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-e0cceb46058d7e7afde140bb.json",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "3.1.4"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/portable-reference/entry-e0cceb46058d7e7afde140bb.md",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "3.1.4"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/public-scientific/entry-34989caaba422ed78f001612.html",
+      "classification": "CONCATENATED_NUMERIC_OUTPUT_NOT_A_VERSION",
+      "allowed_versions": [
+        "1.5007.2502",
+        "2.7503.125-4.5009.750"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/public-scientific/entry-34989caaba422ed78f001612.json",
+      "classification": "CONCATENATED_NUMERIC_OUTPUT_NOT_A_VERSION",
+      "allowed_versions": [
+        "1.5007.2502",
+        "2.7503.125-4.5009.750"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/public-scientific/entry-34989caaba422ed78f001612.md",
+      "classification": "CONCATENATED_NUMERIC_OUTPUT_NOT_A_VERSION",
+      "allowed_versions": [
+        "1.5007.2502",
+        "2.7503.125-4.5009.750"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/public-scientific/entry-efb290ec4d9b1cbb4b6d766c.html",
+      "classification": "CONCATENATED_NUMERIC_OUTPUT_NOT_A_VERSION",
+      "allowed_versions": [
+        "17.5009.750"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/public-scientific/entry-efb290ec4d9b1cbb4b6d766c.json",
+      "classification": "CONCATENATED_NUMERIC_OUTPUT_NOT_A_VERSION",
+      "allowed_versions": [
+        "17.5009.750"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/domains/public-scientific/entry-efb290ec4d9b1cbb4b6d766c.md",
+      "classification": "CONCATENATED_NUMERIC_OUTPUT_NOT_A_VERSION",
+      "allowed_versions": [
+        "17.5009.750"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/stdlib/builtin/symbol-e71c6cf00425f9570c038bdb.html",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "1.2.3"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/stdlib/builtin/symbol-e71c6cf00425f9570c038bdb.json",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "1.2.3"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/reference/stdlib/builtin/symbol-e71c6cf00425f9570c038bdb.md",
+      "classification": "SEMVER_API_EXAMPLE_VALUES",
+      "allowed_versions": [
+        "1.2.3"
+      ]
+    },
+    {
+      "path": "runtime/console/live/nebo_console_mono_atlas.inc",
+      "classification": "EXTERNAL_PILLOW_FREETYPE_VERSION",
+      "allowed_versions": [
+        "10.2.0",
+        "2.13.2"
+      ]
+    },
+    {
+      "path": "sdk/nebo-1.0/licenses/THIRD-PARTY-NOTICES.md",
+      "classification": "EXTERNAL_PILLOW_FREETYPE_VERSION",
+      "allowed_versions": [
+        "10.2.0",
+        "2.13.2"
+      ]
+    },
+    {
+      "path": "sdk/nebo-1.0/share/diagnostics/catalog.json",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "sdk/nebo-1.0/share/diagnostics/compatibility-registry.tsv",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "sdk/nebo-1.0/share/man/man1/neboc.1",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "tools/rf204-g157.py",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "tools/rf204-g164.py",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "tools/rf27-package.py",
+      "classification": "NEW_PACKAGE_INITIAL_VERSION",
+      "allowed_versions": [
+        "0.1.0"
+      ]
+    },
+    {
+      "path": "docs/public/v1.0/diagnostics/core/NEBO-*",
+      "classification": "SARIF_SCHEMA_VERSION",
+      "allowed_versions": [
+        "2.1.0"
+      ]
+    },
+    {
+      "path": "docs/releases/COMPATIBILITY-1.0.1-TO-1.1.0.tsv",
+      "classification": "PUBLIC_BASELINE_COMPATIBILITY_AND_AUDIT"
+    },
+    {
+      "path": "tests/release/post-g204-remediation/*",
+      "classification": "VERSION_POLICY_OR_ADVERSARIAL_TEST"
+    }
+  ],
+  "scan_roots": [
+    "version",
+    "compiler",
+    "runtime",
+    "sdk",
+    "tools",
+    "docs/public",
+    "docs/releases",
+    "scripts/check-version-consistency.py",
+    "scripts/release",
+    "tests/release",
+    "README.md",
+    "CHANGELOG.md",
+    "README_SOURCE.md",
+    "SOURCE-PROVENANCE.json",
+    "release/PUBLIC-RELEASE-CANDIDATE.env",
+    "docs/reference",
+    "tests/public",
+    "TOOLCHAIN.json",
+    "release/PUBLIC-VALIDATION.json"
+  ]
+}

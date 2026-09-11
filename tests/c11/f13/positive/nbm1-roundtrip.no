@@ -1,0 +1,7 @@
+start() {
+    Matrix<Int>.filled(2, 3, 7).matrix;
+    matrix.serializeNBM1().encoded;
+    encoded.asSlice().packedWords;
+    Matrix<Int>.deserializeNBM1(packedWords, matrix.serializedSizeNBM1()).copy;
+    copy.sum();
+}

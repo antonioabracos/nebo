@@ -66,13 +66,24 @@ NEBOC_ABI_FUNCTION neboc_operator_nonassoc_chain_allowed
  xor eax,eax
  ret
 
-; Ranges have P125/non-associative shape but no P01 lexical activation.
+; The four existing range tokens share one non-associative P125 contract.
 NEBOC_ABI_FUNCTION neboc_operator_range_contract
  xor eax,eax
  mov edx,NEBOC_OPERATOR_FAMILY_RANGE
  mov ecx,NEBOC_OPERATOR_BP_RANGE
  mov r8d,NEBOC_OPERATOR_PARSE_ASSOC_NONASSOC
- mov r9d,NEBOC_OPERATOR_PARSE_FLAG_INACTIVE_CURRENT|NEBOC_OPERATOR_PARSE_FLAG_NONASSOCIATIVE
+ mov r9d,NEBOC_OPERATOR_PARSE_FLAG_ACTIVE_CURRENT|NEBOC_OPERATOR_PARSE_FLAG_NONASSOCIATIVE
+ ret
+
+; Membership belongs to this precedence tier but has no current token. The
+; fail-closed record lets parser/tooling clients distinguish absence from an
+; accidentally active spelling.
+NEBOC_ABI_FUNCTION neboc_operator_membership_contract
+ xor eax,eax
+ mov edx,NEBOC_OPERATOR_FAMILY_MEMBERSHIP
+ mov ecx,NEBOC_OPERATOR_BP_RELATIONAL
+ mov r8d,NEBOC_OPERATOR_PARSE_ASSOC_NONASSOC
+ mov r9d,NEBOC_OPERATOR_PARSE_FLAG_INACTIVE_CURRENT|NEBOC_OPERATOR_PARSE_FLAG_DOMAIN_GATE_REQUIRED|NEBOC_OPERATOR_PARSE_FLAG_NONASSOCIATIVE
  ret
 
 section .note.GNU-stack noalloc noexec nowrite progbits

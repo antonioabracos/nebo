@@ -1,0 +1,5 @@
+start() {
+  9223372036854775806.counter.mutable;
+  counter += 1;
+  counter;
+}

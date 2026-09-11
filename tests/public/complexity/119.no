@@ -1,0 +1,7 @@
+// Line and bar adapters validate bounded series through the G095 chart owner.
+start() {
+    RenderPlan;
+    3201;
+    output.stdout().stderr().target("chart-table-service").plain().visual().headlessEvent();
+    lifecycle.event("chart-table").payload("line-bar").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

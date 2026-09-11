@@ -1,0 +1,17 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Install, create, check and run</title><link rel="stylesheet" href="../assets/style.css"></head><body><a href="#main">Skip to content</a><nav aria-label="Home"><a href="../index.html">Nebo documentation home</a></nav><main id="main"><h1>Install, create, check and run</h1><p>The clean-root path uses a local compiler SDK and a separate documentation archive. Linux x86_64, Python 3, NASM and GNU ld are required. No development checkout, download, PATH modification or administrator install is required. Archive integrity is local content integrity; it is not an authenticated release signature.</p><p>Obtain the local SDK archive and the matching documentation archive from your local build owner. Restore to a new prefix, verify the SDK, and restore documentation below share/doc/nebo. Create main.no from the source below. Its result is 41: 17 + 24. Shell exit status is the observation; Console retained rendering is documented separately.</p><h2>Complete Nebo source</h2><pre><code>// A calculated exit status is visible in every shell.
+start(){(17+24).return;}
+</code></pre><h2>Inputs and independent expectations</h2><pre>{
+  &quot;expected_exit&quot;: 41
+}</pre><h2>Local commands</h2><pre>neboc sdk verify local-sdk.tar
+neboc sdk restore local-sdk.tar --destination ./candidate
+(cd candidate &amp;&amp; python3 -B -S -m compiler.sdk.sdk_lifecycle install . ../sdk)
+(cd candidate &amp;&amp; python3 -B -S -m compiler.sdk.sdk_lifecycle verify ../sdk)
+./sdk/bin/neboc docs portal restore nebo-docs-v1.0.tar -o ./docs
+./sdk/bin/neboc docs portal verify ./docs
+# Create main.no using the complete source above.
+./sdk/bin/neboc check main.no
+./sdk/bin/neboc build main.no -o hello
+./hello
+# Inspect the process status: 41. Open docs/index.html.
+./sdk/bin/neboc docs search &quot;getting started&quot; --index ./docs/search-index.json
+</pre></main></body></html>

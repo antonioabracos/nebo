@@ -1,0 +1,24 @@
+// Mapping is lazy. A sink controls consumption and independent cursors.
+(Int.self)transform() { self.console(); (self + 7).return; }
+(Int.self)keep() { (self > 25).return; }
+(Int.self)emit() { self.console(); }
+start() {
+    Event<Int> 17.event;
+    Flow<Int> 29.flow;
+    event.value().console();
+    flow.value().console();
+    Stream<Int>.from([17, 29, 71]).stream;
+    stream.map(transform).mapped;
+    mapped.filter(keep).filtered;
+    "ready".console();
+    filtered.sink(emit).console();
+    Stream<Int>.from([17, 29, 71]).independent;
+    independent.batch(2).batches;
+    batches.next().expect("batch").batch;
+    batch.length().console();
+    batch.at(1).console();
+    independent.window(2).windows;
+    windows.next().expect("window").window;
+    window.length().console();
+    96.return;
+}

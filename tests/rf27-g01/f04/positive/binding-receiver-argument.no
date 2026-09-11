@@ -1,0 +1,5 @@
+start() {
+    170.left;
+    204.right;
+    left.bitAnd(right).result;
+}

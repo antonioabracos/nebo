@@ -1,0 +1,9 @@
+struct Box {
+    Int.value;
+}
+
+start() {
+    Box.default().box;
+    box.update(value: 179).filled;
+    filled.value.return;
+}

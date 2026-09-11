@@ -1,0 +1,20 @@
+start() {
+  Array<Int,1> [1].a01;
+  Array<Int,1> [2].a02;
+  Array<Int,1> [3].a03;
+  Array<Int,1> [4].a04;
+  Array<Int,1> [5].a05;
+  Array<Int,1> [6].a06;
+  Array<Int,1> [7].a07;
+  Array<Int,1> [8].a08;
+  Array<Int,1> [9].a09;
+  Array<Int,1> [10].a10;
+  Array<Int,1> [11].a11;
+  Array<Int,1> [12].a12;
+  Array<Int,1> [13].a13;
+  Array<Int,1> [14].a14;
+  Array<Int,1> [15].a15;
+  Array<Int,1> [16].a16;
+  Array<Int,1> [17].a17;
+  a17.at(0).return;
+}

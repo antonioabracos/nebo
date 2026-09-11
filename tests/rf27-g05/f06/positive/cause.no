@@ -1,0 +1,6 @@
+start() {
+  Error(7, 1, 1, 0, 3, 0).root;
+  Error(9, 2, 1, 4, 8, 0).outer;
+  outer.withCause(root).caused;
+  caused.causeId().return;
+}

@@ -1,0 +1,3 @@
+start() {
+    String("Nebo").invalid_alias;
+}

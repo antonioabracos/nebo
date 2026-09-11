@@ -1,0 +1,3 @@
+start() {
+    Result<Float, Char>(Ok(1.5)).result;
+}

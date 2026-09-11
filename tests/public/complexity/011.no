@@ -1,0 +1,13 @@
+// Monotonic rules derive bounded facts with reproducible proof links and explanations.
+(Int.self)ruleWhen() { self.return; }
+(Int.self)ruleAnd() { self.return; }
+(Int.self)ruleThen() { self.return; }
+(Int.self)rulePriority() { self.return; }
+(Int.self)reasonerNew() { self.return; }
+(Int.self)reasonerInfer() { self.return; }
+(Int.self)reasonerIncremental() { self.return; }
+(Int.self)reasonerExplain() { self.return; }
+
+start() {
+    68.ruleWhen().ruleAnd().ruleThen().rulePriority().reasonerNew().reasonerInfer().reasonerIncremental().reasonerExplain();
+}

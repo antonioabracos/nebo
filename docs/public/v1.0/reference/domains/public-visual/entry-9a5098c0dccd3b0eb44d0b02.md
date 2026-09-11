@@ -1,0 +1,90 @@
+# public-visual — scan
+
+Actual edition-owned prelude SymbolId and unique stdlib owner; CLI metadata checked against the local .ni interface and independent FNV identity. Runtime profile is the cited source case family. Iterator/IntoIterator dispatch is bounded Range iteration, not a standalone cursor constructor or arbitrary iterator implementation. Ord reuses the existing comparable capability, with explicit Bool rejection. Native intrinsic profiles are not promoted to arbitrary generic APIs.
+
+```text
+Identity: public:claim:6937d35c35869eaea1bf0bc4 (DOMAIN_CONTRACT_ID)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: STABLE_1_0
+```
+
+## Syntax or signature
+
+```text
+scan
+Actual edition-owned prelude SymbolId and unique stdlib owner; CLI metadata checked against the local .ni interface and independent FNV identity. Runtime profile is the cited source case family. Iterator/IntoIterator dispatch is bounded Range iteration, not a standalone cursor constructor or arbitrary iterator implementation. Ord reuses the existing comparable capability, with explicit Bool rejection. Native intrinsic profiles are not promoted to arbitrary generic APIs.
+```
+
+## Availability and maturity
+
+STABLE_1_0; evidence FROZEN_PUBLIC_SOURCE. Documentation does not promote this identity to stable. Public and owner namespaces are separate contracts.
+
+## Limits and lifecycle
+
+Actual edition-owned prelude SymbolId and unique stdlib owner; CLI metadata checked against the local .ni interface and independent FNV identity. Runtime profile is the cited source case family. Iterator/IntoIterator dispatch is bounded Range iteration, not a standalone cursor constructor or arbitrary iterator implementation. Ord reuses the existing comparable capability, with explicit Bool rejection. Native intrinsic profiles are not promoted to arbitrary generic APIs.
+
+## Privacy, dependencies and authority
+
+Capability: NONE. Gate: NONE. Import grants capability: NO. Use synthetic local data. Hardware claim: NO. Security assurance: NO. RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE. SDK buffers and handles follow the owner lifecycle and reject invalid/released inputs where specified. No downloaded models, secrets, external network or device access is needed for the documented local proofs.
+
+## Executed examples
+
+### scan:int-23-return-23; expected 23
+
+```nebo
+start(){"Age: ".scan(.int(),.mock("23")).console();23.return;}
+```
+
+Oracle: {"capabilities": {"console": "RETAINED_DOCUMENT", "filesystem": "EXPLICIT_SCRATCH_EFFECT_ORACLE", "network": "DENIED_BY_SECCOMP"}, "console_text_utf8": "23", "filesystem_effects": {}, "independent_builds": 2, "kinds": \[4\], "process_exit": 23, "runtime_determinism": "BYTE_IDENTICAL", "runtime_sha256": "78067f1881f6b0d063fd8262518ca5706c32ce03063d879e24c9a24380bfa337", "text": {"bytes_hex": "3233"}}
+
+## Rejected examples
+
+### scan:mock-type; expected NEBO_TYPE_MISMATCH
+
+```nebo
+start(){"Input".scan(.int(),.mock(29));23.return;}
+```
+
+Oracle: {"artifact_publication": "REJECTED", "compiler_exit": 1, "diagnostic": "NEBO_TYPE_MISMATCH"}
+
+## Additional observations and limits
+
+```text
+[
+  {
+    "classification": {
+      "capability": "NONE",
+      "core": "YES",
+      "evidence_level": "FROZEN_PUBLIC_SOURCE",
+      "external_gate": "NONE",
+      "hardware_claim": "NO",
+      "import_grants_capability": "NO",
+      "legal": "RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE",
+      "security_assurance": "NO",
+      "target": "x86_64-systemv-elf-linux",
+      "tier": "STABLE_1_0"
+    }
+  }
+]
+```
+
+## Related entries
+
+[Index](index.md)
+
+## Provenance
+
+- compiler/driver/cli/linux-x86_64/scalar_program.inc — SHA-256 54bad41b6d43ffc48c264adae8a0a776071c6a3917abaf05520344e11ae6afbe
+
+- compiler/codegen/functions/x86_64/function_codegen.asm — SHA-256 944358cec673b2132c51b5c4b5842edaf4cf9ce157b23d83892449fbb12487f7
+
+- runtime/core/runtime_core.asm — SHA-256 9786591602649f222e73dc91ea2449fba1c98d2e504ae779208caf7373e06797
+
+- sdk/interfaces/prelude/std.prelude.ni — SHA-256 910170b1ccabf964a1186892ee9f4395f1b52c1e6b5cc7683f68ee2904de0933
+
+- tests/rf204/G170/scan_public_test.py — SHA-256 e487ed7a7709494b21d44b475371945fa537edb1ce2850f8719f76381b3e7e35
+
+- tests/rf204/G170/text_test.py — SHA-256 2a6be89787726ec8c3e4acbcb2c728b82e1c9fc7acc8a2680f2d830648448f52
+
+- tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0

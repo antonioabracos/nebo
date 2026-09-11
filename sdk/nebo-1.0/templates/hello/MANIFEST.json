@@ -1,0 +1,13 @@
+{
+  "files": [
+    {
+      "path": "main.nebo",
+      "sha256": "3aa1ab297a20038477e275a55f332d6b0d10e13fa95906f7ba575b3e350a3a55"
+    },
+    {
+      "path": "nebo.project.json",
+      "sha256": "f30cd7d4b32af6b53b580c49b4263d052657b93e52bef25dea3edcef69865dee"
+    }
+  ],
+  "format": "NEBO-TEMPLATE-v1"
+}

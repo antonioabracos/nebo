@@ -1,0 +1,13 @@
+// Visible conflicts, invariant repair, stable compaction, convergence, and audit retain causal provenance.
+(Int.self)conflictValues() { self.return; }
+(Int.self)conflictResolve() { self.return; }
+(Int.self)conflictProvenance() { self.return; }
+(Int.self)replicaValidateInvariants() { self.return; }
+(Int.self)replicaRepair() { self.return; }
+(Int.self)replicaCompactStable() { self.return; }
+(Int.self)replicaVerifyConvergence() { self.return; }
+(Int.self)replicaAudit() { self.return; }
+
+start() {
+    123.conflictValues().conflictResolve().conflictProvenance().replicaValidateInvariants().replicaRepair().replicaCompactStable().replicaVerifyConvergence().replicaAudit();
+}

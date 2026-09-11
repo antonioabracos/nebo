@@ -1,0 +1,5 @@
+start() {
+    7.source;
+    source.clone(1).duplicated;
+    0;
+}

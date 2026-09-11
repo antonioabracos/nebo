@@ -1,0 +1,8 @@
+// Range values remain lazy: construction, stepping, membership and length do
+// not allocate an Array. iterator() preserves the progression as a cursor.
+start() {
+    Range.inclusive(2, 10).stepBy(2).contains(8);
+    Range.inclusive(2, 10).stepBy(2).length();
+    Range.exclusive(4, 9).iterator().cursor;
+    cursor.length();
+}

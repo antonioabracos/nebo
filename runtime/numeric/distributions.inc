@@ -6,6 +6,7 @@
 extern nebo_distribution_uniform01_f64
 extern nebo_distribution_uniform_f64
 extern nebo_distribution_normal_f64
+extern nebo_distribution_normal_params_f64
 extern nebo_distribution_bernoulli
 extern nebo_distribution_categorical
 extern nebo_distribution_shuffle_i64

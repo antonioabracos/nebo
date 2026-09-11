@@ -24,6 +24,7 @@
 %define NEBO_RENDER_NODE_KIND_GLYPH_RUN 1
 %define NEBO_RENDER_NODE_FLAG_LIVE 1
 %define NEBO_RENDER_NODE_FLAG_CLIPPED 2
+%define NEBO_RENDER_NODE_FLAG_EXPLICIT_BACKGROUND 4
 
 ; Palette tokens are centralized in console_behavior.inc from MF045.
 

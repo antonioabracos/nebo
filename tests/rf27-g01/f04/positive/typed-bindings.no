@@ -1,0 +1,7 @@
+start() {
+    Int.left;
+    170.left;
+    Int.right;
+    204.right;
+    left.bitOr(right).result;
+}

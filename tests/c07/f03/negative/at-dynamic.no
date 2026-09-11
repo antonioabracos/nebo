@@ -1,0 +1,1 @@
+start() { 0.index; Tuple.of(1).one; one.at<index>(); }

@@ -1,7 +1,171 @@
-.TH NEBOC 1 "Nebo 1.0 pre-release"
+.TH NEBOC 1 "" "Nebo Edition 1"
 .SH NAME
-neboc \- native Nebo compiler
+neboc \- offline Nebo compiler and developer tools
 .SH SYNOPSIS
-neboc check|emit-asm|build source [options]
-.SH OFFLINE
-No command requires external network access.
+.nf
+neboc \-\-help
+neboc \-\-version
+neboc \-\-version\-json
+neboc bench numeric
+neboc scientific\-bench <suite>
+neboc numeric\-report <artifact>
+neboc probabilistic\-report <artifact>
+neboc reactive\-report <program>
+neboc db migrate <path>
+neboc db verify <path>
+neboc firmware build \-\-board NEBO_REFERENCE_BOARD_SIM_V1
+neboc firmware test \-\-simulator NEBO_REFERENCE_BOARD_SIM_V1
+neboc simulation\-replay <log>
+neboc crypto\-audit <artifact>
+neboc optimize\-explain <file>
+neboc bootstrap \-\-verify
+neboc bootstrap \-\-stage 0|1|2
+neboc toolchain\-report <artifact\-or\-trace>
+neboc self\-contained\-audit <file.no>
+neboc assemble <file> \-\-target <triple> \-o <object>
+neboc object\-build <file> \-\-target <triple> \-o <object>
+neboc object\-verify <object>
+neboc reproducibility\-report <a> <b>
+neboc diverse\-build \-\-plan|\-\-report <path>
+neboc trust\-manifest <artifact\-or\-sdk>
+neboc provenance\-verify <manifest>
+neboc sdk pack|verify|restore|self\-test ...
+neboc protocol generate <schema>
+neboc protocol fuzz <schema>
+neboc workflow verify <definition>
+neboc geometry\-check <file>
+neboc route\-bench <suite>
+neboc emit\-wasm <file.no>
+neboc wasm\-inspect <module.wasm>
+neboc emit\-bpf <file.no>
+neboc portable\-test <artifact>
+neboc portable\-sbom <artifact>
+neboc warnings \-\-list
+neboc diagnostic\-schema \-\-version 1
+neboc explain <diagnostic\-code>
+neboc format <path> \-\-check|\-\-diff|\-\-stdout|\-\-write
+neboc format <paths> \-\-preserve\-comments
+neboc lint <path> [\-\-profile recommended] [\-\-report text|json|sarif]
+neboc lint <paths> \-\-group comments [\-\-report text|json|sarif]
+neboc repl [\-\-script <commands>]
+neboc init|add|remove|resolve|vendor|package|audit ...
+neboc lsp
+neboc completion\-debug <file>:<line>:<column>
+neboc completion\-corpus \-\-verify
+neboc hover|signature\-help|definition <file>:<line>:<column>
+neboc references <name\-or\-SymbolId>
+neboc rename <name\-or\-SymbolId> <new\-name> \-\-preview|\-\-apply
+neboc navigation\-corpus \-\-verify
+neboc check <source> \-\-no\-prelude [\-\-edition <v>]
+neboc emit\-asm|build <source> \-\-no\-prelude \-o <output> [\-\-edition <v>]
+neboc prelude\-report [\-\-edition <v>] [\-\-source <path>]
+neboc migrate\-imports <paths> \-\-edition <v> \-\-profile default|no\-prelude \-\-preview|\-\-apply
+neboc stdlib modules [\-\-target <triple>]
+neboc operator\-info <NSR\-ID> [\-\-format terminal|json|jsonl|lsp|sarif]
+neboc profile <file.no>
+neboc emit\-hir|emit\-lir <file.no>
+neboc test [root] [\-\-filter <glob>]
+neboc conformance <manifest.json>
+neboc fuzz <file.no> [\-\-cases N] [\-\-seed N]
+neboc conformance modules\-docs\-lsp
+neboc fuzz\-source \-\-domains imports,docs,comments [\-\-seed N] [\-\-budget N]
+neboc migration\-check rf166 <paths>
+neboc selftest modules\-docs\-devex
+neboc roadmap\-closeout rf166
+neboc abi\-report
+neboc runtime\-report [\-\-feature <name>]
+neboc check <source> \-\-edition 1|2
+neboc migrate \-\-from 1 \-\-to 2 [\-\-features <list>]
+neboc migrate <paths> [\-\-root <dir>] [\-\-profile keep|default|no\-prelude] [\-\-apply]
+neboc migrate \-\-workspace <json> \-\-rename\-package <old:new> \-\-allow\-api\-change
+neboc migrate \-\-root <dir> \-\-rollback [\-\-journal <relative\-path>]
+neboc compatibility\-report
+neboc conformance\-manifest \-\-target <triple>
+neboc doctor
+neboc security\-report
+neboc release prepare|materialize|restore\-test|verify|sbom|provenance|lifecycle ...
+neboc examples verify\-all
+neboc nebo\-1.0\-readiness
+neboc api\-diff <baseline.json> <current.json>
+neboc fix <paths> \-\-check|\-\-preview|\-\-apply
+neboc fix \-\-verify parse|check|tests|differential <plan.json>
+neboc refactor <operation> [options] <paths>
+neboc source\-optimize <paths> \-\-check|\-\-preview|\-\-apply
+neboc modernize <paths> \-\-edition <version>
+neboc change\-review <plan.json>
+neboc timings <source\-or\-project>
+neboc compiler\-profile <project> \-\-output <path>
+neboc compiler\-report <artifact>
+neboc compiler\-memory <project>
+neboc incremental\-report <project> \-\-phase syntax
+neboc query\-report <project>
+neboc cache stats|verify|prune|clear
+neboc cache explain <source\-or\-artifact>
+neboc serve \-\-local
+neboc server status|stop
+neboc project\-report <manifest>
+neboc compiler\-bench <suite> [\-\-compare <baseline>]
+neboc performance\-gate <report> <policy>
+neboc diagnostics \-\-search <term>
+neboc bug\-report \-\-local <source>
+neboc bug\-report \-\-inspect <bundle>
+neboc minimize\-ice <bundle>
+neboc exit\-codes
+neboc meta\-check <file.no>
+neboc meta\-expand <file.no>
+neboc verify [\-\-property safety29|\-\-counterexample] <file.no>
+neboc solve <model.no>
+neboc solve \-\-explain\-unsat <model.no>
+neboc check <file.no> [\-\-message\-format human|short|json|json\-lines|sarif]
+neboc check \-\-manifest <nebo.targets> [\-\-target <TargetId>]
+neboc emit\-asm <file.no> \-o <file.asm> [\-\-unit <file.no>] [\-\-target\-kind executable|example|library]
+neboc emit\-asm \-\-manifest <nebo.targets> [\-\-target <TargetId>] \-o <file.asm>
+neboc build <file.no> \-o <artifact> [\-\-debug] [\-\-keep\-temp] [\-\-unit <file.no>] [\-\-target\-kind executable|example|library]
+neboc build \-\-manifest <nebo.targets> [\-\-target <TargetId>] \-o <artifact>
+neboc module\-check <file.no> [\-\-unit <file.no>]...
+neboc module\-info <file.no> \-\-unit <file.no> \-\-unit <file.no>
+neboc module\-graph <file.no> \-\-unit <file.no> \-\-unit <file.no> [\-\-format text|json|dot]
+neboc dump doc\-ast <source>
+neboc dump doc\-record <symbol>
+neboc check\-docs <paths> [\-\-deny warnings] [\-\-report text|json|lsp|sarif]
+neboc lint <paths> \-\-group docs [\-\-deny warnings] [\-\-report text|json|lsp|sarif]
+neboc test\-docs <paths> [\-\-seed N] [\-\-budget N] [\-\-report text|json]
+neboc docs \-\-verify <paths> [\-\-baseline file] [\-\-refactor\-map file] [\-\-report text|json]
+neboc docs [build] <package> \-o <dir> [\-\-incremental] [\-\-archive file]
+neboc docs search <query> \-\-index <path> [\-\-limit N]
+neboc docs diff <old.ni> <new.ni>
+neboc docs serve <dir> \-\-local\-only [\-\-port N]
+neboc docs restore <archive> \-o <dir>
+neboc symbols <workspace> [\-\-json]
+neboc symbol\-index \-\-rebuild <workspace> \-o <index.json>
+neboc symbol\-index \-\-verify <workspace> \-\-index <index.json>
+neboc dump comment\-trivia <source>
+neboc imports list <file.no> \-\-unit <file.no> \-\-unit <file.no>
+neboc imports explain <alias.symbol> <file.no> \-\-unit <file.no> \-\-unit <file.no>
+neboc imports api\-impact <module.no> [\-\-baseline <sha256>]
+neboc organize\-imports <paths> \-\-check|\-\-apply
+neboc add\-import <symbol> \-\-to <module.no>
+neboc module\-init\-report <entry.no> \-\-unit <file.no> \-\-unit <file.no>
+neboc check <entry.no> \-\-unit <file.no> \-\-unit <file.no> \-\-deny\-effectful\-init
+neboc emit\-interface <module.no> \-\-unit <file.no> \-\-unit <file.no> \-o <module.ni> [\-\-cache\-dir <dir>]
+neboc interface inspect <file.ni> [\-\-json]
+neboc api\-diff <old.ni> <new.ni>
+neboc emit\-object <file.no> \-o <file.o>
+neboc link <root.no> \-\-unit <file.no> \-\-unit <file.no> \-o <executable>
+.fi
+.SH EXIT STATUS
+.nf
+0 success
+1 source-error-or-warning-denied
+2 usage
+3 environment-or-io
+4 unsupported-target
+5 toolchain
+6 internal-compiler-error
+.fi
+.SH DIAGNOSTICS
+JSON-lines schema 1 and SARIF 2.1.0 are selected explicitly. Source spans are UTF-8 byte ranges. LSP negotiates UTF-16 or UTF-8 positions.
+.SH EDITS
+format writes by default; select --check, --diff or --stdout to preview. Refactor rename previews unless --apply is explicit. Rejected edits preserve source bytes.
+.SH OFFLINE FILES
+share/diagnostics contains the compatibility registry and six general explanation records. Canonical native diagnostic codes and general explanation identifiers are distinct namespaces. No download is required.

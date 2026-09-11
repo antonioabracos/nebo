@@ -1,0 +1,2 @@
+(Bool.self)recur(){ if (self == false) { 0.return; } else { true.recur().return; } }
+start(){ true.recur().return; }

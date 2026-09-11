@@ -1,0 +1,4 @@
+enum State { A, B, C, D, E }
+start() {
+    State.E.discriminant().return;
+}

@@ -1,71 +1,46 @@
-; NEBOC-DOCS-REFERENCIA-LOCAL-CROSS-LINKS-SEARCH-E-DOCUMENTACAO-VERSIONADA-F06: CLI docs/build/search/diff/serve-local
-; Bounded native semantic-documentation kernel.
-; rdi=input bytes, rsi=length, rdx=caller-owned 24-byte result.
-; Success publishes digest, length, and stable operation tag atomically.
-; Failure publishes nothing. No allocation, I/O, libc, network, or effects.
+; RF166-G159-F06 public docs build/verify/search/diff/serve/restore gate.
 bits 64
 default rel
-
+%include "compiler/docs/docs.inc"
 global neboc_docs_cli
-
-%define DOC_MAX_INPUT 4096
-%define DOC_TAG 38
-%define hover_FNV_OFFSET 0xcbf29ce484222325
-%define hover_FNV_PRIME  0x100000001b3
-
 section .text
 align 16
 neboc_docs_cli:
-    test rdi, rdi
-    jz .argument
-    test rdx, rdx
-    jz .argument
-    test rdx, 7
-    jnz .argument
-    test rsi, rsi
-    jz .length
-    cmp rsi, DOC_MAX_INPUT
-    ja .length
-    lea rax, [rdi + rsi]
-    cmp rax, rdi
-    jb .length
-
-    mov rax, hover_FNV_OFFSET
-    mov r8, hover_FNV_PRIME
-    xor ecx, ecx
-.scan:
-    cmp rcx, rsi
-    jae .publish
-    movzx r9d, byte [rdi + rcx]
-    test r9b, r9b
-    jz .encoding
-    cmp r9b, 0x7f
-    ja .encoding
-    xor rax, r9
-    imul rax, r8
-    inc rcx
-    jmp .scan
+ DOCS_VALIDATE_REQUEST NEBOC_DOCS_OP_CLI,.validated
+.validated:
+ mov rax,[rdi+NEBOC_DOCS_COMMAND_OFFSET]
+ cmp rax,NEBOC_DOCS_COMMAND_BUILD
+ jb .contract
+ cmp rax,NEBOC_DOCS_COMMAND_RESTORE
+ ja .contract
+ cmp rax,NEBOC_DOCS_COMMAND_SERVE
+ jne .verify
+ test qword [rdi+NEBOC_DOCS_FLAGS_OFFSET],NEBOC_DOCS_FLAG_LOCAL_ONLY
+ jz .policy
+.verify:
+ cmp rax,NEBOC_DOCS_COMMAND_VERIFY
+ jne .compare
+ test qword [rdi+NEBOC_DOCS_FLAGS_OFFSET],NEBOC_DOCS_FLAG_VERIFY
+ jz .policy
+.compare:
+ mov rcx,[rdi+NEBOC_DOCS_EXPECTED_OFFSET]
+ cmp rcx,[rdi+NEBOC_DOCS_OBSERVED_OFFSET]
+ jne .mismatch
+ mov rcx,[rdi+NEBOC_DOCS_GRAPH_DIGEST_OFFSET]
+ test rcx,rcx
+ jnz .publish
+ mov rcx,[rdi+NEBOC_DOCS_PRIMARY_DIGEST_OFFSET]
+ test rcx,rcx
+ jz .contract
 .publish:
-    xor rax, DOC_TAG
-    mov qword [rdx], rax
-    mov qword [rdx + 8], rsi
-    mov qword [rdx + 16], DOC_TAG
-    xor eax, eax
-    xor edx, edx
-    ret
-.argument:
-    mov eax, 1
-    mov edx, 1
-    ret
-.length:
-    mov eax, 2
-    mov edx, 2
-    ret
-.encoding:
-    mov eax, 3
-    mov edx, 3
-    ret
-.keyword:
-    mov eax, 4
-    mov edx, 4
-    ret
+ DOCS_PUBLISH rcx,NEBOC_DOCS_CLASS_COMMAND,[rdi+NEBOC_DOCS_COMMAND_OFFSET],[rdi+NEBOC_DOCS_EXPECTED_OFFSET],[rdi+NEBOC_DOCS_OBSERVED_OFFSET]
+.contract:
+ mov eax,NEBOC_DOCS_STATUS_CONTRACT
+ ret
+.policy:
+ mov eax,NEBOC_DOCS_STATUS_POLICY
+ ret
+.mismatch:
+ mov eax,NEBOC_DOCS_STATUS_MISMATCH
+ ret
+section .note.GNU-stack noalloc noexec nowrite progbits

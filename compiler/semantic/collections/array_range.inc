@@ -70,8 +70,19 @@
 %define NEBOC_AR_BIND_STEP_OFFSET 72
 %define NEBOC_AR_BIND_FLAGS_OFFSET 80
 %define NEBOC_AR_BIND_HASH_OFFSET 88
-%define NEBOC_AR_BIND_SIZE 96
-%define NEBOC_AR_BIND_QWORDS 12
+; Original constructor byte offset and the half-open token interval of an
+; authenticated pure map callback. These remain private compiler provenance.
+%define NEBOC_AR_BIND_SOURCE_OFFSET 96
+%define NEBOC_AR_BIND_CALLBACK_BEGIN_OFFSET 104
+%define NEBOC_AR_BIND_CALLBACK_END_OFFSET 112
+%define NEBOC_AR_BIND_SIZE 120
+%define NEBOC_AR_BIND_QWORDS 15
+
+; Slice-only provenance in otherwise unused record fields: semantic token
+; indices plus one, zero meaning no explicit release. End-of-program cleanup
+; must not erase the interval during which a view can be used by the AST owner.
+%define NEBOC_AR_SLICE_CREATED_TOKEN_OFFSET NEBOC_AR_BIND_SOURCE_OFFSET
+%define NEBOC_AR_SLICE_RELEASE_TOKEN_OFFSET NEBOC_AR_BIND_HASH_OFFSET
 
 ; LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-F07 authenticated sequential-iterator records.  Collection values
 ; remain owned by the established option_result_null_externo_e_erros_tipados binding/value pools.
@@ -87,8 +98,12 @@
 %define NEBOC_FOR_COUNT_OFFSET 72
 %define NEBOC_FOR_DATA_INDEX_OFFSET 80
 %define NEBOC_FOR_FLAGS_OFFSET 88
-%define NEBOC_FOR_RECORD_SIZE 96
-%define NEBOC_FOR_RECORD_QWORDS 12
+%define NEBOC_FOR_INDEX_TOKEN_OFFSET 96
+%define NEBOC_FOR_FILTER_LHS_TOKEN_OFFSET 104
+%define NEBOC_FOR_FILTER_OPERATOR_OFFSET 112
+%define NEBOC_FOR_FILTER_VALUE_OFFSET 120
+%define NEBOC_FOR_RECORD_SIZE 128
+%define NEBOC_FOR_RECORD_QWORDS 16
 
 %define NEBOC_FOR_ACTION_EMPTY 0
 %define NEBOC_FOR_ACTION_BREAK 1
@@ -96,6 +111,7 @@
 %define NEBOC_FOR_ACTION_RETURN_ITEM 3
 %define NEBOC_FOR_ACTION_NESTED 4
 %define NEBOC_FOR_ACTION_GENERAL_BODY 5
+%define NEBOC_FOR_ACTION_RETURN_INDEX 6
 
 ; NPT-LANG-16: the collection semantic owner has authenticated the immutable
 ; collection/iteration records, while the shared statement backend owns the
@@ -114,6 +130,13 @@
 ; NPT-LANG-32 compiler-only routing fact: an authenticated S04 input or a
 ; constant subslice derived from that input is returned as a read-only Slice.
 %define NEBOC_AR_FOR_FLAG_SLICE_RETURN 32
+; Public Array.map transform was authenticated by the collection owner.
+; The CLI uses this semantic fact to route map/callable composition before the
+; older whole-source callable profile can claim the same Program.
+%define NEBOC_AR_FOR_FLAG_MAP 64
+%define NEBOC_AR_FOR_FLAG_RANGE_ITERATOR 128
+; Explicit post-G204 compatibility admission, separate from general indexing.
+%define NEBOC_AR_FOR_FLAG_LEGACY_INDEX 256
 
 %define NEBOC_AR_CONTROL_FIXIT_INSERT_LPAREN 1
 %define NEBOC_AR_CONTROL_FIXIT_INSERT_RPAREN 2
@@ -132,6 +155,8 @@
 %define NEBOC_AR_TYPE_RANGE_INT 4
 
 %define NEBOC_AR_RANGE_INCLUSIVE 1
+%define NEBOC_AR_RANGE_ITERATOR 2
+%define NEBOC_AR_RANGE_SYMBOLIC 4
 %define NEBOC_AR_UNBOUND_NAME -1
 %define NEBOC_AR_SLICE_LIVE 1
 %define NEBOC_AR_SLICE_RELEASED 2

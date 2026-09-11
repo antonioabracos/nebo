@@ -1,0 +1,13 @@
+// Vector and hybrid logical clocks make partial order, parents, stability, readiness, and explanations explicit.
+(Int.self)versionVectorNew() { self.return; }
+(Int.self)versionObserve() { self.return; }
+(Int.self)versionCompare() { self.return; }
+(Int.self)hybridLogicalClockNew() { self.return; }
+(Int.self)changeCausalParents() { self.return; }
+(Int.self)replicaStableVersion() { self.return; }
+(Int.self)causalReady() { self.return; }
+(Int.self)causalExplainOrder() { self.return; }
+
+start() {
+    87.versionVectorNew().versionObserve().versionCompare().hybridLogicalClockNew().changeCausalParents().replicaStableVersion().causalReady().causalExplainOrder();
+}

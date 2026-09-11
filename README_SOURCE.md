@@ -1,6 +1,34 @@
-# Nebo 1.0.1 source distribution
+# Build Nebo 1.1.0 from source
 
-This deterministic public archive contains the Assembly compiler/runtime,
-the false-GREEN and stack-alignment regression fixtures, and the factual Ninja
-build graph. Run `./scripts/build-neboc.sh` with Python 3, Ninja, NASM and GNU
-ld available on the host. The build entry point performs no network operation.
+Language Edition: 1.0. Status: PULL_REQUEST_CANDIDATE.
+The latest published release remains 1.0.1.
+
+On Linux x86-64 with Python 3, Ninja, NASM and GNU binutils installed:
+
+```sh
+./scripts/build-neboc.sh
+build/bin/neboc --version
+bash scripts/ci-public.sh
+```
+
+The compiler and runtime use Assembly and produce static ELF64 executables.
+Builds and tests do not download dependencies. The CI entry point checks the
+public path policy, version, examples, indexing, collections, data/streams,
+documentation and offline SDK lifecycle. SDK installation uses a temporary
+user-owned prefix. See [README.md](README.md) and the
+[migration guide](docs/releases/NEBO-1.1.0-MIGRATION-GUIDE.md).
+
+The CI entry point selects the system tools in `/usr/bin:/bin` and disables
+Python and loader overrides, matching the environment of the isolated SDK
+rebuild. Install the distribution's Python Pillow package for that gate.
+
+Collection construction, capacity, access and mutation validators derive the
+source root from their own location and place any Python cache under the
+ignored build directory. They can be invoked from another working directory.
+An optional `NEBO_REPO_ROOT` selects another existing source checkout; empty or
+invalid roots fail with a diagnostic before a build starts.
+
+The public privacy gate scans explicit nonempty file inventories and archive
+members, fails on unreadable inputs, and tests synthetic home paths, internal
+execution metadata and safe public CLI/loopback tokens. It does not print
+matched credential bytes.

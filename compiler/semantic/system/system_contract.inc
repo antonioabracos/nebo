@@ -9,7 +9,9 @@
 %define NEBO_SYSTEM_EXTERNAL_NETWORK_FORBIDDEN 1
 %define NEBO_SYSTEM_NO_WEAK_ENTROPY_FALLBACK 1
 %define NEBO_SYSTEM_NO_SHELL 1
-%define NEBO_SYSTEM_NO_TLS_PRODUCT 1
+; G012 exposes only the versioned, pinned local TLS profile implemented by
+; runtime/network/tls.asm.  General Internet PKI remains deliberately absent.
+%define NEBO_SYSTEM_TLS_LOCAL_PINNED_PROFILE_V1 1
 
 %define NEBO_DURATION_SIZE 16
 %define NEBO_DURATION_SECONDS 0
@@ -140,6 +142,7 @@
 %define NEBO_LINUX_X86_64_SYS_SHUTDOWN 48
 %define NEBO_LINUX_X86_64_SYS_BIND 49
 %define NEBO_LINUX_X86_64_SYS_LISTEN 50
+%define NEBO_LINUX_X86_64_SYS_GETSOCKNAME 51
 %define NEBO_LINUX_X86_64_SYS_EXECVE 59
 %define NEBO_LINUX_X86_64_SYS_WAIT4 61
 %define NEBO_LINUX_X86_64_SYS_KILL 62

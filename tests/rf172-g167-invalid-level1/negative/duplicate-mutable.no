@@ -1,0 +1,4 @@
+start() {
+    1.value.mutable;
+    2.value.mutable;
+}

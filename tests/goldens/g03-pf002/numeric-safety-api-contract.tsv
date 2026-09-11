@@ -1,0 +1,20 @@
+case	operation	receiver_type	target_type	subject	argument_count	status	method_id	result_type	flags	diagnostic	primary_start	primary_end	description
+canonical_int_to_float	METHOD	Int	NONE	toFloat	0	OK	INT_TO_FLOAT	Float	SYNTAX_ONLY|TOTAL|PURE|ALLOCATION_FREE|ROUND_TIES_TO_EVEN	NONE	0	0	explicit total conversion
+canonical_is_finite	METHOD	Float	NONE	isFinite	0	OK	FLOAT_IS_FINITE	Bool	SYNTAX_ONLY|TOTAL|PURE|ALLOCATION_FREE|CLASSIFIER|CANONICAL_BOOL	NONE	0	0	finite classifier
+canonical_is_nan	METHOD	Float	NONE	isNaN	0	OK	FLOAT_IS_NAN	Bool	SYNTAX_ONLY|TOTAL|PURE|ALLOCATION_FREE|CLASSIFIER|CANONICAL_BOOL	NONE	0	0	NaN classifier
+canonical_is_infinite	METHOD	Float	NONE	isInfinite	0	OK	FLOAT_IS_INFINITE	Bool	SYNTAX_ONLY|TOTAL|PURE|ALLOCATION_FREE|CLASSIFIER|CANONICAL_BOOL	NONE	0	0	infinity classifier
+canonical_is_negative_zero	METHOD	Float	NONE	isNegativeZero	0	OK	FLOAT_IS_NEGATIVE_ZERO	Bool	SYNTAX_ONLY|TOTAL|PURE|ALLOCATION_FREE|CLASSIFIER|CANONICAL_BOOL	NONE	0	0	signed-zero classifier
+to_float_wrong_arity	METHOD	Int	NONE	toFloat	1	INVALID_SOURCE	INT_TO_FLOAT	Float	SYNTAX_ONLY|TOTAL|PURE|ALLOCATION_FREE|ROUND_TIES_TO_EVEN	ARGUMENTS_NOT_ALLOWED	1000	1007	zero-argument API
+to_float_wrong_receiver	METHOD	Float	NONE	toFloat	0	INVALID_SOURCE	INT_TO_FLOAT	Float	SYNTAX_ONLY|TOTAL|PURE|ALLOCATION_FREE|ROUND_TIES_TO_EVEN	RECEIVER_MUST_BE_INT	1000	1007	receiver contract
+classifier_wrong_receiver	METHOD	Int	NONE	isFinite	0	INVALID_SOURCE	FLOAT_IS_FINITE	Bool	SYNTAX_ONLY|TOTAL|PURE|ALLOCATION_FREE|CLASSIFIER|CANONICAL_BOOL	RECEIVER_MUST_BE_FLOAT	1000	1008	receiver contract
+alias_as_float	METHOD	Int	NONE	asFloat	0	INVALID_SOURCE	NONE	NONE	0	ALIAS_FORBIDDEN	1000	1007	alias unavailable
+alias_to_double	METHOD	Int	NONE	toDouble	0	INVALID_SOURCE	NONE	NONE	0	ALIAS_FORBIDDEN	1000	1008	alias unavailable
+alias_is_inf	METHOD	Float	NONE	isInf	0	INVALID_SOURCE	NONE	NONE	0	ALIAS_FORBIDDEN	1000	1005	alias unavailable
+alias_is_neg_zero	METHOD	Float	NONE	isNegZero	0	INVALID_SOURCE	NONE	NONE	0	ALIAS_FORBIDDEN	1000	1009	alias unavailable
+deferred_to_int	METHOD	Float	NONE	toInt	0	INVALID_SOURCE	NONE	NONE	0	DEFERRED_API	1000	1005	typed error dependency
+canonical_wrapping_add	METHOD	Int	NONE	wrappingAdd	1	OK	INT_WRAPPING_ADD	Int	SYNTAX_ONLY|TOTAL|PURE|ALLOCATION_FREE	NONE	0	0	explicit modular overflow policy
+canonical_saturating_add	METHOD	Int	NONE	saturatingAdd	1	OK	INT_SATURATING_ADD	Int	SYNTAX_ONLY|TOTAL|PURE|ALLOCATION_FREE	NONE	0	0	explicit saturating overflow policy
+implicit_int_float	IMPLICIT_COERCION	Int	Float	+	0	INVALID_SOURCE	NONE	NONE	0	IMPLICIT_COERCION_FORBIDDEN	1000	1001	mixed arithmetic never coerces
+cast_as	CAST_SYNTAX	Int	Float	as	0	INVALID_SOURCE	NONE	NONE	0	CAST_SYNTAX_UNAVAILABLE	1000	1002	no cast operator
+cross_type_float_constructor	CROSS_TYPE_CONSTRUCTOR	Int	Float	Float	1	INVALID_SOURCE	NONE	NONE	0	CROSS_TYPE_CONSTRUCTOR_FORBIDDEN	1000	1005	constructors remain same-type assertions
+unknown_number_api	METHOD	Int	NONE	number	0	INVALID_SOURCE	NONE	NONE	0	UNKNOWN_API	1000	1006	no broad Number surface

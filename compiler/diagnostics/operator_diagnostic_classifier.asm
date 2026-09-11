@@ -15,7 +15,7 @@ NEBOC_ABI_FUNCTION neboc_operator_diagnostic_classify
  jz .source
  test rsi,rsi
  jz .source
- cmp rsi,NEBOC_OPERATOR_REGISTRY_ENTRY_COUNT
+ cmp rsi,NEBOC_OPERATOR_CATALOG_ENTRY_COUNT
  ja .source
  mov eax,NEBOC_OPERATOR_DIAG_CATEGORY_CONTEXT
  test rdi,NEBOC_OPERATOR_FAULT_CONTEXT

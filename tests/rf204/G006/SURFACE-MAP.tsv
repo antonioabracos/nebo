@@ -1,0 +1,37 @@
+surface_id	subgroup	contract_surface	status	evidence	independent_oracle
+G006-S01-01	S01	struct declaration	PASS	RF204-G006-S01.no; product_native_test	distinct Point values and deterministic TypeKey/layout plan
+G006-S01-02	S01	Struct.field(name)	PASS	RF204-G006-S01.no; struct-two-values.no	second value y field produces ELF exit 11/13
+G006-S01-03	S01	Struct.update(fields)	PASS	struct-update-a.no; struct-update-b.no	named-order invariant copy produces exit 11
+G006-S01-04	S01	Struct.default()	PASS	struct-default.no; RF204-G006-S01.no	zero y observation and subsequent independent update
+G006-S01-05	S01	Struct.layout()	PASS	struct-layout.no; RF204-G006-S01.no	Bool/Int/Char target size is 24; Int/Int size is 16
+G006-S01-06	S01	Struct.methods()	PASS	RF204-G006-S01.no	exact Point receiver returns shifted y=11
+G006-S02-01	S02	Tuple.of(values)	PASS	RF204-G006-S02.no; product_native_test	heterogeneous fixed-arity aggregate plan
+G006-S02-02	S02	tuple.at<const index>()	PASS	RF204-G006-S02.no	constant position 0 is observed before mapping
+G006-S02-03	S02	tuple.length()	PASS	RF204-G006-S02.no	independent arity observation is 2
+G006-S02-04	S02	tuple.destructure()	PASS	RF204-G006-S02.no	left/right typed bindings are accepted and retained
+G006-S02-05	S02	tuple.mapEach(callables)	PASS	tuple-map.no; tuple-map-identity.no	per-position functions yield second=12; identity preserves first=17
+G006-S02-06	S02	tuple.toStruct()	PASS	tuple-map.no; tuple-to-struct-mismatch.no	exact Pair mapping yields 12; mismatched target is rejected
+G006-S03-01	S03	Array<Int>#4 bounded	PASS	RF204-G006-S03.no; array_range_native_test	legacy four-word lowering and mapped element exit 7
+G006-S03-02	S03	Array<T, N>.filled(value)	PASS	RF204-G006-S03.no; array-bool-access.no	four copied Int values and independently typed Bool array
+G006-S03-03	S03	array.length()	PASS	RF204-G006-S03.no; array-map-empty.no	length derives from N, including N=0
+G006-S03-04	S03	array.at(index)	PASS	RF204-G006-S03.no; array-bool-access.no	checked positions yield Int 6/7 and Bool true
+G006-S03-05	S03	array.asSlice()	PASS	RF204-G006-S03.no; slice-two-borrows.no	borrowed read yields 6/9 and views release cleanly
+G006-S03-06	S03	array.map(transform)	PASS	RF204-G006-S03.no; array-map-literal.no; array-map-empty.no; array-map-truncated.no	new same-N array yields 7; N=0 yields 0; truncated transforms reject
+G006-S04-01	S04	Range.exclusive(start, end)	PASS	range-exclusive-length.no	range 2..<10 by 2 has four elements
+G006-S04-02	S04	Range.inclusive(start, end)	PASS	range-inclusive-length.no	range 2...10 by 2 has five elements
+G006-S04-03	S04	range.stepBy(step)	PASS	RF204-G006-S04.no; range-zero-step.no	step 2 progresses; zero step is rejected atomically
+G006-S04-04	S04	range.contains(value)	PASS	range-contains-true.no; range-contains-false.no	8 is present and 9 absent without traversal output
+G006-S04-05	S04	range.length()	PASS	range-inclusive-length.no; range-exclusive-equivalent.no	two equivalent bounds independently yield five
+G006-S04-06	S04	range.iterator()	PASS	RF204-G006-S04.no; iterator-next.no	lazy cursor length is 5 and first next value is 2
+G006-S05-01	S05	generic<T: Scalar>	PASS	g07-scalar-generics.no; generic_native_test	legacy scalar monomorphization yields 7
+G006-S05-02	S05	generic<T>	PASS	generic-unconstrained.no	open T identity monomorph yields 37
+G006-S05-03	S05	where T: Copy	PASS	generic-where-copy.no; generic-inline-copy.no	where and inline grammars both yield 41
+G006-S05-04	S05	where T: Comparable	PASS	generic-where-comparable.no	Char capability admits x=120
+G006-S05-05	S05	where T: Hash + Eq	PASS	generic-where-hash-eq.no; generic-hash-eq-failure.no	Int admits 43; Text lacking the conjunction is rejected
+G006-S05-06	S05	const generic<N>	PASS	RF204-G006-S05.no; generic-const-overflow.no; generic-const-truncated.no	N=47 reaches runtime; oversized and truncated arguments are rejected
+G006-S06-01	S06	type alias	PASS	alias-size.no; RF204-G006-S06.no	Count preserves Int size 8
+G006-S06-02	S06	newtype declaration	PASS	newtype-int.no; newtype-char.no	distinct nominal wrappers preserve 42 and 65 payloads
+G006-S06-03	S06	enum declaration	PASS	enum-unit-size.no; enum-payload-match.no	closed unit layout is 4; payload arm yields 42
+G006-S06-04	S06	enum.discriminant()	PASS	enum-unit-discriminant.no; enum-text-discriminant.no	Ready/Textual documented tag is 1
+G006-S06-05	S06	newtype.unwrap()	PASS	newtype-int.no; newtype-text.no	explicit unwrap yields 42 and Text byteLength yields 7
+G006-S06-06	S06	type.sizeOf()	PASS	alias-size.no; enum-unit-size.no; RF204-G006-S06.no	alias/newtype/enum target sizes are observed independently

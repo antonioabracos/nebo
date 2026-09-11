@@ -1,0 +1,2 @@
+(Bool.self)pick(Int.index) { Array<Bool,2> [false,true].values; values.at(index).return; }
+start() { true.pick(1).return; }

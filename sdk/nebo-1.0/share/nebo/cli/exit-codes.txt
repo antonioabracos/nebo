@@ -1,0 +1,7 @@
+0 success
+1 source-error-or-warning-denied
+2 usage
+3 environment-or-io
+4 unsupported-target
+5 toolchain
+6 internal-compiler-error

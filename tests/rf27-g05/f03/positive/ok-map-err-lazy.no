@@ -1,0 +1,5 @@
+start() {
+  Result<Int,Bool>(Ok(42)).source;
+  source.mapErr(false).mapped;
+  mapped.get().return;
+}

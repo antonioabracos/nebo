@@ -1,0 +1,2 @@
+audit_id	fronts	materialized_source_cases	controls	stop_boundary	expected_contract	state
+RF172-G169-F12-INDEPENDENT_AUDIT	12	12	all current G169 controls plus P01 inventory	before G170	all G169 fronts GREEN; predecessor records valid; no G170 start	MATERIALIZED

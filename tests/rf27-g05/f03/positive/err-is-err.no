@@ -1,0 +1,4 @@
+start() {
+  Result<Int,Bool>(Err(true)).source;
+  source.isErr().return;
+}

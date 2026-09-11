@@ -1,0 +1,5 @@
+start() {
+    Array<Int,4> [12, 7, 3, 9].fixed;
+    fixed.asSlice().view;
+    view.sum().return;
+}

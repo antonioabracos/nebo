@@ -1,0 +1,5 @@
+start() {
+    Queue<Int>.new().queue;
+    queue.pushFront(7);
+    queue.length();
+}

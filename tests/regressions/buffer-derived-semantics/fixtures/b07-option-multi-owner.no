@@ -1,0 +1,10 @@
+start() {
+    Buffer.zeroed(4).noise;
+    noise.set(1, 77).noiseOld;
+    noise.get(1).noiseOption;
+    Buffer.zeroed(4).codes;
+    codes.set(2, 103).old;
+    codes.get(2).target;
+    noiseOption.unwrapOr(0).noiseValue;
+    target.unwrapOr(0).return;
+}

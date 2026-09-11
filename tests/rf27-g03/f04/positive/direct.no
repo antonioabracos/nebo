@@ -1,0 +1,2 @@
+callable echo(Int.value) capture none { value.return; }
+start() { echo.call(7).return; }

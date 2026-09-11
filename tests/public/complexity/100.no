@@ -1,0 +1,7 @@
+// Closes the complete source-to-effect window stack without claiming absent hardware.
+start() {
+    RenderPlan;
+    1410;
+    output.stdout().stderr().target("g104-closeout").plain().visual().headlessEvent();
+    lifecycle.event("group.closed").payload("registry-window-frame-event-render-font").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

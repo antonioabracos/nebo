@@ -1,0 +1,7 @@
+// Closeout composes every G111 service without exposing a visual.* namespace.
+start() {
+    RenderPlan;
+    3109;
+    output.stdout().stderr().target("observability-service").plain().visual().headlessEvent();
+    lifecycle.event("log-progress-timeline").payload("internal-observability-closeout").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

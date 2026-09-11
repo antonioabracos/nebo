@@ -156,3 +156,28 @@ nebo_dashboards_panels_cells_e_composicao_multi_view_lifecycle_snapshots_nebo:
     mov rax, -1
     ret
 ; END DASHBOARDS-PANELS-CELLS-E-COMPOSICAO-MULTI-VIEW-LIFECYCLE-SNAPSHOTS-F08
+
+global nebo_dashboards_panels_cells_e_composicao_multi_view_closeout_nebo
+nebo_dashboards_panels_cells_e_composicao_multi_view_closeout_nebo:
+    cmp rdi, 1
+    jl .invalid
+    cmp rdi, 64
+    jg .invalid
+    cmp rsi, 1
+    jl .invalid
+    cmp rsi, 8
+    jg .invalid
+    cmp rdx, 1
+    jl .invalid
+    cmp rdx, 8
+    jg .invalid
+    mov rax, rsi
+    imul rax, rdx
+    cmp rdi, rax
+    jg .invalid
+    xor eax, eax
+    ret
+.invalid:
+    mov rax, -1
+    ret
+; END DASHBOARDS-PANELS-CELLS-E-COMPOSICAO-MULTI-VIEW-CLOSEOUT-F09

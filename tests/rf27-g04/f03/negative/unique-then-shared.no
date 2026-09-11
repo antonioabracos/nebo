@@ -1,0 +1,6 @@
+start() {
+    5.owner;
+    owner.borrowUnique().unique;
+    owner.borrowShared().shared;
+    0;
+}

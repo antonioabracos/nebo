@@ -1,0 +1,13 @@
+// Explicit filesystem, clock, random, and console capabilities enter a budgeted local host.
+(Int.self)sandboxedFsFromCapability() { self.return; }
+(Int.self)sandboxedClockFromCapability() { self.return; }
+(Int.self)sandboxedRandomFromCapability() { self.return; }
+(Int.self)sandboxedConsoleFromCapability() { self.return; }
+(Int.self)wasmHostNew() { self.return; }
+(Int.self)hostRun() { self.return; }
+(Int.self)hostCancel() { self.return; }
+(Int.self)hostMetrics() { self.return; }
+
+start() {
+    65.sandboxedFsFromCapability().sandboxedClockFromCapability().sandboxedRandomFromCapability().sandboxedConsoleFromCapability().wasmHostNew().hostRun().hostCancel().hostMetrics();
+}

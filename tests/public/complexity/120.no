@@ -1,0 +1,7 @@
+// Scatter and histogram retain distinct XY and binning requirements.
+start() {
+    RenderPlan;
+    3202;
+    output.stdout().stderr().target("chart-table-service").plain().visual().headlessEvent();
+    lifecycle.event("chart-table").payload("scatter-histogram").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

@@ -1,0 +1,6 @@
+start() {
+    List<Int>.from([3, 5]).items;
+    items.iterator().reader;
+    reader.collect<Queue<Int>>().invalidTarget;
+    reader.release();
+}

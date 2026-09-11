@@ -1,0 +1,7 @@
+// A pointer-free panel snapshot records lifecycle, content, and generation values.
+start() {
+    RenderPlan;
+    3008;
+    output.stdout().stderr().target("visual-service").plain().visual().headlessEvent();
+    lifecycle.event("console-panel").payload("panel-snapshot-lifecycle").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

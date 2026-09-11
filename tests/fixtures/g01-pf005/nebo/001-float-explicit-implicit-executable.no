@@ -1,0 +1,4 @@
+start() {
+    Float(3.5).explicit_value;
+    3.5.implicit_value;
+}

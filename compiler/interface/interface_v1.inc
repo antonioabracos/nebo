@@ -2,8 +2,24 @@
 %define NEBOC_INTERFACE_V1_INC 1
 %define NEBOC_NI_MAGIC 0x00494e2e4f42454e
 %define NEBOC_NI_VERSION 1
+%define NEBOC_NI_EDITION 1
 %define NEBOC_NI_HEADER_SIZE 64
 %define NEBOC_NI_MAX_SECTIONS 64
+%define NEBOC_NI_MAX_BYTES 0x01000000
+%define NEBOC_NI_SECTION_SIZE 32
+%define NEBOC_NI_SECTION_EXPORTS 1
+%define NEBOC_NI_SECTION_METADATA 2
+; G156 uses an additive optional section.  G154 readers deliberately keep
+; their last-known kind at METADATA and therefore skip this payload safely.
+%define NEBOC_NI_SECTION_DOC_RECORDS 3
+; Optional material public constant, consumed by the native module parser.
+%define NEBOC_NI_SECTION_MODULE_VALUE 4
+%define NEBOC_NI_MODULE_VALUE_SIZE 80
+%define NEBOC_NI_MODULE_VALUE_MAGIC 0x3143444d4f42454e
+%define NEBOC_NI_EXPORT_RECORD_SIZE 64
+%define NEBOC_NI_METADATA_RECORD_SIZE 64
+%define NEBOC_NI_MAX_RECORDS 1024
+%define NEBOC_NI_TARGET_X86_64 0x34365f363878
 %define NEBOC_NI_COMPAT_IDENTICAL 1
 %define NEBOC_NI_COMPAT_SOURCE 2
 %define NEBOC_NI_COMPAT_RECOMPILE 3

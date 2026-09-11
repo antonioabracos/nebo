@@ -3,11 +3,23 @@ default rel
 
 %include "runtime/textual/format_language.inc"
 
+extern neboc_format_parse_balanced
+
 section .text
 
 global neboc_format_plan_validate
 global neboc_format_plan_measure
 global neboc_format_plan_write
+global neboc_format_plan_byte_size_checked
+global neboc_format_plan_render_to
+global neboc_format_plan_clone
+global neboc_format_plan_drop
+global neboc_format_string_parse_checked
+global neboc_format_string_validate
+global neboc_text_format
+global neboc_text_format_named
+global neboc_text_format_with
+global neboc_text_console
 global neboc_format_feature_available
 global neboc_format_feature_validate
 
@@ -25,7 +37,7 @@ neboc_format_plan_validate:
     mov rax, [rdi + FORMAT_NODE_KIND]
     cmp rax, FORMAT_NODE_LITERAL
     jb .invalid
-    cmp rax, FORMAT_NODE_STYLE_CLOSE
+    cmp rax, FORMAT_NODE_POSITION
     ja .invalid
     mov rax, [rdi + FORMAT_NODE_LENGTH]
     test rax, rax
@@ -64,7 +76,7 @@ neboc_format_plan_measure:
     mov rax, [rdi + FORMAT_NODE_KIND]
     cmp rax, FORMAT_NODE_LITERAL
     jb .invalid
-    cmp rax, FORMAT_NODE_STYLE_CLOSE
+    cmp rax, FORMAT_NODE_POSITION
     ja .invalid
     mov rax, [rdi + FORMAT_NODE_LENGTH]
     test rax, rax
@@ -113,6 +125,41 @@ neboc_format_plan_write:
     jz .success
     test r14, r14
     jz .invalid
+    ; Aliasing an output with the descriptor or any source slice would make a
+    ; forward copy observably order-dependent. Reject every overlap before the
+    ; first byte is committed, preserving the failure-atomic contract.
+    mov rax, r13
+    shl rax, 5
+    lea rcx, [r12 + rax]
+    lea rdx, [r14 + rbx]
+    cmp rdx, r14
+    jb .invalid
+    cmp r14, rcx
+    jae .check_data_overlap
+    cmp rdx, r12
+    ja .invalid
+.check_data_overlap:
+    mov r8, r12
+    mov r9, r13
+.overlap_node:
+    test r9, r9
+    jz .copy_begin
+    mov rsi, [r8 + FORMAT_NODE_DATA]
+    mov rcx, [r8 + FORMAT_NODE_LENGTH]
+    test rcx, rcx
+    jz .overlap_next
+    lea rdi, [rsi + rcx]
+    cmp rdi, rsi
+    jb .invalid
+    cmp r14, rdi
+    jae .overlap_next
+    cmp rdx, rsi
+    ja .invalid
+.overlap_next:
+    add r8, FORMAT_NODE_SIZE
+    dec r9
+    jmp .overlap_node
+.copy_begin:
     mov r8, r12
     mov r9, r13
     mov r10, r14
@@ -141,6 +188,204 @@ neboc_format_plan_write:
     pop r13
     pop r12
     pop rbx
+    ret
+
+; Public spelling bridges. The shared implementation is the single semantic
+; owner, so aliases cannot drift from measure/write or atomicity.
+neboc_format_plan_byte_size_checked:
+    jmp neboc_format_plan_measure
+
+neboc_format_plan_render_to:
+    jmp neboc_format_plan_write
+
+; rdi=live plan, rsi=destination descriptor -> typed status.
+neboc_format_plan_clone:
+    test rdi, rdi
+    jz .clone_invalid
+    test rsi, rsi
+    jz .clone_invalid
+    cmp rdi, rsi
+    je .clone_invalid
+    cmp qword [rdi + FORMAT_PLAN_STATE], FORMAT_PLAN_LIVE
+    jne .clone_invalid
+    mov rax, [rdi + FORMAT_PLAN_COUNT]
+    cmp rax, FORMAT_MAX_NODES
+    ja .clone_invalid
+    test rax, rax
+    jz .clone_copy
+    cmp qword [rdi + FORMAT_PLAN_NODES], 0
+    je .clone_invalid
+.clone_copy:
+    mov rax, [rdi + FORMAT_PLAN_NODES]
+    mov [rsi + FORMAT_PLAN_NODES], rax
+    mov rax, [rdi + FORMAT_PLAN_COUNT]
+    mov [rsi + FORMAT_PLAN_COUNT], rax
+    mov rax, [rdi + FORMAT_PLAN_GENERATION]
+    mov [rsi + FORMAT_PLAN_GENERATION], rax
+    mov qword [rsi + FORMAT_PLAN_STATE], FORMAT_PLAN_LIVE
+    xor eax, eax
+    ret
+.clone_invalid:
+    mov eax, FORMAT_E_INVALID
+    ret
+
+; rdi=plan. Drop is idempotent and invalidates no sibling clone.
+neboc_format_plan_drop:
+    test rdi, rdi
+    jz .drop_invalid
+    mov qword [rdi + FORMAT_PLAN_NODES], 0
+    mov qword [rdi + FORMAT_PLAN_COUNT], 0
+    mov qword [rdi + FORMAT_PLAN_GENERATION], 0
+    mov qword [rdi + FORMAT_PLAN_STATE], FORMAT_PLAN_DROPPED
+    xor eax, eax
+    ret
+.drop_invalid:
+    mov eax, FORMAT_E_INVALID
+    ret
+
+; rdi=decoded immutable template bytes, rsi=len, rdx=node output,
+; rcx=node capacity, r8=out count. Placeholder grammar begins in G060; G059
+; therefore materializes the whole decoded template as one literal node.
+neboc_format_string_parse_checked:
+    test r8, r8
+    jz .parse_invalid
+    mov qword [r8], 0
+    test rsi, rsi
+    jz .parse_empty
+    test rdi, rdi
+    jz .parse_invalid
+    cmp rsi, FORMAT_MAX_INPUT
+    ja .parse_limit
+    test rdx, rdx
+    jz .parse_invalid
+    test rcx, rcx
+    jz .parse_capacity
+    push rdx
+    push rcx
+    push r8
+    call neboc_format_parse_balanced
+    pop r8
+    pop rcx
+    pop rdx
+    test eax, eax
+    jnz .parse_invalid
+    mov qword [rdx + FORMAT_NODE_KIND], FORMAT_NODE_LITERAL
+    mov [rdx + FORMAT_NODE_DATA], rdi
+    mov [rdx + FORMAT_NODE_LENGTH], rsi
+    mov qword [rdx + FORMAT_NODE_PROFILE], 0
+    mov qword [r8], 1
+.parse_empty:
+    xor eax, eax
+    ret
+.parse_invalid:
+    mov eax, FORMAT_E_SYNTAX
+    ret
+.parse_limit:
+    mov eax, FORMAT_E_LIMIT
+    ret
+.parse_capacity:
+    mov eax, FORMAT_E_ALLOCATION
+    ret
+
+; rdi=nodes, rsi=count, rdx=declared typed argument count. Validation is
+; structural and never evaluates an argument.
+neboc_format_string_validate:
+    push rbx
+    push r12
+    push r13
+    push r14
+    sub rsp, 8
+    mov r12, rdi
+    mov r13, rsi
+    mov r14, rdx
+    call neboc_format_plan_validate
+    test eax, eax
+    jnz .validate_done
+    xor ebx, ebx
+.validate_node:
+    test r13, r13
+    jz .validate_count
+    cmp qword [r12 + FORMAT_NODE_KIND], FORMAT_NODE_LITERAL
+    je .validate_next
+    inc rbx
+.validate_next:
+    add r12, FORMAT_NODE_SIZE
+    dec r13
+    jmp .validate_node
+.validate_count:
+    xor eax, eax
+    cmp rbx, r14
+    je .validate_done
+    mov eax, FORMAT_E_INVALID
+.validate_done:
+    add rsp, 8
+    pop r14
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+neboc_text_format:
+neboc_text_format_named:
+    jmp neboc_format_plan_write
+
+; Same ABI as text_format plus r8=FormatEffectPolicy. G059 freezes policy 0
+; (pure, left-to-right, exactly-once); unknown policies fail before output.
+neboc_text_format_with:
+    test r8, r8
+    jnz .format_policy
+    jmp neboc_format_plan_write
+.format_policy:
+    mov rax, -FORMAT_E_EFFECT
+    ret
+
+; rdi=formatted Text bytes, rsi=len, rdx=ConsoleOptions or null.
+; This is the sole G059 output effect; format/measure/write remain silent.
+neboc_text_console:
+    test rsi, rsi
+    jz .console_ok
+    test rdi, rdi
+    jz .console_invalid
+    mov r8d, 1
+    test rdx, rdx
+    jz .console_write
+    cmp qword [rdx + FORMAT_CONSOLE_FLAGS], 0
+    jne .console_invalid
+    mov r8, [rdx + FORMAT_CONSOLE_FD]
+    cmp r8, 1
+    je .console_write
+    cmp r8, 2
+    jne .console_invalid
+.console_write:
+    mov r9, rsi
+    mov r10, rsi
+    mov rsi, rdi
+    mov rdi, r8
+.console_write_loop:
+    mov rdx, r10
+    mov eax, 1
+    syscall
+    test rax, rax
+    jns .console_progress
+    cmp eax, -4                 ; Linux EINTR
+    je .console_write_loop
+    jmp .console_allocation
+.console_progress:
+    test rax, rax
+    jz .console_allocation
+    add rsi, rax
+    sub r10, rax
+    jnz .console_write_loop
+    mov rax, r9
+    ret
+.console_ok:
+    xor eax, eax
+    ret
+.console_invalid:
+    mov rax, -FORMAT_E_INVALID
+    ret
+.console_allocation:
+    mov rax, -FORMAT_E_ALLOCATION
     ret
 
 ; rdi = stable typed feature id (group * 100 + front)

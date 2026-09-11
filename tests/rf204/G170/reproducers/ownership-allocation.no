@@ -1,0 +1,7 @@
+// Allocate and release one block through the public system allocator.
+start() {
+    Allocator.system().allocator;
+    allocator.allocate(64).block;
+    allocator.deallocate(block).released;
+    released.return;
+}

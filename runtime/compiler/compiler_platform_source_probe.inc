@@ -1,0 +1,10 @@
+%ifndef NEBO_G046_SOURCE_PROBE_INC
+%define NEBO_G046_SOURCE_PROBE_INC 1
+
+G046_STATUS_OK equ 0
+G046_STATUS_INVALID equ 1
+
+%ifndef NEBO_G046_SOURCE_PROBE_IMPLEMENTATION
+ extern nebo_g046_source_probe
+%endif
+%endif

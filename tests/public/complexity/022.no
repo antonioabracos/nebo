@@ -1,0 +1,13 @@
+// Named model nodes preserve distinct parameter, latent, observed, deterministic, and plate roles in a bounded graph.
+(Int.self)probModelNew() { self.return; }
+(Int.self)modelParameter() { self.return; }
+(Int.self)modelLatent() { self.return; }
+(Int.self)modelObserve() { self.return; }
+(Int.self)modelDeterministic() { self.return; }
+(Int.self)modelPlate() { self.return; }
+(Int.self)modelGraph() { self.return; }
+(Int.self)modelLogJoint() { self.return; }
+
+start() {
+    55.probModelNew().modelParameter().modelLatent().modelObserve().modelDeterministic().modelPlate().modelGraph().modelLogJoint();
+}

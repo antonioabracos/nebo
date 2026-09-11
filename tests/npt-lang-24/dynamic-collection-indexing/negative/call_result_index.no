@@ -1,0 +1,3 @@
+(Int.self)index() { 1.return; }
+(Int.self)work() { Array<Int,2> [4,9].values; values.at(self.index()).return; }
+start() { 0.work().return; }

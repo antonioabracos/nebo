@@ -1,0 +1,4 @@
+start() {
+    Result<Int, Bool>(Err(false)).result;
+    result.isErr().failed;
+}

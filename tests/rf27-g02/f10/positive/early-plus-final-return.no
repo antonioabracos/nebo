@@ -1,0 +1,6 @@
+start() {
+    if (false) {
+        8.return;
+    }
+    5.return;
+}

@@ -1,0 +1,7 @@
+// Distinguishes software rendering from optional OpenGL and bgfx host adapters.
+start() {
+    RenderPlan;
+    1407;
+    output.stdout().stderr().target("renderer-adapters").plain().visual().headlessEvent();
+    lifecycle.event("renderer.capabilities").payload("software-opengl-bgfx").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

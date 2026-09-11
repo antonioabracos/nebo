@@ -1,0 +1,39 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Slice</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>Slice</h1><p>A borrowed view constrained by its owner and generation.</p><pre>Identity: type:Slice (INTRINSIC_TYPE)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: EDITION_1_BOUNDED_NATIVE_AND_SOURCE_PROFILE</pre><h2>Syntax or signature</h2><pre>Slice
+Native TypeId: 13 (not SymbolId)</pre><h2>Logical layout</h2><p>A 40-byte descriptor aligned to 8 bytes in the current native profile. The view cannot outlive its owner or survive forbidden mutation/reset.</p><h2>Construction and members</h2><p>borrowShared().asSlice() in the measured ownership profile; release derived views before the owner.</p><h2>Protocols and ownership</h2><p>A Slice borrows its owner and records the admitted view extent/generation. It cannot escape the owner scope; release derived views before the originating borrow. A shared view excludes forbidden writes, while a unique borrow excludes aliases. The descriptor is not an owning clone.</p><h2>Errors, limits and target</h2><p>Use x86_64 Linux System V ELF for the executed examples. Incompatible types reject before publication; bounds and ownership checks precede an invalid read, mutation or drop. Internal descriptor layouts are not portable ABI promises.</p><h2>Executed examples</h2><h3>ownership:G004-02; expected 23</h3><pre><code>// Shared borrows may coexist and derive shorter read-only views. A unique
+// borrow is exclusive and may update the owner before an explicit release.
+start() {
+    &quot;borrowed text&quot;.owner;
+    owner.borrowShared().immutableBorrow;
+    immutableBorrow.scope().lexicalScope;
+    immutableBorrow.reborrow().shortBorrow;
+    immutableBorrow.asSlice().byteView;
+    shortBorrow.release().shortReleased;
+    byteView.release().viewReleased;
+    immutableBorrow.release().immutableReleased;
+
+    7.mutableOwner;
+    mutableOwner.borrowUnique().mutableBorrow;
+    mutableBorrow.write(23).written;
+    mutableBorrow.read().observed;
+    mutableBorrow.release().mutableReleased;
+    observed;
+}
+</code></pre><p>Oracle: {&quot;independent_builds&quot;: 2, &quot;process_exit&quot;: 23, &quot;runtime_sha256&quot;: &quot;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855&quot;}</p><h2>Rejected examples</h2><h3>ownership:borrow-escape; expected NEBO-LIFETIME-ESCAPE</h3><pre><code>start() {
+    5.owner;
+    owner.borrowShared().view;
+    view.return;
+}
+</code></pre><p>Oracle: {&quot;artifact_publication&quot;: &quot;REJECTED&quot;, &quot;compiler_exit&quot;: 1, &quot;diagnostic&quot;: &quot;NEBO-LIFETIME-ESCAPE&quot;}</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;base&quot;: 0,
+    &quot;case_id&quot;: &quot;types:type-13&quot;,
+    &quot;category&quot;: &quot;native-type&quot;,
+    &quot;flags&quot;: 2,
+    &quot;kind&quot;: 13,
+    &quot;observed_sha256&quot;: &quot;8efe2f30bfcb10c6e0b24ef386c3ff82a2bb842d545ea7824e9c46d529a391dd&quot;,
+    &quot;type_id&quot;: 13
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a> <a href="type-Void.html">type-Void</a> <a href="type-Bool.html">type-Bool</a> <a href="type-Int.html">type-Int</a> <a href="type-Text.html">type-Text</a></nav><h2>Provenance</h2><ul><li>compiler/semantic/types/type_table.inc — SHA-256 a104864da8c77b21c4186ba1cdcf8d40800c464a8edbcccf31fc1ed57b4cf528</li><li>compiler/semantic/types/type_table.asm — SHA-256 1c04c832d2df1cd5900cf37fa73aa91884c79d7754d1e85c8ce29fa473e227b3</li><li>tests/rf204/G170/ownership_test.py — SHA-256 ed4f10840cdff23e8f7f520c0603208b18e27f2b31c346846bd9e805a2516e4d</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

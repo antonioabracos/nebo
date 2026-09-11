@@ -1,0 +1,2 @@
+// Source reordering in the archive must not alter this compiled calculation.
+start(){37.left;76.right;(left+right).return;}

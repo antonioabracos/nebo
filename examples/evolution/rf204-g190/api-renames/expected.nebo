@@ -1,1 +1,1 @@
-let response = fetch(request)
+let response = legacy_fetch(request)

@@ -1,0 +1,7 @@
+// Composes every RF116 runtime source owner into one observed logical result.
+start() {
+    RenderPlan;
+    3606;
+    output.stdout().stderr().target("rf116-closeout").plain().visual().headlessEvent();
+    lifecycle.event("integration-conformance").payload("full-composition").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

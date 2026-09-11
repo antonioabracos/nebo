@@ -1,0 +1,7 @@
+// Graph, tree, dependency, computational, layout, and node/edge limits are explicit.
+start() {
+    RenderPlan;
+    3309;
+    output.stdout().stderr().target("domain-visual-service").plain().visual().headlessEvent();
+    lifecycle.event("domain-visual").payload("graph-layout-node-edge-limits").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

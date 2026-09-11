@@ -1,0 +1,6 @@
+start() {
+    "drop".owner;
+    owner.drop().first;
+    owner.drop().second;
+    0;
+}

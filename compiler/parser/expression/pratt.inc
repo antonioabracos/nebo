@@ -14,6 +14,9 @@
 %define NEBOC_EXPR_ERROR_TOKEN_OFFSET 64
 %define NEBOC_EXPR_RESULT_NODE_OFFSET 72
 %define NEBOC_EXPR_FLAGS_OFFSET 80
+; A FormatProfileExpr may select a zero-parameter profile. Ordinary direct
+; built-in value constructors retain their existing nonempty grammar.
+%define NEBOC_EXPR_FLAG_FORMAT_PROFILE 1
 %define NEBOC_EXPR_SCRATCH0_OFFSET 88
 %define NEBOC_EXPR_SCRATCH1_OFFSET 96
 %define NEBOC_EXPR_SCRATCH2_OFFSET 104

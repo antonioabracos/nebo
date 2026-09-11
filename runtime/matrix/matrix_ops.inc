@@ -13,7 +13,10 @@
 extern nebo_matrix_elementwise_f64
 extern nebo_matrix_scale_f64
 extern nebo_matrix_clamp_f64
+extern nebo_matrix_map_i64
 extern nebo_matrix_map_f64
 extern nebo_matrix_reduce_f64
+extern nebo_matrix_reduce_axis_i64
+extern nebo_matrix_reduce_axis_f64
 %endif
 %endif

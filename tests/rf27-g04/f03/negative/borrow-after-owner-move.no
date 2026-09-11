@@ -1,0 +1,6 @@
+start() {
+    "Nebo".owner;
+    owner.move().moved;
+    owner.borrowShared().view;
+    0;
+}

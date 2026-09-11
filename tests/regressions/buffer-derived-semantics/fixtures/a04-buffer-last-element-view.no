@@ -1,0 +1,9 @@
+start() {
+    Buffer.withCapacity(4).buffer;
+    buffer.push(12).p0;
+    buffer.push(7).p1;
+    buffer.push(3).p2;
+    buffer.push(9).p3;
+    buffer.view(3, 4).view;
+    view.sum().return;
+}

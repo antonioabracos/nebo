@@ -1,0 +1,186 @@
+protocol	class	domain	known_lexemes	user_types_may_implement	new_lexeme_allowed	effects_policy	current_state
+flow/member/call/binding dot	CORE_ALWAYS_ON	core	.	YES_WHEN_TYPED_AND_COHERENT	NO	receiver exactly once; stages left-to-right	ACTIVE_CURRENT
+grouping and call delimiters	CORE_ALWAYS_ON	core	()	YES_WHEN_TYPED_AND_COHERENT	NO	callee once, arguments left-to-right exactly once	ACTIVE_CURRENT
+block delimiters	CORE_ALWAYS_ON	core	{}	YES_WHEN_TYPED_AND_COHERENT	NO	source order	ACTIVE_CURRENT
+array/list/type delimiters	CORE_ALWAYS_ON	core	[]	YES_WHEN_TYPED_AND_COHERENT	NO	elements left-to-right exactly once	PARTIAL_ACTIVE_CURRENT
+generic type argument delimiters	CORE_ALWAYS_ON	core	<...>	YES_WHEN_TYPED_AND_COHERENT	NO	compile-time only	ACTIVE_CURRENT
+separator	CORE_ALWAYS_ON	core	,	YES_WHEN_TYPED_AND_COHERENT	NO	source order	ACTIVE_CURRENT
+statement terminator	CORE_ALWAYS_ON	core	;	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	ACTIVE_CURRENT
+typed/named separator	CORE_ALWAYS_ON	core	:	YES_WHEN_TYPED_AND_COHERENT	NO	compile-time only	ACTIVE_CURRENT
+return-type and match-arm arrow	CORE_ALWAYS_ON	core	->	YES_WHEN_TYPED_AND_COHERENT	NO	compile-time dispatch; selected arm once	ACTIVE_CURRENT
+wildcard and ignored binding	CORE_ALWAYS_ON	core	_	YES_WHEN_TYPED_AND_COHERENT	NO	compile-time only	ACTIVE_CURRENT
+line comment introducer	CORE_ALWAYS_ON	core	//	YES_WHEN_TYPED_AND_COHERENT	NO	lexical skip	ACTIVE_CURRENT
+addition	CORE_ALWAYS_ON	core.numeric	+	YES_WHEN_TYPED_AND_COHERENT	NO	left then right exactly once	ACTIVE_CURRENT_INT_FLOAT_BOUNDED
+subtraction	CORE_ALWAYS_ON	core.numeric	-	YES_WHEN_TYPED_AND_COHERENT	NO	left then right exactly once	ACTIVE_CURRENT_INT_FLOAT_BOUNDED
+multiplication	CORE_ALWAYS_ON	core.numeric	*	YES_WHEN_TYPED_AND_COHERENT	NO	left then right exactly once	ACTIVE_CURRENT_INT_FLOAT_BOUNDED
+division	CORE_ALWAYS_ON	core.numeric	/	YES_WHEN_TYPED_AND_COHERENT	NO	left then right exactly once	ACTIVE_CURRENT_INT_FLOAT_BOUNDED
+remainder	CORE_ALWAYS_ON	core.numeric	%	YES_WHEN_TYPED_AND_COHERENT	NO	left then right exactly once	ACTIVE_CURRENT_INT
+power	CORE_ALWAYS_ON	core.numeric	^	YES_WHEN_TYPED_AND_COHERENT	NO	base then exponent exactly once	INACTIVE_CURRENT
+unary plus	CORE_ALWAYS_ON	core.numeric	+	YES_WHEN_TYPED_AND_COHERENT	NO	operand exactly once	INACTIVE_OR_PROFILE_LIMITED
+unary negation	CORE_ALWAYS_ON	core.numeric	-	YES_WHEN_TYPED_AND_COHERENT	NO	operand exactly once	ACTIVE_CURRENT_INT
+logical NOT	CORE_ALWAYS_ON	core.logic	!	YES_WHEN_TYPED_AND_COHERENT	NO	operand exactly once	ACTIVE_CURRENT
+logical AND	CORE_ALWAYS_ON	core.logic	&&	YES_WHEN_TYPED_AND_COHERENT	NO	left once; right only when left is true	ACTIVE_CURRENT
+logical OR	CORE_ALWAYS_ON	core.logic	||	YES_WHEN_TYPED_AND_COHERENT	NO	left once; right only when left is false	ACTIVE_CURRENT
+typed XOR	CORE_ALWAYS_ON	core.logic_bits	xor	YES_WHEN_TYPED_AND_COHERENT	NO	left then right exactly once	METHOD_SUBSTRATE_ACTIVE_SYMBOL_INACTIVE
+less than	CORE_ALWAYS_ON	core.compare	<	YES_WHEN_TYPED_AND_COHERENT	NO	left then right exactly once	ACTIVE_CURRENT_INT
+less than or equal	CORE_ALWAYS_ON	core.compare	<=	YES_WHEN_TYPED_AND_COHERENT	NO	left then right exactly once	ACTIVE_CURRENT_INT
+greater than	CORE_ALWAYS_ON	core.compare	>	YES_WHEN_TYPED_AND_COHERENT	NO	left then right exactly once	ACTIVE_CURRENT_INT
+greater than or equal	CORE_ALWAYS_ON	core.compare	>=	YES_WHEN_TYPED_AND_COHERENT	NO	left then right exactly once	ACTIVE_CURRENT_INT
+equality	CORE_ALWAYS_ON	core.eq	==	YES_WHEN_TYPED_AND_COHERENT	NO	left then right exactly once	ACTIVE_CURRENT_INT_BOOL_TEXT_BOUNDED
+inequality	CORE_ALWAYS_ON	core.eq	!=	YES_WHEN_TYPED_AND_COHERENT	NO	left then right exactly once	ACTIVE_CURRENT_INT_BOOL_TEXT_BOUNDED
+three-way comparison	CORE_ALWAYS_ON	core.compare	<=>	YES_WHEN_TYPED_AND_COHERENT	NO	left then right exactly once	INACTIVE_CURRENT
+assignment statement	CORE_ALWAYS_ON	core.mutation	=	YES_WHEN_TYPED_AND_COHERENT	NO	target once, RHS once, one store on success	ACTIVE_CURRENT
+checked add assignment	CORE_ALWAYS_ON	core.mutation	+=	YES_WHEN_TYPED_AND_COHERENT	NO	target once, old value once, RHS once, one store on success	ACTIVE_CURRENT_INT
+checked subtract assignment	CORE_ALWAYS_ON	core.mutation	-=	YES_WHEN_TYPED_AND_COHERENT	NO	target once, old value once, RHS once, one store on success	ACTIVE_CURRENT_INT
+checked multiply assignment	CORE_ALWAYS_ON	core.mutation	*=	YES_WHEN_TYPED_AND_COHERENT	NO	target once, old value once, RHS once, one store on success	INACTIVE_CURRENT
+checked divide assignment	CORE_ALWAYS_ON	core.mutation	/=	YES_WHEN_TYPED_AND_COHERENT	NO	target once, old value once, RHS once, one store on success	INACTIVE_CURRENT
+checked remainder assignment	CORE_ALWAYS_ON	core.mutation	%=	YES_WHEN_TYPED_AND_COHERENT	NO	target once, old value once, RHS once, one store on success	INACTIVE_CURRENT
+checked power assignment	CORE_ALWAYS_ON	core.mutation	^=	YES_WHEN_TYPED_AND_COHERENT	NO	target once, old value once, exponent once, one store on success	INACTIVE_CURRENT
+Result propagation	CORE_ALWAYS_ON	core.result	?	YES_WHEN_TYPED_AND_COHERENT	NO	operand once; cleanup exactly once before early return	ACTIVE_CURRENT_BOUNDED
+Option coalescing	CORE_ALWAYS_ON	core.option	??	YES_WHEN_TYPED_AND_COHERENT	NO	left once; fallback only for None	INACTIVE_CURRENT
+Option-safe member/call chain	CORE_ALWAYS_ON	core.option	?.	YES_WHEN_TYPED_AND_COHERENT	NO	receiver once; member/call only for Some	INACTIVE_CURRENT
+assign when None	CORE_ALWAYS_ON	core.option_mutation	??=	YES_WHEN_TYPED_AND_COHERENT	NO	target once; RHS only when None; one store on success	INACTIVE_CURRENT
+typed percentage	CORE_ALWAYS_ON	core.quantity	%	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	INACTIVE_CURRENT
+inclusive range	CORE_ALWAYS_ON	core.range	…	YES_WHEN_TYPED_AND_COHERENT	NO	start then end exactly once	RANGE_API_ACTIVE_SYMBOL_INACTIVE
+range excluding end	CORE_ALWAYS_ON	core.range	…<	YES_WHEN_TYPED_AND_COHERENT	NO	start then end exactly once	INACTIVE_CURRENT
+range excluding start	CORE_ALWAYS_ON	core.range	<…	YES_WHEN_TYPED_AND_COHERENT	NO	start then end exactly once	INACTIVE_CURRENT
+exclusive range	CORE_ALWAYS_ON	core.range	<…<	YES_WHEN_TYPED_AND_COHERENT	NO	start then end exactly once	INACTIVE_CURRENT
+lateral flow/tap	CORE_ALWAYS_ON	core.flow	..	YES_WHEN_TYPED_AND_COHERENT	NO	receiver once; block once; block result discarded	INACTIVE_CURRENT
+Unicode minus	UNICODE_ALIAS	core.numeric	−	YES_WHEN_TYPED_AND_COHERENT	NO	identical lowering	INACTIVE_CURRENT
+Unicode division	UNICODE_ALIAS	core.numeric	÷	YES_WHEN_TYPED_AND_COHERENT	NO	identical lowering	INACTIVE_CURRENT
+Unicode less-or-equal	UNICODE_ALIAS	core.compare	≤	YES_WHEN_TYPED_AND_COHERENT	NO	identical lowering	INACTIVE_CURRENT
+Unicode greater-or-equal	UNICODE_ALIAS	core.compare	≥	YES_WHEN_TYPED_AND_COHERENT	NO	identical lowering	INACTIVE_CURRENT
+Unicode not-equal	UNICODE_ALIAS	core.eq	≠	YES_WHEN_TYPED_AND_COHERENT	NO	identical lowering	INACTIVE_CURRENT
+Unicode logical AND	UNICODE_ALIAS	core.logic	∧	YES_WHEN_TYPED_AND_COHERENT	NO	same short-circuit as `&&`	INACTIVE_CURRENT
+Unicode logical OR	UNICODE_ALIAS	core.logic	∨	YES_WHEN_TYPED_AND_COHERENT	NO	same short-circuit as `||`	INACTIVE_CURRENT
+Unicode logical NOT	UNICODE_ALIAS	core.logic	¬	YES_WHEN_TYPED_AND_COHERENT	NO	identical lowering	INACTIVE_CURRENT
+Unicode XOR	UNICODE_ALIAS	core.logic_bits	⊻	YES_WHEN_TYPED_AND_COHERENT	NO	identical lowering	INACTIVE_CURRENT
+square root	DOMAIN_GATED	std.math	√	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	RUNTIME_SUBSTRATE_PARTIAL_SYMBOL_INACTIVE
+cube root	DOMAIN_GATED	std.math	∛	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	INACTIVE_CURRENT
+fourth root	DOMAIN_GATED	std.math	∜	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	INACTIVE_CURRENT
+factorial	DOMAIN_GATED	std.math.combinatorics	!	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	INACTIVE_CURRENT
+typed infinity literal	DOMAIN_GATED	std.math.extended	∞	YES_WHEN_TYPED_AND_COHERENT	NO	compile-time literal	INACTIVE_CURRENT
+pi constant	DOMAIN_GATED	std.math.constants	π	YES_WHEN_TYPED_AND_COHERENT	NO	compile-time or canonical constant load	INACTIVE_CURRENT
+tau constant	DOMAIN_GATED	std.math.constants	τ	YES_WHEN_TYPED_AND_COHERENT	NO	compile-time or canonical constant load	INACTIVE_CURRENT
+summation binder	DOMAIN_GATED	std.math.reduce	∑	YES_WHEN_TYPED_AND_COHERENT	NO	domain once; iteration order explicit and deterministic by default	NATIVE_SUBSTRATE_PARTIAL_SYMBOL_INACTIVE
+product binder	DOMAIN_GATED	std.math.reduce	∏	YES_WHEN_TYPED_AND_COHERENT	NO	domain once; explicit deterministic order	INACTIVE_CURRENT
+value with symmetric uncertainty	DOMAIN_GATED	std.measurement	±	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	INACTIVE_CURRENT
+approximate equality	DOMAIN_GATED	std.math.approx	≈	YES_WHEN_TYPED_AND_COHERENT	NO	operands once; tolerance once	INACTIVE_CURRENT
+not approximately equal	DOMAIN_GATED	std.math.approx	≉	YES_WHEN_TYPED_AND_COHERENT	NO	operands once; tolerance once	INACTIVE_CURRENT
+symbolic or structural equivalence	DOMAIN_GATED	std.symbolic	≡	YES_WHEN_TYPED_AND_COHERENT	NO	operands once	INACTIVE_CURRENT
+divides	DOMAIN_GATED	std.math.number_theory	∣	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	INACTIVE_CURRENT
+does not divide	DOMAIN_GATED	std.math.number_theory	∤	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	INACTIVE_CURRENT
+floor delimiters	DOMAIN_GATED	std.math.rounding	⌊x⌋	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	INACTIVE_CURRENT
+ceiling delimiters	DOMAIN_GATED	std.math.rounding	⌈x⌉	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	INACTIVE_CURRENT
+proportional to	DOMAIN_GATED	std.symbolic	∝	YES_WHEN_TYPED_AND_COHERENT	NO	operands once	INACTIVE_CURRENT
+degree suffix	DOMAIN_GATED	std.units.angle	°	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	INACTIVE_CURRENT
+per-mille suffix	DOMAIN_GATED	std.units.ratio	‰	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	INACTIVE_CURRENT
+basis-point suffix	DOMAIN_GATED	std.units.ratio	‱	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	INACTIVE_CURRENT
+Celsius suffix	DOMAIN_GATED	std.units.temperature	°C	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	INACTIVE_CURRENT
+Fahrenheit suffix	DOMAIN_GATED	std.units.temperature	°F	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	INACTIVE_CURRENT
+membership	DOMAIN_GATED	std.set	∈	YES_WHEN_TYPED_AND_COHERENT	NO	container and value once	COLLECTION_SUBSTRATE_ACTIVE_SYMBOL_INACTIVE
+non-membership	DOMAIN_GATED	std.set	∉	YES_WHEN_TYPED_AND_COHERENT	NO	container and value once	INACTIVE_CURRENT
+set union	DOMAIN_GATED	std.set	∪	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	SET_SUBSTRATE_ACTIVE_SYMBOL_INACTIVE
+set intersection	DOMAIN_GATED	std.set	∩	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	SET_SUBSTRATE_ACTIVE_SYMBOL_INACTIVE
+set difference	DOMAIN_GATED	std.set	∖	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	INACTIVE_CURRENT
+symmetric difference	DOMAIN_GATED	std.set	△	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	INACTIVE_CURRENT
+subset or equal	DOMAIN_GATED	std.set	⊆	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	INACTIVE_CURRENT
+proper subset	DOMAIN_GATED	std.set	⊂	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	INACTIVE_CURRENT
+superset or equal	DOMAIN_GATED	std.set	⊇	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	INACTIVE_CURRENT
+proper superset	DOMAIN_GATED	std.set	⊃	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	INACTIVE_CURRENT
+Cartesian product	DOMAIN_GATED	std.set	×	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once; pair order deterministic	INACTIVE_CURRENT
+empty set literal	DOMAIN_GATED	std.set	∅	YES_WHEN_TYPED_AND_COHERENT	NO	compile-time literal	INACTIVE_CURRENT
+dot/inner scalar product	DOMAIN_GATED	std.linalg	·	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	NATIVE_SUBSTRATE_ACTIVE_SYMBOL_INACTIVE
+vector cross product	DOMAIN_GATED	std.linalg.geometry	×	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	NATIVE_SUBSTRATE_PARTIAL_SYMBOL_INACTIVE
+Hadamard product	DOMAIN_GATED	std.linalg	⊙	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	NATIVE_SUBSTRATE_ACTIVE_SYMBOL_INACTIVE
+tensor/Kronecker product	DOMAIN_GATED	std.linalg	⊗	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	NATIVE_SUBSTRATE_PARTIAL_SYMBOL_INACTIVE
+direct sum	DOMAIN_GATED	std.linalg	⊕	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	INACTIVE_CURRENT
+transpose	DOMAIN_GATED	std.linalg	ᵀ	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	NATIVE_SUBSTRATE_ACTIVE_SYMBOL_INACTIVE
+adjoint	DOMAIN_GATED	std.linalg.complex	†	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	INACTIVE_CURRENT
+inverse	DOMAIN_GATED	std.linalg	⁻¹	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	NATIVE_SUBSTRATE_PARTIAL_SYMBOL_INACTIVE
+norm delimiters	DOMAIN_GATED	std.linalg	‖x‖	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	NATIVE_SUBSTRATE_PARTIAL_SYMBOL_INACTIVE
+inner product delimiters	DOMAIN_GATED	std.linalg	⟨u,v⟩	YES_WHEN_TYPED_AND_COHERENT	NO	u then v once	INACTIVE_CURRENT
+function/operator composition	DOMAIN_GATED	std.functional	∘	YES_WHEN_TYPED_AND_COHERENT	NO	construction operands once; invocation follows callable order	CALLABLE_SUBSTRATE_ACTIVE_SYMBOL_INACTIVE
+orthogonality	DOMAIN_GATED	std.linalg.geometry	⟂	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	INACTIVE_CURRENT
+parallel relation	DOMAIN_GATED	std.geometry	∥	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	INACTIVE_CURRENT
+integral binder	DOMAIN_GATED	std.calculus	∫	YES_WHEN_TYPED_AND_COHERENT	NO	domain and integrand follow the integration plan	NATIVE_INTEGRATION_SUBSTRATE_SYMBOL_INACTIVE
+double integral binder	DOMAIN_GATED	std.calculus	∬	YES_WHEN_TYPED_AND_COHERENT	NO	explicit plan	INACTIVE_CURRENT
+triple integral binder	DOMAIN_GATED	std.calculus	∭	YES_WHEN_TYPED_AND_COHERENT	NO	explicit plan	INACTIVE_CURRENT
+contour integral binder	DOMAIN_GATED	std.calculus	∮	YES_WHEN_TYPED_AND_COHERENT	NO	explicit contour order	INACTIVE_CURRENT
+partial derivative	DOMAIN_GATED	std.calculus	∂	YES_WHEN_TYPED_AND_COHERENT	NO	arguments once	AUTODIFF_SUBSTRATE_ACTIVE_SYMBOL_INACTIVE
+gradient	DOMAIN_GATED	std.calculus	∇	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	AUTODIFF_SUBSTRATE_ACTIVE_SYMBOL_INACTIVE
+divergence	DOMAIN_GATED	std.calculus	∇·	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	INACTIVE_CURRENT
+curl	DOMAIN_GATED	std.calculus	∇×	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	INACTIVE_CURRENT
+Laplacian	DOMAIN_GATED	std.calculus	Δ	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	PDE_SUBSTRATE_PARTIAL_SYMBOL_INACTIVE
+distributed as	DOMAIN_GATED	std.probability	∼	YES_WHEN_TYPED_AND_COHERENT	NO	left then distribution once	DISTRIBUTION_SUBSTRATE_ACTIVE_SYMBOL_INACTIVE
+probabilistic independence	DOMAIN_GATED	std.probability	⫫	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	INACTIVE_CURRENT
+conditional probability separator	DOMAIN_GATED	std.probability	|	YES_WHEN_TYPED_AND_COHERENT	NO	context-defined	INACTIVE_CURRENT
+universal quantifier	DOMAIN_GATED	std.logic	∀	YES_WHEN_TYPED_AND_COHERENT	NO	domain once; predicate under solver rules	INACTIVE_CURRENT
+existential quantifier	DOMAIN_GATED	std.logic	∃	YES_WHEN_TYPED_AND_COHERENT	NO	domain once; search bounded	INACTIVE_CURRENT
+non-existence quantifier	DOMAIN_GATED	std.logic	∄	YES_WHEN_TYPED_AND_COHERENT	NO	domain once; search bounded	INACTIVE_CURRENT
+logical implication	DOMAIN_GATED	std.logic	⇒	YES_WHEN_TYPED_AND_COHERENT	NO	left once; right may be solver-lazy, never ordinary hidden effects	INACTIVE_CURRENT
+logical equivalence	DOMAIN_GATED	std.logic	⇔	YES_WHEN_TYPED_AND_COHERENT	NO	operands once	INACTIVE_CURRENT
+provability relation	DOMAIN_GATED	std.proof	⊢	YES_WHEN_TYPED_AND_COHERENT	NO	proof engine rules	INACTIVE_CURRENT
+semantic satisfaction	DOMAIN_GATED	std.model	⊨	YES_WHEN_TYPED_AND_COHERENT	NO	bounded model evaluation	INACTIVE_CURRENT
+NAND	DOMAIN_GATED	std.logic	⊼	YES_WHEN_TYPED_AND_COHERENT	NO	both operands exactly once	INACTIVE_CURRENT
+NOR	DOMAIN_GATED	std.logic	⊽	YES_WHEN_TYPED_AND_COHERENT	NO	both operands exactly once	INACTIVE_CURRENT
+directed relation/edge	DOMAIN_GATED	std.graph	→	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	GRAPH_SUBSTRATE_ACTIVE_SYMBOL_INACTIVE
+bidirectional relation/edge	DOMAIN_GATED	std.graph	↔	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	INACTIVE_CURRENT
+asynchronous/dataflow edge	DOMAIN_GATED	std.workflow	⇢	YES_WHEN_TYPED_AND_COHERENT	NO	construction only; runtime effects declared separately	INACTIVE_CURRENT
+state transition	DOMAIN_GATED	std.statechart	⟶	YES_WHEN_TYPED_AND_COHERENT	NO	construction once	INACTIVE_CURRENT
+Text concatenation	DOMAIN_GATED	std.text	⧺	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	INACTIVE_CURRENT
+pattern/regex match	DOMAIN_GATED	std.regex	=~	YES_WHEN_TYPED_AND_COHERENT	NO	text then pattern once	INACTIVE_CURRENT
+pattern/regex non-match	DOMAIN_GATED	std.regex	!~	YES_WHEN_TYPED_AND_COHERENT	NO	text then pattern once	INACTIVE_CURRENT
+Text interpolation	DOMAIN_GATED	std.text.format	${...}	YES_WHEN_TYPED_AND_COHERENT	NO	left-to-right exactly once	INACTIVE_CURRENT
+typed format placeholders	DOMAIN_GATED	std.text.format	%s/%d/%f/%b/%%	YES_WHEN_TYPED_AND_COHERENT	NO	arguments left-to-right exactly once	INACTIVE_CURRENT
+Slash render directive	DOMAIN_GATED	std.render.slash	/name{...}	YES_WHEN_TYPED_AND_COHERENT	NO	template order	INACTIVE_CURRENT
+annotation/metadata introducer	DOMAIN_GATED	std.meta	@	YES_WHEN_TYPED_AND_COHERENT	NO	compile-time only unless the annotation explicitly declares generated runtime metadata	INACTIVE_CURRENT_OR_RESERVED
+reverse flow	RESERVED	future.flow	<.	YES_WHEN_TYPED_AND_COHERENT	NO	unfrozen	INACTIVE_CURRENT
+bidirectional flow/binding	RESERVED	future.flow	<.>	YES_WHEN_TYPED_AND_COHERENT	NO	unfrozen	INACTIVE_CURRENT
+ellipsis/spread/rest/varargs	RESERVED	future.syntax	...	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+qualified path separator	RESERVED	future.modules	::	YES_WHEN_TYPED_AND_COHERENT	NO	compile-time	INACTIVE_CURRENT
+hash-prefixed syntax	RESERVED	future.syntax	#	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+hash Color literal	RESERVED	future.color	#RRGGBB	YES_WHEN_TYPED_AND_COHERENT	NO	compile-time	INACTIVE_CURRENT
+dollar syntax outside interpolation	RESERVED	future.syntax	$	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+backtick literal/template	RESERVED	future.text	`...`	YES_WHEN_TYPED_AND_COHERENT	NO	source order	INACTIVE_CURRENT
+block comment	RESERVED	future.lexer	/*...*/	YES_WHEN_TYPED_AND_COHERENT	NO	lexical	UNSUPPORTED_CURRENT
+infix bitwise AND	RESERVED	future.bits	&	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	METHOD_ACTIVE_SYMBOL_INACTIVE
+infix bitwise OR/or-pattern	RESERVED	future.bits_patterns	|	YES_WHEN_TYPED_AND_COHERENT	NO	left then right once	METHOD_ACTIVE_SYMBOL_INACTIVE
+prefix bitwise NOT	RESERVED	future.bits	~	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	METHOD_ACTIVE_SYMBOL_INACTIVE
+shift left symbol	RESERVED	future.bits	<<	YES_WHEN_TYPED_AND_COHERENT	NO	left then count once	METHOD_ACTIVE_SYMBOL_INACTIVE
+shift right symbol	RESERVED	future.bits	>>	YES_WHEN_TYPED_AND_COHERENT	NO	left then count once	METHOD_ACTIVE_SYMBOL_INACTIVE
+general bracket indexing	RESERVED	future.collections	expr[index]	YES_WHEN_TYPED_AND_COHERENT	NO	receiver then index once	INACTIVE_CURRENT_USE_AT
+slice colon inside brackets	RESERVED	future.collections	a:b	YES_WHEN_TYPED_AND_COHERENT	NO	indices once	INACTIVE_CURRENT
+address/reference prefix	RESERVED	future.unsafe	&expr	YES_WHEN_TYPED_AND_COHERENT	NO	operand place once	INACTIVE_CURRENT
+dereference prefix	RESERVED	future.unsafe	*expr	YES_WHEN_TYPED_AND_COHERENT	NO	pointer once	INACTIVE_CURRENT
+lambda introducer	RESERVED	future.functional	λ	YES_WHEN_TYPED_AND_COHERENT	NO	compile-time construction; captures once	CALLABLE_SUBSTRATE_ACTIVE_SYMBOL_INACTIVE
+mapping arrow	RESERVED	future.functional	↦	YES_WHEN_TYPED_AND_COHERENT	NO	unfrozen	INACTIVE_CURRENT
+absolute-value delimiters	RESERVED	future.math	|x|	YES_WHEN_TYPED_AND_COHERENT	NO	operand once	INACTIVE_CURRENT
+definition symbol	RESERVED	future.spec	≔	YES_WHEN_TYPED_AND_COHERENT	NO	compile-time	INACTIVE_CURRENT
+therefore/because proof symbols	RESERVED	future.proof	∴ / ∵	YES_WHEN_TYPED_AND_COHERENT	NO	compile-time	INACTIVE_CURRENT
+alternative pipeline	REJECTED	core.flow	|>	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+alternative bidirectional arrow	REJECTED	future.flow	<->	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+alternative power	REJECTED	core.numeric	**	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+XOR interpretation of caret	REJECTED	core.logic_bits	^ as XOR	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT_INFIX
+increment	REJECTED	core.mutation	++	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+decrement	REJECTED	core.mutation	--	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+C-style ternary	REJECTED	core.control	cond ? a : b	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT_REJECTED_WITH_IMPRECISE_SNAPSHOT_DIAGNOSTIC
+Elvis operator	REJECTED	core.option	a ?: b	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+definition/assignment operator	REJECTED	core.binding	:=	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+free comma sequencing	REJECTED	core.control	(a, b, c) as comma operator	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+single-equals comparison	REJECTED	core.eq	= as equality	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_AS_EQUALITY
+legacy inequality	REJECTED	core.eq	<>	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+textual logical operators	REJECTED	core.logic	and / or / not	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	HISTORICAL_ONLY
+force unwrap or double factorial	REJECTED	core.result_math	!!	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+integer-division operator	REJECTED	core.numeric	// as integer division	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	IMPOSSIBLE_BY_CURRENT_LEXER
+alternative match/lambda arrow	REJECTED	core.match	=>	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+ASCII dot-dot range	REJECTED	core.range	1..10	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+pointer member arrow	REJECTED	future.unsafe	ptr->field	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+implicit relative percentage addition	REJECTED	core.quantity	100 + 10%	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+approximation with hidden epsilon	REJECTED	std.math.approx	a ≈ b without tolerance	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+integral without report	REJECTED	std.calculus	∫ returning bare Float	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+plus/minus tuple expansion	REJECTED	std.measurement	a ± b as implicit Tuple	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+implicit Text coercion	REJECTED	std.text	Text + Number	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	REJECTED_BY_CURRENT_TYPECHECKER_IN_TYPED_CONTEXTS
+arbitrary custom operator	REJECTED	language.meta	user-defined new operator lexeme	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+Unicode confusables	REJECTED	source.security	fullwidth/confusable operator forms	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT
+double-percent arithmetic	REJECTED	core.numeric_text	%% in expression	YES_WHEN_TYPED_AND_COHERENT	NO	N/A	INACTIVE_CURRENT

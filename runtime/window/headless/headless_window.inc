@@ -6,8 +6,8 @@
 %include "runtime/concurrency/cancel.inc"
 %include "compiler/semantic/system/system_contract.inc"
 
-; CONTROLO-DE-FLUXO-ESTRUTURADO-F04 deterministic headless Window runtime. The public maturity is
-; bounded native. Source-language Window syntax is not activated by this file.
+; CONTROLO-DE-FLUXO-ESTRUTURADO-F04 deterministic headless Window runtime. The
+; G018 source vertical now lowers current Window syntax into this bounded ABI.
 %define NEBO_HEADLESS_WINDOW_VERSION 1
 %define NEBO_HEADLESS_RUNTIME_MAGIC 0x4e42574844313834
 

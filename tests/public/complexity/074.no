@@ -1,0 +1,13 @@
+// Durable workflows retain versioned steps, logical waits, checkpoints, resume, and cancellation.
+(Int.self)workflowDefine() { self.return; }
+(Int.self)workflowStep() { self.return; }
+(Int.self)workflowRun() { self.return; }
+(Int.self)workflowWaitFor() { self.return; }
+(Int.self)workflowSleepUntil() { self.return; }
+(Int.self)workflowCheckpoint() { self.return; }
+(Int.self)workflowResume() { self.return; }
+(Int.self)workflowCancel() { self.return; }
+
+start() {
+    79.workflowDefine().workflowStep().workflowRun().workflowWaitFor().workflowSleepUntil().workflowCheckpoint().workflowResume().workflowCancel();
+}

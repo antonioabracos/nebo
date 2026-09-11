@@ -1,0 +1,6 @@
+NEBO-H0001: diagnostic action help
+causes: A local corrective action is available for the parent diagnostic.
+solutions: Preview the classified fix-it; source application is never implicit.
+positive: neboc check main.no --show-fixes
+negative: assuming a preview modified the source file
+related: NEBO-E0001

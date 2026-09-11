@@ -1,0 +1,4 @@
+type alias Loop = Loop;
+start() {
+    0.return;
+}

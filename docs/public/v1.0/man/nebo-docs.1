@@ -1,0 +1,17 @@
+.TH NEBO-DOCS 1
+.SH NAME
+neboc docs \- offline public reference and source documentation
+.SH SYNOPSIS
+neboc docs portal build PUBLIC_ROOT -o OUTPUT [--archive FILE]
+.br
+neboc docs portal verify OUTPUT
+.br
+neboc docs portal restore ARCHIVE -o OUTPUT
+.br
+neboc docs search QUERY --index OUTPUT/search-index.json [--limit 1..256] [--report json]
+.SH DESCRIPTION
+Public-document identities are distinct from serialized language SymbolIds. All operations are local. Build and restore reject occupied outputs and links. Search ranks title matches, then orders by document identity. The archive has deterministic names, modes, ownership and timestamps.
+.SH LIMITS
+8192 documents; 20000 files; 16 MiB per file; 128 MiB corpus; 256 query characters.
+.SH DIAGNOSTICS
+NEBO_PUBLIC_DOCS_REJECTED identifies a malformed, missing, unsafe or over-budget input. No network access is needed.

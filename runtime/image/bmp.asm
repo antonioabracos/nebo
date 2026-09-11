@@ -75,10 +75,14 @@ nebo_bmp_inspect:
     cmp rax,rsi
     jne .header
     ; The output record must not alias the validated input buffer.
-    lea rax,[rdx+NEBO_BMP_META_BYTES]
+    mov rax,rdx
+    add rax,NEBO_BMP_META_BYTES
+    jc .argument
     cmp rax,rdi
     jbe .publish
-    lea rax,[rdi+rsi]
+    mov rax,rdi
+    add rax,rsi
+    jc .argument
     cmp rdx,rax
     jb .argument
 .publish:
@@ -145,10 +149,12 @@ nebo_bmp_decode:
     cmp rbp,rax
     jb .decode_capacity
     ; Reject every input/output overlap before writing either object.
-    lea rcx,[r13+rax]
+    mov rcx,r13
+    add rcx,rax
     jc .decode_argument
     mov rdx,[rsp+32]
-    lea rsi,[r14+rdx]
+    mov rsi,r14
+    add rsi,rdx
     jc .decode_argument
     cmp r13,rsi
     jae .decode_check_desc_pixels
@@ -157,11 +163,14 @@ nebo_bmp_decode:
 .decode_check_desc_pixels:
     cmp r12,rcx
     jae .decode_no_overlap
-    lea rcx,[r12+NEBO_IMAGE_DESC_BYTES]
+    mov rcx,r12
+    add rcx,NEBO_IMAGE_DESC_BYTES
+    jc .decode_argument
     cmp rcx,r13
     ja .decode_argument
 .decode_no_overlap:
-    lea rcx,[r12+NEBO_IMAGE_DESC_BYTES]
+    mov rcx,r12
+    add rcx,NEBO_IMAGE_DESC_BYTES
     jc .decode_argument
     cmp r12,rsi
     jae .decode_ranges_safe

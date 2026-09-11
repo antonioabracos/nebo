@@ -1,0 +1,42 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>workflows — neboc-workflow-verify</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>workflows — neboc-workflow-verify</h1><p>Bounded local workflow/agent state machine; no remote scheduler or external side effects; original observation: valid definition passes and incomplete definition fails; SDK bounds: {&quot;MAX_ATTEMPTS&quot;:8,&quot;MAX_DOMAIN_CASES&quot;:256,&quot;MAX_HISTORY&quot;:256,&quot;MAX_ROWS&quot;:64,&quot;MAX_RULES&quot;:64,&quot;MAX_SAGA_STEPS&quot;:16,&quot;MAX_STATES&quot;:128,&quot;MAX_STEPS&quot;:64,&quot;MAX_TRANSITIONS&quot;:1024}</p><pre>Identity: owner:G045:G045-S07-08 (DOMAIN_CONTRACT_ID)
+Edition: 1
+Target: PYTHON_CPU_REFERENCE
+Availability: EXPERIMENTAL</pre><h2>Syntax or signature</h2><pre>neboc workflow verify tests/rf204/G045/cases/valid.workflow</pre><h2>Local CLI boundary</h2><p>Reads a bounded versioned local workflow definition. Does not schedule tasks, contact services or mutate the workflow.</p><h2>Invocation and independent observation</h2><p>{&quot;boundary&quot;: &quot;Reads a bounded versioned local workflow definition. Does not schedule tasks, contact services or mutate the workflow.&quot;, &quot;deterministic&quot;: true, &quot;execution&quot;: &quot;LOCAL_CLI_BOUNDARY&quot;, &quot;identity&quot;: &quot;owner:G045:G045-S07-08&quot;, &quot;independent_oracle&quot;: &quot;Versioned contract and mutation=NO; malformed input rejects.&quot;, &quot;input_context&quot;: {&quot;argv&quot;: [&quot;workflow&quot;, &quot;verify&quot;, &quot;tests/rf204/G045/cases/valid.workflow&quot;], &quot;files&quot;: {&quot;tests/rf204/G045/cases/valid.workflow&quot;: &quot;NEBO-WORKFLOW-V1\nname=fulfil-order\nversion=2\ninitial=pending\nstate=pending\nstate=reserved\ntransition=pending,reserve,reserved\nstep=reserve-stock\nidempotency=order-identity\ncompensation=release-stock\nrule=eligible-order\ndecision=priority-band\n&quot;}}, &quot;owner&quot;: &quot;compiler/driver/cli/linux-x86_64/workflow_cli.inc&quot;, &quot;result&quot;: &quot;PASS&quot;, &quot;signature&quot;: &quot;neboc workflow verify tests/rf204/G045/cases/valid.workflow&quot;, &quot;stdout_bytes&quot;: 166, &quot;stdout_sha256&quot;: &quot;d1cb2c7bf1c1ec7d550a440cf186abc3cda20e28702347f797b9ebf7ed293ec8&quot;, &quot;stdout_text&quot;: &quot;workflow-verify v1\nformat=NEBO-WORKFLOW-V1\nversioned=YES\nstate-machine=YES\ndurable-steps=YES\nidempotency=EXPLICIT\ncompensation=EXPLICIT\nmutation=NO\nnetwork=FORBIDDEN\n&quot;}</p><h2>Availability and maturity</h2><p>EXPERIMENTAL; evidence SDK_REFERENCE_MODEL. Documentation does not promote this identity to stable. Public and owner namespaces are separate contracts.</p><h2>Limits and lifecycle</h2><p>Bounded local workflow/agent state machine; no remote scheduler or external side effects; original observation: valid definition passes and incomplete definition fails; SDK bounds: {&quot;MAX_ATTEMPTS&quot;:8,&quot;MAX_DOMAIN_CASES&quot;:256,&quot;MAX_HISTORY&quot;:256,&quot;MAX_ROWS&quot;:64,&quot;MAX_RULES&quot;:64,&quot;MAX_SAGA_STEPS&quot;:16,&quot;MAX_STATES&quot;:128,&quot;MAX_STEPS&quot;:64,&quot;MAX_TRANSITIONS&quot;:1024}</p><h2>Privacy, dependencies and authority</h2><p>Capability: SYNTHETIC_LOCAL_DATA. Gate: NONE. Import grants capability: NO. Use synthetic local data. Hardware claim: NO. Security assurance: NO. RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE. SDK buffers and handles follow the owner lifecycle and reject invalid/released inputs where specified. No downloaded models, secrets, external network or device access is needed for the documented local proofs.</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;classification&quot;: {
+      &quot;capability&quot;: &quot;SYNTHETIC_LOCAL_DATA&quot;,
+      &quot;core&quot;: &quot;NO&quot;,
+      &quot;evidence_level&quot;: &quot;SDK_REFERENCE_MODEL&quot;,
+      &quot;external_gate&quot;: &quot;NONE&quot;,
+      &quot;hardware_claim&quot;: &quot;NO&quot;,
+      &quot;import_grants_capability&quot;: &quot;NO&quot;,
+      &quot;legal&quot;: &quot;RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE&quot;,
+      &quot;security_assurance&quot;: &quot;NO&quot;,
+      &quot;target&quot;: &quot;PYTHON_CPU_REFERENCE&quot;,
+      &quot;tier&quot;: &quot;EXPERIMENTAL&quot;
+    }
+  },
+  {
+    &quot;boundary&quot;: &quot;Reads a bounded versioned local workflow definition. Does not schedule tasks, contact services or mutate the workflow.&quot;,
+    &quot;deterministic&quot;: true,
+    &quot;execution&quot;: &quot;LOCAL_CLI_BOUNDARY&quot;,
+    &quot;identity&quot;: &quot;owner:G045:G045-S07-08&quot;,
+    &quot;independent_oracle&quot;: &quot;Versioned contract and mutation=NO; malformed input rejects.&quot;,
+    &quot;input_context&quot;: {
+      &quot;argv&quot;: [
+        &quot;workflow&quot;,
+        &quot;verify&quot;,
+        &quot;tests/rf204/G045/cases/valid.workflow&quot;
+      ],
+      &quot;files&quot;: {
+        &quot;tests/rf204/G045/cases/valid.workflow&quot;: &quot;NEBO-WORKFLOW-V1\nname=fulfil-order\nversion=2\ninitial=pending\nstate=pending\nstate=reserved\ntransition=pending,reserve,reserved\nstep=reserve-stock\nidempotency=order-identity\ncompensation=release-stock\nrule=eligible-order\ndecision=priority-band\n&quot;
+      }
+    },
+    &quot;owner&quot;: &quot;compiler/driver/cli/linux-x86_64/workflow_cli.inc&quot;,
+    &quot;result&quot;: &quot;PASS&quot;,
+    &quot;signature&quot;: &quot;neboc workflow verify tests/rf204/G045/cases/valid.workflow&quot;,
+    &quot;stdout_bytes&quot;: 166,
+    &quot;stdout_sha256&quot;: &quot;d1cb2c7bf1c1ec7d550a440cf186abc3cda20e28702347f797b9ebf7ed293ec8&quot;,
+    &quot;stdout_text&quot;: &quot;workflow-verify v1\nformat=NEBO-WORKFLOW-V1\nversioned=YES\nstate-machine=YES\ndurable-steps=YES\nidempotency=EXPLICIT\ncompensation=EXPLICIT\nmutation=NO\nnetwork=FORBIDDEN\n&quot;
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a></nav><h2>Provenance</h2><ul><li>compiler/driver/cli/linux-x86_64/workflow_cli.inc — SHA-256 2ed3234ac326f3f2e023559c1991530cb808bc5cd3c86badb111d279ef18a8fc</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

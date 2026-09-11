@@ -10,7 +10,7 @@ section .text
 global nebo_factorial_u64_checked
 nebo_factorial_u64_checked:
     cmp rdi, 20
-    ja .domain
+    ja .overflow
     mov eax, 1
     mov ecx, 2
 .loop:
@@ -23,10 +23,6 @@ nebo_factorial_u64_checked:
     jmp .loop
 .done:
     xor edx, edx
-    ret
-.domain:
-    xor eax, eax
-    mov edx, NEBO_QUANTITY_ERR_DOMAIN
     ret
 .overflow:
     xor eax, eax

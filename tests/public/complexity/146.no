@@ -1,0 +1,7 @@
+// Closeout composes all fourteen services with target-neutral logical digests.
+start() {
+    RenderPlan;
+    3409;
+    output.stdout().stderr().target("export-privacy-service").plain().visual().headlessEvent();
+    lifecycle.event("privacy-audited").payload("export-privacy-record-replay-closeout").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

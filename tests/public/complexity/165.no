@@ -1,0 +1,7 @@
+// Provides a replayable input for the independent read-only closeout oracle.
+start() {
+    RenderPlan;
+    3609;
+    output.stdout().stderr().target("rf116-closeout").plain().visual().headlessEvent();
+    lifecycle.event("integration-conformance").payload("independent-read-only-audit").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

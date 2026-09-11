@@ -1,0 +1,2 @@
+struct Pair { Int.first; Bool.second; }
+start() { Tuple.of(4, 9).p; p.toStruct<Pair>().q; q.first; }

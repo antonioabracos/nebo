@@ -1,0 +1,13 @@
+// Interrupt control makes binding, masking, priority, acknowledgement, cleanup, exceptions, and latency budgets explicit.
+(Int.self)interruptBind() { self.return; }
+(Int.self)interruptEnable() { self.return; }
+(Int.self)interruptDisable() { self.return; }
+(Int.self)interruptPriority() { self.return; }
+(Int.self)interruptAcknowledge() { self.return; }
+(Int.self)criticalSectionRun() { self.return; }
+(Int.self)exceptionHandler() { self.return; }
+(Int.self)interruptLatencyBudget() { self.return; }
+
+start() {
+    74.interruptBind().interruptEnable().interruptDisable().interruptPriority().interruptAcknowledge().criticalSectionRun().exceptionHandler().interruptLatencyBudget();
+}

@@ -1,0 +1,8 @@
+generic<T: Copy> (T.value)hold() {
+    value.return;
+}
+
+start() {
+    '*'.hold();
+    42.hold();
+}

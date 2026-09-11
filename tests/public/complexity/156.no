@@ -1,0 +1,7 @@
+// Closeout composes all 31 operations with atomic failures and target parity.
+start() {
+    RenderPlan;
+    3510;
+    output.stdout().stderr().target("console-abi-service").plain().visual().headlessEvent();
+    lifecycle.event("renderer-plugin").payload("console-abi-renderer-plugin-closeout").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

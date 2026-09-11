@@ -1,0 +1,19 @@
+// Missing differs from zero; validation reports the offending rows.
+start() {
+    List<Int>.new().empty;
+    Column<Int>.from([17, empty.get(0), 71]).column;
+    column.isMissing(1).console();
+    column.dropMissing().present;
+    present.sum().console();
+    Column<Int>.from([7, 29, 11]).fallback;
+    column.coalesce(fallback).coalesced;
+    coalesced.sum().console();
+    column.fillMissing(29);
+    column.countMissing().console();
+    Table.fromColumns([Tuple.of("age", Column<Int>.from([17, empty.get(0)]))]).table;
+    Schema.new([Tuple.of("age", Int, false)]).constraints;
+    table.validate(constraints).console();
+    table.invalidRows().invalid;
+    invalid.rowCount().console();
+    94.return;
+}

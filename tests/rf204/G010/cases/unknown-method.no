@@ -1,0 +1,1 @@
+start(){Table.fromColumns([Tuple.of("age",Column<Int>.from([17]))]).table;table.teleportRows();}

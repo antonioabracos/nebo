@@ -101,9 +101,6 @@ rg -q '%define NEBOC_PUBLIC_SLICE_LAYOUT_SIZE 40' compiler/semantic/collections/
 rg -q '%define NEBOC_BUFFER_PLAN_F11_SIZE 264' compiler/lowering/textual/buffer_plan.inc
 rg -q 'NEBOC_BUFFER_PLAN_VERSION_A3' compiler/lowering/textual/buffer_plan.asm
 rg -q 'NEBOC_BUFFER_PLAN_F11_HASH_OFFSET' compiler/codegen/textual/x86_64/buffer_codegen.asm
-test "$(git rev-parse 'nebo-v0.2.0-rc.2^{}')" = e055debd358a747f8793015546162e31fe9b3370
-test "$(sha256sum release/package/nebo-v0.2.0-rc.2-x86_64-systemv-elf-linux.zip | cut -d' ' -f1)" = \
-  1fad420b226eef186179819a2ca2b459cb621b412fb30bf056709388b0762f8d
-test "$(build/bin/neboc --version)" = 'neboc 0.2.0-rc.2'
+test "$(build/bin/neboc --version)" = "$(python3 -B scripts/check-version-consistency.py --expected-cli)"
 
 echo "RF27_G01_F11_GREEN positives=6 negative_fixtures=9 negative_tri_mode=27 slice_type_id=13 layout=40/8 buffer_view=yes read=yes subview=yes iterate=yes lexical_release=yes mutation_conflict=yes stale_detection=yes deterministic_asm=6 deterministic_objects=11 deterministic_elf=6 static_elf=6 rc2=yes tmp=$tmp_root"

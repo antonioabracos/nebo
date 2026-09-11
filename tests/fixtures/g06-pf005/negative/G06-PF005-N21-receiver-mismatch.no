@@ -1,0 +1,5 @@
+start() {
+    Option<Int>(Some(1)).maybe;
+    maybe.unwrapOr(0).scalar;
+    scalar.isSome().flag;
+}

@@ -57,6 +57,45 @@ NEBOC_ABI_FUNCTION neboc_parameters_analyze
  mov rax,[r12+NEBOC_PARAM_NAMED_COUNT_OFFSET]
  cmp rax,[r12+NEBOC_PARAM_EXPLICIT_COUNT_OFFSET]
  ja .source
+ mov rax,[r12+NEBOC_PARAM_VARIADIC_COUNT_OFFSET]
+ cmp rax,NEBOC_PARAM_VARIADIC_MAX
+ ja .source
+ mov rax,[r12+NEBOC_PARAM_VARIADIC_INDEX_OFFSET]
+ cmp rax,-1
+ jne .variadic_declared_index
+ cmp qword [r12+NEBOC_PARAM_VARIADIC_COUNT_OFFSET],0
+ jne .source
+ jmp .variadic_index_ready
+.variadic_declared_index:
+ cmp rax,rbx
+ jae .source
+ mov rdx,rbx
+ dec rdx
+ cmp rax,rdx
+ jne .source
+.variadic_index_ready:
+ mov rcx,[r12+NEBOC_PARAM_VARIADIC_COUNT_OFFSET]
+ lea rdx,[r12+NEBOC_PARAM_VARIADIC_VALUES_OFFSET]
+.variadic_zero_tail:
+ cmp rcx,NEBOC_PARAM_VARIADIC_MAX
+ jae .variadic_values_ready
+ cmp qword [rdx+rcx*8],0
+ jne .source
+ inc rcx
+ jmp .variadic_zero_tail
+.variadic_values_ready:
+ mov rax,[r12+NEBOC_PARAM_BORROW_MASK_OFFSET]
+ test rax,[r12+NEBOC_PARAM_OWNED_MASK_OFFSET]
+ jnz .source
+ mov rcx,rbx
+ mov rdx,1
+ shl rdx,cl
+ dec rdx
+ mov rax,[r12+NEBOC_PARAM_BORROW_MASK_OFFSET]
+ or rax,[r12+NEBOC_PARAM_OWNED_MASK_OFFSET]
+ not rdx
+ test rax,rdx
+ jnz .source
  mov rax,[r12+NEBOC_PARAM_RECEIVER_TYPE_OFFSET]
  test rax,rax
  jz .source
@@ -79,6 +118,8 @@ NEBOC_ABI_FUNCTION neboc_parameters_analyze
  jnz .invalid
  xor r14d,r14d
  xor r15d,r15d
+ xor r10d,r10d
+ xor r11d,r11d
 .params:
  cmp r14,rbx
  jae .hashes
@@ -90,8 +131,48 @@ NEBOC_ABI_FUNCTION neboc_parameters_analyze
  jz .source
  cmp rcx,neboc_seguranca_numerica_conversoes_e_overflow_TYPE_CHAR
  ja .source
+ mov rdx,[rax+NEBOC_PARAM_OWNERSHIP_OFFSET]
+ cmp rdx,NEBOC_PARAM_OWNERSHIP_OWNED
+ ja .source
+ mov r8,[rax+NEBOC_PARAM_FLAGS_OFFSET]
+ cmp r8,NEBOC_PARAM_FLAG_VARIADIC
+ ja .source
+ mov r9,1
+ mov rcx,r14
+ shl r9,cl
+ cmp rdx,NEBOC_PARAM_OWNERSHIP_BORROWED
+ jne .check_owned
+ test [r12+NEBOC_PARAM_BORROW_MASK_OFFSET],r9
+ jz .source
+ jmp .ownership_checked
+.check_owned:
+ cmp rdx,NEBOC_PARAM_OWNERSHIP_OWNED
+ jne .check_implicit
+ test [r12+NEBOC_PARAM_OWNED_MASK_OFFSET],r9
+ jz .source
+ jmp .ownership_checked
+.check_implicit:
+ test [r12+NEBOC_PARAM_BORROW_MASK_OFFSET],r9
+ jnz .source
+ test [r12+NEBOC_PARAM_OWNED_MASK_OFFSET],r9
+ jnz .source
+.ownership_checked:
+ test r8,r8
+ jz .non_variadic_record
+ test rdx,rdx
+ jnz .source
+ cmp qword [r12+NEBOC_PARAM_VARIADIC_INDEX_OFFSET],r14
+ jne .source
+ cmp qword [rax+NEBOC_PARAM_TYPE_OFFSET],neboc_seguranca_numerica_conversoes_e_overflow_TYPE_INT
+ jne .source
+ cmp qword [rax+NEBOC_PARAM_HAS_DEFAULT_OFFSET],0
+ jne .source
+ inc r11
+.non_variadic_record:
  cmp qword [rax+NEBOC_PARAM_BOUND_OFFSET],1
  jne .source
+ cmp qword [rax+NEBOC_PARAM_FLAGS_OFFSET],NEBOC_PARAM_FLAG_VARIADIC
+ je .next
  mov rdx,[rax+NEBOC_PARAM_HAS_DEFAULT_OFFSET]
  cmp rdx,1
  ja .source
@@ -102,10 +183,23 @@ NEBOC_ABI_FUNCTION neboc_parameters_analyze
 .required:
  test r15d,r15d
  jnz .source
+ inc r10
 .next:
  inc r14
  jmp .params
 .hashes:
+ cmp r10,[r12+NEBOC_PARAM_REQUIRED_COUNT_OFFSET]
+ jne .source
+ mov rax,[r12+NEBOC_PARAM_VARIADIC_INDEX_OFFSET]
+ cmp rax,-1
+ jne .variadic_declared
+ test r11,r11
+ jnz .source
+ jmp .variadic_declaration_ready
+.variadic_declared:
+ cmp r11,1
+ jne .source
+.variadic_declaration_ready:
  mov rax,[r12+NEBOC_OVERLOAD_COUNT_OFFSET]
  test rax,rax
  jz .overload_ready
@@ -161,6 +255,11 @@ NEBOC_ABI_FUNCTION neboc_parameters_analyze
  cmp qword [r12+NEBOC_CALLABLE_ENV_SIZE_OFFSET],0
  jne .source
 .callable_hash:
+ mov rdx,[r12+NEBOC_CALLABLE_SELECTED_BODY_OFFSET]
+ cmp rdx,NEBOC_CALLABLE_BODY_VALUE
+ jb .source
+ cmp rdx,NEBOC_CALLABLE_BODY_SUM
+ ja .source
  cmp qword [r12+NEBOC_CALLABLE_HASH_OFFSET],0
  je .source
 .callable_ready:
@@ -180,6 +279,12 @@ NEBOC_ABI_FUNCTION neboc_parameters_analyze
  mov rcx,r14
  imul rcx,NEBOC_PARAM_RECORD_SIZE
  add rcx,r13
+ mov r9,[rcx+NEBOC_PARAM_OWNERSHIP_OFFSET]
+ shl r9,16
+ or rdx,r9
+ mov r9,[rcx+NEBOC_PARAM_FLAGS_OFFSET]
+ shl r9,24
+ or rdx,r9
  or rdx,[rcx+NEBOC_PARAM_TYPE_OFFSET]
  call hash_qword
  inc r14
@@ -230,6 +335,8 @@ NEBOC_ABI_FUNCTION neboc_parameters_analyze
  call hash_qword
  mov rdx,[r12+NEBOC_CALLABLE_CAPTURE_VALUE_OFFSET]
  call hash_qword
+ mov rdx,[r12+NEBOC_CALLABLE_SELECTED_BODY_OFFSET]
+ call hash_qword
  mov rdx,[r12+NEBOC_CALLABLE_CALL_COUNT_OFFSET]
  call hash_qword
  mov rdx,[r12+NEBOC_CALLABLE_DROP_COUNT_OFFSET]
@@ -240,6 +347,24 @@ NEBOC_ABI_FUNCTION neboc_parameters_analyze
  call hash_qword
  mov rdx,[r12+NEBOC_CALLABLE_HASH_OFFSET]
  call hash_qword
+ mov rdx,[r12+NEBOC_PARAM_BORROW_MASK_OFFSET]
+ call hash_qword
+ mov rdx,[r12+NEBOC_PARAM_OWNED_MASK_OFFSET]
+ call hash_qword
+ mov rdx,[r12+NEBOC_PARAM_VARIADIC_INDEX_OFFSET]
+ call hash_qword
+ mov rdx,[r12+NEBOC_PARAM_VARIADIC_COUNT_OFFSET]
+ call hash_qword
+ xor r14d,r14d
+.variadic_value_hash:
+ cmp r14,NEBOC_PARAM_VARIADIC_MAX
+ jae .record_hash_begin
+ lea r10,[r12+NEBOC_PARAM_VARIADIC_VALUES_OFFSET]
+ mov rdx,[r10+r14*8]
+ call hash_qword
+ inc r14
+ jmp .variadic_value_hash
+.record_hash_begin:
  xor r14d,r14d
 .record_hash:
  cmp r14,rbx
@@ -256,6 +381,10 @@ NEBOC_ABI_FUNCTION neboc_parameters_analyze
  mov rdx,[r10+NEBOC_PARAM_DEFAULT_VALUE_OFFSET]
  call hash_qword
  mov rdx,[r10+NEBOC_PARAM_BOUND_VALUE_OFFSET]
+ call hash_qword
+ mov rdx,[r10+NEBOC_PARAM_OWNERSHIP_OFFSET]
+ call hash_qword
+ mov rdx,[r10+NEBOC_PARAM_FLAGS_OFFSET]
  call hash_qword
  inc r14
  jmp .record_hash

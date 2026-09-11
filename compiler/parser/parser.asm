@@ -97,6 +97,8 @@ parser_top_loop:
  jnz parser_forbidden_start
  jmp parser_call_start
 parser_check_function:
+ cmp rcx,NEBOC_TOKEN_KW_STRUCT
+ je parser_call_struct
  cmp rcx,NEBOC_TOKEN_LPAREN
  je parser_call_function
  mov rdi,r12
@@ -122,6 +124,13 @@ parser_call_start:
 parser_call_function:
  mov rdi,r12
  call neboc_parser_parse_function
+ test eax,eax
+ jnz parser_done
+ jmp parser_link_child
+
+parser_call_struct:
+ mov rdi,r12
+ call neboc_parser_parse_struct
  test eax,eax
  jnz parser_done
 
@@ -178,6 +187,8 @@ parser_done:
  ret
 
 ; parser_parse_start(ParserRequest*)
+%include "compiler/parser/struct_declaration.inc"
+
 NEBOC_ABI_FUNCTION neboc_parser_parse_start
  push rbx
  push r12
@@ -327,17 +338,19 @@ NEBOC_ABI_FUNCTION neboc_parser_parse_function
  push r13
  push r14
  push r15
- sub rsp,96
+ sub rsp,112
  mov r12,rdi
  mov r13,[r12+NEBOC_PARSER_TOKENS_OFFSET]
  mov r14,[r12+NEBOC_PARSER_TOKEN_COUNT_OFFSET]
  mov r15,[r12+NEBOC_PARSER_BUILDER_OFFSET]
  mov rbx,[r12+NEBOC_PARSER_INDEX_OFFSET]
  mov [rsp],rbx
+ mov qword [rsp+96],0 ; extra receiver type tokens in Outer<Element>
  lea rax,[rbx+6]
  cmp rax,r14
  jae function_expected
- ; fixed receiver/function prefix
+ ; Receiver/function prefix. A generic receiver retains the same explicit
+ ; type/name payloads and generic flag as an ordinary typed parameter.
  TOKEN_PTR r11,rbx
  cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
  jne function_expected
@@ -347,25 +360,47 @@ NEBOC_ABI_FUNCTION neboc_parser_parse_function
  jne function_expected
  lea rax,[rbx+2]
  TOKEN_PTR r11,rax
- cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
- jne function_expected
+ cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LESS
+ jne function_receiver_suffix
+ lea rax,[rbx+9]
+ cmp rax,r14
+ jae function_expected
  lea rax,[rbx+3]
  TOKEN_PTR r11,rax
  cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
  jne function_expected
  lea rax,[rbx+4]
  TOKEN_PTR r11,rax
+ cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_GREATER
+ jne function_expected
+ mov qword [rsp+96],3
+ lea rax,[rbx+5]
+ TOKEN_PTR r11,rax
+function_receiver_suffix:
+ cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne function_expected
+ lea rax,[rbx+3]
+ add rax,[rsp+96]
+ TOKEN_PTR r11,rax
+ cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne function_expected
+ lea rax,[rbx+4]
+ add rax,[rsp+96]
+ TOKEN_PTR r11,rax
  cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
  jne function_expected
  lea rax,[rbx+5]
+ add rax,[rsp+96]
  TOKEN_PTR r11,rax
  cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
  jne function_expected
  lea rax,[rbx+6]
+ add rax,[rsp+96]
  TOKEN_PTR r11,rax
  cmp qword [r11+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
  jne function_expected
  lea r11,[rbx+7]
+ add r11,[rsp+96]
  mov [rsp+8],r11
  mov qword [rsp+40],0
  ; scan parameter list
@@ -482,6 +517,7 @@ function_block_done:
  TOKEN_PTR r10,rax
  mov rax,[rsp]
  add rax,3
+ add rax,[rsp+96]
  TOKEN_PTR r11,rax
  mov rdi,r15
  mov esi,NEBOC_AST_RECEIVER
@@ -507,7 +543,12 @@ function_block_done:
  mov [r10+NEBOC_AST_NODE_PAYLOAD0_OFFSET],rax
  mov rax,[rsp]
  add rax,3
+ add rax,[rsp+96]
  mov [r10+NEBOC_AST_NODE_PAYLOAD1_OFFSET],rax
+ cmp qword [rsp+96],0
+ je function_receiver_flags_ready
+ or qword [r10+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_GENERIC_PARAMETER
+function_receiver_flags_ready:
  ; parameters, second pass
  mov r11,[rsp+8]
 function_append_params:
@@ -617,6 +658,7 @@ function_append_block:
  mov [r10+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],rax
  mov rax,[rsp]
  add rax,5
+ add rax,[rsp+96]
  mov [r10+NEBOC_AST_NODE_PAYLOAD0_OFFSET],rax
  mov rax,[rsp+40]
  mov [r10+NEBOC_AST_NODE_PAYLOAD1_OFFSET],rax
@@ -639,7 +681,7 @@ function_expected:
  mov rdx,rbx
  call neboc_parser_set_error
 function_done:
- add rsp,96
+ add rsp,112
  pop r15
  pop r14
  pop r13

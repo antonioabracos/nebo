@@ -1,0 +1,13 @@
+usage: neboc refactor [-h] [--symbol SYMBOL] [--new-name NEW_NAME] [--apply]
+                      {rename,extract-function,inline-function,extract-binding,move-item,change-signature,organize-imports,copy-to-borrow,if-to-match}
+                      paths [paths ...]
+
+positional arguments:
+  {rename,extract-function,inline-function,extract-binding,move-item,change-signature,organize-imports,copy-to-borrow,if-to-match}
+  paths
+
+options:
+  -h, --help            show this help message and exit
+  --symbol SYMBOL
+  --new-name NEW_NAME
+  --apply

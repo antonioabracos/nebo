@@ -1,0 +1,4 @@
+start() {
+    1.index;
+    Bytes.fromValues(10, 20, 30, 40).at(index).return;
+}

@@ -1,0 +1,4 @@
+type alias Count = Int;
+start() {
+    42.return;
+}

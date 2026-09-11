@@ -1,0 +1,5 @@
+start() {
+    "Olá 😀".left;
+    Text("Olá 😀").right;
+    if (left == right) { 0; } else { 1; }
+}

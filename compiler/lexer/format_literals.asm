@@ -16,6 +16,22 @@ neboc_format_lex_classify:
     mov al, [rdi + rcx]
     cmp al, '$'
     jne .canonical
+    ; Only an odd run of immediately preceding backslashes escapes `${`.
+    ; This keeps `\\${value}` as an interpolation after the decoded slash.
+    mov rdx, rcx
+    xor r8d, r8d
+.backslash_run:
+    test rdx, rdx
+    jz .backslash_parity
+    cmp byte [rdi + rdx - 1], 92
+    jne .backslash_parity
+    inc r8
+    dec rdx
+    jmp .backslash_run
+.backslash_parity:
+    test r8b, 1
+    jnz .next
+.dollar_unescaped:
     lea rdx, [rcx + 1]
     cmp rdx, rsi
     jae .canonical

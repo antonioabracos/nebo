@@ -1,0 +1,13 @@
+// Secret sharing is review-gated and the local MPC profile exposes only redacted simulation state.
+(Int.self)secretShareSplit() { self.return; }
+(Int.self)secretShareCombine() { self.return; }
+(Int.self)shareRefresh() { self.return; }
+(Int.self)mpcSessionNew() { self.return; }
+(Int.self)sessionCommitInputs() { self.return; }
+(Int.self)sessionCompute() { self.return; }
+(Int.self)sessionAbort() { self.return; }
+(Int.self)sessionTranscript() { self.return; }
+
+start() {
+    77.secretShareSplit().secretShareCombine().shareRefresh().mpcSessionNew().sessionCommitInputs().sessionCompute().sessionAbort().sessionTranscript();
+}

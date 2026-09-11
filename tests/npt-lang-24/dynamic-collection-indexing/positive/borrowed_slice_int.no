@@ -1,0 +1,3 @@
+(Int.self)pick(Slice<Int>.values, Int.index) { values.at(index).return; }
+(Int.self)work() { Array<Int,3> [7,11,13].source; source.asSlice().view; self.pick(view, 1).return; }
+start() { 0.work().return; }

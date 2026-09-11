@@ -1,0 +1,45 @@
+surface_id	subgroup	source_example	test_case	expected_observation	implementation_owner	status
+G010-S01-01	S01	examples/rf204/G010/RF204-G010-S01.no	source-s01	Schema.new preserves ordered names dtypes and nullability	runtime/data/table.asm	PASS
+G010-S01-02	S01	examples/rf204/G010/RF204-G010-S01.no	source-s01	schema.field returns dtype and nullability for an exact name hash	runtime/data/data_extended.asm	PASS
+G010-S01-03	S01	examples/rf204/G010/RF204-G010-S01.no	source-s01	schema.indexOf returns deterministic ordered index and found state	runtime/data/data_extended.asm	PASS
+G010-S01-04	S01	examples/rf204/G010/RF204-G010-S01.no	source-s01	Row.from validates schema and applies explicit missing rules	runtime/data/data_extended.asm	PASS
+G010-S01-05	S01	examples/rf204/G010/RF204-G010-S01.no	source-s01	row.get distinguishes present value from missing state	runtime/data/data_extended.asm	PASS
+G010-S01-06	S01	examples/rf204/G010/RF204-G010-S01.no	source-s01	row.project copies an ordered unique subset and missing bitmap	runtime/data/data_extended.asm	PASS
+G010-S01-07	S01	examples/rf204/G010/RF204-G010-S01.no	source-s01	row.toTuple copies schema-ordered values and missing bitmap	runtime/data/data_extended.asm	PASS
+G010-S02-01	S02	examples/rf204/G010/RF204-G010-S02.no	source-s02	Column Int four-cell bounded profile remains accepted	runtime/data/column.asm	PASS
+G010-S02-02	S02	examples/rf204/G010/RF204-G010-S02.no	source-s02	column.sum uses checked signed accumulation and skips missing cells	runtime/data/column.asm	PASS
+G010-S02-03	S02	examples/rf204/G010/RF204-G010-S02.no	source-s02	column.min returns the minimum present I64 value	runtime/data/column.asm	PASS
+G010-S02-04	S02	examples/rf204/G010/RF204-G010-S02.no	source-s02	column.max returns the maximum present I64 value	runtime/data/column.asm	PASS
+G010-S02-05	S02	examples/rf204/G010/RF204-G010-S02.no	source-s02	column.countMissing counts only in-range bitmap bits	runtime/data/column.asm	PASS
+G010-S02-06	S02	examples/rf204/G010/RF204-G010-S02.no	source-s02	Column.from constructs a bounded typed descriptor over caller storage	runtime/data/data_extended.asm	PASS
+G010-S02-07	S02	examples/rf204/G010/RF204-G010-S02.no	source-s02	column.get publishes value and presence independently	runtime/data/column.asm	PASS
+G010-S02-08	S02	examples/rf204/G010/RF204-G010-S02.no	source-s02	column.cast performs checked I64 and U64 conversion preserving missing	runtime/data/data_extended.asm	PASS
+G010-S03-01	S03	examples/rf204/G010/RF204-G010-S03.no	source-s03	Table.fromColumns validates schema dtype lengths and row capacity	runtime/data/data_extended.asm	PASS
+G010-S03-02	S03	examples/rf204/G010/RF204-G010-S03.no	source-s03	table.rowCount returns the bounded descriptor count	runtime/data/data_extended.asm	PASS
+G010-S03-03	S03	examples/rf204/G010/RF204-G010-S03.no	source-s03	table.columnCount returns a nonzero bounded schema arity	runtime/data/data_extended.asm	PASS
+G010-S03-04	S03	examples/rf204/G010/RF204-G010-S03.no	source-s03	table.select derives an ordered schema and column descriptor copy	runtime/data/table.asm	PASS
+G010-S03-05	S03	examples/rf204/G010/RF204-G010-S03.no	source-s03	table.filter returns stable matching row indices and skips missing	runtime/data/table.asm	PASS
+G010-S03-06	S03	examples/rf204/G010/RF204-G010-S03.no	source-s03	table.sortBy is stable ascending with missing values last	runtime/data/data_extended.asm	PASS
+G010-S03-07	S03	examples/rf204/G010/RF204-G010-S03.no	source-s03	table.groupBy emits first-seen keys and deterministic counts	runtime/data/table.asm	PASS
+G010-S03-08	S03	examples/rf204/G010/RF204-G010-S03.no	source-s03	table.join supports bounded inner and left kind cardinality	runtime/data/data_extended.asm	PASS
+G010-S04-01	S04	examples/rf204/G010/RF204-G010-S04.no	source-s04	column.isMissing observes the explicit missing bitmap	runtime/data/column.asm	PASS
+G010-S04-02	S04	examples/rf204/G010/RF204-G010-S04.no	source-s04	column.fillMissing replaces compatible cells and reports count	runtime/data/validation.asm	PASS
+G010-S04-03	S04	examples/rf204/G010/RF204-G010-S04.no	source-s04	column.dropMissing creates a dense bounded column without mutation	runtime/data/data_extended.asm	PASS
+G010-S04-04	S04	examples/rf204/G010/RF204-G010-S04.no	source-s04	column.coalesce selects the first present value by row	runtime/data/validation.asm	PASS
+G010-S04-05	S04	examples/rf204/G010/RF204-G010-S04.no	source-s04	table.validate checks schema columns dtype lengths and capacity	runtime/data/table.asm	PASS
+G010-S04-06	S04	examples/rf204/G010/RF204-G010-S04.no	source-s04	table.invalidRows reports nonnullable missing violations	runtime/data/validation.asm	PASS
+G010-S05-01	S05	examples/rf204/G010/RF204-G010-S05.no	source-s05	Dataset.fromTables validates common schema and explicit budgets	runtime/data/data_extended.asm	PASS
+G010-S05-02	S05	examples/rf204/G010/RF204-G010-S05.no	source-s05	dataset.schema returns the authenticated common schema	runtime/data/data_extended.asm	PASS
+G010-S05-03	S05	examples/rf204/G010/RF204-G010-S05.no	source-s05	dataset.partitionCount returns a bounded nonzero partition count	runtime/data/data_extended.asm	PASS
+G010-S05-04	S05	examples/rf204/G010/RF204-G010-S05.no	source-s05	dataset.repartition applies deterministic reverse strategy atomically	runtime/data/data_extended.asm	PASS
+G010-S05-05	S05	examples/rf204/G010/RF204-G010-S05.no	source-s05	dataset.scan copies a finite partition plan without row materialization	runtime/data/data_extended.asm	PASS
+G010-S05-06	S05	examples/rf204/G010/RF204-G010-S05.no	source-s05	dataset.collect materializes row references only within row budget	runtime/data/dataset.asm	PASS
+G010-S05-07	S05	examples/rf204/G010/RF204-G010-S05.no	source-s05	dataset.cache accepts explicit none or local descriptor policy	runtime/data/data_extended.asm	PASS
+G010-S06-01	S06	examples/rf204/G010/RF204-G010-S06.no	source-s06	Event Int value observes its bounded payload	runtime/data/data_extended.asm	PASS
+G010-S06-02	S06	examples/rf204/G010/RF204-G010-S06.no	source-s06	Flow Int value observes the first event without consuming it	runtime/data/data_extended.asm	PASS
+G010-S06-03	S06	examples/rf204/G010/RF204-G010-S06.no	source-s06	Stream.from constructs a finite bounded lazy descriptor	runtime/data/data_extended.asm	PASS
+G010-S06-04	S06	examples/rf204/G010/RF204-G010-S06.no	source-s06	stream.map installs a lazy checked transformation callback	runtime/data/data_extended.asm	PASS
+G010-S06-05	S06	examples/rf204/G010/RF204-G010-S06.no	source-s06	stream.filter installs a lazy checked predicate callback	runtime/data/data_extended.asm	PASS
+G010-S06-06	S06	examples/rf204/G010/RF204-G010-S06.no	source-s06	stream.batch reports bounded ceiling cardinality before consumption	runtime/data/data_extended.asm	PASS
+G010-S06-07	S06	examples/rf204/G010/RF204-G010-S06.no	source-s06	stream.window groups monotonic event sequences by positive duration	runtime/data/data_extended.asm	PASS
+G010-S06-08	S06	examples/rf204/G010/RF204-G010-S06.no	source-s06	stream.sink propagates callback failure and returns consumed count	runtime/data/data_extended.asm	PASS

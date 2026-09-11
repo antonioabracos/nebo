@@ -26,7 +26,20 @@
 %define NEBOC_LEX_DIAG_INVALID_CHARACTER 5
 %define NEBOC_LEX_DIAG_UNTERMINATED_TEXT 12
 %define NEBOC_LEX_DIAG_INVALID_ESCAPE 13
+; Corrected-catalog aliases: NEBO_LEX_003 is unterminated Text and
+; NEBO_LEX_004 is an invalid escape.  The diagnostic catalog retains the
+; descriptive public code strings for compatibility.
+%define NEBOC_LEX_003 NEBOC_LEX_DIAG_UNTERMINATED_TEXT
+%define NEBOC_LEX_004 NEBOC_LEX_DIAG_INVALID_ESCAPE
 %define NEBOC_LEX_DIAG_INT_OVERFLOW 14
-%define NEBOC_LEX_DIAG_UNSUPPORTED_BLOCK_COMMENT 15
+%define NEBOC_LEX_DIAG_UNTERMINATED_BLOCK_COMMENT 15
+%define NEBOC_LEX_DIAG_UNSUPPORTED_BLOCK_COMMENT NEBOC_LEX_DIAG_UNTERMINATED_BLOCK_COMMENT
+; G144 all protected spellings converge on one stable public diagnostic while
+; token flags retain the individual NSR-RES ordinal.
+%define NEBOC_LEX_DIAG_RESERVED_SYMBOL 176
+; G145 keeps every rejected form fail-closed behind one stable public code;
+; the token flags retain the exact NSR-REJ ordinal.
+%define NEBOC_LEX_DIAG_REJECTED_FORM 177
+%define NEBOC_LEX_DIAG_BLOCK_COMMENT_DEPTH 178
 
 %endif

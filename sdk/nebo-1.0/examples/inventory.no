@@ -1,0 +1,2 @@
+// Consume distinct component counts through the owned collection runtime.
+start(){List<Int>.from([13,29,47]).counts;0.i.mutable;0.sum.mutable;while(i<counts.length()){sum+=counts.at(i);i+=1;}sum.return;}

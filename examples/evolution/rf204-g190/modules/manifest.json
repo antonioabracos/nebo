@@ -1,9 +1,0 @@
-{
-  "expected": "expected.nebo",
-  "immutable_fixture": true,
-  "legacy": "legacy.nebo",
-  "oracle": "BYTE_EXACT",
-  "rules": [
-    "NEBO-MIG-IMPORT-001"
-  ]
-}

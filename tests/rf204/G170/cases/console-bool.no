@@ -1,0 +1,2 @@
+// Independent atomic runtime case.
+start() { true.console(); 0.return; }

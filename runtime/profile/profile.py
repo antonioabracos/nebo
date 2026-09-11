@@ -37,15 +37,21 @@ class Profile:
 
     @classmethod
     def collect(
-        cls, identity: ArtifactIdentity, workload: bytes,
-        counters: dict[str, int], *, seed: int, run_count: int,
+        cls, program: ArtifactIdentity, workload: bytes, options: dict[str, object],
     ) -> "Profile":
+        counters = options.get("counters")
+        seed = options.get("seed")
+        run_count = options.get("run_count")
+        if not isinstance(counters, dict) or not isinstance(seed, int) or not isinstance(run_count, int):
+            raise ProfileError("NG46_F0501", "invalid profile collection options")
+        if any(not isinstance(name, str) or not isinstance(value, int) for name, value in counters.items()):
+            raise ProfileError("NG46_F0501", "invalid counter")
         if len(workload) > 1_048_576 or not 1 <= run_count <= 32 or len(counters) > 256:
             raise ProfileError("NG46_F0501", "profile budget")
         if any(not name or value < 0 or value > 1_000_000 for name, value in counters.items()):
             raise ProfileError("NG46_F0501", "invalid counter")
         return cls(
-            "NEBO-PROFILE-V1", identity, hashlib.sha256(workload).hexdigest(), seed,
+            "NEBO-PROFILE-V1", program, hashlib.sha256(workload).hexdigest(), seed,
             run_count, tuple(sorted(counters.items())),
         )
 
@@ -69,6 +75,11 @@ class Profile:
 
     def digest(self) -> str:
         return hashlib.sha256(self.serialize()).hexdigest()
+
+    hotFunctions = hot_functions
+    branchProbabilities = branch_probabilities
+    callGraph = call_graph
+    validateCompatibility = validate_compatibility
 
 
 @dataclass(frozen=True)
@@ -97,7 +108,21 @@ class AutoTuner:
     MAX_CANDIDATES = 16
     MAX_RUNS = 32
 
-    def __init__(self, candidates: tuple[Candidate, ...], *, seed: int, run_budget: int):
+    @classmethod
+    def new(cls, candidates: tuple[Candidate, ...], benchmark: str, budgets: dict[str, object]) -> "AutoTuner":
+        if benchmark != "deterministic-local-cost":
+            raise ProfileError("NG46_F0501", "unsupported benchmark objective")
+        seed = budgets.get("seed", 0)
+        runs = budgets.get("runs", 0)
+        reference = budgets.get("reference")
+        if not isinstance(seed, int) or not isinstance(runs, int) or not callable(reference):
+            raise ProfileError("NG46_F0501", "invalid autotuning budgets or reference")
+        return cls(candidates, seed=seed, run_budget=runs, reference=reference)
+
+    def __init__(
+        self, candidates: tuple[Candidate, ...], *, seed: int, run_budget: int,
+        reference: Callable[[tuple[int, ...]], int] | None = None,
+    ):
         if not candidates or len(candidates) > self.MAX_CANDIDATES or not 1 <= run_budget <= self.MAX_RUNS:
             raise ProfileError("NG46_F0501", "autotuning budget")
         if len({candidate.name for candidate in candidates}) != len(candidates):
@@ -105,14 +130,18 @@ class AutoTuner:
         self.candidates = tuple(sorted(candidates, key=lambda candidate: candidate.name))
         self.seed = seed
         self.run_budget = run_budget
+        self.reference = reference
 
     def select(
         self, input_shape: tuple[int, ...], target: str,
-        reference: Callable[[tuple[int, ...]], int],
+        reference: Callable[[tuple[int, ...]], int] | None = None,
     ) -> TuningDecision:
         if target != "x86_64-systemv-elf-linux" or len(input_shape) > 64:
             raise ProfileError("NG46_F0502", "unsupported target or shape")
-        expected = reference(input_shape)
+        oracle = reference or self.reference
+        if oracle is None:
+            raise ProfileError("NG46_F0501", "correctness reference missing")
+        expected = oracle(input_shape)
         scores = []
         rejected = []
         for candidate in self.candidates:
@@ -133,11 +162,29 @@ class AutoTuner:
 
 class ProfileOptimizer:
     @staticmethod
-    def optimize_with(profile: Profile, artifact: ArtifactIdentity) -> str:
+    def optimize_with(profile: Profile, artifact: ArtifactIdentity) -> "PgoOptimization":
         profile.validate_compatibility(artifact)
-        return (
+        return PgoOptimization(
             "pgo=ADVISORY_LOCAL_V1\n"
             f"profile-sha256={profile.digest()}\n"
             f"hot-functions={','.join(profile.hot_functions())}\n"
-            "observable-semantics=UNCHANGED\nnon-pgo-path=AVAILABLE\n"
+            "observable-semantics=UNCHANGED\n"
+            "performance-delta=NOT_CLAIMED_DETERMINISTIC\n"
+            "non-pgo-path=AVAILABLE\n"
         )
+
+    optimizeWith = optimize_with
+
+
+@dataclass(frozen=True)
+class PgoOptimization:
+    text: str
+
+    def report(self) -> str:
+        return self.text
+
+    def __contains__(self, item: str) -> bool:
+        return item in self.text
+
+    def __str__(self) -> str:
+        return self.text

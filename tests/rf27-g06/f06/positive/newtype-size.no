@@ -1,0 +1,4 @@
+newtype Flag(Bool);
+start() {
+    Flag.sizeOf().return;
+}

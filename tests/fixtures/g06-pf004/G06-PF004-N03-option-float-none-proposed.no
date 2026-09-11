@@ -1,0 +1,3 @@
+start() {
+    Option<Float>(None()).maybe;
+}

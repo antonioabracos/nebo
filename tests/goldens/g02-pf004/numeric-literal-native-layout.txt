@@ -1,0 +1,15 @@
+target=x86_64-systemv-elf-linux
+type=Int
+type_id=3
+representation=signed_twos_complement_i64
+width=64
+size=8
+alignment=8
+abi_class=INTEGER
+parameter_register=RDI
+return_register=RAX
+stack_slot_size=8
+stack_slot_alignment=8
+runtime_base_metadata=NONE
+immediate_encoding=SIGN_EXTENDED_I32_OR_I64
+public_integration=DEFERRED_TO_G02_PF005

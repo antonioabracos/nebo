@@ -1,0 +1,3 @@
+Program
+  StartDecl
+    Block tokens=0

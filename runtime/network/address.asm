@@ -9,6 +9,180 @@ global nebo_ip_format
 global nebo_socket_address_new
 global nebo_hostname_parse
 global nebo_hostname_format
+global nebo_parse_port
+global nebo_dns_resolve_local
+global nebo_socket_address_format
+
+section .rodata
+local_host: db 'localhost'
+local_host_len equ $-local_host
+
+section .text
+
+; rdi=ASCII decimal port, rsi=len. eax=status, rdx=1..65535.
+nebo_parse_port:
+ test rdi,rdi
+ jz .port_invalid
+ test rsi,rsi
+ jz .port_invalid
+ cmp rsi,5
+ ja .port_invalid
+ xor edx,edx
+ xor ecx,ecx
+.port_digit:
+ movzx eax,byte [rdi+rcx]
+ sub eax,'0'
+ cmp eax,9
+ ja .port_invalid
+ imul edx,edx,10
+ add edx,eax
+ cmp edx,65535
+ ja .port_invalid
+ inc rcx
+ cmp rcx,rsi
+ jb .port_digit
+ test edx,edx
+ jz .port_invalid
+ xor eax,eax
+ ret
+.port_invalid:
+ mov eax,NEBO_SYSTEM_ERROR_INVALID_ARGUMENT
+ xor edx,edx
+ ret
+
+; Deterministic no-network resolver for the only capability address set.
+; rdi=SocketAddress out, rsi=HostName, rdx=service text, rcx=service len.
+nebo_dns_resolve_local:
+ push rbx
+ push r12
+ mov r12,rdi
+ mov rbx,rsi
+ test r12,r12
+ jz .dns_invalid
+ test rbx,rbx
+ jz .dns_invalid
+ cmp qword [rbx+NEBO_HOSTNAME_LENGTH],local_host_len
+ jne .dns_denied
+ mov r8,[rbx+NEBO_HOSTNAME_TEXT]
+ xor r9d,r9d
+.dns_name:
+ cmp r9,local_host_len
+ jae .dns_port
+ mov al,[r8+r9]
+ cmp al,[local_host+r9]
+ jne .dns_denied
+ inc r9
+ jmp .dns_name
+.dns_port:
+ mov rdi,rdx
+ mov rsi,rcx
+ call nebo_parse_port
+ test eax,eax
+ jnz .dns_return
+ mov qword [r12+NEBO_SOCKET_ADDRESS_IP+NEBO_IP_FAMILY],NEBO_IP_FAMILY_V4
+ mov dword [r12+NEBO_SOCKET_ADDRESS_IP+NEBO_IP_BYTES],0x0100007f
+ mov qword [r12+NEBO_SOCKET_ADDRESS_IP+NEBO_IP_BYTES+8],0
+ mov [r12+NEBO_SOCKET_ADDRESS_PORT],rdx
+ xor eax,eax
+ jmp .dns_return
+.dns_invalid:
+ mov eax,NEBO_SYSTEM_ERROR_INVALID_ARGUMENT
+ jmp .dns_return
+.dns_denied:
+ mov eax,NEBO_SYSTEM_ERROR_PERMISSION_DENIED
+.dns_return:
+ pop r12
+ pop rbx
+ ret
+
+; rdi=SocketAddress, rsi=output, rdx=capacity. Canonical ip:port or [ipv6]:port.
+; Formatting is failure-atomic: the caller buffer is published only at the end.
+nebo_socket_address_format:
+ push rbx
+ push r12
+ push r13
+ push r14
+ mov r12,rdi
+ mov r13,rsi
+ mov rbx,rdx
+ test r12,r12
+ jz .saf_invalid
+ test r13,r13
+ jz .saf_invalid
+ test rbx,rbx
+ jz .saf_limit
+ sub rsp,80
+ cmp qword [r12+NEBO_SOCKET_ADDRESS_IP+NEBO_IP_FAMILY],NEBO_IP_FAMILY_V6
+ jne .saf_ipv4
+ mov byte [rsp],'['
+ mov rdi,r12
+ lea rsi,[rsp+1]
+ mov edx,63
+ call nebo_ip_format
+ test eax,eax
+ jnz .saf_stack_return
+ lea r14,[rdx+1]
+ mov byte [rsp+r14],']'
+ inc r14
+ jmp .saf_port
+.saf_ipv4:
+ mov rdi,r12
+ mov rsi,rsp
+ mov edx,64
+ call nebo_ip_format
+ test eax,eax
+ jnz .saf_stack_return
+ mov r14,rdx
+.saf_port:
+ mov byte [rsp+r14],':'
+ inc r14
+ mov rax,[r12+NEBO_SOCKET_ADDRESS_PORT]
+ xor ecx,ecx
+.saf_digits:
+ xor edx,edx
+ mov r9,10
+ div r9
+ add dl,'0'
+ mov [rsp+64+rcx],dl
+ inc rcx
+ test rax,rax
+ jnz .saf_digits
+ lea rax,[r14+rcx]
+ cmp rax,rbx
+ ja .saf_stack_limit
+.saf_copy:
+ dec rcx
+ mov al,[rsp+64+rcx]
+ mov [rsp+r14],al
+ inc r14
+ test rcx,rcx
+ jnz .saf_copy
+ mov rdi,r13
+ mov rsi,rsp
+ mov rcx,r14
+ rep movsb
+ mov rdx,r14
+ xor eax,eax
+ jmp .saf_stack_return
+.saf_stack_limit:
+ mov eax,NEBO_SYSTEM_ERROR_LIMIT_EXCEEDED
+ xor edx,edx
+.saf_stack_return:
+ add rsp,80
+ jmp .saf_return
+.saf_limit:
+ mov eax,NEBO_SYSTEM_ERROR_LIMIT_EXCEEDED
+ xor edx,edx
+ jmp .saf_return
+.saf_invalid:
+ mov eax,NEBO_SYSTEM_ERROR_INVALID_ARGUMENT
+ xor edx,edx
+.saf_return:
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
 
 ; rdi=IpAddress out, rsi=text, rdx=len. eax=status.
 nebo_ip_parse:

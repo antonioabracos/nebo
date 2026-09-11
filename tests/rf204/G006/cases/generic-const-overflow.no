@@ -1,0 +1,2 @@
+const generic<N> (Int.value)extent() { N.return; }
+start() { 0.extent<1048577>(); }

@@ -1,0 +1,4 @@
+start() {
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789 true false ! ? . , : ; + - * / ( ) [ ] { } = _ Scan: ".console().scan().visual;
+    visual.console();
+}

@@ -1,0 +1,14 @@
+// Bounded circuit metadata is observable while proof creation and verification stay review-gated.
+(Int.self)proofCircuitNew() { self.return; }
+(Int.self)circuitPublicInput() { self.return; }
+(Int.self)circuitPrivateInput() { self.return; }
+(Int.self)circuitAssertEqual() { self.return; }
+(Int.self)circuitRangeCheck() { self.return; }
+(Int.self)circuitCompile() { self.return; }
+(Int.self)circuitProve() { self.return; }
+(Int.self)proofVerify() { self.return; }
+(Int.self)proofStatistics() { self.return; }
+
+start() {
+    66.proofCircuitNew().circuitPublicInput().circuitPrivateInput().circuitAssertEqual().circuitRangeCheck().circuitCompile().circuitProve().proofVerify().proofStatistics();
+}

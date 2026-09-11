@@ -1,0 +1,13 @@
+// Versioned rule sets separate pure evaluation, authorized effects, explanations, and validation.
+(Int.self)ruleSetNew() { self.return; }
+(Int.self)rulesWhen() { self.return; }
+(Int.self)ruleThen() { self.return; }
+(Int.self)rulePriority() { self.return; }
+(Int.self)rulesEvaluate() { self.return; }
+(Int.self)rulesFire() { self.return; }
+(Int.self)rulesExplain() { self.return; }
+(Int.self)rulesValidate() { self.return; }
+
+start() {
+    113.ruleSetNew().rulesWhen().ruleThen().rulePriority().rulesEvaluate().rulesFire().rulesExplain().rulesValidate();
+}

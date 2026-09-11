@@ -3,9 +3,11 @@ bits 64
 default rel
 %include "runtime/textual/text_core.inc"
 %include "runtime/textual/text_query.inc"
+%include "runtime/scalars/option_result_runtime.inc"
 global neboc_text_byte_length
 global neboc_text_is_empty
 global neboc_text_equal
+global neboc_text_equals_ascii_ignore_case
 global neboc_text_compare_ascii
 global neboc_text_starts_with
 global neboc_text_ends_with
@@ -15,6 +17,20 @@ global neboc_text_rfind
 global neboc_text_classify
 global neboc_text_query_profile
 global neboc_text_query_cost
+global nebo_runtime_textual_text_is_empty
+global nebo_runtime_textual_text_equals
+global nebo_runtime_textual_text_equals_ascii_ignore_case
+global nebo_runtime_textual_text_starts_with
+global nebo_runtime_textual_text_ends_with
+global nebo_runtime_textual_text_contains
+global nebo_runtime_textual_text_index_of
+global nebo_runtime_textual_text_last_index_of
+global nebo_runtime_textual_text_is_ascii
+global nebo_runtime_textual_text_is_utf8
+global nebo_runtime_textual_text_is_blank
+global nebo_runtime_textual_text_is_digits
+global nebo_runtime_textual_text_is_alpha_ascii
+global nebo_runtime_textual_text_is_alnum_ascii
 section .text
 align 16
 neboc_text_byte_length:
@@ -26,6 +42,7 @@ neboc_text_byte_length:
  mov rax,-1
  ret
 align 16
+nebo_runtime_textual_text_is_empty:
 neboc_text_is_empty:
  test rdi,rdi
  jz .empty_null
@@ -38,6 +55,7 @@ neboc_text_is_empty:
  ret
 
 align 16
+nebo_runtime_textual_text_equals:
 neboc_text_equal:
  test rdi,rdi
  jz .equal_null
@@ -56,6 +74,56 @@ neboc_text_equal:
  xor eax,eax
  ret
 .equal_null:
+ mov eax,-1
+ ret
+
+; ASCII-only case-insensitive equality. Non-ASCII input is outside this
+; bounded comparison profile and therefore compares unequal.
+align 16
+nebo_runtime_textual_text_equals_ascii_ignore_case:
+neboc_text_equals_ascii_ignore_case:
+ test rdi,rdi
+ jz .ascii_equal_null
+ test rsi,rsi
+ jz .ascii_equal_null
+ mov rcx,[rdi+NEBO_TEXT_LENGTH_OFFSET]
+ cmp rcx,[rsi+NEBO_TEXT_LENGTH_OFFSET]
+ jne .ascii_equal_false
+ mov r8,[rdi+NEBO_TEXT_DATA_OFFSET]
+ mov r9,[rsi+NEBO_TEXT_DATA_OFFSET]
+ xor edx,edx
+.ascii_equal_loop:
+ cmp rdx,rcx
+ jae .ascii_equal_true
+ mov al,[r8+rdx]
+ mov r10b,[r9+rdx]
+ test al,0x80
+ jnz .ascii_equal_false
+ test r10b,0x80
+ jnz .ascii_equal_false
+ cmp al,'A'
+ jb .ascii_left_folded
+ cmp al,'Z'
+ ja .ascii_left_folded
+ add al,32
+.ascii_left_folded:
+ cmp r10b,'A'
+ jb .ascii_right_folded
+ cmp r10b,'Z'
+ ja .ascii_right_folded
+ add r10b,32
+.ascii_right_folded:
+ cmp al,r10b
+ jne .ascii_equal_false
+ inc rdx
+ jmp .ascii_equal_loop
+.ascii_equal_true:
+ mov eax,1
+ ret
+.ascii_equal_false:
+ xor eax,eax
+ ret
+.ascii_equal_null:
  mov eax,-1
  ret
 
@@ -99,12 +167,15 @@ neboc_text_compare_ascii:
  ret
 
 align 16
+nebo_runtime_textual_text_starts_with:
 neboc_text_starts_with:
  test rdi,rdi
  jz match_null
  test rsi,rsi
  jz match_null
  mov rcx,[rsi+NEBO_TEXT_LENGTH_OFFSET]
+ test rcx,rcx
+ jz match_true
  cmp rcx,[rdi+NEBO_TEXT_LENGTH_OFFSET]
  ja match_false
  mov rdi,[rdi+NEBO_TEXT_DATA_OFFSET]
@@ -115,12 +186,15 @@ neboc_text_starts_with:
  ret
 
 align 16
+nebo_runtime_textual_text_ends_with:
 neboc_text_ends_with:
  test rdi,rdi
  jz match_null
  test rsi,rsi
  jz match_null
  mov rcx,[rsi+NEBO_TEXT_LENGTH_OFFSET]
+ test rcx,rcx
+ jz match_true
  mov r8,[rdi+NEBO_TEXT_LENGTH_OFFSET]
  cmp rcx,r8
  ja match_false
@@ -134,6 +208,7 @@ neboc_text_ends_with:
  ret
 
 align 16
+nebo_runtime_textual_text_contains:
 neboc_text_contains:
  test rdi,rdi
  jz match_null
@@ -258,32 +333,58 @@ neboc_text_rfind:
  mov rax,NEBO_QUERY_NOT_FOUND
  ret
 
+; Public Option<Int> wrappers use the canonical 16-byte caller-owned slot.
+; RDI=haystack, RSI=needle, RDX=slot; RAX=slot.
+align 16
+nebo_runtime_textual_text_index_of:
+ push rdx
+ call neboc_text_find
+ pop rdx
+ pxor xmm0,xmm0
+ movdqu [rdx],xmm0
+ cmp rax,NEBO_QUERY_NOT_FOUND
+ je .index_option_done
+ mov byte [rdx+NEBO_RUNTIME_TAG_OFFSET],NEBO_RUNTIME_OPTION_SOME
+ mov [rdx+NEBO_RUNTIME_PAYLOAD_OFFSET],rax
+.index_option_done:
+ mov rax,rdx
+ ret
+
+align 16
+nebo_runtime_textual_text_last_index_of:
+ push rdx
+ call neboc_text_rfind
+ pop rdx
+ pxor xmm0,xmm0
+ movdqu [rdx],xmm0
+ cmp rax,NEBO_QUERY_NOT_FOUND
+ je .last_index_option_done
+ mov byte [rdx+NEBO_RUNTIME_TAG_OFFSET],NEBO_RUNTIME_OPTION_SOME
+ mov [rdx+NEBO_RUNTIME_PAYLOAD_OFFSET],rax
+.last_index_option_done:
+ mov rax,rdx
+ ret
+
 ; Returns a bit mask for the bounded ASCII/validated-UTF8 profile.
 align 16
 neboc_text_classify:
  test rdi,rdi
  jz .class_null
- xor eax,eax
- mov r8,[rdi+NEBO_TEXT_FLAGS_OFFSET]
- test r8,NEBO_TEXT_FLAG_ASCII
- jz .not_ascii_flag
- or eax,NEBO_QUERY_CLASS_ASCII
-.not_ascii_flag:
- test r8,NEBO_TEXT_FLAG_VALID_UTF8
- jz .not_utf8_flag
- or eax,NEBO_QUERY_CLASS_UTF8
-.not_utf8_flag:
- mov r8d,NEBO_QUERY_CLASS_BLANK | NEBO_QUERY_CLASS_DIGITS | NEBO_QUERY_CLASS_ALPHA | NEBO_QUERY_CLASS_ALNUM
- mov rcx,[rdi+NEBO_TEXT_LENGTH_OFFSET]
+ push rbx
+ sub rsp,16
+ mov rbx,rdi
+ mov r8d,NEBO_QUERY_CLASS_ASCII | NEBO_QUERY_CLASS_BLANK | NEBO_QUERY_CLASS_DIGITS | NEBO_QUERY_CLASS_ALPHA | NEBO_QUERY_CLASS_ALNUM
+ mov rcx,[rbx+NEBO_TEXT_LENGTH_OFFSET]
  test rcx,rcx
  jnz .class_loop_setup
- and r8d,NEBO_QUERY_CLASS_BLANK
- or eax,r8d
- ret
+ mov r8d,NEBO_QUERY_CLASS_ASCII | NEBO_QUERY_CLASS_BLANK
+ jmp .class_utf8
 .class_loop_setup:
- mov rdi,[rdi+NEBO_TEXT_DATA_OFFSET]
+ mov rdi,[rbx+NEBO_TEXT_DATA_OFFSET]
 .class_loop:
  mov dl,[rdi]
+ test dl,0x80
+ jnz .class_non_ascii
  cmp dl,'0'
  jb .not_digit
  cmp dl,'9'
@@ -302,29 +403,168 @@ neboc_text_classify:
  and r8d,~(NEBO_QUERY_CLASS_ALPHA | NEBO_QUERY_CLASS_ALNUM)
  jmp .blank_check
 .is_alpha:
- and r8d,~NEBO_QUERY_CLASS_DIGITS
+ and r8d,~(NEBO_QUERY_CLASS_DIGITS | NEBO_QUERY_CLASS_BLANK)
  jmp .blank_check
 .is_digit:
- and r8d,~NEBO_QUERY_CLASS_ALPHA
+ and r8d,~(NEBO_QUERY_CLASS_ALPHA | NEBO_QUERY_CLASS_BLANK)
 .blank_check:
  cmp dl,' '
- je .next_class
+ je .is_blank
  cmp dl,9
- je .next_class
+ je .is_blank
  cmp dl,10
- je .next_class
+ je .is_blank
  cmp dl,13
- je .next_class
+ je .is_blank
  and r8d,~NEBO_QUERY_CLASS_BLANK
+ jmp .next_class
+.is_blank:
+ and r8d,~(NEBO_QUERY_CLASS_DIGITS | NEBO_QUERY_CLASS_ALPHA | NEBO_QUERY_CLASS_ALNUM)
+ jmp .next_class
+.class_non_ascii:
+ and r8d,~(NEBO_QUERY_CLASS_ASCII | NEBO_QUERY_CLASS_BLANK | NEBO_QUERY_CLASS_DIGITS | NEBO_QUERY_CLASS_ALPHA | NEBO_QUERY_CLASS_ALNUM)
 .next_class:
  inc rdi
  dec rcx
  jnz .class_loop
- or eax,r8d
+.class_utf8:
+ mov [rsp],r8d
+ mov rdi,rbx
+ call text_query_utf8_valid
+ mov r8d,[rsp]
+ test eax,eax
+ jz .class_done
+ or r8d,NEBO_QUERY_CLASS_UTF8
+.class_done:
+ mov eax,r8d
+ add rsp,16
+ pop rbx
  ret
 .class_null:
  mov eax,-1
  ret
+
+; Strict whole-input UTF-8 validation. Empty is valid; overlong encodings,
+; surrogates, values above U+10FFFF and truncated sequences are rejected.
+text_query_utf8_valid:
+ test rdi,rdi
+ jz .utf8_false
+ mov rcx,[rdi+NEBO_TEXT_LENGTH_OFFSET]
+ test rcx,rcx
+ jz .utf8_true
+ mov r8,[rdi+NEBO_TEXT_DATA_OFFSET]
+ test r8,r8
+ jz .utf8_false
+ xor edx,edx
+.utf8_loop:
+ cmp rdx,rcx
+ jae .utf8_true
+ movzx eax,byte [r8+rdx]
+ cmp eax,0x80
+ jb .utf8_one
+ cmp eax,0xc2
+ jb .utf8_false
+ cmp eax,0xdf
+ jbe .utf8_two
+ cmp eax,0xef
+ jbe .utf8_three
+ cmp eax,0xf4
+ jbe .utf8_four
+ jmp .utf8_false
+.utf8_one:
+ inc rdx
+ jmp .utf8_loop
+.utf8_two:
+ lea r9,[rdx+2]
+ cmp r9,rcx
+ ja .utf8_false
+ movzx r10d,byte [r8+rdx+1]
+ and r10d,0xc0
+ cmp r10d,0x80
+ jne .utf8_false
+ mov rdx,r9
+ jmp .utf8_loop
+.utf8_three:
+ lea r9,[rdx+3]
+ cmp r9,rcx
+ ja .utf8_false
+ movzx r10d,byte [r8+rdx+1]
+ movzx r11d,byte [r8+rdx+2]
+ mov esi,r10d
+ and esi,0xc0
+ cmp esi,0x80
+ jne .utf8_false
+ mov esi,r11d
+ and esi,0xc0
+ cmp esi,0x80
+ jne .utf8_false
+ cmp al,0xe0
+ jne .utf8_not_e0
+ cmp r10b,0xa0
+ jb .utf8_false
+.utf8_not_e0:
+ cmp al,0xed
+ jne .utf8_three_ok
+ cmp r10b,0xa0
+ jae .utf8_false
+.utf8_three_ok:
+ mov rdx,r9
+ jmp .utf8_loop
+.utf8_four:
+ lea r9,[rdx+4]
+ cmp r9,rcx
+ ja .utf8_false
+ movzx r10d,byte [r8+rdx+1]
+ movzx r11d,byte [r8+rdx+2]
+ mov esi,r10d
+ and esi,0xc0
+ cmp esi,0x80
+ jne .utf8_false
+ mov esi,r11d
+ and esi,0xc0
+ cmp esi,0x80
+ jne .utf8_false
+ movzx esi,byte [r8+rdx+3]
+ and esi,0xc0
+ cmp esi,0x80
+ jne .utf8_false
+ cmp al,0xf0
+ jne .utf8_not_f0
+ cmp r10b,0x90
+ jb .utf8_false
+.utf8_not_f0:
+ cmp al,0xf4
+ jne .utf8_four_ok
+ cmp r10b,0x90
+ jae .utf8_false
+.utf8_four_ok:
+ mov rdx,r9
+ jmp .utf8_loop
+.utf8_true:
+ mov eax,1
+ ret
+.utf8_false:
+ xor eax,eax
+ ret
+
+%macro TEXT_QUERY_CLASS_PREDICATE 2
+align 16
+%1:
+ sub rsp,8
+ call neboc_text_classify
+ add rsp,8
+ test eax,%2
+ setnz al
+ movzx eax,al
+ ret
+%endmacro
+
+TEXT_QUERY_CLASS_PREDICATE nebo_runtime_textual_text_is_ascii, NEBO_QUERY_CLASS_ASCII
+TEXT_QUERY_CLASS_PREDICATE nebo_runtime_textual_text_is_utf8, NEBO_QUERY_CLASS_UTF8
+TEXT_QUERY_CLASS_PREDICATE nebo_runtime_textual_text_is_blank, NEBO_QUERY_CLASS_BLANK
+TEXT_QUERY_CLASS_PREDICATE nebo_runtime_textual_text_is_digits, NEBO_QUERY_CLASS_DIGITS
+TEXT_QUERY_CLASS_PREDICATE nebo_runtime_textual_text_is_alpha_ascii, NEBO_QUERY_CLASS_ALPHA
+TEXT_QUERY_CLASS_PREDICATE nebo_runtime_textual_text_is_alnum_ascii, NEBO_QUERY_CLASS_ALNUM
 
 align 16
 neboc_text_query_profile:

@@ -1,0 +1,13 @@
+// Sensor fusion separates process uncertainty, measurement noise, frames, and outliers.
+(Int.self)sensorFusionNew() { self.return; }
+(Int.self)fusionAddSensor() { self.return; }
+(Int.self)fusionPredict() { self.return; }
+(Int.self)fusionUpdate() { self.return; }
+(Int.self)fusionState() { self.return; }
+(Int.self)fusionCovariance() { self.return; }
+(Int.self)fusionRejectOutliers() { self.return; }
+(Int.self)fusionInnovationReport() { self.return; }
+
+start() {
+    126.sensorFusionNew().fusionAddSensor().fusionPredict().fusionUpdate().fusionState().fusionCovariance().fusionRejectOutliers().fusionInnovationReport();
+}

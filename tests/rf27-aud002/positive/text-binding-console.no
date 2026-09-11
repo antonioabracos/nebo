@@ -1,0 +1,4 @@
+start() {
+    "Texto Nebo".mensagem;
+    mensagem.console();
+}

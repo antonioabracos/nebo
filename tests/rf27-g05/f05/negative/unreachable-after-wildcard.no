@@ -1,0 +1,7 @@
+start() {
+    Option<Int>(Some(4)).value;
+    match(value) {
+        _ -> 1.return;
+        None() -> 0.return;
+    }
+}

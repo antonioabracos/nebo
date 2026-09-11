@@ -1,0 +1,4 @@
+start() {
+  Range.inclusive(1,5).stepBy(2).odds;
+  odds.length().return;
+}

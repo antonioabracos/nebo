@@ -1,10 +1,11 @@
-; Prefix and power precedence contracts. Power is specified here but remains
-; inactive until its Registry front assigns a token and semantic protocol.
+; Prefix and power classifiers mirror the current canonical table. They are
+; inspection APIs only; the live Pratt parser consumes PrecedenceTable.
 bits 64
 default rel
 
 %include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"
 %include "compiler/tokens/token_kind.inc"
+%include "compiler/tokens/operator_registry.inc"
 %include "compiler/parser/expression/operator_precedence.inc"
 
 %define PREFIX_TOKEN_OFFSET 0
@@ -18,8 +19,8 @@ default rel
 section .rodata
 align 8
 prefix_entries:
- dq NEBOC_TOKEN_PLUS,18,NEBOC_OPERATOR_BP_PREFIX,NEBOC_OPERATOR_PARSE_ASSOC_RIGHT,NEBOC_OPERATOR_PARSE_FLAG_ACTIVE_CURRENT
- dq NEBOC_TOKEN_MINUS,19,NEBOC_OPERATOR_BP_PREFIX,NEBOC_OPERATOR_PARSE_ASSOC_RIGHT,NEBOC_OPERATOR_PARSE_FLAG_ACTIVE_CURRENT
+ dq NEBOC_TOKEN_PLUS,NEBOC_OPERATOR_ID_NSR_CORE_018,NEBOC_OPERATOR_BP_PREFIX,NEBOC_OPERATOR_PARSE_ASSOC_RIGHT,NEBOC_OPERATOR_PARSE_FLAG_ACTIVE_CURRENT
+ dq NEBOC_TOKEN_MINUS,NEBOC_OPERATOR_ID_NSR_CORE_019,NEBOC_OPERATOR_BP_PREFIX,NEBOC_OPERATOR_PARSE_ASSOC_RIGHT,NEBOC_OPERATOR_PARSE_FLAG_ACTIVE_CURRENT
  dq NEBOC_TOKEN_BANG,20,NEBOC_OPERATOR_BP_PREFIX,NEBOC_OPERATOR_PARSE_ASSOC_RIGHT,NEBOC_OPERATOR_PARSE_FLAG_ACTIVE_CURRENT
 
 section .text
@@ -48,8 +49,8 @@ NEBOC_ABI_FUNCTION neboc_operator_prefix_lookup
  ret
 
 ; Power binds above prefix and is right associative: left BP == right BP.
-; The precedence contract is active in P02; token activation remains owned by
-; the canonical caret front in G123.
+; Caret is already a compiler-admitted token; G119 only centralizes its
+; right-associative grouping and does not add a Registry entry.
 NEBOC_ABI_FUNCTION neboc_operator_power_contract
  xor eax,eax
  mov edx,NEBOC_OPERATOR_BP_POWER

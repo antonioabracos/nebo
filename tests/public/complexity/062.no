@@ -1,0 +1,13 @@
+// Logical fixed-step time drives ticks, bounded advances, canonical hashes, and divergence reports.
+(Int.self)simulationNew() { self.return; }
+(Int.self)simulationFixedStep() { self.return; }
+(Int.self)simulationTick() { self.return; }
+(Int.self)simulationAdvance() { self.return; }
+(Int.self)simulationTickNumber() { self.return; }
+(Int.self)simulationStateHash() { self.return; }
+(Int.self)simulationDeterministicMode() { self.return; }
+(Int.self)simulationDivergenceReport() { self.return; }
+
+start() {
+    94.simulationNew().simulationFixedStep().simulationTick().simulationAdvance().simulationTickNumber().simulationStateHash().simulationDeterministicMode().simulationDivergenceReport();
+}

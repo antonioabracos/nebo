@@ -1,0 +1,16 @@
+// Ordered schema metadata and row projections use actual typed values.
+start() {
+    Schema.new([Tuple.of("age", Int, false), Tuple.of("score", Int, true)]).schema;
+    schema.field("score").field;
+    field.at<0>().console();
+    field.at<1>().console();
+    field.at<2>().console();
+    schema.indexOf("score").expect("index").console();
+    Row.from(schema, [17, 29]).row;
+    row.get("age").expect("age").console();
+    row.project(["score"]).projected;
+    projected.get("score").expect("score").console();
+    row.toTuple().tuple;
+    tuple.at<0>().expect("first").console();
+    91.return;
+}

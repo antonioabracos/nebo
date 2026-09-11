@@ -19,10 +19,12 @@
  extern nebo_tcp_stream_connect
  extern nebo_tcp_stream_read
  extern nebo_tcp_stream_write
+ extern nebo_tcp_stream_write_all
  extern nebo_tcp_stream_shutdown
  extern nebo_socket_close
  extern nebo_udp_socket_bind
  extern nebo_udp_socket_send_to
  extern nebo_udp_socket_receive_from
+ extern nebo_udp_socket_receive_from_address
 %endif
 %endif

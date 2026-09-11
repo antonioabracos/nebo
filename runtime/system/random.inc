@@ -12,7 +12,9 @@
  extern nebo_random_seed
  extern nebo_random_next_u64
  extern nebo_random_next_range
+ extern nebo_random_float_unit
  extern nebo_entropy_capability_init
  extern nebo_random_fill_secure
+ extern nebo_random_secure_bytes
 %endif
 %endif

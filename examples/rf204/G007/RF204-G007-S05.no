@@ -1,0 +1,15 @@
+// Queue endpoints are FIFO; Deque endpoints permit symmetric front/back use.
+// Distinct values make an accidental LIFO/FIFO implementation observable.
+start() {
+    Queue<Int>.new().queue;
+    queue.enqueue(31);
+    queue.enqueue(37);
+    queue.peek().queueFront;
+    queue.dequeue().firstOut;
+    Deque<Int>.new().deque;
+    deque.pushBack(9);
+    deque.pushFront(4);
+    deque.pushBack(15);
+    deque.popFront().frontOut;
+    deque.popBack();
+}

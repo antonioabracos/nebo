@@ -1,0 +1,10 @@
+// N participates in the monomorphization key and is available as a checked
+// compile-time value. Companion conformance cases exercise open T and every
+// Copy, Comparable, Hash + Eq, and legacy Scalar capability form.
+const generic<N> (Int.value)extent() {
+    N.return;
+}
+
+start() {
+    0.extent<47>();
+}

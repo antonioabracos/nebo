@@ -1,0 +1,7 @@
+(Int.self)matrixSum(Matrix<Int>.matrix) {
+    matrix.sum().return;
+}
+start() {
+    Matrix<Int>.filled(2, 3, 7).matrix;
+    0.matrixSum(matrix).return;
+}

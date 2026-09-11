@@ -1,71 +1,33 @@
-; PROJECT-SYMBOL-INDEX-E-CARREGAMENTO-INCREMENTAL-DE-INTERFACES-F01: Schema/identity/revision do ProjectSymbolIndex
-; Bounded native developer-experience/prelude/trivia kernel.
-; rdi=input bytes, rsi=length, rdx=caller-owned 24-byte result.
-; Success publishes digest, length, and stable operation tag atomically.
-; Failure publishes nothing. No allocation, I/O, libc, network, or effects.
+; RF166-G160-F01: revision-bound ProjectSymbolIndex construction.
 bits 64
 default rel
-
+%include "compiler/semantic/index/symbol_index.inc"
 global neboc_symbol_index_new
-
-%define DOC_MAX_INPUT 4096
-%define DOC_TAG 1
-%define hover_FNV_OFFSET 0xcbf29ce484222325
-%define hover_FNV_PRIME  0x100000001b3
-
 section .text
 align 16
 neboc_symbol_index_new:
-    test rdi, rdi
-    jz .argument
-    test rdx, rdx
-    jz .argument
-    test rdx, 7
-    jnz .argument
-    test rsi, rsi
-    jz .length
-    cmp rsi, DOC_MAX_INPUT
-    ja .length
-    lea rax, [rdi + rsi]
-    cmp rax, rdi
-    jb .length
-
-    mov rax, hover_FNV_OFFSET
-    mov r8, hover_FNV_PRIME
-    xor ecx, ecx
-.scan:
-    cmp rcx, rsi
-    jae .publish
-    movzx r9d, byte [rdi + rcx]
-    test r9b, r9b
-    jz .encoding
-    cmp r9b, 0x7f
-    ja .encoding
-    xor rax, r9
-    imul rax, r8
-    inc rcx
-    jmp .scan
-.publish:
-    xor rax, DOC_TAG
-    mov qword [rdx], rax
-    mov qword [rdx + 8], rsi
-    mov qword [rdx + 16], DOC_TAG
-    xor eax, eax
-    xor edx, edx
-    ret
-.argument:
-    mov eax, 1
-    mov edx, 1
-    ret
-.length:
-    mov eax, 2
-    mov edx, 2
-    ret
-.encoding:
-    mov eax, 3
-    mov edx, 3
-    ret
-.keyword:
-    mov eax, 4
-    mov edx, 4
-    ret
+ INDEX_VALIDATE_REQUEST NEBOC_INDEX_OP_NEW,.validated
+.validated:
+ INDEX_REQUIRE_FLAGS NEBOC_INDEX_FLAG_COLD|NEBOC_INDEX_FLAG_ATOMIC|NEBOC_INDEX_FLAG_NO_CAPABILITY_GRANT|NEBOC_INDEX_FLAG_DEADLINE,.policy
+ cmp qword [rdi+NEBOC_INDEX_WORKSPACE_OFFSET],0
+ je .contract
+ cmp qword [rdi+NEBOC_INDEX_REVISION_OFFSET],0
+ je .contract
+ cmp qword [rdi+NEBOC_INDEX_COLD_DIGEST_OFFSET],0
+ je .contract
+ mov rax,[rdi+NEBOC_INDEX_PUBLIC_ENTRIES_OFFSET]
+ sub rax,[rdi+NEBOC_INDEX_FILTERED_ENTRIES_OFFSET]
+ jc .mismatch
+ cmp rax,[rdi+NEBOC_INDEX_RESULT_ENTRIES_OFFSET]
+ jne .mismatch
+ INDEX_PUBLISH [rdi+NEBOC_INDEX_COLD_DIGEST_OFFSET],0
+.contract:
+ mov eax,NEBOC_INDEX_STATUS_CONTRACT
+ ret
+.policy:
+ mov eax,NEBOC_INDEX_STATUS_POLICY
+ ret
+.mismatch:
+ mov eax,NEBOC_INDEX_STATUS_MISMATCH
+ ret
+section .note.GNU-stack noalloc noexec nowrite progbits

@@ -1,4 +1,4 @@
-; TREE-GRAPH-NODE-E-EDGE-F05 deterministic bounded descriptive statistics
+; RF27-G14-F05 deterministic bounded descriptive statistics
 bits 64
 default rel
 %define NEBO_STATISTICS_IMPLEMENTATION 1
@@ -273,3 +273,5 @@ nebo_stats_correlation_f64:
  mov eax,NEBO_NUMERIC_ERROR_DOMAIN
  jmp .corr_ret
 section .note.GNU-stack noalloc noexec nowrite progbits
+
+%include "runtime/numeric/vector_statistics_public.inc"

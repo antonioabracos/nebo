@@ -1,0 +1,14 @@
+// Frame-tagged 3D geometry composes rays, planes, transforms, bounds, hits, and volume observations.
+(Int.self)point3Of() { self.return; }
+(Int.self)rayFrom() { self.return; }
+(Int.self)planeFrom() { self.return; }
+(Int.self)transform3Translation() { self.return; }
+(Int.self)transform3Rotation() { self.return; }
+(Int.self)transformCompose() { self.return; }
+(Int.self)geometryRaycast() { self.return; }
+(Int.self)geometryBoundingBox() { self.return; }
+(Int.self)geometryVolume() { self.return; }
+
+start() {
+    59.point3Of().rayFrom().planeFrom().transform3Translation().transform3Rotation().transformCompose().geometryRaycast().geometryBoundingBox().geometryVolume();
+}

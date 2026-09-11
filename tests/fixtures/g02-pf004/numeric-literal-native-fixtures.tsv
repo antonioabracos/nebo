@@ -1,0 +1,6 @@
+fixture	classification	contract
+001-decimal-int-native-executable.no	EXECUTABLE_NOW	existing Int signed64 native path
+002-base-equivalence-native.proposed.no	PROPOSED_NOT_EXECUTABLE	internal native plan equivalence across bases
+003-separator-native.proposed.no	PROPOSED_NOT_EXECUTABLE	separator provenance stripped before runtime
+004-int64-min-native.proposed.no	PROPOSED_NOT_EXECUTABLE	reserved magnitude lowered to signed INT64_MIN bits
+005-positive-int64-min-overflow.no	EXPECTED_REJECTION	positive 2^63 rejected before native plan

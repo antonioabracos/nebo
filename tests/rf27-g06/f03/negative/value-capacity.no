@@ -1,0 +1,12 @@
+start() {
+  Array<Int,256>.filled(1).a1;
+  Array<Int,256>.filled(2).a2;
+  Array<Int,256>.filled(3).a3;
+  Array<Int,256>.filled(4).a4;
+  Array<Int,256>.filled(5).a5;
+  Array<Int,256>.filled(6).a6;
+  Array<Int,256>.filled(7).a7;
+  Array<Int,256>.filled(8).a8;
+  Array<Int,1> [9].a9;
+  a9.at(0).return;
+}

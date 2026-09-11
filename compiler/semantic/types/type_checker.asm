@@ -17,6 +17,7 @@ extern neboc_operator_unary_type
 extern neboc_operator_binary_type
 extern neboc_checked_int_unary
 extern neboc_checked_int_binary
+extern neboc_quantity_normalize_constant
 
 section .rodata
 name_void: db 'Void'
@@ -61,7 +62,10 @@ NEBOC_ABI_FUNCTION neboc_type_check
  cmp qword [r14+NEBOC_TYPE_TABLE_STATE_OFFSET],NEBOC_TYPE_TABLE_STATE_FROZEN
  jne .check_invalid
  cmp qword [r14+NEBOC_TYPE_TABLE_COUNT_OFFSET],NEBOC_TYPE_BUILTIN_COUNT
+ je .check_type_table_ready
+ cmp qword [r14+NEBOC_TYPE_TABLE_COUNT_OFFSET],NEBOC_TYPE_QUANTITY_MAX_COUNT
  jne .check_invalid
+.check_type_table_ready:
  cmp qword [r15+NEBOC_SYMBOL_TABLE_STATE_OFFSET],NEBOC_SYMBOL_TABLE_STATE_FROZEN
  jne .check_invalid
  mov rbx,[r13+NEBOC_AST_STORE_COUNT_OFFSET]
@@ -661,6 +665,20 @@ tc_type_node:
  jne .node_store
  mov rax,[r12+NEBOC_TYPE_REQUEST_NODE_CONSTANTS_OFFSET]
  mov rsi,[rax+rdx*8]
+ mov rdi,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ cmp rdi,NEBOC_TOKEN_DEGREE
+ jb .node_unary_scalar_constant
+ cmp rdi,NEBOC_TOKEN_POSTFIX_PERCENT
+ ja .node_unary_scalar_constant
+ lea rdx,[rsp+24]
+ call neboc_quantity_normalize_constant
+ cmp eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ je .node_overflow
+ test eax,eax
+ jnz .node_operator_mismatch
+ mov rdx,[rsp+24]
+ jmp .node_save_constant
+.node_unary_scalar_constant:
  cmp qword [r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET],NEBOC_TOKEN_BANG
  je .node_unary_bang_constant
  mov rdi,NEBOC_TOKEN_MINUS

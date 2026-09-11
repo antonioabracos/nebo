@@ -1,0 +1,4 @@
+start() {
+    Array<Int, 3>.filled(59).values;
+    values.at(0).return;
+}

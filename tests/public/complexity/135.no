@@ -1,0 +1,7 @@
+// Synthetic image, audio, video, frame, waveform, spectrogram, thumbnail, and metadata previews require no codec.
+start() {
+    RenderPlan;
+    3308;
+    output.stdout().stderr().target("domain-visual-service").plain().visual().headlessEvent();
+    lifecycle.event("domain-visual").payload("media-semantic-previews").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

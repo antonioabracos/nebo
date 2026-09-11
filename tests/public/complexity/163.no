@@ -1,0 +1,7 @@
+// Applies bounded performance, size, and byte-determinism gates to the closeout.
+start() {
+    RenderPlan;
+    3607;
+    output.stdout().stderr().target("rf116-closeout").plain().visual().headlessEvent();
+    lifecycle.event("integration-conformance").payload("performance-size-determinism").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

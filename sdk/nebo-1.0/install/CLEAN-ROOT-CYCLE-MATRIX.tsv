@@ -1,0 +1,9 @@
+cycle	source	expected_exit	steps	oracle	retained_artifacts
+S01	RF204-G195-S01.no	43	install;restore;build;run;upgrade;rollback;gc;uninstall	independent ELF/SDK/project/lock bytes and modes; distinct imported constants	none
+S02	RF204-G195-S02.no	61	install;restore;build;run;upgrade;rollback;gc;uninstall	independent ELF/SDK/project/lock bytes and modes; distinct imported constants	none
+S03	RF204-G195-S03.no	79	install;restore;build;run;upgrade;rollback;gc;uninstall	independent ELF/SDK/project/lock bytes and modes; distinct imported constants	none
+S04	RF204-G195-S04.no	101	install;restore;build;run;upgrade;rollback;gc;uninstall	independent ELF/SDK/project/lock bytes and modes; distinct imported constants	none
+S05	RF204-G195-S05.no	127	install;restore;build;run;upgrade;rollback;gc;uninstall	independent ELF/SDK/project/lock bytes and modes; distinct imported constants	none
+S06	RF204-G195-S06.no	149	install;restore;build;run;upgrade;rollback;gc;uninstall	independent ELF/SDK/project/lock bytes and modes; distinct imported constants	none
+S07	RF204-G195-S07.no	173	install;restore;build;run;upgrade;rollback;gc;uninstall	independent ELF/SDK/project/lock bytes and modes; distinct imported constants	none
+S08	RF204-G195-S08.no	197	install;restore;build;run;upgrade;rollback;gc;uninstall	independent ELF/SDK/project/lock bytes and modes; distinct imported constants	none

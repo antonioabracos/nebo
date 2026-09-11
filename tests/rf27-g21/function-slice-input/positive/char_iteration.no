@@ -1,0 +1,10 @@
+(Char.self)first(Slice<Char>.values) {
+    for (value in values) { value.return; }
+    'Z'.return;
+}
+(Char.self)work() {
+    Array<Char,3> ['A','é','ç'].source;
+    source.asSlice().view;
+    self.first(view).return;
+}
+start() { 'Z'.work().return; }

@@ -6,12 +6,21 @@ default rel
 %include "compiler/support/status/status_codes.inc"
 %include "compiler/tokens/token.inc"
 %include "compiler/tokens/token_kind.inc"
+%include "compiler/tokens/operator_registry.inc"
+%include "compiler/semantic/operators/core_option_range_flow_registry.inc"
 %include "compiler/parser/option_result_parser.inc"
 %include "compiler/semantic/types/option_layout_semantic.inc"
+%include "compiler/lowering/operators/evaluation_plan.inc"
 
 extern neboc_option_layout
+extern neboc_option_coalesce
+extern neboc_optional_chain
+extern neboc_option_coalesce_assignment_plan
+extern neboc_option_coalesce_assignment_commit
 
 section .rodata
+op_n_console: db 'console'
+op_n_console_len equ $-op_n_console
 n_option: db 'Option'
 n_option_len equ $-n_option
 n_array: db 'Array'
@@ -38,10 +47,26 @@ n_and_then: db 'andThen'
 n_and_then_len equ $-n_and_then
 n_or_else: db 'orElse'
 n_or_else_len equ $-n_or_else
+n_contains: db 'contains'
+n_contains_len equ $-n_contains
+n_expect: db 'expect'
+n_expect_len equ $-n_expect
+n_unwrap_or: db 'unwrapOr'
+n_unwrap_or_len equ $-n_unwrap_or
+n_filter: db 'filter'
+n_filter_len equ $-n_filter
+n_zip: db 'zip'
+n_zip_len equ $-n_zip
+n_at: db 'at'
+n_at_len equ $-n_at
 n_drop: db 'drop'
 n_drop_len equ $-n_drop
 n_eager: db 'eager'
 n_eager_len equ $-n_eager
+n_mutable: db 'mutable'
+n_mutable_len equ $-n_mutable
+n_wrapping_add: db 'wrappingAdd'
+n_wrapping_add_len equ $-n_wrapping_add
 
 section .text
 
@@ -167,6 +192,7 @@ op_scan_marker:
  xor ebx,ebx
  xor r13d,r13d
  xor r14d,r14d
+ xor r15d,r15d
 .loop:
  cmp rbx,[r12+NEBOC_OPTION_TOKEN_COUNT_OFFSET]
  jae .decision
@@ -174,6 +200,13 @@ op_scan_marker:
  call op_token_ptr
  test rax,rax
  jz .no
+ mov r10,[rax+NEBOC_TOKEN_KIND_OFFSET]
+ cmp r10,NEBOC_TOKEN_COALESCE
+ je .mark_operation
+ cmp r10,NEBOC_TOKEN_OPTIONAL_CHAIN
+ je .mark_operation
+ cmp r10,NEBOC_TOKEN_OPTION_ASSIGN
+ je .mark_operation
  cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
  jne .next
  mov rax,rbx
@@ -183,7 +216,31 @@ op_scan_marker:
  test eax,eax
  jz .new_operation
  mov r13d,1
+ ; Predicate-only canonical constructors must reach the same tagged owner.
+ ; The older Option<T>.some surface retains its separate native grammar.
+ lea rax,[rbx+4]
+ call op_token_ptr
+ test rax,rax
+ jz .new_operation
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ jne .new_operation
+ mov r15d,1
 .new_operation:
+ test r15d,r15d
+ jz .other_operation
+ mov rax,rbx
+ lea rsi,[rel n_is_some]
+ mov edx,n_is_some_len
+ call op_token_match
+ test eax,eax
+ jnz .mark_operation
+ mov rax,rbx
+ lea rsi,[rel n_is_none]
+ mov edx,n_is_none_len
+ call op_token_match
+ test eax,eax
+ jnz .mark_operation
+.other_operation:
  mov rax,rbx
  lea rsi,[rel n_get]
  mov edx,n_get_len
@@ -209,8 +266,44 @@ op_scan_marker:
  test eax,eax
  jnz .mark_operation
  mov rax,rbx
+ lea rsi,[rel n_contains]
+ mov edx,n_contains_len
+ call op_token_match
+ test eax,eax
+ jnz .mark_operation
+ mov rax,rbx
+ lea rsi,[rel n_expect]
+ mov edx,n_expect_len
+ call op_token_match
+ test eax,eax
+ jnz .mark_operation
+ mov rax,rbx
+ lea rsi,[rel n_unwrap_or]
+ mov edx,n_unwrap_or_len
+ call op_token_match
+ test eax,eax
+ jnz .mark_operation
+ mov rax,rbx
+ lea rsi,[rel n_filter]
+ mov edx,n_filter_len
+ call op_token_match
+ test eax,eax
+ jnz .mark_operation
+ mov rax,rbx
+ lea rsi,[rel n_zip]
+ mov edx,n_zip_len
+ call op_token_match
+ test eax,eax
+ jnz .mark_operation
+ mov rax,rbx
  lea rsi,[rel n_drop]
  mov edx,n_drop_len
+ call op_token_match
+ test eax,eax
+ jnz .mark_operation
+ mov rax,rbx
+ lea rsi,[rel n_mutable]
+ mov edx,n_mutable_len
  call op_token_match
  test eax,eax
  jz .next
@@ -684,11 +777,18 @@ op_parse_statement:
  push r13
  push r14
  push r15
- sub rsp,40
+ sub rsp,120
  xor r15d,r15d
  call op_peek_kind
  cmp eax,NEBOC_TOKEN_IDENTIFIER
- jne .syntax
+ je .owned_statement
+ xor r13d,r13d
+ call op_scalar_statement
+ test eax,eax
+ jnz .fail
+ mov r15d,1
+ jmp .suffix
+.owned_statement:
  lea rsi,[rel n_option]
  mov edx,n_option_len
  call op_match_current
@@ -708,6 +808,15 @@ op_parse_statement:
  mov r13,rax
 .suffix:
  call op_peek_kind
+ mov r10,rax
+ NEBOC_CORE_ORF_CLASSIFY r10,r11,.suffix_non_registry
+ cmp r11,NEBOC_OPERATOR_ID_NSR_CORE_039
+ je .coalesce
+ cmp r11,NEBOC_OPERATOR_ID_NSR_CORE_040
+ je .optional_chain
+ cmp r11,NEBOC_OPERATOR_ID_NSR_CORE_041
+ je .option_assign
+.suffix_non_registry:
  cmp eax,NEBOC_TOKEN_DOT
  jne .complete
  inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
@@ -717,6 +826,14 @@ op_parse_statement:
  cmp eax,NEBOC_TOKEN_IDENTIFIER
  jne .syntax
  mov r14,[r12+NEBOC_OPTION_CURSOR_OFFSET]
+ lea rsi,[rel op_n_console]
+ mov edx,op_n_console_len
+ call op_match_current
+ test eax,eax
+ jnz .console
+ ; A scalar observation is a scalar; never reuse its old container receiver.
+ test r15d,r15d
+ jnz .syntax
  lea rsi,[rel n_is_some]
  mov edx,n_is_some_len
  call op_match_current
@@ -747,16 +864,167 @@ op_parse_statement:
  call op_match_current
  test eax,eax
  jnz .or_else
+ lea rsi,[rel n_contains]
+ mov edx,n_contains_len
+ call op_match_current
+ test eax,eax
+ jnz .contains
+ lea rsi,[rel n_expect]
+ mov edx,n_expect_len
+ call op_match_current
+ test eax,eax
+ jnz .expect
+ lea rsi,[rel n_unwrap_or]
+ mov edx,n_unwrap_or_len
+ call op_match_current
+ test eax,eax
+ jnz .unwrap_or
+ lea rsi,[rel n_filter]
+ mov edx,n_filter_len
+ call op_match_current
+ test eax,eax
+ jnz .filter
+ lea rsi,[rel n_zip]
+ mov edx,n_zip_len
+ call op_match_current
+ test eax,eax
+ jnz .zip
+ lea rsi,[rel n_at]
+ mov edx,n_at_len
+ call op_match_current
+ test eax,eax
+ jnz .at
  lea rsi,[rel n_drop]
  mov edx,n_drop_len
  call op_match_current
  test eax,eax
  jnz .drop
+ lea rsi,[rel n_mutable]
+ mov edx,n_mutable_len
+ call op_match_current
+ test eax,eax
+ jnz .mutable
  ; One-shot binding terminal.
  cmp qword [r13+NEBOC_OPTION_BIND_NAME_OFFSET],NEBOC_OPTION_UNBOUND_NAME
  jne .syntax
  mov [r13+NEBOC_OPTION_BIND_NAME_OFFSET],r14
  inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ jmp .suffix
+.mutable:
+ call .check_live
+ jne .use_after
+ cmp qword [r13+NEBOC_OPTION_BIND_NAME_OFFSET],NEBOC_OPTION_UNBOUND_NAME
+ je .syntax
+ test qword [r13+NEBOC_OPTION_BIND_FLAGS_OFFSET],NEBOC_OPTION_BIND_FLAG_MUTABLE
+ jnz .syntax
+ or qword [r13+NEBOC_OPTION_BIND_FLAGS_OFFSET],NEBOC_OPTION_BIND_FLAG_MUTABLE
+ inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ jmp .suffix
+.coalesce:
+ call .check_live
+ jne .use_after
+ cmp qword [r13+NEBOC_OPTION_BIND_TYPE_OFFSET],NEBOC_OPTION_TYPE_ARRAY_INT
+ je .callback_type
+ inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ mov rdi,[r13+NEBOC_OPTION_BIND_TYPE_OFFSET]
+ call op_parse_scalar_value
+ test edx,edx
+ jnz .callback_type
+ mov [rsp],rax
+ mov rdi,[r13+NEBOC_OPTION_BIND_TAG_OFFSET]
+ mov rsi,[r13+NEBOC_OPTION_BIND_VALUE_OFFSET]
+ mov rdx,[rsp]
+ lea rcx,[rsp+40]
+ call neboc_option_coalesce
+ test eax,eax
+ jnz .syntax
+ mov rax,[rsp+40+NEBOC_EVAL_PLAN_RIGHT_EVALUATIONS_OFFSET]
+ add [r12+NEBOC_OPTION_CALLBACK_COUNT_OFFSET],rax
+ mov rax,[rsp+40+NEBOC_EVAL_PLAN_AUXILIARY_OFFSET]
+ mov [r12+NEBOC_OPTION_RESULT_VALUE_OFFSET],rax
+ mov rax,[r13+NEBOC_OPTION_BIND_TYPE_OFFSET]
+ mov [r12+NEBOC_OPTION_RESULT_TYPE_OFFSET],rax
+ mov r15d,1
+ jmp .suffix
+.optional_chain:
+ call .check_live
+ jne .use_after
+ cmp qword [r13+NEBOC_OPTION_BIND_TYPE_OFFSET],NEBOC_OPTION_TYPE_INT
+ jne .callback_type
+ inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ lea rsi,[rel n_wrapping_add]
+ mov edx,n_wrapping_add_len
+ call op_match_current
+ test eax,eax
+ jz .syntax
+ inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call op_expect
+ test eax,eax
+ jnz .fail
+ mov edi,NEBOC_OPTION_TYPE_INT
+ call op_parse_scalar_value
+ test edx,edx
+ jnz .callback_type
+ mov [rsp],rax
+ mov edi,NEBOC_TOKEN_RPAREN
+ call op_expect
+ test eax,eax
+ jnz .fail
+ mov rdi,[r13+NEBOC_OPTION_BIND_TAG_OFFSET]
+ mov rsi,[r13+NEBOC_OPTION_BIND_VALUE_OFFSET]
+ mov edx,NEBOC_OPERATOR_ID_NSR_CORE_040
+ lea rcx,[rsp+40]
+ call neboc_optional_chain
+ test eax,eax
+ jnz .syntax
+ mov rax,[rsp+40+NEBOC_EVAL_PLAN_RIGHT_EVALUATIONS_OFFSET]
+ add [r12+NEBOC_OPTION_CALLBACK_COUNT_OFFSET],rax
+ mov rsi,r13
+ call op_clone_binding
+ test rax,rax
+ jz .fail
+ mov r13,rax
+ cmp qword [r13+NEBOC_OPTION_BIND_TAG_OFFSET],NEBOC_OPTION_RESULT_PARSER_OPTION_TAG_SOME
+ jne .suffix
+ mov rax,[rsp]
+ add [r13+NEBOC_OPTION_BIND_VALUE_OFFSET],rax
+ mov rax,[r13+NEBOC_OPTION_BIND_VALUE_OFFSET]
+ mov [r13+NEBOC_OPTION_BIND_VALUE_HASH_OFFSET],rax
+ jmp .suffix
+.option_assign:
+ call .check_live
+ jne .use_after
+ cmp qword [r13+NEBOC_OPTION_BIND_NAME_OFFSET],NEBOC_OPTION_UNBOUND_NAME
+ je .syntax
+ test qword [r13+NEBOC_OPTION_BIND_FLAGS_OFFSET],NEBOC_OPTION_BIND_FLAG_MUTABLE
+ jz .syntax
+ cmp qword [r13+NEBOC_OPTION_BIND_TYPE_OFFSET],NEBOC_OPTION_TYPE_ARRAY_INT
+ je .callback_type
+ inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ mov rdi,[r13+NEBOC_OPTION_BIND_TYPE_OFFSET]
+ call op_parse_scalar_value
+ test edx,edx
+ jnz .callback_type
+ mov [rsp],rax
+ lea rdi,[r13+NEBOC_OPTION_BIND_VALUE_OFFSET]
+ mov rsi,[r13+NEBOC_OPTION_BIND_TAG_OFFSET]
+ mov rdx,[rsp]
+ lea rcx,[rsp+40]
+ call neboc_option_coalesce_assignment_plan
+ test eax,eax
+ jnz .syntax
+ lea rdi,[rsp+40]
+ call neboc_option_coalesce_assignment_commit
+ test eax,eax
+ jnz .syntax
+ mov rax,[rsp+40+NEBOC_EVAL_PLAN_RIGHT_EVALUATIONS_OFFSET]
+ add [r12+NEBOC_OPTION_CALLBACK_COUNT_OFFSET],rax
+ cmp qword [rsp+40+NEBOC_EVAL_PLAN_STORE_COUNT_OFFSET],0
+ je .suffix
+ mov qword [r13+NEBOC_OPTION_BIND_TAG_OFFSET],NEBOC_OPTION_RESULT_PARSER_OPTION_TAG_SOME
+ mov rax,[r13+NEBOC_OPTION_BIND_VALUE_OFFSET]
+ mov [r13+NEBOC_OPTION_BIND_VALUE_HASH_OFFSET],rax
  jmp .suffix
 .check_live:
  cmp qword [r13+NEBOC_OPTION_BIND_STATE_OFFSET],NEBOC_OPTION_STATE_LIVE
@@ -802,6 +1070,205 @@ op_parse_statement:
  mov [r12+NEBOC_OPTION_RESULT_VALUE_OFFSET],rax
  mov rax,[r13+NEBOC_OPTION_BIND_TYPE_OFFSET]
  mov [r12+NEBOC_OPTION_RESULT_TYPE_OFFSET],rax
+ mov r15d,1
+ jmp .suffix
+.contains:
+ call .check_live
+ jne .use_after
+ inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call op_expect
+ test eax,eax
+ jnz .fail
+ cmp qword [r13+NEBOC_OPTION_BIND_TYPE_OFFSET],NEBOC_OPTION_TYPE_ARRAY_INT
+ je .callback_type
+ mov rdi,[r13+NEBOC_OPTION_BIND_TYPE_OFFSET]
+ call op_parse_scalar_value
+ test edx,edx
+ jnz .callback_type
+ mov [rsp],rax
+ mov edi,NEBOC_TOKEN_RPAREN
+ call op_expect
+ test eax,eax
+ jnz .fail
+ xor eax,eax
+ cmp qword [r13+NEBOC_OPTION_BIND_TAG_OFFSET],NEBOC_OPTION_RESULT_PARSER_OPTION_TAG_SOME
+ jne .contains_ready
+ mov rdx,[rsp]
+ cmp rdx,[r13+NEBOC_OPTION_BIND_VALUE_OFFSET]
+ sete al
+.contains_ready:
+ mov [r12+NEBOC_OPTION_RESULT_VALUE_OFFSET],rax
+ mov qword [r12+NEBOC_OPTION_RESULT_TYPE_OFFSET],NEBOC_OPTION_TYPE_BOOL
+ mov r15d,1
+ jmp .suffix
+.expect:
+ call .check_live
+ jne .use_after
+ inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call op_expect
+ test eax,eax
+ jnz .fail
+ call op_peek_kind
+ cmp eax,NEBOC_TOKEN_TEXT
+ jne .syntax
+ inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_RPAREN
+ call op_expect
+ test eax,eax
+ jnz .fail
+ cmp qword [r13+NEBOC_OPTION_BIND_TAG_OFFSET],NEBOC_OPTION_RESULT_PARSER_OPTION_TAG_SOME
+ jne .unsafe_get
+ test qword [r13+NEBOC_OPTION_BIND_FLAGS_OFFSET],NEBOC_OPTION_BIND_FLAG_ZIPPED
+ jnz .syntax
+ mov rax,[r13+NEBOC_OPTION_BIND_VALUE_OFFSET]
+ mov [r12+NEBOC_OPTION_RESULT_VALUE_OFFSET],rax
+ mov rax,[r13+NEBOC_OPTION_BIND_TYPE_OFFSET]
+ mov [r12+NEBOC_OPTION_RESULT_TYPE_OFFSET],rax
+ mov r15d,1
+ jmp .suffix
+.unwrap_or:
+ call .check_live
+ jne .use_after
+ inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call op_expect
+ test eax,eax
+ jnz .fail
+ cmp qword [r13+NEBOC_OPTION_BIND_TYPE_OFFSET],NEBOC_OPTION_TYPE_ARRAY_INT
+ je .callback_type
+ mov rdi,[r13+NEBOC_OPTION_BIND_TYPE_OFFSET]
+ call op_parse_scalar_value
+ test edx,edx
+ jnz .callback_type
+ mov [rsp],rax
+ mov edi,NEBOC_TOKEN_RPAREN
+ call op_expect
+ test eax,eax
+ jnz .fail
+ mov rax,[rsp]
+ cmp qword [r13+NEBOC_OPTION_BIND_TAG_OFFSET],NEBOC_OPTION_RESULT_PARSER_OPTION_TAG_NONE
+ je .unwrap_ready
+ mov rax,[r13+NEBOC_OPTION_BIND_VALUE_OFFSET]
+.unwrap_ready:
+ mov [r12+NEBOC_OPTION_RESULT_VALUE_OFFSET],rax
+ mov rax,[r13+NEBOC_OPTION_BIND_TYPE_OFFSET]
+ mov [r12+NEBOC_OPTION_RESULT_TYPE_OFFSET],rax
+ mov r15d,1
+ jmp .suffix
+.filter:
+ call .check_live
+ jne .use_after
+ inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call op_expect
+ test eax,eax
+ jnz .fail
+ mov edi,NEBOC_OPTION_TYPE_BOOL
+ call op_parse_scalar_value
+ test edx,edx
+ jnz .callback_type
+ mov [rsp],rax
+ mov edi,NEBOC_TOKEN_RPAREN
+ call op_expect
+ test eax,eax
+ jnz .fail
+ mov rsi,r13
+ call op_clone_binding
+ test rax,rax
+ jz .fail
+ mov r13,rax
+ cmp qword [r13+NEBOC_OPTION_BIND_TAG_OFFSET],NEBOC_OPTION_RESULT_PARSER_OPTION_TAG_SOME
+ jne .suffix
+ inc qword [r12+NEBOC_OPTION_CALLBACK_COUNT_OFFSET]
+ cmp qword [rsp],0
+ jne .suffix
+ mov qword [r13+NEBOC_OPTION_BIND_TAG_OFFSET],NEBOC_OPTION_RESULT_PARSER_OPTION_TAG_NONE
+ mov qword [r13+NEBOC_OPTION_BIND_VALUE_OFFSET],0
+ mov qword [r13+NEBOC_OPTION_BIND_VALUE_HASH_OFFSET],0
+ jmp .suffix
+.zip:
+ call .check_live
+ jne .use_after
+ cmp qword [r13+NEBOC_OPTION_BIND_TYPE_OFFSET],NEBOC_OPTION_TYPE_ARRAY_INT
+ je .callback_type
+ inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call op_expect
+ test eax,eax
+ jnz .fail
+ call op_peek_kind
+ cmp eax,NEBOC_TOKEN_IDENTIFIER
+ jne .syntax
+ mov rax,[r12+NEBOC_OPTION_CURSOR_OFFSET]
+ call op_find_binding
+ test rax,rax
+ jz .syntax
+ mov [rsp+16],rax
+ cmp qword [rax+NEBOC_OPTION_BIND_STATE_OFFSET],NEBOC_OPTION_STATE_LIVE
+ jne .use_after
+ cmp qword [rax+NEBOC_OPTION_BIND_TYPE_OFFSET],NEBOC_OPTION_TYPE_ARRAY_INT
+ je .callback_type
+ inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_RPAREN
+ call op_expect
+ test eax,eax
+ jnz .fail
+ mov rsi,r13
+ call op_clone_binding
+ test rax,rax
+ jz .fail
+ mov r13,rax
+ mov rdx,[rsp+16]
+ or qword [r13+NEBOC_OPTION_BIND_FLAGS_OFFSET],NEBOC_OPTION_BIND_FLAG_ZIPPED
+ mov rax,[rdx+NEBOC_OPTION_BIND_VALUE_OFFSET]
+ mov [r13+NEBOC_OPTION_BIND_SECOND_VALUE_OFFSET],rax
+ mov rax,[rdx+NEBOC_OPTION_BIND_TYPE_OFFSET]
+ mov [r13+NEBOC_OPTION_BIND_SECOND_TYPE_OFFSET],rax
+ cmp qword [rdx+NEBOC_OPTION_BIND_TAG_OFFSET],NEBOC_OPTION_RESULT_PARSER_OPTION_TAG_SOME
+ je .suffix
+ mov qword [r13+NEBOC_OPTION_BIND_TAG_OFFSET],NEBOC_OPTION_RESULT_PARSER_OPTION_TAG_NONE
+ jmp .suffix
+.at:
+ call .check_live
+ jne .use_after
+ test qword [r13+NEBOC_OPTION_BIND_FLAGS_OFFSET],NEBOC_OPTION_BIND_FLAG_ZIPPED
+ jz .syntax
+ cmp qword [r13+NEBOC_OPTION_BIND_TAG_OFFSET],NEBOC_OPTION_RESULT_PARSER_OPTION_TAG_SOME
+ jne .unsafe_get
+ inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LESS
+ call op_expect
+ test eax,eax
+ jnz .fail
+ call op_peek_kind
+ cmp eax,NEBOC_TOKEN_INTEGER
+ jne .syntax
+ mov rax,[r12+NEBOC_OPTION_CURSOR_OFFSET]
+ call op_token_ptr
+ mov rbx,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ cmp rbx,1
+ ja .syntax
+ inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_GREATER
+ call op_expect
+ test eax,eax
+ jnz .fail
+ call op_expect_empty_call
+ test eax,eax
+ jnz .fail
+ test rbx,rbx
+ jnz .at_second
+ mov rax,[r13+NEBOC_OPTION_BIND_VALUE_OFFSET]
+ mov rdx,[r13+NEBOC_OPTION_BIND_TYPE_OFFSET]
+ jmp .at_ready
+.at_second:
+ mov rax,[r13+NEBOC_OPTION_BIND_SECOND_VALUE_OFFSET]
+ mov rdx,[r13+NEBOC_OPTION_BIND_SECOND_TYPE_OFFSET]
+.at_ready:
+ mov [r12+NEBOC_OPTION_RESULT_VALUE_OFFSET],rax
+ mov [r12+NEBOC_OPTION_RESULT_TYPE_OFFSET],rdx
  mov r15d,1
  jmp .suffix
 .map:
@@ -940,8 +1407,26 @@ op_parse_statement:
  test r15d,r15d
  jz .use_after
  inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ mov qword [r12+NEBOC_OPTION_RETURNED_OFFSET],1
+ call op_peek_kind
+ cmp eax,NEBOC_TOKEN_SEMICOLON
+ jne .syntax
+ jmp .complete
+.console:
+ test r15d,r15d
+ jz .syntax
+ inc qword [r12+NEBOC_OPTION_CURSOR_OFFSET]
+ call op_expect_empty_call
+ test eax,eax
+ jnz .fail
+ call op_record_console
+ test eax,eax
+ jnz .fail
  jmp .suffix
 .complete:
+ test r13,r13
+ jz .scalar_complete
+
  mov rax,[r13+NEBOC_OPTION_BIND_LAYOUT_SIZE_OFFSET]
  cmp rax,[r12+NEBOC_OPTION_LAYOUT_SIZE_OFFSET]
  jbe .align
@@ -952,6 +1437,9 @@ op_parse_statement:
  jbe .ok
  mov [r12+NEBOC_OPTION_LAYOUT_ALIGN_OFFSET],rax
 .ok:
+ xor eax,eax
+ jmp .done
+.scalar_complete:
  xor eax,eax
  jmp .done
 .unsafe_get:
@@ -973,7 +1461,7 @@ op_parse_statement:
 .fail:
  mov eax,NEBOC_STATUS_INVALID_SOURCE
 .done:
- add rsp,40
+ add rsp,120
  pop r15
  pop r14
  pop r13
@@ -1020,6 +1508,15 @@ op_hash:
  imul rax,rcx
  xor rax,[r8+NEBOC_OPTION_BIND_VALUE_HASH_OFFSET]
  imul rax,rcx
+ xor rax,[r8+NEBOC_OPTION_BIND_FLAGS_OFFSET]
+ imul rax,rcx
+ test qword [r8+NEBOC_OPTION_BIND_FLAGS_OFFSET],NEBOC_OPTION_BIND_FLAG_ZIPPED
+ jz .binding_ready
+ xor rax,[r8+NEBOC_OPTION_BIND_SECOND_VALUE_OFFSET]
+ imul rax,rcx
+ xor rax,[r8+NEBOC_OPTION_BIND_SECOND_TYPE_OFFSET]
+ imul rax,rcx
+.binding_ready:
  inc rdx
  jmp .bindings
 .tail:
@@ -1029,6 +1526,13 @@ op_hash:
  imul rax,rcx
  xor rax,[r12+NEBOC_OPTION_DROP_COUNT_OFFSET]
  imul rax,rcx
+ mov rdx,NEBOC_OPTION_RETURNED_OFFSET
+.effects:
+ xor rax,[r12+rdx]
+ imul rax,rcx
+ add rdx,8
+ cmp rdx,NEBOC_OPTION_REQUEST_SIZE
+ jb .effects
  ret
 
 NEBOC_ABI_FUNCTION neboc_option_recognize
@@ -1042,6 +1546,10 @@ NEBOC_ABI_FUNCTION neboc_option_recognize
  push r14
  push r15
  mov r12,rdi
+ lea rdi,[r12+NEBOC_OPTION_RETURNED_OFFSET]
+ mov ecx,2+32*4
+ xor eax,eax
+ rep stosq
  mov qword [r12+NEBOC_OPTION_FOUND_OFFSET],0
  mov qword [r12+NEBOC_OPTION_DIAGNOSTIC_OFFSET],0
  mov qword [r12+NEBOC_OPTION_ERROR_TOKEN_OFFSET],0
@@ -1084,6 +1592,8 @@ NEBOC_ABI_FUNCTION neboc_option_recognize
  call op_peek_kind
  cmp eax,NEBOC_TOKEN_RBRACE
  je .close
+ cmp qword [r12+NEBOC_OPTION_RETURNED_OFFSET],0
+ jne .syntax
  call op_parse_statement
  test eax,eax
  jnz .done
@@ -1120,5 +1630,80 @@ NEBOC_ABI_FUNCTION neboc_option_recognize
  ret
 .invalid_direct:
  NEBOC_ABI_RETURN_STATUS NEBOC_STATUS_INVALID_ARGUMENT
+
+
+; The same native scalar parser used for container payloads also owns an
+; independent scalar statement. Container values/layouts remain untouched.
+%undef call
+op_scalar_statement:
+ push rbx
+ call op_peek_kind
+ mov ebx,NEBOC_OPTION_TYPE_INT
+ cmp eax,NEBOC_TOKEN_INTEGER
+ je .literal
+ mov ebx,NEBOC_OPTION_TYPE_CHAR
+ cmp eax,NEBOC_TOKEN_CHAR
+ je .literal
+ mov ebx,NEBOC_OPTION_TYPE_BOOL
+ cmp eax,NEBOC_TOKEN_KW_TRUE
+ je .literal
+ cmp eax,NEBOC_TOKEN_KW_FALSE
+ jne .syntax
+.literal:
+ mov edi,ebx
+ call op_parse_scalar_value
+ test edx,edx
+ jnz .syntax
+ mov [r12+NEBOC_OPTION_RESULT_VALUE_OFFSET],rax
+ mov [r12+NEBOC_OPTION_RESULT_TYPE_OFFSET],rbx
+ xor eax,eax
+ pop rbx
+ ret
+.syntax:
+ mov esi,NEBOC_OPTION_DIAG_SYNTAX
+ call op_error
+ pop rbx
+ ret
+
+; A typed scalar effect is recorded at its exact source call interval.
+op_record_console:
+ push rbx
+ mov rax,[r12+NEBOC_OPTION_RESULT_TYPE_OFFSET]
+ cmp rax,NEBOC_OPTION_TYPE_INT
+ je .typed
+ cmp rax,NEBOC_OPTION_TYPE_BOOL
+ jne .syntax
+.typed:
+ mov rbx,[r12+NEBOC_OPTION_EFFECT_COUNT_OFFSET]
+ cmp rbx,32
+ jae .limit
+ shl rbx,5
+ lea rbx,[r12+rbx+NEBOC_OPTION_EFFECTS_OFFSET]
+ mov [rbx],rax
+ mov rax,[r12+NEBOC_OPTION_RESULT_VALUE_OFFSET]
+ mov [rbx+8],rax
+ mov rax,r14
+ call op_token_ptr
+ mov rax,[rax+NEBOC_TOKEN_START_OFFSET]
+ mov [rbx+16],rax
+ mov rax,[r12+NEBOC_OPTION_CURSOR_OFFSET]
+ dec rax
+ call op_token_ptr
+ mov rax,[rax+NEBOC_TOKEN_END_OFFSET]
+ mov [rbx+24],rax
+ inc qword [r12+NEBOC_OPTION_EFFECT_COUNT_OFFSET]
+ xor eax,eax
+ pop rbx
+ ret
+.limit:
+ mov esi,NEBOC_OPTION_DIAG_LAYOUT
+ call op_error
+ pop rbx
+ ret
+.syntax:
+ mov esi,NEBOC_OPTION_DIAG_SYNTAX
+ call op_error
+ pop rbx
+ ret
 
 section .note.GNU-stack noalloc noexec nowrite progbits

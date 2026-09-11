@@ -1,0 +1,7 @@
+// Absolute and relative tolerance are explicit binary64 vector lanes.
+start() {
+    Vector<Float> [0.01, 0.001].tolerance;
+    17.0.value;
+    value.approxEquals(17.005, tolerance).console();
+    23.return;
+}

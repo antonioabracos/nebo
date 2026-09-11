@@ -41,6 +41,11 @@
 %define NEBOC_FORMAT_EQUIVALENCE_AST_IDENTITY_OFFSET 16
 %define NEBOC_FORMAT_EQUIVALENCE_SIZE 24
 %define NEBOC_FORMAT_EQUIVALENCE_MAX_TOKENS 65536
+; Semantic records deliberately include token payload.  Comparing only token
+; kinds would accept operand/literal changes that preserve the operator shape.
+%define NEBOC_FORMAT_SEMANTIC_TOKEN_KIND_OFFSET 0
+%define NEBOC_FORMAT_SEMANTIC_TOKEN_PAYLOAD_OFFSET 8
+%define NEBOC_FORMAT_SEMANTIC_TOKEN_SIZE 16
 
 %define NEBOC_FORMAT_MODE_PLAN_MODE_OFFSET 0
 %define NEBOC_FORMAT_MODE_PLAN_EMIT_OFFSET 8

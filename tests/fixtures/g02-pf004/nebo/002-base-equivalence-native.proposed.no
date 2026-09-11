@@ -1,0 +1,6 @@
+start() {
+    42.decimal;
+    0b101010.binary;
+    0o52.octal;
+    0x2A.hexadecimal;
+}

@@ -1,0 +1,13 @@
+// Canonical codecs and bounded incremental framing preserve checksums across arbitrary input chunks.
+(Int.self)protocolEncode() { self.return; }
+(Int.self)protocolDecode() { self.return; }
+(Int.self)frameWrap() { self.return; }
+(Int.self)frameChecksum() { self.return; }
+(Int.self)frameDecoderIncremental() { self.return; }
+(Int.self)decoderPush() { self.return; }
+(Int.self)decoderFinish() { self.return; }
+(Int.self)frameCompress() { self.return; }
+
+start() {
+    58.protocolEncode().protocolDecode().frameWrap().frameChecksum().frameDecoderIncremental().decoderPush().decoderFinish().frameCompress();
+}

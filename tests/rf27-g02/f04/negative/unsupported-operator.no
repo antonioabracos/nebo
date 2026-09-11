@@ -1,0 +1,5 @@
+start() {
+  2.counter.mutable;
+  counter *= 2;
+  counter;
+}

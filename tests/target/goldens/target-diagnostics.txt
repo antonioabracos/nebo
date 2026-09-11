@@ -1,0 +1,13 @@
+invalid-target-request
+incomplete-target-tuple
+unsupported-target-id
+unsupported-instruction-set
+unsupported-target-abi
+unsupported-object-format
+unsupported-operating-environment
+unsupported-runtime-profile
+unsupported-console-runtime-profile
+unsupported-toolchain-profile
+unsupported-target-features
+incompatible-data-layout
+target-context-not-frozen

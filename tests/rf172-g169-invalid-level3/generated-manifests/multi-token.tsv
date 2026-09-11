@@ -1,0 +1,2 @@
+campaign	seeds	budget	operators	oracle	replays	state
+RF172-G169-F08-MULTI_TOKEN	169081,169082,169083	96	two-to-five grammar token insertions plus closing-subtree deletion	public check,emit-asm,build rejection plus canonical source	2	MATERIALIZED

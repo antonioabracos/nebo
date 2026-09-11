@@ -1,0 +1,8 @@
+start() {
+  if (true) {
+    1.inner.mutable;
+  } else {
+    0;
+  }
+  inner = 2;
+}

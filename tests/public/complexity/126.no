@@ -1,0 +1,7 @@
+// Receiver-first construction replaces the historical namespace factory facade.
+start() {
+    RenderPlan;
+    3208;
+    output.stdout().stderr().target("chart-table-service").plain().visual().headlessEvent();
+    lifecycle.event("chart-table").payload("service-to-receiver-migration").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

@@ -1,0 +1,13 @@
+// Three streaming shapes share explicit capacity, backpressure, half-close, receive, and cleanup states.
+(Int.self)rpcMethodServerStream() { self.return; }
+(Int.self)rpcMethodClientStream() { self.return; }
+(Int.self)rpcMethodBidirectional() { self.return; }
+(Int.self)clientOpenStream() { self.return; }
+(Int.self)streamSend() { self.return; }
+(Int.self)streamReceive() { self.return; }
+(Int.self)streamHalfClose() { self.return; }
+(Int.self)streamCancel() { self.return; }
+
+start() {
+    94.rpcMethodServerStream().rpcMethodClientStream().rpcMethodBidirectional().clientOpenStream().streamSend().streamReceive().streamHalfClose().streamCancel();
+}

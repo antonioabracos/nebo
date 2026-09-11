@@ -1,0 +1,3 @@
+start() {
+    Result<Text, Bool>(Ok(1)).value;
+}

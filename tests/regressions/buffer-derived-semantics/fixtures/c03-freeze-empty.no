@@ -1,0 +1,5 @@
+start() {
+    Buffer.zeroed(0).packet;
+    packet.freeze().frozen;
+    frozen.byteLength().return;
+}

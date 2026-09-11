@@ -1,0 +1,7 @@
+start() {
+  Int.pending;
+  if (true) {
+    1.pending;
+  }
+  pending;
+}

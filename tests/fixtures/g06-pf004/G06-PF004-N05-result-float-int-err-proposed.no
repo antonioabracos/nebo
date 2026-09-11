@@ -1,0 +1,3 @@
+start() {
+    Result<Float, Int>(Err(7)).result;
+}

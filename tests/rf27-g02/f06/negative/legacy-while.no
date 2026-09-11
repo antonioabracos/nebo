@@ -1,0 +1,6 @@
+start() {
+  true.ready;
+  while ready {
+    break;
+  }
+}

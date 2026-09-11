@@ -1,0 +1,18 @@
+diagnostic_id	trigger	primary_span	help
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-OPTION-RESULT-UNKNOWN-CONTAINER	unknown intrinsic container	container identifier	use Option or Result
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-OPTION-RESULT-TYPE-ARITY	Option/Result generic arity mismatch	generic argument list	use Option<T> or Result<T,E>
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-OPTION-RESULT-PAYLOAD-TYPE-UNAVAILABLE	payload outside Bool/Int/Float/Char profile	payload type	use a sized foundation scalar in this profile
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-OPTION-RESULT-VARIANT-MISMATCH	Some/None used with Result or Ok/Err with Option	variant identifier	use the variant owned by the container
+NEBO-G06-OPTION-RESULT-VARIANT-ARITY	variant argument count mismatch	variant call	Some/Ok/Err take one argument; None takes zero
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-OPTION-RESULT-OBSERVER-UNKNOWN	observer is not one of five canonical names	method identifier	use isSome/isNone/isOk/isErr/unwrapOr
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-OPTION-RESULT-OBSERVER-WRONG-DOMAIN	Option observer on Result or Result observer on Option	observer method	use the observer for the container domain
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-OPTION-RESULT-OBSERVER-ARITY	zero-arity observer received arguments	argument list	remove arguments
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-OPTION-RESULT-UNWRAP-OR-ARITY	unwrapOr does not have exactly one fallback	argument list	provide exactly one fallback
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-NULL-SOURCE-FORBIDDEN	source null literal or value	null token	normalize external null in an adapter
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-PROPAGATION-DEFERRED	propagation operator used	operator	handle Option/Result explicitly in this profile
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-TRY-CATCH-DEFERRED	try/catch syntax used	try keyword	use explicit Result values
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-FATAL-UNWRAP-DEFERRED	fatal unwrap/expect used	method identifier	use unwrapOr or total observers
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-PATTERN-MATCH-DEFERRED	pattern match used	match subject	pattern matching belongs to G19
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-OPTION-RESULT-ALIAS-FORBIDDEN	Optional/Maybe/Either/Success/Failure alias	alias identifier	use canonical Option/Result/Some/None/Ok/Err
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-OPTION-RESULT-VOID-PAYLOAD-FORBIDDEN	Void used as payload	Void type	Void is valueless return, not a payload
+NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-GENERAL-GENERICS-DEFERRED	non-intrinsic generic type syntax	generic type identifier	general generics belong to G07

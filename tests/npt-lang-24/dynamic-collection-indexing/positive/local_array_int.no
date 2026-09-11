@@ -1,0 +1,1 @@
+start() { Array<Int,2> [4,9].values; 1.index; values.at(index).return; }

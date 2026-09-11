@@ -1,0 +1,7 @@
+generic<T: Eq> (T.value)same() {
+    value.return;
+}
+
+start() {
+    true.same();
+}

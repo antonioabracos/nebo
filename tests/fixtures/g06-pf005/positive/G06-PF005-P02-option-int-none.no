@@ -1,0 +1,5 @@
+start() {
+    Option<Int>(None()).maybe;
+    maybe.isNone().absent;
+    maybe.unwrapOr(7).value;
+}

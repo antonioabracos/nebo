@@ -1,0 +1,2 @@
+// Independent atomic runtime case.
+start() { List<Int>.new().items; items.length().return; }

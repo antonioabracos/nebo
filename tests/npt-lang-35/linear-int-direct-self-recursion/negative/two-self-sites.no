@@ -1,0 +1,2 @@
+(Int.self)recur(){ if (self <= 0) { 0.return; } else { ((self - 1).recur() + (self - 1).recur()).return; } }
+start(){ 2.recur().return; }

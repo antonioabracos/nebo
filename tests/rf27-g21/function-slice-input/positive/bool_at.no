@@ -1,0 +1,7 @@
+(Bool.self)pick(Slice<Bool>.values) { values.at(1).return; }
+(Bool.self)work() {
+    Array<Bool,3> [false,true,false].source;
+    source.asSlice().view;
+    self.pick(view).return;
+}
+start() { false.work().return; }

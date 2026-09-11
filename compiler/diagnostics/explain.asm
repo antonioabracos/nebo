@@ -52,9 +52,9 @@ cause_e0001: db 'A required source or diagnostic invariant was not satisfied.'
 cause_e0001_len equ $-cause_e0001
 solution_e0001: db 'Inspect the primary span and use the canonical syntax or schema.'
 solution_e0001_len equ $-solution_e0001
-positive_e0001: db 'fn main() { return 0 }'
+positive_e0001: db 'start(){(17+24).return;}'
 positive_e0001_len equ $-positive_e0001
-negative_e0001: db 'fn main( {'
+negative_e0001: db 'start( {'
 negative_e0001_len equ $-negative_e0001
 related_e0001: db 'NEBO-H0001'
 related_e0001_len equ $-related_e0001

@@ -1,0 +1,4 @@
+start() {
+    100.numero;
+    numero.console();
+}

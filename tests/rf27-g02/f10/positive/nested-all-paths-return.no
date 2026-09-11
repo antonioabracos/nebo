@@ -1,0 +1,11 @@
+start() {
+    if (true) {
+        if (false) {
+            1.return;
+        } else {
+            2.return;
+        }
+    } else {
+        3.return;
+    }
+}

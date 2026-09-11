@@ -1,0 +1,4 @@
+start() {
+  Array<Int,3>.filled(-1).items;
+  items.at(2).return;
+}

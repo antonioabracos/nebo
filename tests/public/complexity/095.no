@@ -1,0 +1,7 @@
+// Runs bounded resize, redraw, and close events through the event-loop contract.
+start() {
+    RenderPlan;
+    1405;
+    output.stdout().stderr().target("event-loop").plain().visual().headlessEvent();
+    lifecycle.event("window.run-once").payload("resize-redraw-close").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

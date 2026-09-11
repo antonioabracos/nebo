@@ -1,0 +1,1 @@
+start(){if(false){'Z'.return;}else{7.return;}}

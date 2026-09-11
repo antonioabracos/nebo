@@ -1,0 +1,3 @@
+root: BindingTerminal
+child: CallExpr(value.console())
+binding-token-index: 6

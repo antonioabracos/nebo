@@ -1,0 +1,14 @@
+// Aliases preserve identity, newtypes create identity, and enums are closed.
+// sizeOf() exposes the documented target layout without implying an ABI.
+type alias Count = Int;
+newtype UserId(Int);
+enum State { Idle, Ready, Done }
+
+start() {
+    Count.sizeOf().aliasSize;
+    UserId(41).unwrap().raw;
+    UserId.sizeOf().newtypeSize;
+    State.Ready.discriminant().tag;
+    State.sizeOf().enumSize;
+    State.Ready.discriminant().return;
+}

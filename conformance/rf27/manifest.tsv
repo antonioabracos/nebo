@@ -1,0 +1,13 @@
+case_id	rule_id	class	target	abi	edition	expected	fixture
+RF27-C001	101	positive	x86_64-systemv-elf-linux	0	2	0	effects-positive
+RF27-C002	102	negative	x86_64-systemv-elf-linux	0	2	4	unknown-effect
+RF27-C003	201	runtime	x86_64-systemv-elf-linux	0	2	0	capability-budget
+RF27-C004	202	negative	x86_64-systemv-elf-linux	0	2	6	capability-scope
+RF27-C005	301	positive	x86_64-systemv-elf-linux	0	1	0	legacy-edition
+RF27-C006	302	negative	x86_64-systemv-elf-linux	0	2	2	unknown-edition
+RF27-C007	401	runtime	x86_64-systemv-elf-linux	0	2	0	static-elf
+RF27-C008	402	negative	x86_64-systemv-elf-linux	0	2	6	unknown-target
+RF27-C009	501	positive	x86_64-systemv-elf-linux	0	2	0	plugin-manifest
+RF27-C010	502	negative	x86_64-systemv-elf-linux	0	2	5	plugin-hash
+RF27-C011	601	runtime	x86_64-systemv-elf-linux	0	2	0	audit-chain
+RF27-C012	602	negative	x86_64-systemv-elf-linux	0	2	12	audit-corruption

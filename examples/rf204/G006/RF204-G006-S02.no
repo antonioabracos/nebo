@@ -1,0 +1,24 @@
+// mapEach selects a typed receiver-first callable for every Tuple position.
+// toStruct requires explicit nominal correspondence in source field order.
+struct Pair {
+    Int.first;
+    Int.second;
+}
+
+(Int.self)addTwo() {
+    (self + 2).return;
+}
+
+(Int.self)addThree() {
+    (self + 3).return;
+}
+
+start() {
+    Tuple.of(4, 9).pair;
+    pair.length().arity;
+    pair.at<0>().originalFirst;
+    pair.destructure(left, right);
+    pair.mapEach(addTwo, addThree).mapped;
+    mapped.toStruct<Pair>().record;
+    record.second;
+}

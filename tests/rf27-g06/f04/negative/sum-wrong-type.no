@@ -1,0 +1,5 @@
+start() {
+  Array<Bool,2> [true,false].flags;
+  flags.asSlice().view;
+  view.sum().return;
+}

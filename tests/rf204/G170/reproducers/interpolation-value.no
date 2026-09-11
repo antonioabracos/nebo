@@ -1,0 +1,7 @@
+// Interpolation must observe the actual bound values and preserve the return.
+start() {
+    17.first;
+    29.second;
+    "sum=${first + second}".console();
+    23.return;
+}

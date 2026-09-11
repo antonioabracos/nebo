@@ -1,0 +1,7 @@
+// Field redaction and masking preserve provenance while changing disclosure state.
+start() {
+    RenderPlan;
+    3404;
+    output.stdout().stderr().target("export-privacy-service").plain().visual().headlessEvent();
+    lifecycle.event("privacy-audited").payload("redact-fields-and-mask").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

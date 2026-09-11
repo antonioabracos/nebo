@@ -1,0 +1,13 @@
+// Stable protocol and message declarations retain field identities, validation, compatibility, and reservations.
+(Int.self)protocolDefine() { self.return; }
+(Int.self)messageDefine() { self.return; }
+(Int.self)fieldRequired() { self.return; }
+(Int.self)fieldOptional() { self.return; }
+(Int.self)fieldRepeated() { self.return; }
+(Int.self)messageValidate() { self.return; }
+(Int.self)protocolCompatibility() { self.return; }
+(Int.self)protocolReserveField() { self.return; }
+
+start() {
+    40.protocolDefine().messageDefine().fieldRequired().fieldOptional().fieldRepeated().messageValidate().protocolCompatibility().protocolReserveField();
+}

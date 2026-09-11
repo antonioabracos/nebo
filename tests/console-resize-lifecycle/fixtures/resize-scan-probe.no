@@ -1,0 +1,7 @@
+start() {
+    "Resize Lifecycle Probe".console();
+    "Move: ".console().scan().moved;
+    moved.console();
+    "Resize: ".console().scan().resized;
+    resized.console();
+}

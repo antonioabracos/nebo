@@ -1,0 +1,12 @@
+proof_id	classification	source_path	contract	expected_check	expected_emit_asm	expected_build	expected_native_exit	expected_diagnostic
+G01-PF005-P-001	EXECUTABLE_NOW	tests/fixtures/g01-pf005/nebo/001-float-explicit-implicit-executable.no	explicit_and_implicit_Float_bindings_share_binary64_codegen	PASS	PASS	PASS	0	NONE
+G01-PF005-P-002	EXECUTABLE_NOW	tests/fixtures/g01-pf005/nebo/002-float-arithmetic-executable.no	homogeneous_constant_add_sub_mul_div_lower_to_SSE2	PASS	PASS	PASS	0	NONE
+G01-PF005-P-003	EXECUTABLE_NOW	tests/fixtures/g01-pf005/nebo/003-float-ieee-boundaries-executable.no	infinity_NaN_and_negative_zero_execute_without_fast_math	PASS	PASS	PASS	0	NONE
+G01-PF005-P-004	EXECUTABLE_NOW	tests/fixtures/g01-pf005/nebo/004-float-nested-executable.no	nested_constant_expression_and_explicit_negative_constructor	PASS	PASS	PASS	0	NONE
+G01-PF005-P-005	EXECUTABLE_NOW	tests/fixtures/g01-pf005/nebo/005-float-long-decimal-executable.no	approved_long_strict_decimal_materializes_deterministically	PASS	PASS	PASS	0	NONE
+G01-PF005-P-006	EXPECTED_REJECTION	tests/fixtures/g01-pf005/nebo/006-float-int-mixed-rejection.no	implicit_Int_to_Float_arithmetic_coercion_forbidden	REJECT	NOT_RUN	NOT_RUN	NOT_RUN	NEBO-SEGURANCA-NUMERICA-CONVERSOES-E-OVERFLOW-NUMERIC-IMPLICIT-COERCION-FORBIDDEN
+G01-PF005-P-007	EXPECTED_REJECTION	tests/fixtures/g01-pf005/nebo/007-float-int-constructor-rejection.no	Float_Int_constructor_coercion_forbidden	REJECT	NOT_RUN	NOT_RUN	NOT_RUN	NEBO-SEGURANCA-NUMERICA-CONVERSOES-E-OVERFLOW-NUMERIC-CROSS-TYPE-CONSTRUCTOR-FORBIDDEN
+G01-PF005-P-008	PROPOSED_NOT_EXECUTABLE	tests/fixtures/g01-pf005/nebo/008-float-percent-proposed.no	Float_percent_outside_vertical_slice	REJECT	NOT_RUN	NOT_RUN	NOT_RUN	NEBO-TIPOS-PRIMITIVOS-ESCALARES-CODEGEN-004
+G01-PF005-P-009	PROPOSED_NOT_EXECUTABLE	tests/fixtures/g01-pf005/nebo/009-float-comparison-proposed.no	Float_comparison_outside_vertical_slice	REJECT	NOT_RUN	NOT_RUN	NOT_RUN	NEBO-TIPOS-PRIMITIVOS-ESCALARES-CODEGEN-004
+G01-PF005-P-010	PROPOSED_NOT_EXECUTABLE	tests/fixtures/g01-pf005/nebo/010-float-function-proposed.no	Float_function_contract_outside_vertical_slice	REJECT	NOT_RUN	NOT_RUN	NOT_RUN	NEBO-TIPOS-PRIMITIVOS-ESCALARES-CODEGEN-004
+G01-PF005-P-011	PROPOSED_NOT_EXECUTABLE	tests/fixtures/g01-pf005/nebo/011-float-variable-reuse-proposed.no	Float_identifier_reuse_outside_constant_start_slice	REJECT	NOT_RUN	NOT_RUN	NOT_RUN	NEBO-TIPOS-PRIMITIVOS-ESCALARES-TYPE-003

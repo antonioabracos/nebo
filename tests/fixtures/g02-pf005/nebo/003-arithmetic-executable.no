@@ -1,0 +1,11 @@
+start() {
+    (0x20 + 0b10).sum;
+    (0o100 - 1_0).difference;
+    (0x6 * 0b111).product;
+    (0x54 / 0o7).quotient;
+    if ((((sum == 34) && (difference == 54)) && (product == 42)) && (quotient == 12)) {
+        0;
+    } else {
+        1;
+    }
+}

@@ -1,71 +1,87 @@
-; VALIDACAO-SEMANTICA-DE-PARAMS-RETURNS-ERRORS-EFFECTS-CAPABILITIES-OWNERSHIP-E-RISKS-F01: Schema cardinality, required/optional fields e duplicates
-; Bounded native semantic-documentation kernel.
-; rdi=input bytes, rsi=length, rdx=caller-owned 24-byte result.
-; Success publishes digest, length, and stable operation tag atomically.
-; Failure publishes nothing. No allocation, I/O, libc, network, or effects.
+; RF166-G157-F01/F08 schema, staleness and whole-validator orchestration.
 bits 64
 default rel
-
+%include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"
+%include "compiler/semantic/docs/doc_validation.inc"
 global neboc_doc_schema_validate
-
-%define DOC_MAX_INPUT 4096
-%define DOC_TAG 17
-%define hover_FNV_OFFSET 0xcbf29ce484222325
-%define hover_FNV_PRIME  0x100000001b3
-
+global neboc_doc_validate
+extern neboc_doc_validate_parameters
+extern neboc_doc_validate_return
+extern neboc_doc_validate_errors
+extern neboc_doc_validate_effects
+extern neboc_doc_validate_ownership
+extern neboc_doc_validate_lifecycle
 section .text
-align 16
 neboc_doc_schema_validate:
-    test rdi, rdi
-    jz .argument
-    test rdx, rdx
-    jz .argument
-    test rdx, 7
-    jnz .argument
-    test rsi, rsi
-    jz .length
-    cmp rsi, DOC_MAX_INPUT
-    ja .length
-    lea rax, [rdi + rsi]
-    cmp rax, rdi
-    jb .length
+ DOCV_VALIDATE_REQUEST .schema
+.schema:
+ mov r8,[rdi+NEBOC_DOCV_REQUIRED_MASK_OFFSET]
+ mov r9,[rdi+NEBOC_DOCV_FIELD_MASK_OFFSET]
+ mov rax,r9
+ not rax
+ and rax,r8
+ jnz .required
+ mov r8,[rdi+NEBOC_DOCV_SIGNATURE_HASH_OFFSET]
+ mov r9,[rdi+NEBOC_DOCV_PREVIOUS_SIGNATURE_HASH_OFFSET]
+ test r9,r9
+ jz .same
+ cmp r8,r9
+ jne .stale
+.same:
+ DOCV_PUBLISH_NONE
+.required:
+ DOCV_PUBLISH_ISSUE NEBOC_DOCV_CODE_SCHEMA_REQUIRED,NEBOC_DOCV_SEVERITY_WARNING,r8,r9,NEBOC_DOCV_FIX_SCAFFOLD_FIELD
+.stale:
+ DOCV_PUBLISH_ISSUE NEBOC_DOCV_CODE_STALE,NEBOC_DOCV_SEVERITY_WARNING,r8,r9,NEBOC_DOCV_FIX_NONE
 
-    mov rax, hover_FNV_OFFSET
-    mov r8, hover_FNV_PRIME
-    xor ecx, ecx
-.scan:
-    cmp rcx, rsi
-    jae .publish
-    movzx r9d, byte [rdi + rcx]
-    test r9b, r9b
-    jz .encoding
-    cmp r9b, 0x7f
-    ja .encoding
-    xor rax, r9
-    imul rax, r8
-    inc rcx
-    jmp .scan
-.publish:
-    xor rax, DOC_TAG
-    mov qword [rdx], rax
-    mov qword [rdx + 8], rsi
-    mov qword [rdx + 16], DOC_TAG
-    xor eax, eax
-    xor edx, edx
-    ret
+; validate(request, seven_issue_report) -> status.
+NEBOC_ABI_FUNCTION neboc_doc_validate
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ mov r12,rdi
+ mov r13,rsi
+ test r12,r12
+ jz .argument
+ test r13,r13
+ jz .argument
+ test r13,7
+ jnz .argument
+ lea rbx,[rel .validators]
+ xor r14d,r14d
+.loop:
+ cmp r14d,NEBOC_DOCV_VALIDATOR_COUNT
+ jae .ok
+ mov rdi,r12
+ mov rsi,r13
+ call qword [rbx+r14*8]
+ test eax,eax
+ jnz .done
+ add r13,NEBOC_DOCV_ISSUE_SIZE
+ inc r14d
+ jmp .loop
+.ok:
+ xor eax,eax
+ jmp .done
 .argument:
-    mov eax, 1
-    mov edx, 1
-    ret
-.length:
-    mov eax, 2
-    mov edx, 2
-    ret
-.encoding:
-    mov eax, 3
-    mov edx, 3
-    ret
-.keyword:
-    mov eax, 4
-    mov edx, 4
-    ret
+ mov eax,NEBOC_DOCV_STATUS_ARGUMENT
+.done:
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+section .rodata
+align 8
+.validators:
+ dq neboc_doc_schema_validate
+ dq neboc_doc_validate_parameters
+ dq neboc_doc_validate_return
+ dq neboc_doc_validate_errors
+ dq neboc_doc_validate_effects
+ dq neboc_doc_validate_ownership
+ dq neboc_doc_validate_lifecycle
+section .note.GNU-stack noalloc noexec nowrite progbits

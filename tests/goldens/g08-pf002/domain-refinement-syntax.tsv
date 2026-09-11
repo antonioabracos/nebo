@@ -1,0 +1,7 @@
+case_id	source_shape	ast_shape	result_type	state
+G08-SYN-001	7.toPositiveInt()	Call(Member(IntLiteral,toPositiveInt),[])	Result<PositiveInt,Int>	FROZEN
+G08-SYN-002	0.toPositiveInt()	Call(Member(IntLiteral,toPositiveInt),[])	Result<PositiveInt,Int>	FROZEN
+G08-SYN-003	7.toPositiveInt().isOk()	Call(Member(Call(toPositiveInt),isOk),[])	Bool	FROZEN
+G08-SYN-004	0.toPositiveInt().isErr()	Call(Member(Call(toPositiveInt),isErr),[])	Bool	FROZEN
+G08-SYN-005	7.toPositiveInt().unwrapOr(1)	Call(Member(Call(toPositiveInt),unwrapOr),[IntLiteral])	PositiveInt	FROZEN
+G08-SYN-006	0.toPositiveInt().unwrapOr(9)	Call(Member(Call(toPositiveInt),unwrapOr),[IntLiteral])	PositiveInt	FROZEN

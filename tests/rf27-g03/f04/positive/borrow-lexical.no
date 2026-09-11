@@ -1,0 +1,2 @@
+callable view(Int.value) capture borrow 9 { capture.return; }
+start() { view.call(1).drop().return; }

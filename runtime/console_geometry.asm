@@ -99,6 +99,22 @@ nebo_geometry_surface:
     ja .surface_invalid
     cmp qword [rdi + NEBO_SURFACE_ID_OFFSET], 0
     je .surface_invalid
+    mov rax, [rdi + NEBO_SURFACE_CAPABILITIES_OFFSET]
+    test rax, ~NEBO_SURFACE_CAP_LIVE
+    jnz .surface_invalid
+    cmp rcx, NEBO_SURFACE_LIVE_WINDOW
+    je .surface_coordinates
+    test rax, rax
+    jnz .surface_target
+.surface_coordinates:
+    mov rax, [rdi + NEBO_SURFACE_X_OFFSET]
+    movsxd rdx, eax
+    cmp rdx, rax
+    jne .surface_limit
+    mov rax, [rdi + NEBO_SURFACE_Y_OFFSET]
+    movsxd rdx, eax
+    cmp rdx, rax
+    jne .surface_limit
     mov r8, [rdi + NEBO_SURFACE_WIDTH_OFFSET]
     mov r9, [rdi + NEBO_SURFACE_HEIGHT_OFFSET]
     test r8, r8
@@ -261,7 +277,10 @@ nebo_geometry_labels:
     jz .label_invalid
     test rsi, rsi
     jz .label_invalid
-    test qword [rdi + NEBO_LABEL_FLAGS_OFFSET], NEBO_LABEL_SENSITIVE
+    mov rax, [rdi + NEBO_LABEL_FLAGS_OFFSET]
+    test rax, ~NEBO_LABEL_SENSITIVE
+    jnz .label_invalid
+    test rax, NEBO_LABEL_SENSITIVE
     jnz .label_privacy
     mov rcx, [rdi + NEBO_LABEL_ANCHOR_OFFSET]
     cmp rcx, NEBO_LABEL_ANCHOR_MIN
@@ -381,61 +400,89 @@ nebo_geometry_address:
 ; Validates bounded window/panel/layer identity sets and hashes stable IDs.
 nebo_geometry_multi_validate:
     push rbx
+    push r12
+    push r13
+    push r14
+    push r15
     mov rbx, rsi
     test rdi, rdi
     jz .multi_invalid
     test rsi, rsi
     jz .multi_invalid
-    mov rcx, [rdi + NEBO_MULTI_WINDOW_COUNT_OFFSET]
-    mov rdx, [rdi + NEBO_MULTI_PANEL_COUNT_OFFSET]
-    mov r8, [rdi + NEBO_MULTI_LAYER_COUNT_OFFSET]
-    cmp rcx, NEBO_GEOMETRY_MAX_INSTANCES
+    mov r12, rdi
+    mov r13, [rdi + NEBO_MULTI_WINDOW_COUNT_OFFSET]
+    mov r14, [rdi + NEBO_MULTI_PANEL_COUNT_OFFSET]
+    mov r15, [rdi + NEBO_MULTI_LAYER_COUNT_OFFSET]
+    cmp r13, NEBO_GEOMETRY_MAX_INSTANCES
     ja .multi_limit
-    cmp rdx, NEBO_GEOMETRY_MAX_INSTANCES
+    cmp r14, NEBO_GEOMETRY_MAX_INSTANCES
     ja .multi_limit
-    cmp r8, NEBO_GEOMETRY_MAX_INSTANCES
+    cmp r15, NEBO_GEOMETRY_MAX_INSTANCES
     ja .multi_limit
-    mov r9, rcx
-    add r9, rdx
+    mov r9, r13
+    add r9, r14
     jc .multi_limit
-    add r9, r8
+    add r9, r15
     jc .multi_limit
     cmp r9, NEBO_GEOMETRY_MAX_INSTANCES
     ja .multi_limit
     test r9, r9
     jz .multi_invalid
-    test rcx, rcx
+    test r13, r13
     jz .multi_panels
     cmp qword [rdi + NEBO_MULTI_WINDOWS_OFFSET], 0
     je .multi_invalid
 .multi_panels:
-    test rdx, rdx
+    test r14, r14
     jz .multi_layers
     cmp qword [rdi + NEBO_MULTI_PANELS_OFFSET], 0
     je .multi_invalid
 .multi_layers:
-    test r8, r8
+    test r15, r15
     jz .multi_target
     cmp qword [rdi + NEBO_MULTI_LAYERS_OFFSET], 0
     je .multi_invalid
 .multi_target:
+    mov rax, [rdi + NEBO_MULTI_CAPABILITIES_OFFSET]
+    test rax, ~NEBO_SURFACE_CAP_LIVE
+    jnz .multi_invalid
     mov r10, [rdi + NEBO_MULTI_TARGET_OFFSET]
     cmp r10, NEBO_TARGET_HEADLESS
     jb .multi_target_error
     cmp r10, NEBO_TARGET_LIVE
     ja .multi_target_error
     cmp r10, NEBO_TARGET_LIVE
-    jne .multi_hash
-    test qword [rdi + NEBO_MULTI_CAPABILITIES_OFFSET], NEBO_SURFACE_CAP_LIVE
+    je .multi_live
+    test rax, rax
+    jnz .multi_target_error
+    jmp .multi_unique
+.multi_live:
+    test rax, NEBO_SURFACE_CAP_LIVE
     jz .multi_target_error
+.multi_unique:
+    mov rdi, [r12 + NEBO_MULTI_WINDOWS_OFFSET]
+    mov rsi, r13
+    call .validate_unique_ids
+    test eax, eax
+    jnz .multi_conflict
+    mov rdi, [r12 + NEBO_MULTI_PANELS_OFFSET]
+    mov rsi, r14
+    call .validate_unique_ids
+    test eax, eax
+    jnz .multi_conflict
+    mov rdi, [r12 + NEBO_MULTI_LAYERS_OFFSET]
+    mov rsi, r15
+    call .validate_unique_ids
+    test eax, eax
+    jnz .multi_conflict
 .multi_hash:
     mov rax, 0xcbf29ce484222325
     mov r11, 0x100000001b3
     xor r10d, r10d
 .multi_hash_windows:
-    cmp r10, rcx
+    cmp r10, r13
     jae .multi_hash_panels_start
-    mov rsi, [rdi + NEBO_MULTI_WINDOWS_OFFSET]
+    mov rsi, [r12 + NEBO_MULTI_WINDOWS_OFFSET]
     mov rsi, [rsi + r10 * 8]
     test rsi, rsi
     jz .multi_invalid
@@ -446,9 +493,9 @@ nebo_geometry_multi_validate:
 .multi_hash_panels_start:
     xor r10d, r10d
 .multi_hash_panels:
-    cmp r10, rdx
+    cmp r10, r14
     jae .multi_hash_layers_start
-    mov rsi, [rdi + NEBO_MULTI_PANELS_OFFSET]
+    mov rsi, [r12 + NEBO_MULTI_PANELS_OFFSET]
     mov rsi, [rsi + r10 * 8]
     test rsi, rsi
     jz .multi_invalid
@@ -459,9 +506,9 @@ nebo_geometry_multi_validate:
 .multi_hash_layers_start:
     xor r10d, r10d
 .multi_hash_layers:
-    cmp r10, r8
+    cmp r10, r15
     jae .multi_commit
-    mov rsi, [rdi + NEBO_MULTI_LAYERS_OFFSET]
+    mov rsi, [r12 + NEBO_MULTI_LAYERS_OFFSET]
     mov rsi, [rsi + r10 * 8]
     test rsi, rsi
     jz .multi_invalid
@@ -474,19 +521,55 @@ nebo_geometry_multi_validate:
     mov [rbx + NEBO_MULTI_DIGEST_OFFSET], rax
     mov qword [rbx + NEBO_MULTI_STATE_OFFSET], NEBO_MULTI_READY
     xor eax, eax
-    pop rbx
-    ret
+    jmp .multi_done
+.multi_conflict:
+    mov eax, NEBO_GEOMETRY_CONFLICT
+    jmp .multi_done
 .multi_target_error:
     mov eax, NEBO_GEOMETRY_TARGET
-    pop rbx
-    ret
+    jmp .multi_done
 .multi_limit:
     mov eax, NEBO_GEOMETRY_LIMIT
-    pop rbx
-    ret
+    jmp .multi_done
 .multi_invalid:
     mov eax, NEBO_GEOMETRY_INVALID
+ .multi_done:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
     pop rbx
+    ret
+
+; RDI=array, RSI=count. Empty arrays are valid; IDs must be nonzero and unique.
+.validate_unique_ids:
+    test rsi, rsi
+    jz .unique_ok
+    test rdi, rdi
+    jz .unique_bad
+    xor ecx, ecx
+.unique_outer:
+    cmp rcx, rsi
+    jae .unique_ok
+    mov rax, [rdi + rcx * 8]
+    test rax, rax
+    jz .unique_bad
+    lea rdx, [rcx + 1]
+.unique_inner:
+    cmp rdx, rsi
+    jae .unique_next
+    cmp rax, [rdi + rdx * 8]
+    je .unique_bad
+    inc rdx
+    jmp .unique_inner
+.unique_next:
+    inc rcx
+    jmp .unique_outer
+.unique_ok:
+    xor eax, eax
+    ret
+.unique_bad:
+    mov eax, 1
     ret
 
 ; Maps logical coordinates with an explicit target scale. Headless is 1:1;
@@ -511,18 +594,23 @@ nebo_geometry_target_map:
     mov r13, [r12 + NEBO_TARGET_MAP_SCALE_NUMERATOR_OFFSET]
     mov r14, [r12 + NEBO_TARGET_MAP_SCALE_DENOMINATOR_OFFSET]
     test r13, r13
-    jz .target_map_invalid
+    jle .target_map_invalid
     test r14, r14
-    jz .target_map_invalid
+    jle .target_map_invalid
+    mov rax, [r12 + NEBO_TARGET_MAP_CAPABILITIES_OFFSET]
+    test rax, ~NEBO_SURFACE_CAP_LIVE
+    jnz .target_map_invalid
     cmp r15, NEBO_TARGET_HEADLESS
     jne .target_map_live
+    test rax, rax
+    jnz .target_map_target
     cmp r13, 1
     jne .target_map_target
     cmp r14, 1
     jne .target_map_target
     jmp .target_map_values
 .target_map_live:
-    test qword [r12 + NEBO_TARGET_MAP_CAPABILITIES_OFFSET], NEBO_SURFACE_CAP_LIVE
+    test rax, NEBO_SURFACE_CAP_LIVE
     jz .target_map_target
 .target_map_values:
     mov rax, [r12 + NEBO_TARGET_MAP_WIDTH_OFFSET]
@@ -533,24 +621,46 @@ nebo_geometry_target_map:
     jle .target_map_invalid
     mov rax, [r12 + NEBO_TARGET_MAP_X_OFFSET]
     imul r13
+    mov rcx, rax
+    sar rcx, 63
+    cmp rdx, rcx
+    jne .target_map_limit
     idiv r14
     mov r8, rax
     mov rax, [r12 + NEBO_TARGET_MAP_Y_OFFSET]
     imul r13
+    mov rcx, rax
+    sar rcx, 63
+    cmp rdx, rcx
+    jne .target_map_limit
     idiv r14
     mov r9, rax
     mov rax, [r12 + NEBO_TARGET_MAP_WIDTH_OFFSET]
     imul r13
+    mov rcx, rax
+    sar rcx, 63
+    cmp rdx, rcx
+    jne .target_map_limit
     idiv r14
     test rax, rax
     jle .target_map_limit
     mov r10, rax
     mov rax, [r12 + NEBO_TARGET_MAP_HEIGHT_OFFSET]
     imul r13
+    mov rcx, rax
+    sar rcx, 63
+    cmp rdx, rcx
+    jne .target_map_limit
     idiv r14
     test rax, rax
     jle .target_map_limit
     mov r11, rax
+    mov rax, r10
+    mul r11
+    test rdx, rdx
+    jnz .target_map_limit
+    cmp rax, NEBO_GEOMETRY_MAX_AREA
+    ja .target_map_limit
     mov [rbx + NEBO_TARGET_MAP_RESULT_X_OFFSET], r8
     mov [rbx + NEBO_TARGET_MAP_RESULT_Y_OFFSET], r9
     mov [rbx + NEBO_TARGET_MAP_RESULT_WIDTH_OFFSET], r10
@@ -614,14 +724,21 @@ nebo_geometry_document_validate:
     cmp qword [r12 + NEBO_DOCUMENT_LABELS_OFFSET], 0
     je .document_invalid
 .document_target:
+    mov rax, [r12 + NEBO_DOCUMENT_CAPABILITIES_OFFSET]
+    test rax, ~NEBO_SURFACE_CAP_LIVE
+    jnz .document_invalid
     mov r10, [r12 + NEBO_DOCUMENT_TARGET_OFFSET]
     cmp r10, NEBO_TARGET_HEADLESS
     jb .document_target_error
     cmp r10, NEBO_TARGET_LIVE
     ja .document_target_error
     cmp r10, NEBO_TARGET_LIVE
-    jne .document_hash_start
-    test qword [r12 + NEBO_DOCUMENT_CAPABILITIES_OFFSET], NEBO_SURFACE_CAP_LIVE
+    je .document_live
+    test rax, rax
+    jnz .document_target_error
+    jmp .document_hash_start
+.document_live:
+    test rax, NEBO_SURFACE_CAP_LIVE
     jz .document_target_error
 .document_hash_start:
     mov rax, 0xcbf29ce484222325
@@ -635,6 +752,11 @@ nebo_geometry_document_validate:
     add rdi, r10
     cmp qword [rdi + NEBO_SURFACE_STATE_OFFSET], NEBO_SURFACE_READY
     jne .document_lifecycle
+    cmp qword [r12 + NEBO_DOCUMENT_TARGET_OFFSET], NEBO_TARGET_HEADLESS
+    jne .document_surface_target_ready
+    cmp qword [rdi + NEBO_SURFACE_KIND_OFFSET], NEBO_SURFACE_LIVE_WINDOW
+    je .document_target_error
+.document_surface_target_ready:
     xor rax, [rdi + NEBO_SURFACE_ID_OFFSET]
     imul rax, r11
     inc rsi

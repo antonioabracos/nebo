@@ -48,8 +48,19 @@
 %define NEBOC_CALLABLE_ENV_SIZE_OFFSET 312
 %define NEBOC_CALLABLE_SELECTED_INDEX_OFFSET 320
 %define NEBOC_CALLABLE_HASH_OFFSET 328
-%define NEBOC_PARAM_REQUEST_SIZE 336
-%define NEBOC_PARAM_REQUEST_QWORDS 42
+; RF204-G003 completes the bounded parameter contract with explicit ownership
+; and one trailing homogeneous variadic pack.  The pack is represented as a
+; caller-independent inline tuple of at most five scalar words.
+%define NEBOC_PARAM_VARIADIC_INDEX_OFFSET 336
+%define NEBOC_PARAM_VARIADIC_COUNT_OFFSET 344
+%define NEBOC_PARAM_VARIADIC_VALUES_OFFSET 352
+%define NEBOC_PARAM_BORROW_MASK_OFFSET 392
+%define NEBOC_PARAM_OWNED_MASK_OFFSET 400
+; Preserve the selected callable body after the candidate scratch slab is
+; reused for its typed argument. Runtime lowering must not use OUTPUT_VALUE.
+%define NEBOC_CALLABLE_SELECTED_BODY_OFFSET 408
+%define NEBOC_PARAM_REQUEST_SIZE 416
+%define NEBOC_PARAM_REQUEST_QWORDS 52
 
 %define NEBOC_PARAM_NAME_OFFSET 0
 %define NEBOC_PARAM_TYPE_OFFSET 8
@@ -57,8 +68,16 @@
 %define NEBOC_PARAM_DEFAULT_VALUE_OFFSET 24
 %define NEBOC_PARAM_BOUND_OFFSET 32
 %define NEBOC_PARAM_BOUND_VALUE_OFFSET 40
-%define NEBOC_PARAM_RECORD_SIZE 48
-%define NEBOC_PARAM_RECORD_QWORDS 6
+%define NEBOC_PARAM_OWNERSHIP_OFFSET 48
+%define NEBOC_PARAM_FLAGS_OFFSET 56
+%define NEBOC_PARAM_RECORD_SIZE 64
+%define NEBOC_PARAM_RECORD_QWORDS 8
+
+%define NEBOC_PARAM_OWNERSHIP_IMPLICIT 0
+%define NEBOC_PARAM_OWNERSHIP_BORROWED 1
+%define NEBOC_PARAM_OWNERSHIP_OWNED 2
+%define NEBOC_PARAM_FLAG_VARIADIC 1
+%define NEBOC_PARAM_VARIADIC_MAX 5
 
 %define neboc_seguranca_numerica_conversoes_e_overflow_TYPE_INT 1
 %define neboc_seguranca_numerica_conversoes_e_overflow_TYPE_BOOL 2

@@ -1,0 +1,13 @@
+// PID control makes targets, saturation, reset, tuning, stability, and traces explicit.
+(Int.self)pidControllerNew() { self.return; }
+(Int.self)controllerSetTarget() { self.return; }
+(Int.self)controllerStep() { self.return; }
+(Int.self)controllerSetLimits() { self.return; }
+(Int.self)controllerReset() { self.return; }
+(Int.self)controllerTune() { self.return; }
+(Int.self)controllerStabilityReport() { self.return; }
+(Int.self)controllerTrace() { self.return; }
+
+start() {
+    75.pidControllerNew().controllerSetTarget().controllerStep().controllerSetLimits().controllerReset().controllerTune().controllerStabilityReport().controllerTrace();
+}

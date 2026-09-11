@@ -1,0 +1,11 @@
+start() {
+    Buffer.zeroed(4).packet;
+    packet.set(3, 4).old;
+    packet.freeze().frozen;
+    Buffer.zeroed(4).codes;
+    codes.get(0).option;
+    option.isSome().some;
+    codes.view(0, 4).view;
+    view.sum().sum;
+    frozen.at(3).return;
+}

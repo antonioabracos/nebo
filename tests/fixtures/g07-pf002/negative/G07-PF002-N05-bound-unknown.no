@@ -1,0 +1,6 @@
+generic<T: Any> (T.value)identity() {
+    value.return;
+}
+
+start() {
+}

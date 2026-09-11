@@ -1,0 +1,6 @@
+start() {
+    Result<Int,Bool>(Ok(42)).value;
+    match(value) {
+        Ok(payload) -> payload.return;
+    }
+}

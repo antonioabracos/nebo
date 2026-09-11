@@ -1,0 +1,4 @@
+start() {
+  Option<Bool>(Some(1)).value;
+  value.drop().return;
+}

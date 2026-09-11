@@ -1,0 +1,5 @@
+%ifndef NEBO_G015_SOURCE_PROBE_INC
+%define NEBO_G015_SOURCE_PROBE_INC 1
+extern nebo_g015_source_probe
+extern nebo_g015_negative_probe
+%endif

@@ -1,0 +1,18 @@
+// Relational operations preserve schema and stable row order.
+(Row.self)keep() { (self.get("age").expect("age") > 20).return; }
+(Row.self)observe() { self.get("age").expect("age").console(); true.return; }
+start() {
+    Table.fromColumns([Tuple.of("age", Column<Int>.from([71, 17, 29]))]).table;
+    table.rowCount().console();
+    table.columnCount().console();
+    table.select(["age"]).projected;
+    projected.filter(keep).filtered;
+    filtered.sortBy(["age"]).sorted;
+    sorted.filter(observe);
+    table.groupBy(["age"]).groups;
+    groups.length().console();
+    Table.fromColumns([Tuple.of("age", Column<Int>.from([29]))]).other;
+    table.join(other, ["age"], 1).joined;
+    joined.rowCount().console();
+    93.return;
+}

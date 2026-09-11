@@ -1,0 +1,8 @@
+(Matrix<Int>.self)makeMatrix() {
+    Matrix<Int>.filled(2, 3, 7).matrix;
+    matrix.return;
+}
+start() {
+    0.makeMatrix().matrix;
+    matrix.sum();
+}

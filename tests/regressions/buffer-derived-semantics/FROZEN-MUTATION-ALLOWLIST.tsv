@@ -1,0 +1,4 @@
+CATEGORY	PATH	CAUSAL_JUSTIFICATION
+CODEGEN	compiler/codegen/functions/x86_64/function_codegen.asm	FunctionTable replay stops at the base Buffer parser, returns raw Option payloads, and omits freeze semantic analysis.
+COMPILER	compiler/driver/cli/linux-x86_64/cli_driver.asm	A Buffer-only source with more than one authenticated owner incorrectly selects the historical single-owner backend and emits a zero stub; routing must force FunctionTable.
+TEST	tests/regressions/buffer-derived-semantics/**	Permanent A/B/C/D/E probes, capture oracle, strict transcript parser, and evidence-oriented validator.

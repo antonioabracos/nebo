@@ -1,0 +1,6 @@
+start() {
+    List<Int>.from([5, 8]).items;
+    items.iterator().reader;
+    items.push(13);
+    reader.next();
+}

@@ -1,0 +1,4 @@
+start() {
+    Tensor<Int>.zeros(Tuple.of(0)).tensor;
+    0;
+}

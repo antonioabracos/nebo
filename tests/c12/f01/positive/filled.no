@@ -1,0 +1,4 @@
+start() {
+    Tensor<Int>.filled(Tuple.of(2, 3), 7).tensor;
+    0;
+}

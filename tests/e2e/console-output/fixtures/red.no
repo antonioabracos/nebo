@@ -1,0 +1,3 @@
+start() {
+    "Ola Nebo".console(RED.color());
+}

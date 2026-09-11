@@ -1,0 +1,5 @@
+start() {
+    "leak".owner;
+    owner.forget().escaped;
+    0;
+}

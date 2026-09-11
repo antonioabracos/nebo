@@ -1,1 +1,1 @@
-use nebo.std.console
+use nebo.legacy.io

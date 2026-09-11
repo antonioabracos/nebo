@@ -1,0 +1,2 @@
+callable keep(Int.value) capture none { value.return; }
+start() { Array<Int, 0> [].a; a.map(keep).b; b.length(); }

@@ -18,17 +18,27 @@ NEBOC_ABI_FUNCTION neboc_operator_code_action
  ja .source
  test rsi,rsi
  jz .source
- cmp rsi,NEBOC_OPERATOR_REGISTRY_ENTRY_COUNT
+ cmp rsi,NEBOC_OPERATOR_CATALOG_ENTRY_COUNT
  ja .source
  cmp r8,1
- jne .source
+ ja .source
  cmp rdi,NEBOC_OPERATOR_ACTION_REPLACE_SPELLING
- jne .store
+ jne .manual
  test rcx,rcx
  jz .source
+ cmp r8,1
+ jne .manual
+ cmp rsi,NEBOC_OPERATOR_CATALOG_CORE_LAST
+ jbe .manual
+ cmp rsi,NEBOC_OPERATOR_CATALOG_ALIAS_LAST
+ ja .manual
+ mov r10d,1
+ jmp .store
+.manual:
+ xor r10d,r10d
 .store:
  mov [r9+NEBOC_OPERATOR_ACTION_KIND_OFFSET],rdi
- mov qword [r9+NEBOC_OPERATOR_ACTION_SAFE_OFFSET],1
+ mov [r9+NEBOC_OPERATOR_ACTION_SAFE_OFFSET],r10
  mov qword [r9+NEBOC_OPERATOR_ACTION_AUTOMATIC_OFFSET],0
  mov [r9+NEBOC_OPERATOR_ACTION_REGISTRY_ID_OFFSET],rsi
  mov [r9+NEBOC_OPERATOR_ACTION_FROM_TOKEN_OFFSET],rdx

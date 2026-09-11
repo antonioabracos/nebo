@@ -1,0 +1,1 @@
+{"schemaVersion":1,"format":"nebo-diagnostic","required":["schema","code","severity","category","phase","messageKey","primary"]}

@@ -1,0 +1,9 @@
+struct Record {
+    Text.name;
+    Int.id;
+}
+
+start() {
+    Record { name: "nebo", id: 4 }.record;
+    record.id;
+}

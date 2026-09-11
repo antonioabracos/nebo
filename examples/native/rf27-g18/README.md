@@ -46,7 +46,8 @@ F06 Canvas rendering over caller-owned tree, node, event, text, pixel and
 command storage. F07 accessibility is a bounded semantic snapshot; it does not
 claim an AT-SPI or other operating-system accessibility bridge.
 
-F07 keeps source-language widget syntax inactive. Charts remain in F08 and
+F07 originally kept source-language widget syntax inactive; G018 now lowers
+the current public surface into these exact owners. Charts remain in F08 and
 `canvas.image` remains deferred to RF27-G19.
 
 ## F08 bounded Canvas charts
@@ -57,7 +58,7 @@ Canvas. Numeric values follow the G14 finite binary64 policy; the native ABI can
 borrow existing G15 F64 Matrix storage without copying it. The example renders
 deterministically, verifies the command count, then closes Chart and Canvas.
 
-F08 keeps public `.no` Chart syntax inactive and adds no host plotting library,
+F08 is now reached by public G018 `.no` Chart syntax and adds no host plotting library,
 host font, heap allocation or new Matrix/Dataset representation. Its normative
 visual proof is the versioned headless command/pixel golden. F09 remains the
 program closeout and `canvas.image` remains deferred to RF27-G19.

@@ -1,0 +1,28 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ai-agents — agent.auditTrail()</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>ai-agents — agent.auditTrail()</h1><p>Offline tokenizer/generation/agent reference model; no service, network or foundation-model claim; original observation: ordered immutable trail records plan generation tool pause and rollback; SDK bounds: {&quot;MAX_CONTEXT&quot;:4096,&quot;MAX_EVALUATION_CASES&quot;:256,&quot;MAX_GENERATED_TOKENS&quot;:256,&quot;MAX_MANIFEST_BYTES&quot;:65536,&quot;MAX_PLAN_STEPS&quot;:32,&quot;MAX_SCHEMA_FIELDS&quot;:64,&quot;MAX_TEXT_BYTES&quot;:8192,&quot;MAX_TOOLS&quot;:32,&quot;MAX_TOOL_ARGUMENTS&quot;:16,&quot;MAX_VOCABULARY&quot;:512}</p><pre>Identity: owner:G023:G023-S06-07 (DOMAIN_CONTRACT_ID)
+Edition: 1
+Target: PYTHON_CPU_REFERENCE
+Availability: EXPERIMENTAL</pre><h2>Syntax or signature</h2><pre>Agent.auditTrail(self) -&gt; tuple[Mapping[str, Any], ...]</pre><h2>Reference-model API</h2><p>The signature describes the Python reference model. Parameters and return annotations belong to that model; they are not an admitted Nebo spelling.</p><h2>Complete executable Python example</h2><p>Run python3 -B tests/rf204/G023/sdk_oracle.py from the repository root with only synthetic inputs. Set G020_TMP and G021_TMP to an empty private temporary directory for the two checkpoint suites. This program contains the setup and independent assertions for the model. The line excerpt below is not a standalone program. No native Nebo binding is inferred.</p><h2>Availability and maturity</h2><p>EXPERIMENTAL; evidence SDK_REFERENCE_MODEL. Documentation does not promote this identity to stable. Public and owner namespaces are separate contracts.</p><h2>Limits and lifecycle</h2><p>Offline tokenizer/generation/agent reference model; no service, network or foundation-model claim; original observation: ordered immutable trail records plan generation tool pause and rollback; SDK bounds: {&quot;MAX_CONTEXT&quot;:4096,&quot;MAX_EVALUATION_CASES&quot;:256,&quot;MAX_GENERATED_TOKENS&quot;:256,&quot;MAX_MANIFEST_BYTES&quot;:65536,&quot;MAX_PLAN_STEPS&quot;:32,&quot;MAX_SCHEMA_FIELDS&quot;:64,&quot;MAX_TEXT_BYTES&quot;:8192,&quot;MAX_TOOLS&quot;:32,&quot;MAX_TOOL_ARGUMENTS&quot;:16,&quot;MAX_VOCABULARY&quot;:512}</p><h2>Privacy, dependencies and authority</h2><p>Capability: SYNTHETIC_LOCAL_DATA. Gate: NONE. Import grants capability: NO. Use synthetic local data. Hardware claim: NO. Security assurance: NO. RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE. SDK buffers and handles follow the owner lifecycle and reject invalid/released inputs where specified. No downloaded models, secrets, external network or device access is needed for the documented local proofs.</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;classification&quot;: {
+      &quot;capability&quot;: &quot;SYNTHETIC_LOCAL_DATA&quot;,
+      &quot;core&quot;: &quot;NO&quot;,
+      &quot;evidence_level&quot;: &quot;SDK_REFERENCE_MODEL&quot;,
+      &quot;external_gate&quot;: &quot;NONE&quot;,
+      &quot;hardware_claim&quot;: &quot;NO&quot;,
+      &quot;import_grants_capability&quot;: &quot;NO&quot;,
+      &quot;legal&quot;: &quot;RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE&quot;,
+      &quot;security_assurance&quot;: &quot;NO&quot;,
+      &quot;target&quot;: &quot;PYTHON_CPU_REFERENCE&quot;,
+      &quot;tier&quot;: &quot;EXPERIMENTAL&quot;
+    }
+  },
+  {
+    &quot;excerpt&quot;: &quot;343:     agent.pause()\n344:     surface(\&quot;G023-S06-05\&quot;, agent._paused is True, agent.auditTrail()[-1])\n345:     reverted = agent.rollback(0)\n346:     surface(\&quot;G023-S06-06\&quot;, reverted == 1 and state == [], reverted)\n347:     audit = agent.auditTrail()&quot;,
+    &quot;executed_assertions&quot;: 157,
+    &quot;execution&quot;: &quot;SDK_REFERENCE_MODEL_ONLY&quot;,
+    &quot;language&quot;: &quot;python&quot;,
+    &quot;line&quot;: 344,
+    &quot;source_path&quot;: &quot;tests/rf204/G023/sdk_oracle.py&quot;,
+    &quot;source_sha256&quot;: &quot;4ca030efbb92a0e7fa584f140398f9f8624078177c454046dca6143200b536a3&quot;
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a></nav><h2>Provenance</h2><ul><li>compiler/sdk/ai.py — SHA-256 70b14138a269d49cd6f222c4e8a0b91a881d28a292cbca106440e0dd228b43b1</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

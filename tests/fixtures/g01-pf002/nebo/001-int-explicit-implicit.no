@@ -1,0 +1,9 @@
+start() {
+    Int(100).explicit_num;
+    100.implicit_num;
+    if (explicit_num == implicit_num) {
+        0;
+    } else {
+        1;
+    }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "nebo-local",
+  "displayName": "Nebo Local Tooling",
+  "description": "Isolated local adapter for the Nebo compiler and bounded stdio LSP",
+  "version": "0.2.0-rc.2",
+  "private": true,
+  "engines": { "vscode": "^1.85.0" },
+  "main": "./extension.js",
+  "activationEvents": ["onLanguage:nebo", "onCommand:nebo.check", "onCommand:nebo.build", "onCommand:nebo.emitAsm", "onCommand:nebo.format"],
+  "contributes": {
+    "languages": [{ "id": "nebo", "aliases": ["Nebo"], "extensions": [".no"] }],
+    "commands": [
+      { "command": "nebo.check", "title": "Nebo: Check Current File" },
+      { "command": "nebo.build", "title": "Nebo: Build Current File" },
+      { "command": "nebo.emitAsm", "title": "Nebo: Emit Assembly" },
+      { "command": "nebo.format", "title": "Nebo: Format Current File" }
+    ],
+    "configuration": {
+      "title": "Nebo Local",
+      "properties": {
+        "nebo.compilerPath": { "type": "string", "default": "build/bin/neboc", "description": "Workspace-relative or absolute local compiler path." },
+        "nebo.lspPath": { "type": "string", "default": "tools/rf27-lsp.py", "description": "Workspace-relative or absolute bounded stdio LSP path." },
+        "nebo.pythonPath": { "type": "string", "default": "python3", "description": "Local Python executable used only for the in-tree LSP." },
+        "nebo.maxOutputBytes": { "type": "integer", "default": 1048576, "minimum": 1024, "maximum": 1048576 }
+      }
+    }
+  },
+  "scripts": { "test": "node ../../tests/rf27-g24/f06/adapter_test.js" },
+  "license": "UNLICENSED"
+}

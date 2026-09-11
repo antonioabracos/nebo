@@ -1,0 +1,13 @@
+// Checked access and each mutation publish values derived from live storage.
+// swapRemove is intentionally O(1) and therefore does not preserve ordering.
+start() {
+    List<Int>.from([3, 5, 7]).items;
+    items.at(1).middle;
+    items.get(2).checked;
+    items.push(11);
+    items.insert(1, 4);
+    items.remove(2).removed;
+    items.swapRemove(0).swapped;
+    items.pop().last;
+    items.length();
+}

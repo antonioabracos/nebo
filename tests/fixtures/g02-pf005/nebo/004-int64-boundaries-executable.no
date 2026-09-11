@@ -1,0 +1,9 @@
+start() {
+    0x7fff_ffff_ffff_ffff.maximum;
+    -0x8000_0000_0000_0000.minimum;
+    if ((maximum > 0) && (minimum < 0)) {
+        0;
+    } else {
+        1;
+    }
+}

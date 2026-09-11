@@ -1,0 +1,4 @@
+start() {
+    Int.counter;
+    counter;
+}

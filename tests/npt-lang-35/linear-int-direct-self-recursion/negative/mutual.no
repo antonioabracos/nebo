@@ -1,0 +1,3 @@
+(Int.self)left(){ self.right().return; }
+(Int.self)right(){ self.left().return; }
+start(){ 2.left().return; }

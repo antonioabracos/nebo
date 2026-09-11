@@ -1,0 +1,5 @@
+start() {
+    Bool.ready;
+    true.ready;
+    ready;
+}

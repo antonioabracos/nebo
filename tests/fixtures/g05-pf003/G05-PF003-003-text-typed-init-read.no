@@ -1,0 +1,5 @@
+start() {
+    Text.label;
+    "Nebo".label;
+    label;
+}

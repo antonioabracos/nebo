@@ -35,6 +35,8 @@ NEBOC_ABI_FUNCTION neboc_move_copy_clone_lower
  mov rax,neboc_text_char_unicode_e_bytes_LAYOUT_ID
  cmp [r12+NEBOC_SEM_LAYOUT_ID_OFFSET],rax
  jne .source
+ cmp qword [r12+NEBOC_SEM_EVENT_COUNT_OFFSET],NEBOC_OWNERSHIP_MAX_EVENTS
+ ja .source
  mov rdi,r12
  call semantic_hash
  cmp rax,[r12+neboc_text_char_unicode_e_bytes_SEM_HASH_OFFSET]
@@ -69,6 +71,10 @@ NEBOC_ABI_FUNCTION neboc_move_copy_clone_lower
  mov [r13+NEBOC_PLAN_CLOSED_OWNER_COUNT_OFFSET],rax
  mov rax,[r12+NEBOC_SEM_SAFETY_PROOF_HASH_OFFSET]
  mov [r13+NEBOC_PLAN_SAFETY_PROOF_HASH_OFFSET],rax
+ lea rsi,[r12+NEBOC_SEM_EVENT_COUNT_OFFSET]
+ lea rdi,[r13+NEBOC_PLAN_EVENT_COUNT_OFFSET]
+ mov ecx,1+NEBOC_OWNERSHIP_MAX_EVENTS*6
+ rep movsq
  mov rdi,r13
  mov ecx,neboc_text_char_unicode_e_bytes_PLAN_HASHED_BYTES
  call hash_bytes
@@ -131,6 +137,14 @@ semantic_hash:
  mov rcx,[rdi+NEBOC_SEM_LAYOUT_ID_OFFSET]
  xor rax,rcx
  imul rax,r8
+ mov r9,NEBOC_SEM_EVENT_COUNT_OFFSET
+.events:
+ mov rcx,[rdi+r9]
+ xor rax,rcx
+ imul rax,r8
+ add r9,8
+ cmp r9,neboc_text_char_unicode_e_bytes_SEM_REQUEST_SIZE_driver_cli_linux_x86_64_native_vertical
+ jb .events
  ret
 
 hash_bytes:

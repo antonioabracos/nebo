@@ -5,6 +5,8 @@
 
 ; Lossless provenance carried from lexing into contextual interpretation.
 ; All offsets are half-open byte offsets in the original immutable source.
+; neboc_operator_lexeme_provenance(source, remaining, source_id, start, output)
+; fills one record atomically after exact generated-Registry lookup.
 %define NEBOC_OPERATOR_PROVENANCE_REGISTRY_ID_OFFSET 0
 %define NEBOC_OPERATOR_PROVENANCE_ATOM_INDEX_OFFSET 8
 %define NEBOC_OPERATOR_PROVENANCE_SOURCE_ID_OFFSET 16

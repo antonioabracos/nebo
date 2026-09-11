@@ -1,0 +1,5 @@
+start() {
+    "break".owner;
+    break;
+    0;
+}

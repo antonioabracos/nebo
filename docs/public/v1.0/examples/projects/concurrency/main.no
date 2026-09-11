@@ -1,0 +1,2 @@
+// A noncapturing task and channel use separate lifetimes.
+(Int.index)work(){(index+73).return;}start(){Task.spawn(work).f;Channel<Int>.bounded(2).c;c.trySend(89).get();f.await().get().console();c.tryReceive().get().console();c.close();61.return;}

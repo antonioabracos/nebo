@@ -1,0 +1,9 @@
+profile=C09-F10-v1
+prng=xorshift64_fixed_seed_0x9e3779b97f4a7c15
+dict_operations=2048
+set_operations=1024
+key_domain=0..31
+rehash_rounds=16
+reference_model=presence_and_u64_value_arrays
+native_replays=2
+time_budget_seconds_per_replay=5

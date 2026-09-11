@@ -1,0 +1,41 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>crypto-policy — neboc_crypto_audit</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>crypto-policy — neboc_crypto_audit</h1><p>Synthetic data only; SHA/HMAC functional checks are not implementation security review; no physical zeroization assurance; original observation: validated artifact bytes govern size and FNV identity in bounded report; SDK bounds: {&quot;MAX_CIRCUIT_INPUTS&quot;:64,&quot;MAX_CONSTRAINTS&quot;:256,&quot;MAX_MPC_OPERATIONS&quot;:128,&quot;MAX_PARAMETER_SETS&quot;:16,&quot;MAX_PARTICIPANTS&quot;:16,&quot;MAX_RANGE_BITS&quot;:256,&quot;MAX_TEXT_BYTES&quot;:4096,&quot;MAX_TRANSCRIPT_EVENTS&quot;:256,&quot;MAX_VAULT_KEYS&quot;:64}</p><pre>Identity: owner:G044:G044-S07-08 (DOMAIN_CONTRACT_ID)
+Edition: 1
+Target: PYTHON_CPU_REFERENCE
+Availability: EXPERIMENTAL</pre><h2>Syntax or signature</h2><pre>neboc crypto-audit examples/evolution/rf46-g44/crypto-audit-v1.artifact</pre><h2>Local CLI boundary</h2><p>Inspects allowlisted crypto-policy metadata. No quantum-safe, ZK, MPC, attestation or implementation assurance is claimed.</p><h2>Invocation and independent observation</h2><p>{&quot;boundary&quot;: &quot;Inspects allowlisted crypto-policy metadata. No quantum-safe, ZK, MPC, attestation or implementation assurance is claimed.&quot;, &quot;deterministic&quot;: true, &quot;execution&quot;: &quot;LOCAL_CLI_BOUNDARY&quot;, &quot;identity&quot;: &quot;owner:G044:G044-S07-08&quot;, &quot;independent_oracle&quot;: &quot;Explicit fail-closed allowlist and excluded cryptographic assurance claims.&quot;, &quot;input_context&quot;: {&quot;argv&quot;: [&quot;crypto-audit&quot;, &quot;examples/evolution/rf46-g44/crypto-audit-v1.artifact&quot;], &quot;files&quot;: {&quot;examples/evolution/rf46-g44/crypto-audit-v1.artifact&quot;: &quot;NEBO-CRYPTO-AUDIT-V1\nartifact=synthetic-metadata-only\nalgorithm=SHA256_V1\nsecrets=none\n&quot;}}, &quot;owner&quot;: &quot;compiler/driver/cli/linux-x86_64/cli_driver.asm&quot;, &quot;result&quot;: &quot;PASS&quot;, &quot;signature&quot;: &quot;neboc crypto-audit examples/evolution/rf46-g44/crypto-audit-v1.artifact&quot;, &quot;stdout_bytes&quot;: 604, &quot;stdout_sha256&quot;: &quot;5ab0178a9343ba0ed3e965d88bef5cc99d51f210892ad44f9c2235315d8e1c60&quot;, &quot;stdout_text&quot;: &quot;crypto-audit v2\nalgorithm-registry=SHA256_V1:APPROVED;PQC:UNAVAILABLE;ZK:UNAVAILABLE;MPC:UNAVAILABLE\nreview-gates=PQC,ZK,MPC:EXTERNAL_REVIEW_REQUIRED\nvectors=FIPS_180_4_ABC:PASS;PQC,ZK,MPC:ABSENT\ntarget-backend=x86_64-systemv;attestation:HARDWARE_UNAVAILABLE\nconstant-time=BOUNDED_STATIC_NOT_PROOF;leakage:ENVIRONMENT_LIMITED\nsecret-redaction=PASS\ndependency-provenance=SHA256\ncomposition=FAIL_CLOSED_ALLOWLIST_V1\ndeprecated-forbidden-usage=NONE\nunsupported=PQC,ZK,MPC,ATTESTATION,VAULT_PERSISTENCE\nclaims=NO_QUANTUM_SAFE_NO_ZK_NO_MPC_NO_ATTESTATION\nartifact-bytes=87\nartifact-fnv1a64=0x5c039eb9359e065f\n&quot;}</p><h2>Availability and maturity</h2><p>EXPERIMENTAL; evidence SDK_REFERENCE_MODEL. Documentation does not promote this identity to stable. Public and owner namespaces are separate contracts.</p><h2>Limits and lifecycle</h2><p>Synthetic data only; SHA/HMAC functional checks are not implementation security review; no physical zeroization assurance; original observation: validated artifact bytes govern size and FNV identity in bounded report; SDK bounds: {&quot;MAX_CIRCUIT_INPUTS&quot;:64,&quot;MAX_CONSTRAINTS&quot;:256,&quot;MAX_MPC_OPERATIONS&quot;:128,&quot;MAX_PARAMETER_SETS&quot;:16,&quot;MAX_PARTICIPANTS&quot;:16,&quot;MAX_RANGE_BITS&quot;:256,&quot;MAX_TEXT_BYTES&quot;:4096,&quot;MAX_TRANSCRIPT_EVENTS&quot;:256,&quot;MAX_VAULT_KEYS&quot;:64}</p><h2>Privacy, dependencies and authority</h2><p>Capability: SYNTHETIC_LOCAL_DATA. Gate: NONE. Import grants capability: NO. Use synthetic local data. Hardware claim: NO. Security assurance: NO. RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE. SDK buffers and handles follow the owner lifecycle and reject invalid/released inputs where specified. No downloaded models, secrets, external network or device access is needed for the documented local proofs.</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;classification&quot;: {
+      &quot;capability&quot;: &quot;SYNTHETIC_LOCAL_DATA&quot;,
+      &quot;core&quot;: &quot;NO&quot;,
+      &quot;evidence_level&quot;: &quot;SDK_REFERENCE_MODEL&quot;,
+      &quot;external_gate&quot;: &quot;NONE&quot;,
+      &quot;hardware_claim&quot;: &quot;NO&quot;,
+      &quot;import_grants_capability&quot;: &quot;NO&quot;,
+      &quot;legal&quot;: &quot;RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE&quot;,
+      &quot;security_assurance&quot;: &quot;NO&quot;,
+      &quot;target&quot;: &quot;PYTHON_CPU_REFERENCE&quot;,
+      &quot;tier&quot;: &quot;EXPERIMENTAL&quot;
+    }
+  },
+  {
+    &quot;boundary&quot;: &quot;Inspects allowlisted crypto-policy metadata. No quantum-safe, ZK, MPC, attestation or implementation assurance is claimed.&quot;,
+    &quot;deterministic&quot;: true,
+    &quot;execution&quot;: &quot;LOCAL_CLI_BOUNDARY&quot;,
+    &quot;identity&quot;: &quot;owner:G044:G044-S07-08&quot;,
+    &quot;independent_oracle&quot;: &quot;Explicit fail-closed allowlist and excluded cryptographic assurance claims.&quot;,
+    &quot;input_context&quot;: {
+      &quot;argv&quot;: [
+        &quot;crypto-audit&quot;,
+        &quot;examples/evolution/rf46-g44/crypto-audit-v1.artifact&quot;
+      ],
+      &quot;files&quot;: {
+        &quot;examples/evolution/rf46-g44/crypto-audit-v1.artifact&quot;: &quot;NEBO-CRYPTO-AUDIT-V1\nartifact=synthetic-metadata-only\nalgorithm=SHA256_V1\nsecrets=none\n&quot;
+      }
+    },
+    &quot;owner&quot;: &quot;compiler/driver/cli/linux-x86_64/cli_driver.asm&quot;,
+    &quot;result&quot;: &quot;PASS&quot;,
+    &quot;signature&quot;: &quot;neboc crypto-audit examples/evolution/rf46-g44/crypto-audit-v1.artifact&quot;,
+    &quot;stdout_bytes&quot;: 604,
+    &quot;stdout_sha256&quot;: &quot;5ab0178a9343ba0ed3e965d88bef5cc99d51f210892ad44f9c2235315d8e1c60&quot;,
+    &quot;stdout_text&quot;: &quot;crypto-audit v2\nalgorithm-registry=SHA256_V1:APPROVED;PQC:UNAVAILABLE;ZK:UNAVAILABLE;MPC:UNAVAILABLE\nreview-gates=PQC,ZK,MPC:EXTERNAL_REVIEW_REQUIRED\nvectors=FIPS_180_4_ABC:PASS;PQC,ZK,MPC:ABSENT\ntarget-backend=x86_64-systemv;attestation:HARDWARE_UNAVAILABLE\nconstant-time=BOUNDED_STATIC_NOT_PROOF;leakage:ENVIRONMENT_LIMITED\nsecret-redaction=PASS\ndependency-provenance=SHA256\ncomposition=FAIL_CLOSED_ALLOWLIST_V1\ndeprecated-forbidden-usage=NONE\nunsupported=PQC,ZK,MPC,ATTESTATION,VAULT_PERSISTENCE\nclaims=NO_QUANTUM_SAFE_NO_ZK_NO_MPC_NO_ATTESTATION\nartifact-bytes=87\nartifact-fnv1a64=0x5c039eb9359e065f\n&quot;
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a></nav><h2>Provenance</h2><ul><li>compiler/driver/cli/linux-x86_64/cli_driver.asm — SHA-256 0005784201af6835cb78990bd7f0800aa5b745fb813a6bd744934254766560ed</li><li>compiler/driver/cli/linux-x86_64/security_optimization_cli.inc — SHA-256 541bd2ba6623365258b6479ba6b0f3358b04a4f48eb4b3081be6dfab86b42c78</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

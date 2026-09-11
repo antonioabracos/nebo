@@ -1,0 +1,13 @@
+invalid-abi-request
+internal-abi-version-mismatch
+runtime-abi-version-mismatch
+abi-target-mismatch
+abi-backend-not-ready
+abi-writer-not-ready
+invalid-abi-signature
+invalid-abi-state
+abi-parameter-limit
+invalid-abi-stack-slot
+invalid-abi-call
+abi-function-mismatch
+abi-writer-limit

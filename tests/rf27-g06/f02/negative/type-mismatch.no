@@ -1,0 +1,4 @@
+struct Count {
+    Int.value;
+}
+start() { Count { value: false }; }

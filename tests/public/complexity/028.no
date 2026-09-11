@@ -1,0 +1,13 @@
+// Capability-bounded MMIO retains every volatile access, modification, bit operation, and ordering fence.
+(Int.self)registerAt() { self.return; }
+(Int.self)registerRead() { self.return; }
+(Int.self)registerWrite() { self.return; }
+(Int.self)registerModify() { self.return; }
+(Int.self)registerSetBits() { self.return; }
+(Int.self)registerClearBits() { self.return; }
+(Int.self)memoryMappedRegion() { self.return; }
+(Int.self)mmioFence() { self.return; }
+
+start() {
+    56.registerAt().registerRead().registerWrite().registerModify().registerSetBits().registerClearBits().memoryMappedRegion().mmioFence();
+}

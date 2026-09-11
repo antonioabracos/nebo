@@ -390,4 +390,211 @@ NEBOC_ABI_FUNCTION neboc_list_stable_sort
 .sort_invalid:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
  ret
+
+; retain(desc*, predicate_fn) removes rejected elements in place while
+; preserving order. predicate_fn(element*, out_bool*) -> Status. No mutation
+; is committed until every predicate result has been authenticated.
+NEBOC_ABI_FUNCTION neboc_list_retain
+ test rsi,rsi
+ jz .retain_invalid
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,NEBOC_LIST_MAX_BYTES+16
+ mov r12,rdi
+ mov r13,rsi
+ call neboc_list_validate
+ test eax,eax
+ jnz .retain_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .retain_borrow
+ mov rax,[r12+NEBOC_LIST_LENGTH_OFFSET]
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ jo .retain_limit
+ cmp rax,NEBOC_LIST_MAX_BYTES
+ ja .retain_limit
+ lea rdi,[rsp+16]
+ mov rsi,[r12+NEBOC_LIST_DATA_OFFSET]
+ mov rcx,rax
+ rep movsb
+ xor ebx,ebx
+ xor r14d,r14d
+.retain_scan:
+ cmp r14,[r12+NEBOC_LIST_LENGTH_OFFSET]
+ jae .retain_commit
+ mov rax,r14
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ lea rdi,[rsp+16+rax]
+ lea rsi,[rsp]
+ mov qword [rsp],0
+ call r13
+ test eax,eax
+ jnz .retain_callback
+ cmp qword [rsp],0
+ je .retain_next
+ cmp qword [rsp],1
+ jne .retain_callback
+ mov rax,r14
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ lea rsi,[rsp+16+rax]
+ mov rax,rbx
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ lea rdi,[rsp+16+rax]
+ mov rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ rep movsb
+ inc rbx
+.retain_next:
+ inc r14
+ jmp .retain_scan
+.retain_commit:
+ mov rax,[r12+NEBOC_LIST_LENGTH_OFFSET]
+ cmp rax,rbx
+ je .retain_ok
+ mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
+ lea rsi,[rsp+16]
+ mov rcx,rbx
+ imul rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ rep movsb
+ mov rcx,rax
+ sub rcx,rbx
+ imul rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rax,rbx
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rdi,rax
+ xor eax,eax
+ rep stosb
+ mov [r12+NEBOC_LIST_LENGTH_OFFSET],rbx
+ inc qword [r12+NEBOC_LIST_GENERATION_OFFSET]
+.retain_ok:
+ xor eax,eax
+ jmp .retain_done
+.retain_callback:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .retain_done
+.retain_limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ jmp .retain_done
+.retain_borrow:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.retain_done:
+ add rsp,NEBOC_LIST_MAX_BYTES+16
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+.retain_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+; deduplicate(desc*, eq_fn) removes adjacent duplicates, matching the bounded
+; public choice documented for G007. eq_fn(a*, b*, out_equal*) -> Status.
+; A snapshot makes callback failure atomic.
+NEBOC_ABI_FUNCTION neboc_list_deduplicate
+ test rsi,rsi
+ jz .dedup_invalid
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,NEBOC_LIST_MAX_BYTES+16
+ mov r12,rdi
+ mov r13,rsi
+ call neboc_list_validate
+ test eax,eax
+ jnz .dedup_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .dedup_borrow
+ mov rax,[r12+NEBOC_LIST_LENGTH_OFFSET]
+ cmp rax,1
+ jbe .dedup_ok
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ jo .dedup_limit
+ cmp rax,NEBOC_LIST_MAX_BYTES
+ ja .dedup_limit
+ lea rdi,[rsp+16]
+ mov rsi,[r12+NEBOC_LIST_DATA_OFFSET]
+ mov rcx,rax
+ rep movsb
+ mov ebx,1
+ mov r14,1
+.dedup_scan:
+ cmp r14,[r12+NEBOC_LIST_LENGTH_OFFSET]
+ jae .dedup_commit
+ mov rax,rbx
+ dec rax
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ lea rdi,[rsp+16+rax]
+ mov rax,r14
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ lea rsi,[rsp+16+rax]
+ lea rdx,[rsp]
+ mov qword [rsp],0
+ call r13
+ test eax,eax
+ jnz .dedup_callback
+ cmp qword [rsp],1
+ je .dedup_next
+ cmp qword [rsp],0
+ jne .dedup_callback
+ mov rax,r14
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ lea rsi,[rsp+16+rax]
+ mov rax,rbx
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ lea rdi,[rsp+16+rax]
+ mov rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ rep movsb
+ inc rbx
+.dedup_next:
+ inc r14
+ jmp .dedup_scan
+.dedup_commit:
+ mov rax,[r12+NEBOC_LIST_LENGTH_OFFSET]
+ cmp rax,rbx
+ je .dedup_ok
+ mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
+ lea rsi,[rsp+16]
+ mov rcx,rbx
+ imul rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ rep movsb
+ mov rax,[r12+NEBOC_LIST_LENGTH_OFFSET]
+ sub rax,rbx
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rcx,rax
+ mov rax,rbx
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rdi,rax
+ xor eax,eax
+ rep stosb
+ mov [r12+NEBOC_LIST_LENGTH_OFFSET],rbx
+ inc qword [r12+NEBOC_LIST_GENERATION_OFFSET]
+.dedup_ok:
+ xor eax,eax
+ jmp .dedup_done
+.dedup_callback:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .dedup_done
+.dedup_limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ jmp .dedup_done
+.dedup_borrow:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.dedup_done:
+ add rsp,NEBOC_LIST_MAX_BYTES+16
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+.dedup_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
 section .note.GNU-stack noalloc noexec nowrite progbits

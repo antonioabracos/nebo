@@ -365,8 +365,12 @@ NEBOC_ABI_FUNCTION neboc_policy_parse
 .limit_exceeded:
     NEBOC_ABI_RETURN_STATUS NEBOC_STATUS_LIMIT_EXCEEDED
 
-; Global parse cursor: r15, end: r14.  Whitespace is ASCII SP/HT/LF/CR.
+; Global parse cursor: r15, end: r14. Whitespace and already-validated Nebo
+; comments are trivia. The lexer has rejected malformed/nonnested comments
+; before this bounded domain parser runs, but nested block depth is preserved
+; here so comments cannot change policy recognition or semantics.
 effects_capabilities_e_politicas_skip_ws:
+    push rcx
 .loop:
     cmp r15, r14
     jae .done
@@ -378,11 +382,69 @@ effects_capabilities_e_politicas_skip_ws:
     cmp al, 10
     je .take
     cmp al, 13
+    je .take
+    cmp al, '/'
     jne .done
+    lea rcx, [r15 + 1]
+    cmp rcx, r14
+    jae .done
+    cmp byte [rcx], '/'
+    je .line_comment
+    cmp byte [rcx], '*'
+    je .block_comment
+    jmp .done
 .take:
     inc r15
     jmp .loop
+.line_comment:
+    add r15, 2
+.line_scan:
+    cmp r15, r14
+    jae .done
+    movzx eax, byte [r15]
+    cmp al, 10
+    je .loop
+    cmp al, 13
+    je .loop
+    inc r15
+    jmp .line_scan
+.block_comment:
+    add r15, 2
+    mov ecx, 1
+.block_scan:
+    cmp r15, r14
+    jae .done
+    movzx eax, byte [r15]
+    cmp al, '/'
+    je .block_open
+    cmp al, '*'
+    je .block_close
+    inc r15
+    jmp .block_scan
+.block_open:
+    lea rax, [r15 + 1]
+    cmp rax, r14
+    jae .block_take
+    cmp byte [rax], '*'
+    jne .block_take
+    add r15, 2
+    inc ecx
+    jmp .block_scan
+.block_close:
+    lea rax, [r15 + 1]
+    cmp rax, r14
+    jae .block_take
+    cmp byte [rax], '/'
+    jne .block_take
+    add r15, 2
+    dec ecx
+    jnz .block_scan
+    jmp .loop
+.block_take:
+    inc r15
+    jmp .block_scan
 .done:
+    pop rcx
     ret
 
 ; rsi=literal, ecx=length; advances cursor after optional whitespace.

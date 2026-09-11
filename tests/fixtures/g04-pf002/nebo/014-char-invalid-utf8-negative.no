@@ -1,0 +1,3 @@
+start() {
+    'À¯'.invalid_utf8;
+}

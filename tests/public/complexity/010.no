@@ -1,0 +1,13 @@
+// A versioned ontology owns nominal types, properties, constraints, and compatibility.
+(Int.self)ontologyNew() { self.return; }
+(Int.self)ontologyDefineType() { self.return; }
+(Int.self)ontologySubtype() { self.return; }
+(Int.self)ontologyProperty() { self.return; }
+(Int.self)ontologyInverse() { self.return; }
+(Int.self)ontologyConstraint() { self.return; }
+(Int.self)ontologyValidate() { self.return; }
+(Int.self)ontologyCompatibility() { self.return; }
+
+start() {
+    51.ontologyNew().ontologyDefineType().ontologySubtype().ontologyProperty().ontologyInverse().ontologyConstraint().ontologyValidate().ontologyCompatibility();
+}

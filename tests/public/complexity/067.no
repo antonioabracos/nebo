@@ -1,0 +1,13 @@
+// Post-quantum entry points remain visible but fail closed behind review and official-vector gates.
+(Int.self)pqcKemKeyPair() { self.return; }
+(Int.self)kemEncapsulate() { self.return; }
+(Int.self)kemDecapsulate() { self.return; }
+(Int.self)pqcSignatureKeyPair() { self.return; }
+(Int.self)signatureSign() { self.return; }
+(Int.self)signatureVerify() { self.return; }
+(Int.self)hybridKexCombine() { self.return; }
+(Int.self)pqcVectorReport() { self.return; }
+
+start() {
+    55.pqcKemKeyPair().kemEncapsulate().kemDecapsulate().pqcSignatureKeyPair().signatureSign().signatureVerify().hybridKexCombine().pqcVectorReport();
+}

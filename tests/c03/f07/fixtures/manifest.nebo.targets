@@ -1,0 +1,6 @@
+nebo-target-manifest 1
+default app-alpha
+target app-alpha executable alpha.no - -
+target app-beta executable beta.no - -
+target checks test checks.no - case_pass
+target core library core.no - -

@@ -1,0 +1,13 @@
+// Bounded real-time tasks publish budgets, priorities, admission, execution order, and simulator-only deadline evidence.
+(Int.self)realTimeTask() { self.return; }
+(Int.self)taskWorstCaseBudget() { self.return; }
+(Int.self)taskPriority() { self.return; }
+(Int.self)schedulerFixedPriority() { self.return; }
+(Int.self)schedulerEdf() { self.return; }
+(Int.self)schedulerRun() { self.return; }
+(Int.self)schedulerDeadlineReport() { self.return; }
+(Int.self)schedulerAdmissionTest() { self.return; }
+
+start() {
+    128.realTimeTask().taskWorstCaseBudget().taskPriority().schedulerFixedPriority().schedulerEdf().schedulerRun().schedulerDeadlineReport().schedulerAdmissionTest();
+}

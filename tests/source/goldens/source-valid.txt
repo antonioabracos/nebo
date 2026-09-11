@@ -1,0 +1,5 @@
+path=src/main.no
+bytes=30
+hash=0x6c7bf8e9
+encoding=UTF-8
+bom=absent

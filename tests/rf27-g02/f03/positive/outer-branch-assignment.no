@@ -1,0 +1,10 @@
+start() {
+  1.counter.mutable;
+  if (true) {
+    counter = 2;
+  } else {
+    counter = 3;
+  }
+  counter = 4;
+  counter;
+}

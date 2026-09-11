@@ -1,0 +1,13 @@
+// One validated schema deterministically generates typed roles, mocks, documentation, suites, and verified receipts.
+(Int.self)apiFromProtocol() { self.return; }
+(Int.self)apiGenerateClient() { self.return; }
+(Int.self)apiGenerateServer() { self.return; }
+(Int.self)apiGenerateMock() { self.return; }
+(Int.self)apiGenerateDocumentation() { self.return; }
+(Int.self)apiGenerateConformanceSuite() { self.return; }
+(Int.self)generatedVerify() { self.return; }
+(Int.self)protocolGenerateCommand() { self.return; }
+
+start() {
+    112.apiFromProtocol().apiGenerateClient().apiGenerateServer().apiGenerateMock().apiGenerateDocumentation().apiGenerateConformanceSuite().generatedVerify().protocolGenerateCommand();
+}

@@ -1,0 +1,9 @@
+profile=C09-F10-v1
+capacity=64
+seed=42
+insert_keys=0..47
+reject_key=48
+expected_status=LIMIT_EXCEEDED
+expected_length=48
+failure_outputs=unchanged
+budget_operations=49

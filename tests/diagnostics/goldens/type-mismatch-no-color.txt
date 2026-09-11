@@ -1,0 +1,6 @@
+src/main.no:2:3: error NEBO_TYPE_MISMATCH: expected Int, found Text
+value.console();
+  ^^^^^
+note: related location: receiver declaration
+note: receiver has type Text
+help: use an Int receiver

@@ -1,0 +1,3 @@
+start() {
+    (-1).testBit(63).return;
+}

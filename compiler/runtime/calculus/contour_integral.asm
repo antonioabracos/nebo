@@ -12,11 +12,15 @@ global contour_integral2_i64
 ; rcx=orientation (+1|-1),r8=result[status,value,evaluations,orientation].
 contour_integral2_i64:
     push r12
+    test r8, r8
+    jz .domain_return
+    mov qword [r8], 0
+    mov qword [r8 + 8], 0
+    mov qword [r8 + 16], 0
+    mov qword [r8 + 24], 0
     test rdi, rdi
     jz .domain
     test rsi, rsi
-    jz .domain
-    test r8, r8
     jz .domain
     test rdx, rdx
     jz .domain
@@ -56,8 +60,6 @@ contour_integral2_i64:
     mov rax, INTEGRAL_ERR_OVERFLOW
     jmp .return
 .domain:
-    test r8, r8
-    jz .domain_return
     mov qword [r8], INTEGRAL_ERR_DOMAIN
 .domain_return:
     mov rax, INTEGRAL_ERR_DOMAIN

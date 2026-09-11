@@ -1,0 +1,7 @@
+// Canonical option owners feed the shared pointer-free ABI observation model.
+start() {
+    RenderPlan;
+    3502;
+    output.stdout().stderr().target("console-abi-service").plain().visual().headlessEvent();
+    lifecycle.event("renderer-plugin").payload("default-init-model-validate-options").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

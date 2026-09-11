@@ -1,0 +1,13 @@
+usage: neboc lint [-h] [--profile PROFILE] [--report {text,json,sarif}]
+                  [--warnings-as-errors] [--fix-preview]
+                  paths [paths ...]
+
+positional arguments:
+  paths
+
+options:
+  -h, --help            show this help message and exit
+  --profile PROFILE
+  --report {text,json,sarif}
+  --warnings-as-errors
+  --fix-preview

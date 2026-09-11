@@ -364,11 +364,36 @@ nebo_layout_box_validate:
     jnz .box_limit
     cmp rax, NEBO_LAYOUT_MAX_AREA
     ja .box_limit
-    mov rcx, 12
-    rep movsq
-    mov [rsi + NEBO_BOX_TOTAL_WIDTH_OFFSET - 96], r8
-    mov [rsi + NEBO_BOX_TOTAL_HEIGHT_OFFSET - 96], r9
-    mov qword [rsi + NEBO_BOX_STATE_OFFSET - 96], NEBO_BOX_READY
+    ; Publish a complete snapshot without mutating the borrowed request.  The
+    ; historical rep-movsq sequence had its source and destination reversed,
+    ; so only the derived tail happened to be visible to shallow callers.
+    mov rax, [rdi + 0]
+    mov [rsi + 0], rax
+    mov rax, [rdi + 8]
+    mov [rsi + 8], rax
+    mov rax, [rdi + 16]
+    mov [rsi + 16], rax
+    mov rax, [rdi + 24]
+    mov [rsi + 24], rax
+    mov rax, [rdi + 32]
+    mov [rsi + 32], rax
+    mov rax, [rdi + 40]
+    mov [rsi + 40], rax
+    mov rax, [rdi + 48]
+    mov [rsi + 48], rax
+    mov rax, [rdi + 56]
+    mov [rsi + 56], rax
+    mov rax, [rdi + 64]
+    mov [rsi + 64], rax
+    mov rax, [rdi + 72]
+    mov [rsi + 72], rax
+    mov rax, [rdi + 80]
+    mov [rsi + 80], rax
+    mov rax, [rdi + 88]
+    mov [rsi + 88], rax
+    mov [rsi + NEBO_BOX_TOTAL_WIDTH_OFFSET], r8
+    mov [rsi + NEBO_BOX_TOTAL_HEIGHT_OFFSET], r9
+    mov qword [rsi + NEBO_BOX_STATE_OFFSET], NEBO_BOX_READY
     xor eax, eax
     ret
 .box_limit:

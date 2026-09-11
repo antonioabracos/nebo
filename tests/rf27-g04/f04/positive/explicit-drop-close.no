@@ -1,0 +1,8 @@
+start() {
+    "drop".first;
+    first.drop().dropped;
+    first.isClosed().closed;
+    "close".second;
+    second.close().closedSecond;
+    66;
+}

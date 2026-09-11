@@ -1,0 +1,7 @@
+generic<T: Hash> (T.value)stableHash() {
+    value.return;
+}
+
+start() {
+    "bounded".stableHash();
+}

@@ -1,0 +1,2 @@
+// Atomic pure integer math; expected values come from the Python oracle.
+start() { std.math.min(53, 11).return; }

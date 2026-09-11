@@ -1,0 +1,5 @@
+start() {
+    Bytes.payload;
+    Bytes.fromValues(255, 254, 253, 252).payload;
+    payload.byteLength().length;
+}

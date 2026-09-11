@@ -1,0 +1,10 @@
+{
+  "expected_exit": 61,
+  "kinds": [
+    4,
+    4
+  ],
+  "text": {
+    "bytes_hex": "37333839"
+  }
+}

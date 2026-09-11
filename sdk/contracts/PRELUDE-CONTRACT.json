@@ -1,0 +1,10 @@
+{
+  "edition": "1.0",
+  "files": {
+    "sdk/interfaces/prelude/std.prelude.ni": "910170b1ccabf964a1186892ee9f4395f1b52c1e6b5cc7683f68ee2904de0933",
+    "sdk/interfaces/prelude/stdlib-registry.json": "a70407bf8b12d694da501b3a9b515c6a7760c03eeb72ab6b6580e79db731c922"
+  },
+  "public_base_commit": "753cc86c752a132779401384c99ed0f3eb580f20",
+  "schema": "nebo.public-prelude-contract.v1",
+  "target": "x86_64-systemv-elf-linux"
+}

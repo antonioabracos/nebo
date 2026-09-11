@@ -1,0 +1,11 @@
+generic<T: Scalar> (T.value)identity() {
+    value.return;
+}
+
+(Int.value)identity() {
+    (value + 1).return;
+}
+
+start() {
+    7.identity();
+}

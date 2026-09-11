@@ -1,7 +1,7 @@
 # Source font provenance
 
-`SourceCodePro-Regular.ttf` is the unmodified source asset explicitly supplied
-and authorized for the Nebo Console Candidate D evaluation.
+`SourceCodePro-Regular.ttf` is the unmodified Adobe Source Code Pro Regular
+font used to generate the Nebo Console raster atlas under the included OFL.
 
 ```text
 SUPPLIED_PROVENANCE=Adobe Source Code Pro official adobe-fonts/source-code-pro release repository

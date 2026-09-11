@@ -4,9 +4,9 @@
 %include "runtime/window/window_contract.inc"
 %include "runtime/canvas/canvas.inc"
 
-; CONTROLO-DE-FLUXO-ESTRUTURADO-F07 bounded native layout/widgets ABI. The current maturity is a
-; public bounded native ABI; source-language Row/Column/Grid/Label/Button/
-; TextInput syntax is deliberately not activated by this contract.
+; CONTROLO-DE-FLUXO-ESTRUTURADO-F07 bounded native layout/widgets ABI. The
+; G018 source vertical lowers current Layout/Button/TextInput/Label syntax into
+; this caller-owned, accessible tree contract.
 %define NEBO_UI_VERSION 1
 %define NEBO_UI_TREE_MAGIC 0x4e42554931384637
 

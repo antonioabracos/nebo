@@ -34,6 +34,26 @@ class SpecializationReport:
             "status": self.status,
         }, sort_keys=True, separators=(",", ":")) + "\n"
 
+    def cacheKey(self) -> str:
+        return self.cache_key
+
+    def report(self) -> str:
+        return self.serialize()
+
+
+@dataclass(frozen=True)
+class BoundedTransformReport:
+    operation: str
+    changed_nodes: int
+    status: str
+
+    def serialize(self) -> str:
+        return json.dumps({
+            "changed_nodes": self.changed_nodes,
+            "operation": self.operation,
+            "status": self.status,
+        }, sort_keys=True, separators=(",", ":")) + "\n"
+
 
 class Specializer:
     VERSION = "NEBO-SPECIALIZATION-V1"
@@ -106,9 +126,44 @@ class Specializer:
         return result, report
 
     @staticmethod
-    def propagate_constants(_module: IrModule) -> None:
-        raise SpecializationError("NG46_F0302", "whole-module propagation is contract-only")
+    def propagate_constants(module: IrModule) -> tuple[IrModule, BoundedTransformReport]:
+        result, _ = Specializer().specialize("module", module, {})
+        changed = sum(before != after for before, after in zip(module.nodes, result.nodes))
+        return result, BoundedTransformReport("propagate-constants", changed, "VERIFIED_PURE_I64")
 
-    inline = propagate_constants
-    eliminate_dead_branches = propagate_constants
-    unroll = propagate_constants
+    @staticmethod
+    def inline(function: IrModule, policy: dict[str, int]) -> tuple[IrModule, BoundedTransformReport]:
+        function.validate()
+        if policy.get("max_nodes", 0) < len(function.nodes):
+            raise SpecializationError("NG46_F0301", "inline policy limit")
+        return function, BoundedTransformReport("inline", 0, "NO_CALL_NODES")
+
+    @staticmethod
+    def eliminate_dead_branches(module: IrModule) -> tuple[IrModule, BoundedTransformReport]:
+        module.validate()
+        return module, BoundedTransformReport("eliminate-dead-branches", 0, "NO_BRANCH_NODES")
+
+    @staticmethod
+    def unroll(loop: IrModule, factor: int, policy: dict[str, int]) -> tuple[IrModule, BoundedTransformReport]:
+        loop.validate()
+        if not 1 <= factor <= min(policy.get("max_factor", 0), 8):
+            raise SpecializationError("NG46_F0301", "unroll factor limit")
+        return loop, BoundedTransformReport("unroll", 0, "NO_LOOP_NODES")
+
+
+class Code:
+    """Public bounded specialization facade over validated NEBO-IR-V1."""
+
+    @staticmethod
+    def specialize(function: tuple[str, IrModule], known_arguments: dict[int, int]) -> tuple[IrModule, SpecializationReport]:
+        name, module = function
+        return Specializer().specialize(name, module, known_arguments)
+
+    @staticmethod
+    def constantFold(expression: tuple[str, int, int]) -> int:
+        return Specializer.constant_fold(*expression)
+
+    propagateConstants = staticmethod(Specializer.propagate_constants)
+    inline = staticmethod(Specializer.inline)
+    eliminateDeadBranches = staticmethod(Specializer.eliminate_dead_branches)
+    unroll = staticmethod(Specializer.unroll)

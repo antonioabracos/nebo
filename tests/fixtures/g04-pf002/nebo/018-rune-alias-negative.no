@@ -1,0 +1,3 @@
+start() {
+    Rune('N').invalid_alias;
+}

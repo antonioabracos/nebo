@@ -252,7 +252,9 @@ NEBOC_ABI_FUNCTION neboc_privacy_parse
 .limit_exceeded:
     NEBOC_ABI_RETURN_STATUS NEBOC_STATUS_LIMIT_EXCEEDED
 
-; Global parse cursor: r15, end: r14.  Whitespace is ASCII SP/HT/LF/CR.
+; Global parse cursor: r15, end: r14.  Trivia is ASCII SP/HT/LF/CR plus
+; bounded `//` line comments.  Public examples can therefore carry technical
+; documentation without changing the pointerless privacy shape hash.
 privacidade_dados_sensiveis_e_zero_trust_skip_ws:
 .loop:
     cmp r15, r14
@@ -265,7 +267,23 @@ privacidade_dados_sensiveis_e_zero_trust_skip_ws:
     cmp al, 10
     je .take
     cmp al, 13
+    je .take
+    cmp al, '/'
     jne .done
+    mov rax, r15
+    inc rax
+    cmp rax, r14
+    jae .done
+    cmp byte [rax], '/'
+    jne .done
+    add r15, 2
+.line_comment:
+    cmp r15, r14
+    jae .done
+    cmp byte [r15], 10
+    je .take
+    inc r15
+    jmp .line_comment
 .take:
     inc r15
     jmp .loop

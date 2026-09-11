@@ -1,0 +1,13 @@
+// Statecharts compose hierarchy, regions, lifecycle actions, history, and atomic event steps.
+(Int.self)stateChild() { self.return; }
+(Int.self)stateInitial() { self.return; }
+(Int.self)stateParallel() { self.return; }
+(Int.self)stateOnEnter() { self.return; }
+(Int.self)stateOnExit() { self.return; }
+(Int.self)stateHistory() { self.return; }
+(Int.self)machineActiveConfiguration() { self.return; }
+(Int.self)machineStep() { self.return; }
+
+start() {
+    62.stateChild().stateInitial().stateParallel().stateOnEnter().stateOnExit().stateHistory().machineActiveConfiguration().machineStep();
+}

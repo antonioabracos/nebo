@@ -1,0 +1,9 @@
+diagnostic	trigger	message	help
+NEBO-COLECOES-PRIMITIVAS-ARRAY-ARITY	array does not contain exactly four elements	Array<Int,4> requires exactly four elements	provide four Int elements
+NEBO-COLECOES-PRIMITIVAS-ELEMENT-TYPE-MISMATCH	element is not Int	Array<Int,4> elements must be Int	replace the element with an Int
+NEBO-COLECOES-PRIMITIVAS-INDEX-OUT-OF-BOUNDS	index is outside 0 through 3	Array<Int,4> index is out of bounds	use a constant index from 0 through 3
+NEBO-COLECOES-PRIMITIVAS-CONSTANT-INDEX-REQUIRED	index is not a literal constant	bounded Array index must be constant	use a constant index from 0 through 3
+NEBO-COLECOES-PRIMITIVAS-MUTATION-DEFERRED	array write or mutable form	Array mutation is deferred	use immutable reads
+NEBO-COLECOES-PRIMITIVAS-LIST-DEFERRED	List or unsupported collection form	List and general collections are deferred	use Array<Int,4>
+NEBO-COLECOES-PRIMITIVAS-DICT-DEFERRED	Dict form	Dict is deferred	use the bounded array profile
+NEBO-COLECOES-PRIMITIVAS-CAPACITY-DEFERRED	capacity allocation or oversized source	capacity and allocation policies are deferred	use inline Array<Int,4>

@@ -1,0 +1,7 @@
+FIXTURE	OWNER_ROUTE	START	END_EXCLUSIVE	LENGTH	SUM_BOUND	RESULT	CLASSIFICATION
+A02	buffer->view->sum	0	4	4	4	31	PASS
+A03	buffer->view->sum	1	3	2	2	10	PASS
+A04	buffer->view->sum	3	4	1	1	9	PASS
+A05	buffer->view->sum	2	2	0	0	0	PASS
+A07	exact lexical owner despite preceding Buffer	0	4	4	4	31	PASS
+HISTORICAL	stockList.stockView is not public view	NA	NA	NA	NA	9	FIXTURE_CONTRACT_MISMATCH_PRESERVED

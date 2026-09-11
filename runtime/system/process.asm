@@ -21,6 +21,8 @@ global nebo_pipe_close
 global nebo_process_spawn
 global nebo_process_wait
 global nebo_process_terminate
+global nebo_environment_get
+global nebo_environment_arguments
 
 ; rdi=cap, rsi=exact program path, rdx=bytes, rcx=max children,
 ; r8=max argv bytes, r9=max env bytes. eax=status.
@@ -64,6 +66,106 @@ nebo_process_current_pid:
  syscall
  mov rdx,rax
  xor eax,eax
+ ret
+
+; rdi=name, rsi=name bytes, rdx=explicit envp, rcx=max entries.
+; eax=status, rdx=value pointer, r8=value bytes. Host globals are never read.
+nebo_environment_get:
+ push rbx
+ push r12
+ push r13
+ mov r12,rdi
+ mov r13,rsi
+ mov rbx,rdx
+ test r12,r12
+ jz .env_invalid
+ test r13,r13
+ jz .env_invalid
+ test rbx,rbx
+ jz .env_invalid
+ test rcx,rcx
+ jz .env_limit
+ xor r9d,r9d
+.env_entry:
+ cmp r9,rcx
+ jae .env_limit
+ mov r10,[rbx+r9*8]
+ test r10,r10
+ jz .env_missing
+ xor r11d,r11d
+.env_name:
+ cmp r11,r13
+ jae .env_equal
+ mov al,[r12+r11]
+ cmp al,[r10+r11]
+ jne .env_next
+ inc r11
+ jmp .env_name
+.env_equal:
+ cmp byte [r10+r13],'='
+ jne .env_next
+ lea rdx,[r10+r13+1]
+ xor r8d,r8d
+.env_value:
+ cmp byte [rdx+r8],0
+ je .env_ok
+ inc r8
+ cmp r8,NEBO_PROCESS_MAX_ENV_BYTES
+ ja .env_limit
+ jmp .env_value
+.env_next:
+ inc r9
+ jmp .env_entry
+.env_ok:
+ xor eax,eax
+ jmp .env_return
+.env_missing:
+ mov eax,NEBO_SYSTEM_ERROR_NOT_FOUND
+ xor edx,edx
+ xor r8d,r8d
+ jmp .env_return
+.env_invalid:
+ mov eax,NEBO_SYSTEM_ERROR_INVALID_ARGUMENT
+ xor edx,edx
+ xor r8d,r8d
+ jmp .env_return
+.env_limit:
+ mov eax,NEBO_SYSTEM_ERROR_LIMIT_EXCEEDED
+ xor edx,edx
+ xor r8d,r8d
+.env_return:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; rdi=explicit argv, rsi=max entries. eax=status, rdx=argv, r8=count.
+nebo_environment_arguments:
+ test rdi,rdi
+ jz .args_invalid
+ test rsi,rsi
+ jz .args_limit
+ xor r8d,r8d
+.args_scan:
+ cmp r8,rsi
+ jae .args_limit
+ cmp qword [rdi+r8*8],0
+ je .args_ok
+ inc r8
+ jmp .args_scan
+.args_ok:
+ mov rdx,rdi
+ xor eax,eax
+ ret
+.args_invalid:
+ mov eax,NEBO_SYSTEM_ERROR_INVALID_ARGUMENT
+ xor edx,edx
+ xor r8d,r8d
+ ret
+.args_limit:
+ mov eax,NEBO_SYSTEM_ERROR_LIMIT_EXCEEDED
+ xor edx,edx
+ xor r8d,r8d
  ret
 
 ; rdi=64-byte pair of PipeEnd, rsi=capability. eax=status.

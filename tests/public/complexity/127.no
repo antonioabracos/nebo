@@ -1,0 +1,7 @@
+// Closeout composes all eighteen internal services with deterministic receipts.
+start() {
+    RenderPlan;
+    3209;
+    output.stdout().stderr().target("chart-table-service").plain().visual().headlessEvent();
+    lifecycle.event("chart-table").payload("internal-chart-table-closeout").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

@@ -6,7 +6,87 @@ default rel
 global nebo_console_options_commit
 global nebo_console_options_normalize
 global nebo_console_options_budget_check
+global nebo_console_options_default
+global nebo_console_options_init
+global nebo_console_option_model
 section .text
+; rdi=out ConsoleOption model. Defaults contain no values, borrow no memory,
+; and authorize only the ordinary write effect.
+nebo_console_options_default:
+    test rdi, rdi
+    jz console_model_invalid
+    mov qword [rdi + NEBO_CONSOLE_OPTIONS_VALUES_OFFSET], 0
+    mov qword [rdi + NEBO_CONSOLE_OPTIONS_COUNT_OFFSET], 0
+    mov qword [rdi + NEBO_CONSOLE_OPTIONS_CAPACITY_OFFSET], NEBOC_MAX_CONSOLE_OPTIONS
+    mov qword [rdi + NEBO_CONSOLE_OPTIONS_CAPABILITIES_OFFSET], NEBO_CONSOLE_OPTIONS_DEFAULT_CAPABILITIES
+    mov qword [rdi + NEBO_CONSOLE_OPTIONS_STATE_OFFSET], NEBO_CONSOLE_OPTIONS_READY
+    xor eax, eax
+    ret
+
+; rdi=out model, rsi=borrowed option values, rdx=count, rcx=capacity.
+; Publication is atomic: every invariant is checked before the first write.
+nebo_console_options_init:
+    test rdi, rdi
+    jz console_model_invalid
+    cmp rdx, NEBOC_MAX_CONSOLE_OPTIONS
+    ja console_model_budget
+    cmp rcx, NEBOC_MAX_CONSOLE_OPTIONS
+    ja console_model_capacity
+    cmp rdx, rcx
+    ja console_model_capacity
+    test rdx, rdx
+    jz .model_init_commit
+    test rsi, rsi
+    jz console_model_invalid
+.model_init_commit:
+    mov [rdi + NEBO_CONSOLE_OPTIONS_VALUES_OFFSET], rsi
+    mov [rdi + NEBO_CONSOLE_OPTIONS_COUNT_OFFSET], rdx
+    mov [rdi + NEBO_CONSOLE_OPTIONS_CAPACITY_OFFSET], rcx
+    mov qword [rdi + NEBO_CONSOLE_OPTIONS_CAPABILITIES_OFFSET], NEBO_CONSOLE_OPTIONS_DEFAULT_CAPABILITIES
+    mov qword [rdi + NEBO_CONSOLE_OPTIONS_STATE_OFFSET], NEBO_CONSOLE_OPTIONS_READY
+    xor eax, eax
+    ret
+
+; rdi=ready model, rsi=out model snapshot.  The copied snapshot preserves the
+; explicit borrowed ownership contract and never publishes on failure.
+nebo_console_option_model:
+    test rdi, rdi
+    jz console_model_invalid
+    test rsi, rsi
+    jz console_model_invalid
+    cmp qword [rdi + NEBO_CONSOLE_OPTIONS_STATE_OFFSET], NEBO_CONSOLE_OPTIONS_READY
+    jne console_model_invalid
+    mov rax, [rdi + NEBO_CONSOLE_OPTIONS_COUNT_OFFSET]
+    cmp rax, NEBOC_MAX_CONSOLE_OPTIONS
+    ja console_model_budget
+    cmp rax, [rdi + NEBO_CONSOLE_OPTIONS_CAPACITY_OFFSET]
+    ja console_model_capacity
+    test rax, rax
+    jz .model_copy
+    cmp qword [rdi + NEBO_CONSOLE_OPTIONS_VALUES_OFFSET], 0
+    je console_model_invalid
+.model_copy:
+    mov rax, [rdi + NEBO_CONSOLE_OPTIONS_VALUES_OFFSET]
+    mov [rsi + NEBO_CONSOLE_OPTIONS_VALUES_OFFSET], rax
+    mov rax, [rdi + NEBO_CONSOLE_OPTIONS_COUNT_OFFSET]
+    mov [rsi + NEBO_CONSOLE_OPTIONS_COUNT_OFFSET], rax
+    mov rax, [rdi + NEBO_CONSOLE_OPTIONS_CAPACITY_OFFSET]
+    mov [rsi + NEBO_CONSOLE_OPTIONS_CAPACITY_OFFSET], rax
+    mov rax, [rdi + NEBO_CONSOLE_OPTIONS_CAPABILITIES_OFFSET]
+    mov [rsi + NEBO_CONSOLE_OPTIONS_CAPABILITIES_OFFSET], rax
+    mov qword [rsi + NEBO_CONSOLE_OPTIONS_STATE_OFFSET], NEBO_CONSOLE_OPTIONS_READY
+    xor eax, eax
+    ret
+console_model_capacity:
+    mov eax, NEBO_OPTIONS_CAPACITY
+    ret
+console_model_budget:
+    mov eax, NEBO_OPTIONS_BUDGET
+    ret
+console_model_invalid:
+    mov eax, NEBO_OPTIONS_INVALID
+    ret
+
 ; rdi=request. validator(value, context) returns eax status. The destination
 ; and receipt are not touched until all values have passed validation.
 nebo_console_options_commit:

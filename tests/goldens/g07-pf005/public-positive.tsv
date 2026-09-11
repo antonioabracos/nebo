@@ -1,0 +1,6 @@
+proof_id	source_path	source_sha256	receiver_type	selection	symbol	input_bits	native_exit
+G07-PF005-P01	tests/fixtures/g07-pf002/positive-proposed/G07-PF002-P01-int-identity.no	a1da4d3e0c711985f9168f43cd8e3e5fd0588c77444741a96c084975ca405d55	Int	GENERIC	nebo_identity_Int	0x0000000000000007	7
+G07-PF005-P02	tests/fixtures/g07-pf002/positive-proposed/G07-PF002-P02-bool-identity.no	a74744780d707be06a5d1680115827ba1de8fc40f14d2b472bc83bea222be289	Bool	GENERIC	nebo_identity_Bool	0x0000000000000001	1
+G07-PF005-P03	tests/fixtures/g07-pf002/positive-proposed/G07-PF002-P03-float-identity.no	d1b249acd386ed57554e72ed7c6510acbf079f98922a79c79738eaaf91b28021	Float	GENERIC	nebo_identity_Float	0x3ff8000000000000	0
+G07-PF005-P04	tests/fixtures/g07-pf002/positive-proposed/G07-PF002-P04-char-identity.no	e9f241bfe5ddca29301442a348f8de1f8443486c499af3600e820c7d5669910f	Char	GENERIC	nebo_identity_Char	0x0000000000000078	120
+G07-PF005-P05	tests/fixtures/g07-pf002/positive-proposed/G07-PF002-P05-concrete-ranking.no	ccf034a644bc93114eaf11ad9a851352ea6afb71c3ef457245cac43364f4e28e	Int	CONCRETE	nebo_concrete_identity_Int	0x0000000000000007	8

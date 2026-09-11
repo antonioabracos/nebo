@@ -1,0 +1,7 @@
+start() {
+    if (true) {
+        3.return;
+    } else {
+        4.return;
+    }
+}

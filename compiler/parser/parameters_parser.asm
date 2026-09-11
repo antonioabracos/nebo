@@ -63,6 +63,14 @@ n_callback: db 'callback'
 n_callback_len equ $-n_callback
 parameters_parser_n_drop: db 'drop'
 n_drop_len equ $-parameters_parser_n_drop
+n_borrowed: db 'borrowed'
+n_borrowed_len equ $-n_borrowed
+n_owned: db 'owned'
+n_owned_len equ $-n_owned
+n_variadic: db 'variadic'
+n_variadic_len equ $-n_variadic
+n_count: db 'count'
+n_count_len equ $-n_count
 
 section .text
 
@@ -448,6 +456,24 @@ scan_marker:
  call seguranca_numerica_conversoes_e_overflow_token_match
  test eax,eax
  jnz .yes
+ mov rax,rbx
+ lea rsi,[rel n_borrowed]
+ mov edx,n_borrowed_len
+ call seguranca_numerica_conversoes_e_overflow_token_match
+ test eax,eax
+ jnz .yes
+ mov rax,rbx
+ lea rsi,[rel n_owned]
+ mov edx,n_owned_len
+ call seguranca_numerica_conversoes_e_overflow_token_match
+ test eax,eax
+ jnz .yes
+ mov rax,rbx
+ lea rsi,[rel n_variadic]
+ mov edx,n_variadic_len
+ call seguranca_numerica_conversoes_e_overflow_token_match
+ test eax,eax
+ jnz .yes
  inc rbx
  jmp .loop
 .markerless_char:
@@ -501,6 +527,8 @@ seguranca_numerica_conversoes_e_overflow_parse_type:
 %define call NEBOC_ABI_FUNCTION_SCOPED_CALL
 parse_literal:
  call peek_kind
+ cmp eax,NEBOC_TOKEN_MINUS
+ je .negative_int
  cmp eax,NEBOC_TOKEN_INTEGER
  je .payload_int
  cmp eax,NEBOC_TOKEN_CHAR
@@ -509,9 +537,26 @@ parse_literal:
  je .true
  cmp eax,NEBOC_TOKEN_KW_FALSE
  je .false
+.invalid:
  xor eax,eax
  xor edx,edx
  mov ecx,NEBOC_STATUS_INVALID_SOURCE
+ ret
+.negative_int:
+ inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
+ call peek_kind
+ cmp eax,NEBOC_TOKEN_INTEGER
+ jne .invalid
+ mov rax,[r12+NEBOC_PARAM_CURSOR_OFFSET]
+ call seguranca_numerica_conversoes_e_overflow_token_ptr
+ mov rdx,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ mov rax,0x8000000000000000
+ cmp rdx,rax
+ ja .invalid
+ neg rdx
+ inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
+ mov eax,neboc_seguranca_numerica_conversoes_e_overflow_TYPE_INT
+ xor ecx,ecx
  ret
 .payload_int:
  mov r10d,neboc_seguranca_numerica_conversoes_e_overflow_TYPE_INT
@@ -522,6 +567,11 @@ parse_literal:
  mov rax,[r12+NEBOC_PARAM_CURSOR_OFFSET]
  call seguranca_numerica_conversoes_e_overflow_token_ptr
  mov rdx,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ cmp r10d,neboc_seguranca_numerica_conversoes_e_overflow_TYPE_INT
+ jne .payload_valid
+ test rdx,rdx
+ js .invalid
+.payload_valid:
  inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
  mov eax,r10d
  xor ecx,ecx
@@ -658,6 +708,7 @@ parse_signature:
  test eax,eax
  jnz .done
  xor r15d,r15d                 ; a default was already seen
+ mov qword [r12+NEBOC_PARAM_VARIADIC_INDEX_OFFSET],-1
  call peek_kind
  cmp eax,NEBOC_TOKEN_RPAREN
  je .end_params
@@ -665,6 +716,35 @@ parse_signature:
  mov rax,[r12+NEBOC_PARAM_COUNT_OFFSET]
  cmp rax,NEBOC_PARAM_MAX
  jae .abi
+ mov qword [rsp],0             ; low byte ownership, bit 8 variadic
+ lea rsi,[rel n_borrowed]
+ mov edx,n_borrowed_len
+ call match_current
+ test eax,eax
+ jz .qualifier_owned
+ mov qword [rsp],NEBOC_PARAM_OWNERSHIP_BORROWED
+ inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
+ jmp .qualifier_ready
+.qualifier_owned:
+ lea rsi,[rel n_owned]
+ mov edx,n_owned_len
+ call match_current
+ test eax,eax
+ jz .qualifier_variadic
+ mov qword [rsp],NEBOC_PARAM_OWNERSHIP_OWNED
+ inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
+ jmp .qualifier_ready
+.qualifier_variadic:
+ lea rsi,[rel n_variadic]
+ mov edx,n_variadic_len
+ call match_current
+ test eax,eax
+ jz .qualifier_ready
+ cmp qword [r12+NEBOC_PARAM_VARIADIC_INDEX_OFFSET],-1
+ jne .signature
+ mov qword [rsp],(NEBOC_PARAM_FLAG_VARIADIC << 8)
+ inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
+.qualifier_ready:
  call seguranca_numerica_conversoes_e_overflow_parse_type
  test eax,eax
  jz .signature
@@ -687,8 +767,34 @@ parse_signature:
  mov rbx,rax
  mov [rbx+NEBOC_PARAM_NAME_OFFSET],r14
  mov [rbx+NEBOC_PARAM_TYPE_OFFSET],r13
+ mov rax,[rsp]
+ movzx edx,al
+ mov [rbx+NEBOC_PARAM_OWNERSHIP_OFFSET],rdx
+ shr rax,8
+ mov [rbx+NEBOC_PARAM_FLAGS_OFFSET],rax
+ test rdx,rdx
+ jz .ownership_ready
+ mov rcx,[r12+NEBOC_PARAM_COUNT_OFFSET]
+ mov rax,1
+ shl rax,cl
+ cmp rdx,NEBOC_PARAM_OWNERSHIP_BORROWED
+ jne .ownership_owned
+ or [r12+NEBOC_PARAM_BORROW_MASK_OFFSET],rax
+ jmp .ownership_ready
+.ownership_owned:
+ or [r12+NEBOC_PARAM_OWNED_MASK_OFFSET],rax
+.ownership_ready:
+ cmp qword [rbx+NEBOC_PARAM_FLAGS_OFFSET],NEBOC_PARAM_FLAG_VARIADIC
+ jne .parameter_name_consumed
+ cmp r13,neboc_seguranca_numerica_conversoes_e_overflow_TYPE_INT
+ jne .signature
+ mov rax,[r12+NEBOC_PARAM_COUNT_OFFSET]
+ mov [r12+NEBOC_PARAM_VARIADIC_INDEX_OFFSET],rax
+.parameter_name_consumed:
  inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
  call peek_kind
+ cmp qword [rbx+NEBOC_PARAM_FLAGS_OFFSET],NEBOC_PARAM_FLAG_VARIADIC
+ je .variadic_parameter
  cmp eax,NEBOC_TOKEN_RESERVED_EQUAL
  jne .required
  mov r15d,1
@@ -705,6 +811,10 @@ parse_signature:
  test r15d,r15d
  jnz .default
  inc qword [r12+NEBOC_PARAM_REQUIRED_COUNT_OFFSET]
+ jmp .param_done
+.variadic_parameter:
+ cmp eax,NEBOC_TOKEN_RESERVED_EQUAL
+ je .default
 .param_done:
  inc qword [r12+NEBOC_PARAM_COUNT_OFFSET]
  call peek_kind
@@ -714,6 +824,8 @@ parse_signature:
  je .end_params
  jmp .signature
 .comma:
+ cmp qword [rbx+NEBOC_PARAM_FLAGS_OFFSET],NEBOC_PARAM_FLAG_VARIADIC
+ je .signature
  inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
  call peek_kind
  cmp eax,NEBOC_TOKEN_RPAREN
@@ -831,6 +943,8 @@ parse_call:
  test rax,rax
  jz .extra
  mov r14,rax
+ cmp qword [r14+NEBOC_PARAM_FLAGS_OFFSET],NEBOC_PARAM_FLAG_VARIADIC
+ je .extra
  cmp qword [r14+NEBOC_PARAM_BOUND_OFFSET],0
  jne .duplicate_named
  inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
@@ -848,6 +962,8 @@ parse_call:
  mov rax,rbx
  call param_ptr
  mov r14,rax
+ cmp qword [r14+NEBOC_PARAM_FLAGS_OFFSET],NEBOC_PARAM_FLAG_VARIADIC
+ je .value
  inc rbx
 .value:
  call parse_literal
@@ -855,9 +971,24 @@ parse_call:
  jnz .type
  cmp rax,[r14+NEBOC_PARAM_TYPE_OFFSET]
  jne .type
+ cmp qword [r14+NEBOC_PARAM_FLAGS_OFFSET],NEBOC_PARAM_FLAG_VARIADIC
+ je .bind_variadic
  mov qword [r14+NEBOC_PARAM_BOUND_OFFSET],1
  mov [r14+NEBOC_PARAM_BOUND_VALUE_OFFSET],rdx
  inc qword [r12+NEBOC_PARAM_EXPLICIT_COUNT_OFFSET]
+ jmp .value_bound
+.bind_variadic:
+ mov rcx,[r12+NEBOC_PARAM_VARIADIC_COUNT_OFFSET]
+ cmp rcx,NEBOC_PARAM_VARIADIC_MAX
+ jae .extra
+ lea rax,[r12+NEBOC_PARAM_VARIADIC_VALUES_OFFSET]
+ mov [rax+rcx*8],rdx
+ inc qword [r12+NEBOC_PARAM_VARIADIC_COUNT_OFFSET]
+ cmp qword [r14+NEBOC_PARAM_BOUND_OFFSET],0
+ jne .value_bound
+ mov qword [r14+NEBOC_PARAM_BOUND_OFFSET],1
+ inc qword [r12+NEBOC_PARAM_EXPLICIT_COUNT_OFFSET]
+.value_bound:
  call peek_kind
  cmp eax,NEBOC_TOKEN_COMMA
  je .arg_comma
@@ -883,6 +1014,12 @@ parse_call:
  call param_ptr
  cmp qword [rax+NEBOC_PARAM_BOUND_OFFSET],0
  jne .fill_next
+ cmp qword [rax+NEBOC_PARAM_FLAGS_OFFSET],NEBOC_PARAM_FLAG_VARIADIC
+ jne .fill_default
+ mov qword [rax+NEBOC_PARAM_BOUND_OFFSET],1
+ inc qword [r12+NEBOC_PARAM_DEFAULT_COUNT_OFFSET]
+ jmp .fill_next
+.fill_default:
  cmp qword [rax+NEBOC_PARAM_HAS_DEFAULT_OFFSET],0
  je .missing
  mov rdx,[rax+NEBOC_PARAM_DEFAULT_VALUE_OFFSET]
@@ -1024,9 +1161,64 @@ eval_atom:
  call find_param
  test rax,rax
  jz .bad
+ cmp qword [rax+NEBOC_PARAM_FLAGS_OFFSET],NEBOC_PARAM_FLAG_VARIADIC
+ je .variadic
  mov rdx,[rax+NEBOC_PARAM_BOUND_VALUE_OFFSET]
  mov rax,[rax+NEBOC_PARAM_TYPE_OFFSET]
  inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
+ xor ecx,ecx
+ ret
+.variadic:
+ inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_DOT
+ call expect
+ test eax,eax
+ jnz .bad
+ lea rsi,[rel parameters_parser_n_sum]
+ mov edx,n_sum_len
+ call match_current
+ test eax,eax
+ jnz .variadic_sum
+ lea rsi,[rel n_count]
+ mov edx,n_count_len
+ call match_current
+ test eax,eax
+ jnz .variadic_count
+ jmp .bad
+.variadic_sum:
+ inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call expect
+ test eax,eax
+ jnz .bad
+ mov edi,NEBOC_TOKEN_RPAREN
+ call expect
+ test eax,eax
+ jnz .bad
+ mov rcx,[r12+NEBOC_PARAM_VARIADIC_COUNT_OFFSET]
+ xor edx,edx
+ xor r8d,r8d
+ lea rax,[r12+NEBOC_PARAM_VARIADIC_VALUES_OFFSET]
+.variadic_sum_loop:
+ cmp r8,rcx
+ jae .variadic_value_ready
+ add rdx,[rax+r8*8]
+ jo .bad
+ inc r8
+ jmp .variadic_sum_loop
+.variadic_count:
+ inc qword [r12+NEBOC_PARAM_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call expect
+ test eax,eax
+ jnz .bad
+ mov edi,NEBOC_TOKEN_RPAREN
+ call expect
+ test eax,eax
+ jnz .bad
+ mov rdx,[r12+NEBOC_PARAM_VARIADIC_COUNT_OFFSET]
+.variadic_value_ready:
+ mov eax,neboc_seguranca_numerica_conversoes_e_overflow_TYPE_INT
  xor ecx,ecx
  ret
 .bad:
@@ -2106,6 +2298,8 @@ parse_callable_call:
  jnz .cleanup_ready
  mov r15d,1                    ; lexical cleanup for owned environments
 .cleanup_ready:
+ mov rdx,[r13+NEBOC_CALLABLE_BODY_MODE_OFFSET]
+ mov [r12+NEBOC_CALLABLE_SELECTED_BODY_OFFSET],rdx
  mov [r12+NEBOC_CALLABLE_CAPTURE_MODE_OFFSET],rax
  mov rdx,[r13+NEBOC_CALLABLE_CAPTURE_VALUE_RECORD_OFFSET]
  mov [r12+NEBOC_CALLABLE_CAPTURE_VALUE_OFFSET],rdx
@@ -2255,6 +2449,15 @@ NEBOC_ABI_FUNCTION neboc_parameters_recognize
  mov qword [r12+NEBOC_CALLABLE_ENV_SIZE_OFFSET],0
  mov qword [r12+NEBOC_CALLABLE_SELECTED_INDEX_OFFSET],0
  mov qword [r12+NEBOC_CALLABLE_HASH_OFFSET],0
+ mov qword [r12+NEBOC_CALLABLE_SELECTED_BODY_OFFSET],0
+ mov qword [r12+NEBOC_PARAM_VARIADIC_INDEX_OFFSET],-1
+ mov qword [r12+NEBOC_PARAM_VARIADIC_COUNT_OFFSET],0
+ lea rdi,[r12+NEBOC_PARAM_VARIADIC_VALUES_OFFSET]
+ mov ecx,NEBOC_PARAM_VARIADIC_MAX
+ xor eax,eax
+ rep stosq
+ mov qword [r12+NEBOC_PARAM_BORROW_MASK_OFFSET],0
+ mov qword [r12+NEBOC_PARAM_OWNED_MASK_OFFSET],0
  call scan_callable
  test eax,eax
  jz .overload_scan

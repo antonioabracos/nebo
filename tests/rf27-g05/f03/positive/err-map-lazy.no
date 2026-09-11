@@ -1,0 +1,5 @@
+start() {
+  Result<Int,Bool>(Err(true)).source;
+  source.map(7).mapped;
+  mapped.getErr().return;
+}

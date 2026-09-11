@@ -1,0 +1,7 @@
+case	hir_operation	lir_property	allocation_count	result
+I01	array_literal	inline_value_32_bytes	0	PASS
+I02	array_index_0	load_qword_offset_0	0	PASS
+I03	array_index_3	load_qword_offset_24	0	PASS
+I04	array_len	constant_4	0	PASS
+I05	invalid_index	NEBO-G10-IR-INVARIANT	0	REJECT
+I06	unsupported_target	NEBO-G10-UNSUPPORTED-TARGET	0	REJECT

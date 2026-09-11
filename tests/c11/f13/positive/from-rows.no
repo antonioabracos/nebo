@@ -1,0 +1,4 @@
+start() {
+    Matrix<Int>.fromRows(Tuple.of(Tuple.of(1,2,3),Tuple.of(4,5,6))).matrix;
+    matrix.sum();
+}

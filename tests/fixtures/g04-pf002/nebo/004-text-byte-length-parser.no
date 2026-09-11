@@ -1,0 +1,3 @@
+start() {
+    "Nébo".byteLength().bytes;
+}

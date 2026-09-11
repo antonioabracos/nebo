@@ -1,0 +1,9 @@
+enum Signal { Idle, Data(Int), Closed }
+start() {
+    Signal.Data(43).value;
+    match(value) {
+        Idle -> 1.return;
+        Data(payload) -> payload.return;
+        Closed -> 3.return;
+    }
+}

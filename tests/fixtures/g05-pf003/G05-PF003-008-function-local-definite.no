@@ -1,0 +1,13 @@
+(Bool.condition)choose(Int.value) {
+    Int.result;
+    if (condition) {
+        value.result;
+    } else {
+        0.result;
+    }
+    result.return;
+}
+
+start() {
+    true.choose(7);
+}

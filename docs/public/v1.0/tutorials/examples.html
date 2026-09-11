@@ -1,0 +1,12 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Two live views and an independent oracle</title><link rel="stylesheet" href="../assets/style.css"></head><body><a href="#main">Skip to content</a><nav aria-label="Home"><a href="../index.html">Nebo documentation home</a></nav><main id="main"><h1>Two live views and an independent oracle</h1><p>Every published native reference example is enumerated with its full source, provider units, input files, process result and value/effect oracle. Repeated identical contexts execute once and all page occurrences join to that proof.</p><p>The two Lists below retain separate values, observed as 31 then 41. Tests also change inputs, add statements, return early, and feed a wrong expected output to the runner. Stable source examples are always executed; excluded internal records and Python reference models are explicitly labelled and are not silently treated as native examples.</p><h2>Complete Nebo source</h2><pre><code>// Neither view overwrites the other view&#x27;s retained value.
+start(){List&lt;Int&gt;.from([23,31]).a;List&lt;Int&gt;.from([41,53]).b;a.at(1).console();b.at(0).console();61.return;}
+</code></pre><h2>Inputs and independent expectations</h2><pre>{
+  &quot;expected_exit&quot;: 61,
+  &quot;kinds&quot;: [
+    4,
+    4
+  ],
+  &quot;text&quot;: {
+    &quot;bytes_hex&quot;: &quot;33313431&quot;
+  }
+}</pre></main></body></html>

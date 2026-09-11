@@ -1,0 +1,6 @@
+NEBO-E0002: bounded diagnostic limit exceeded
+causes: The configured diagnostic or recovery budget was exhausted.
+solutions: Fix the earliest root cause or select a bounded max-errors value.
+positive: neboc check main.no --max-errors 8
+negative: neboc check main.no --max-errors 0
+related: NEBO-E0001

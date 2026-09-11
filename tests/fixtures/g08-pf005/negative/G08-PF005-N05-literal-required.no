@@ -1,0 +1,5 @@
+start() {
+    Int.value;
+    7.value;
+    value.toPositiveInt().unwrapOr(1);
+}

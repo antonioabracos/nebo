@@ -1,0 +1,7 @@
+// ML services adapt training records without starting or mutating model training.
+start() {
+    RenderPlan;
+    3305;
+    output.stdout().stderr().target("domain-visual-service").plain().visual().headlessEvent();
+    lifecycle.event("domain-visual").payload("ml-training-dashboard-result").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

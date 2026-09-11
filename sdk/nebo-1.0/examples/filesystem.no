@@ -1,0 +1,3 @@
+// Read back an atomic UTF-8 write from the isolated consumer directory.
+import "std.fs" { Path; File; }.fs;
+start(){Path.parse("sdk-note.txt").path;File.writeText(path,"sdk-local-97",utf8,atomic);File.readText(path,utf8,64).console();97.return;}

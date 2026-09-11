@@ -1,0 +1,7 @@
+// Show, safe inspection, and text fallback produce distinct bounded digests.
+start() {
+    RenderPlan;
+    3004;
+    output.stdout().stderr().target("visual-service").plain().visual().headlessEvent();
+    lifecycle.event("console-panel").payload("show-inspect-fallback").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

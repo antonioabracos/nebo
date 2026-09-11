@@ -16,10 +16,149 @@ RENDER_NODE_SEPARATOR   equ 3
 RENDER_NODE_STYLE       equ 4
 RENDER_NODE_SEMANTIC    equ 5
 RENDER_NODE_STRUCTURE   equ 6
+RENDER_NODE_DEVELOPER   equ 7
+RENDER_NODE_OPERATION   equ 8
+RENDER_NODE_POLICY      equ 9
+RENDER_NODE_TARGET      equ 10
 
 RENDER_FLAG_FALLBACK    equ 1
 RENDER_FLAG_PRIVATE     equ 2
 RENDER_FLAG_REDACT      equ 4
+RENDER_FLAG_DEBUG       equ 8
+
+; Target-independent G067 style tokens. RenderPlan stores semantic tokens,
+; never terminal escape bytes; renderers materialize or strip them.
+RENDER_STYLE_RESET       equ 1
+RENDER_STYLE_BOLD        equ 2
+RENDER_STYLE_ITALIC      equ 3
+RENDER_STYLE_UNDERLINE   equ 4
+RENDER_STYLE_DIM         equ 5
+RENDER_STYLE_INVERSE     equ 6
+RENDER_STYLE_BLINK       equ 7
+RENDER_STYLE_FG_RED      equ 16
+RENDER_STYLE_FG_GREEN    equ 17
+RENDER_STYLE_FG_BLUE     equ 18
+RENDER_STYLE_FG_YELLOW   equ 19
+RENDER_STYLE_FG_CYAN     equ 20
+RENDER_STYLE_FG_MAGENTA  equ 21
+RENDER_STYLE_FG_GRAY     equ 22
+RENDER_STYLE_FG_RGB      equ 23
+RENDER_STYLE_BG_BLUE     equ 24
+RENDER_STYLE_GENERIC     equ 25
+RENDER_STYLE_THEME       equ 26
+RENDER_STYLE_MAX         equ RENDER_STYLE_THEME
+
+; Target-independent G068 structure tokens. Payload bytes remain immutable;
+; META carries the semantic structure and AUX carries a bounded display-cell
+; width only for RENDER_STRUCTURE_WIDTH.
+RENDER_STRUCTURE_TITLE          equ 1
+RENDER_STRUCTURE_SECTION        equ 2
+RENDER_STRUCTURE_TABLE          equ 3
+RENDER_STRUCTURE_LIST           equ 4
+RENDER_STRUCTURE_COLLECTION     equ 5
+RENDER_STRUCTURE_DOCUMENTATION  equ 6
+RENDER_STRUCTURE_WIDTH          equ 7
+RENDER_STRUCTURE_ALIGNMENT      equ 8
+RENDER_STRUCTURE_CONFORMANCE    equ 9
+RENDER_STRUCTURE_MAX            equ RENDER_STRUCTURE_CONFORMANCE
+RENDER_MAX_DISPLAY_CELLS        equ 120
+
+; Target-independent G069 developer-render tokens. AUX carries a structural
+; depth in the inclusive range 1..8. Inspection requires DEBUG capability;
+; private payloads continue to require explicit redaction.
+RENDER_DEVELOPER_CODE          equ 1
+RENDER_DEVELOPER_DIAGNOSTIC    equ 2
+RENDER_DEVELOPER_INSPECTION    equ 3
+RENDER_DEVELOPER_SERIALIZATION equ 4
+RENDER_DEVELOPER_OBJECT        equ 5
+RENDER_DEVELOPER_SCHEMA        equ 6
+RENDER_DEVELOPER_CONFORMANCE   equ 7
+RENDER_DEVELOPER_MAX           equ RENDER_DEVELOPER_CONFORMANCE
+RENDER_DEVELOPER_MAX_DEPTH     equ 8
+
+; Target-independent G070 operational tokens. AUX carries bounded semantic
+; metadata: schema version, queue capacity, progress total, fake milliseconds,
+; rate interval, or zero for the conformance closeout token.
+RENDER_OPERATION_LOG          equ 1
+RENDER_OPERATION_BUFFER       equ 2
+RENDER_OPERATION_PROGRESS     equ 3
+RENDER_OPERATION_TIME         equ 4
+RENDER_OPERATION_RATE         equ 5
+RENDER_OPERATION_CONFORMANCE  equ 6
+RENDER_OPERATION_MAX          equ RENDER_OPERATION_CONFORMANCE
+RENDER_OPERATION_MAX_CAPACITY equ 8
+RENDER_OPERATION_MAX_PROGRESS equ 10000
+RENDER_OPERATION_MAX_FAKE_MS  equ 86400000
+RENDER_OPERATION_MAX_INTERVAL equ 60000
+
+; Target-independent G071 policy tokens. AUX is explicit policy metadata:
+; mask width, sink, locale, accessibility bits, fallback target, terminal
+; capability bits, privacy class, or zero for closeout.
+RENDER_POLICY_SECURITY       equ 1
+RENDER_POLICY_ESCAPE         equ 2
+RENDER_POLICY_LOCALE         equ 3
+RENDER_POLICY_ACCESSIBILITY  equ 4
+RENDER_POLICY_FALLBACK       equ 5
+RENDER_POLICY_TERMINAL       equ 6
+RENDER_POLICY_PRIVACY        equ 7
+RENDER_POLICY_CONFORMANCE    equ 8
+RENDER_POLICY_MAX            equ RENDER_POLICY_CONFORMANCE
+
+RENDER_SINK_HTML             equ 1
+RENDER_SINK_JSON             equ 2
+RENDER_SINK_ANSI_SAFE        equ 3
+RENDER_SINK_QUOTED           equ 4
+RENDER_SINK_MAX              equ RENDER_SINK_QUOTED
+
+RENDER_LOCALE_EN_US          equ 1
+RENDER_LOCALE_PT_PT          equ 2
+RENDER_LOCALE_MAX            equ RENDER_LOCALE_PT_PT
+
+RENDER_ACCESS_TEXT           equ 1
+RENDER_ACCESS_HIGH_CONTRAST  equ 2
+RENDER_ACCESS_ASCII          equ 4
+RENDER_ACCESS_MAX            equ 7
+
+RENDER_TERMINAL_COLOR        equ 1
+RENDER_TERMINAL_UNICODE      equ 2
+RENDER_TERMINAL_WIDE         equ 4
+RENDER_TERMINAL_MAX          equ 7
+
+RENDER_PRIVACY_PUBLIC        equ 1
+RENDER_PRIVACY_SENSITIVE     equ 2
+RENDER_PRIVACY_SECRET        equ 3
+RENDER_PRIVACY_PERSONAL      equ 4
+RENDER_PRIVACY_MAX           equ RENDER_PRIVACY_PERSONAL
+
+; G072 target/sink tokens keep routing metadata independent from payload bytes.
+RENDER_TARGET_TOKEN_OUTPUT       equ 1
+RENDER_TARGET_TOKEN_VISUAL       equ 2
+RENDER_TARGET_TOKEN_FILE         equ 3
+RENDER_TARGET_TOKEN_EVENT        equ 4
+RENDER_TARGET_TOKEN_ROUTER       equ 5
+RENDER_TARGET_TOKEN_LIFECYCLE    equ 6
+RENDER_TARGET_TOKEN_CONFORMANCE  equ 7
+RENDER_TARGET_TOKEN_MAX          equ RENDER_TARGET_TOKEN_CONFORMANCE
+
+RENDER_VISUAL_TEXT          equ 1
+RENDER_VISUAL_CONTRAST      equ 2
+RENDER_VISUAL_ACCESSIBLE    equ 4
+RENDER_VISUAL_MAX           equ 7
+
+RENDER_FILE_OVERWRITE       equ 1
+RENDER_FILE_ATOMIC          equ 2
+RENDER_FILE_MAX             equ RENDER_FILE_ATOMIC
+
+RENDER_EVENT_JSONL          equ 1
+RENDER_EVENT_DIAGNOSTIC     equ 2
+RENDER_EVENT_MAX            equ RENDER_EVENT_DIAGNOSTIC
+
+RENDER_ROUTER_MAX_MASK      equ 31
+
+RENDER_LIFECYCLE_OPEN       equ 1
+RENDER_LIFECYCLE_CANCEL     equ 2
+RENDER_LIFECYCLE_CLOSE      equ 3
+RENDER_LIFECYCLE_MAX        equ RENDER_LIFECYCLE_CLOSE
 
 RENDER_TARGET_PLAIN     equ 1
 RENDER_TARGET_ANSI      equ 2

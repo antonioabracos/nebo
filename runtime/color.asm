@@ -8,9 +8,17 @@ global nebo_color_rgba_lowering
 global nebo_color_hex_literal
 global nebo_color_parse_hex
 global nebo_color_channels
+global nebo_color_red
+global nebo_color_green
+global nebo_color_blue
+global nebo_color_alpha
+global nebo_color_with_alpha
+global nebo_color_is_opaque
 global nebo_color_equal
 global nebo_color_hash
 global nebo_color_serialize_hex
+global nebo_color_to_hex
+global nebo_color_to_hex_with_alpha
 section .text
 ; edi=logical 0xRRGGBBAA Color value, rsi=out dword.
 nebo_color_copy:
@@ -216,6 +224,57 @@ nebo_color_channels:
     mov eax, NEBO_COLOR_INVALID
     ret
 
+; edi=Color -> eax=channel. Color remains an opaque public value even though
+; its canonical ABI representation is a four-byte logical RGBA word.
+nebo_color_red:
+    mov eax, edi
+    shr eax, 24
+    ret
+
+nebo_color_green:
+    mov eax, edi
+    shr eax, 16
+    and eax, 0xff
+    ret
+
+nebo_color_blue:
+    mov eax, edi
+    shr eax, 8
+    and eax, 0xff
+    ret
+
+nebo_color_alpha:
+    mov eax, edi
+    and eax, 0xff
+    ret
+
+; edi=Color, esi=new alpha, rdx=out Color. Checked and failure-atomic.
+nebo_color_with_alpha:
+    cmp rsi, 255
+    ja .with_alpha_range
+    test rdx, rdx
+    jz .with_alpha_invalid
+    mov eax, edi
+    and eax, 0xffffff00
+    or eax, esi
+    mov [rdx], eax
+    xor eax, eax
+    ret
+.with_alpha_range:
+    mov eax, NEBO_COLOR_CHANNEL_RANGE
+    ret
+.with_alpha_invalid:
+    mov eax, NEBO_COLOR_INVALID
+    ret
+
+; edi=Color -> eax=Bool.
+nebo_color_is_opaque:
+    and edi, 0xff
+    cmp edi, NEBO_COLOR_OPAQUE_ALPHA
+    sete al
+    movzx eax, al
+    ret
+
 ; edi=a, esi=b -> eax boolean.
 nebo_color_equal:
     cmp edi, esi
@@ -286,6 +345,22 @@ nebo_color_serialize_hex:
     ret
 .serialize_invalid:
     mov eax, NEBO_COLOR_INVALID
+    ret
+
+; Public Text serialization entry points. The caller owns the bounded Text
+; storage; no allocation or hidden libc dependency is introduced.
+nebo_color_to_hex:
+    xor ecx, ecx
+    sub rsp, 8
+    call nebo_color_serialize_hex
+    add rsp, 8
+    ret
+
+nebo_color_to_hex_with_alpha:
+    mov ecx, 1
+    sub rsp, 8
+    call nebo_color_serialize_hex
+    add rsp, 8
     ret
 
 color_hex_digit_upper:

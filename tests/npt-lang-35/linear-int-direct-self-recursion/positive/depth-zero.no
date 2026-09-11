@@ -1,0 +1,2 @@
+(Int.self)countdown(){ if (self <= 0) { 7.return; } else { (self - 1).countdown().return; } }
+start(){ 0.countdown().return; }

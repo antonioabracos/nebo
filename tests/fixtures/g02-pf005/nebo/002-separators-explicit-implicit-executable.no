@@ -1,0 +1,11 @@
+start() {
+    Int(1_000).explicit_decimal;
+    0b11_1110_1000.binary;
+    0o1_750.octal;
+    0x3E8.hexadecimal;
+    if (((explicit_decimal == binary) && (binary == octal)) && (octal == hexadecimal)) {
+        0;
+    } else {
+        1;
+    }
+}

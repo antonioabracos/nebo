@@ -1,0 +1,7 @@
+// Policy construction, application, and reporting emit separate audit receipts.
+start() {
+    RenderPlan;
+    3406;
+    output.stdout().stderr().target("export-privacy-service").plain().visual().headlessEvent();
+    lifecycle.event("privacy-audited").payload("policy-apply-report-receipts").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

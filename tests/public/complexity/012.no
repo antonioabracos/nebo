@@ -1,0 +1,13 @@
+// Typed graph queries publish filters, optional matches, paths, plans, and backpressure.
+(Int.self)knowledgeQueryMatch() { self.return; }
+(Int.self)queryWhere() { self.return; }
+(Int.self)queryOptional() { self.return; }
+(Int.self)queryPath() { self.return; }
+(Int.self)queryProject() { self.return; }
+(Int.self)queryExplain() { self.return; }
+(Int.self)queryStream() { self.return; }
+(Int.self)queryCollect() { self.return; }
+
+start() {
+    85.knowledgeQueryMatch().queryWhere().queryOptional().queryPath().queryProject().queryExplain().queryStream().queryCollect();
+}

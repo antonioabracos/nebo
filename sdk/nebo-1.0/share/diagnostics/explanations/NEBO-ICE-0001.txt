@@ -1,0 +1,6 @@
+NEBO-ICE-0001: internal compiler invariant failure
+causes: The compiler detected an internal state that source diagnostics cannot explain.
+solutions: Preserve the local redacted bundle and report the compiler version.
+positive: redacted local bundle with deterministic manifest
+negative: automatic upload of source or environment secrets
+related: NEBO-E0001

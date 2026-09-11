@@ -1,0 +1,42 @@
+surface_id	subgroup	contract_surface	status	evidence	independent_oracle
+G007-S01-01	S01	List<T>.new()	PASS	RF204-G007-S01.no; list_construction_test	empty length is 0 without reserved storage
+G007-S01-02	S01	List<T>.withCapacity(capacity)	PASS	RF204-G007-S01.no; list_capacity_test	capacity 5 is observed before later independent growth
+G007-S01-03	S01	List<T>.from(iterable)	PASS	RF204-G007-S01.no; RF204-G007-S03.no	distinct literals materialize lengths and algorithm inputs
+G007-S01-04	S01	list.length()	PASS	RF204-G007-S01.no; RF204-G007-S02.no	length derives from live descriptor state after mutations
+G007-S01-05	S01	list.capacity()	PASS	RF204-G007-S01.no; list_capacity_test	capacity changes from 3 to the independently expected 7/8
+G007-S01-06	S01	list.reserve(additional)	PASS	RF204-G007-S01.no; list_capacity_test	additional 4 yields capacity 7; null storage reports OOM atomically
+G007-S02-01	S02	list.at(index)	PASS	RF204-G007-S02.no; bounds.no	index 1 yields 5; index equal to length traps safely at runtime (exit 177)
+G007-S02-02	S02	list.get(index)	PASS	RF204-G007-S02.no; list_access_test	checked position 2 yields Some(7) without mutation
+G007-S02-03	S02	list.push(value)	PASS	RF204-G007-S02.no; list_mutation_test	11 becomes the final element before later operations
+G007-S02-04	S02	list.pop()	PASS	RF204-G007-S02.no; failure_safety_test	last live value is removed; borrow failure preserves outputs
+G007-S02-05	S02	list.insert(index, value)	PASS	RF204-G007-S02.no; list_mutation_test	4 is inserted at index 1 while suffix order is retained
+G007-S02-06	S02	list.remove(index)	PASS	RF204-G007-S02.no; failure_safety_test	ordered removal returns 5; absent Option preserves payload
+G007-S02-07	S02	list.swapRemove(index)	PASS	RF204-G007-S02.no; native_collection_test	O(1) removal moves 5 to slot zero and returns 1
+G007-S03-01	S03	list.find(predicate)	PASS	RF204-G007-S03.no; list_algorithms_test	first value greater than four is found from callback semantics
+G007-S03-02	S03	list.contains(value)	PASS	RF204-G007-S03.no; list_algorithms_test	7 is present by Eq comparison
+G007-S03-03	S03	list.map(transform)	PASS	RF204-G007-S03.no; metamorphic-callback.no; metamorphic-subtract.no; metamorphic-multiply.no	renamed +4, -5 and *3 callbacks yield 9, 12 and 21
+G007-S03-04	S03	list.filter(predicate)	PASS	RF204-G007-S03.no; metamorphic-predicate.no	greater/less predicates independently select 5 and 2
+G007-S03-05	S03	list.retain(predicate)	PASS	RF204-G007-S03.no; native_collection_test	stable in-place selection commits only after callback success
+G007-S03-06	S03	list.sort(comparator)	PASS	RF204-G007-S03.no; iterator_borrow_test	stable ascending order and borrow exclusion are checked
+G007-S03-07	S03	list.deduplicate()	PASS	RF204-G007-S03.no; native_collection_test; deduplicate-arity.no	adjacent equals collapse; obsolete callback argument is rejected
+G007-S04-01	S04	Stack<T>.new()	PASS	RF204-G007-S04.no; stack_semantics_test	new stack begins with depth zero
+G007-S04-02	S04	stack.push(value)	PASS	RF204-G007-S04.no; stack_test	17 then 23 establishes a distinct LIFO oracle
+G007-S04-03	S04	stack.pop()	PASS	RF204-G007-S04.no; stack_semantics_test	23 is removed before clear
+G007-S04-04	S04	stack.peek()	PASS	RF204-G007-S04.no; stack_test	top is observed as 23 without changing length
+G007-S04-05	S04	stack.length()	PASS	RF204-G007-S04.no; stack_semantics_test	depth changes from two to zero
+G007-S04-06	S04	stack.clear()	PASS	RF204-G007-S04.no; native_collection_test	all values are removed and move-only drop runs exactly once
+G007-S05-01	S05	Queue<T>.new()	PASS	RF204-G007-S05.no; queue_semantics_test	new FIFO ring is empty and valid
+G007-S05-02	S05	queue.enqueue(value)	PASS	RF204-G007-S05.no; queue_semantics_test	31 then 37 preserve insertion order
+G007-S05-03	S05	queue.dequeue()	PASS	RF204-G007-S05.no; failure_safety_test	31 leaves first; borrowed dequeue is failure-atomic
+G007-S05-04	S05	queue.peek()	PASS	RF204-G007-S05.no; queue_semantics_test	31 is observed without removal
+G007-S05-05	S05	deque.pushFront(value)	PASS	RF204-G007-S05.no; deque_semantics_test	4 becomes the front of the circular buffer
+G007-S05-06	S05	deque.pushBack(value)	PASS	RF204-G007-S05.no; metamorphic-values.no	9/15 and 23/29 exercise wrap-safe back insertion
+G007-S05-07	S05	deque.popFront()	PASS	RF204-G007-S05.no; metamorphic-values.no	front observations are independently 4 and 17
+G007-S05-08	S05	deque.popBack()	PASS	RF204-G007-S05.no; metamorphic-values.no	back observations are independently 15 and 29
+G007-S06-01	S06	collection.iterator()	PASS	RF204-G007-S06.no; iterator_borrow_test	authenticated immutable borrow starts at index zero
+G007-S06-02	S06	collection.iteratorMutable()	PASS	RF204-G007-S06.no; borrow-conflict.no	exclusive iterator reads 4 and blocks concurrent mutation
+G007-S06-03	S06	iterator.next()	PASS	RF204-G007-S06.no; iterator_test	sequential values 4 then 8 are observed
+G007-S06-04	S06	iterator.enumerate()	PASS	RF204-G007-S06.no; native_collection_test	first enumerated index is exactly zero
+G007-S06-05	S06	iterator.take(count)	PASS	RF204-G007-S06.no; native_collection_test	remaining range is lazily limited to two/one values
+G007-S06-06	S06	iterator.skip(count)	PASS	RF204-G007-S06.no; native_collection_test	one prefix element is skipped without materialization
+G007-S06-07	S06	iterator.collect<C>()	PASS	RF204-G007-S06.no; native_collection_test; collect-target.no	List<Int> contains 12/3; wrong target and insufficient capacity fail atomically

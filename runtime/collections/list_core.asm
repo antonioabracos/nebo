@@ -49,6 +49,191 @@ NEBOC_ABI_FUNCTION neboc_list_new
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
  ret
 
+; Configure the optional move-only lifecycle trailer on an empty List.
+; move_fn(source*, destination*) -> Status and drop_fn(element*) -> Void.
+NEBOC_ABI_FUNCTION neboc_list_configure_lifecycle
+ test rsi,rsi
+ jz .lifecycle_invalid
+ test rdx,rdx
+ jz .lifecycle_invalid
+ push r12
+ push r13
+ push r14
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ call neboc_list_validate
+ test eax,eax
+ jnz .lifecycle_done
+ cmp qword [r12+NEBOC_LIST_LENGTH_OFFSET],0
+ jne .lifecycle_source
+ mov [r12+NEBOC_LIST_MOVE_FN_OFFSET],r13
+ mov [r12+NEBOC_LIST_DROP_FN_OFFSET],r14
+ xor eax,eax
+ jmp .lifecycle_done
+.lifecycle_source:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.lifecycle_done:
+ pop r14
+ pop r13
+ pop r12
+ ret
+.lifecycle_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+; Move-only append. No descriptor state is committed unless move_fn succeeds.
+NEBOC_ABI_FUNCTION neboc_list_move_push
+ test rsi,rsi
+ jz .move_push_invalid
+ push rbx
+ push r12
+ push r13
+ mov r12,rdi
+ mov r13,rsi
+ call neboc_list_validate
+ test eax,eax
+ jnz .move_push_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .move_push_source
+ mov rbx,[r12+NEBOC_LIST_MOVE_FN_OFFSET]
+ test rbx,rbx
+ jz .move_push_source
+ cmp qword [r12+NEBOC_LIST_DROP_FN_OFFSET],0
+ je .move_push_source
+ mov rax,[r12+NEBOC_LIST_LENGTH_OFFSET]
+ cmp rax,[r12+NEBOC_LIST_CAPACITY_OFFSET]
+ jae .move_push_limit
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rsi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rsi,rax
+ mov rdi,r13
+ call rbx
+ test eax,eax
+ jnz .move_push_done
+ inc qword [r12+NEBOC_LIST_LENGTH_OFFSET]
+ inc qword [r12+NEBOC_LIST_GENERATION_OFFSET]
+ xor eax,eax
+ jmp .move_push_done
+.move_push_source:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .move_push_done
+.move_push_limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+.move_push_done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+.move_push_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+; Move-only pop. The element remains live and length is unchanged if move_fn
+; rejects the transfer.
+NEBOC_ABI_FUNCTION neboc_list_move_pop
+ test rsi,rsi
+ jz .move_pop_invalid
+ test rdx,rdx
+ jz .move_pop_invalid
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ mov qword [r14],0
+ call neboc_list_validate
+ test eax,eax
+ jnz .move_pop_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .move_pop_source
+ mov rbx,[r12+NEBOC_LIST_MOVE_FN_OFFSET]
+ test rbx,rbx
+ jz .move_pop_source
+ cmp qword [r12+NEBOC_LIST_DROP_FN_OFFSET],0
+ je .move_pop_source
+ mov rax,[r12+NEBOC_LIST_LENGTH_OFFSET]
+ test rax,rax
+ jz .move_pop_ok
+ dec rax
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rdi,rax
+ mov rsi,r13
+ call rbx
+ test eax,eax
+ jnz .move_pop_done
+ dec qword [r12+NEBOC_LIST_LENGTH_OFFSET]
+ inc qword [r12+NEBOC_LIST_GENERATION_OFFSET]
+ mov qword [r14],1
+.move_pop_ok:
+ xor eax,eax
+ jmp .move_pop_done
+.move_pop_source:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.move_pop_done:
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+.move_pop_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+; Move-only clear runs the registered destructor exactly once for each live
+; element, then clears storage and commits the new generation.
+NEBOC_ABI_FUNCTION neboc_list_drop_clear
+ push rbx
+ push r12
+ push r13
+ mov r12,rdi
+ call neboc_list_validate
+ test eax,eax
+ jnz .drop_clear_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .drop_clear_source
+ mov r13,[r12+NEBOC_LIST_DROP_FN_OFFSET]
+ test r13,r13
+ jz .drop_clear_source
+ cmp qword [r12+NEBOC_LIST_MOVE_FN_OFFSET],0
+ je .drop_clear_source
+ xor ebx,ebx
+.drop_clear_loop:
+ cmp rbx,[r12+NEBOC_LIST_LENGTH_OFFSET]
+ jae .drop_clear_commit
+ mov rax,rbx
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rdi,rax
+ call r13
+ inc rbx
+ jmp .drop_clear_loop
+.drop_clear_commit:
+ mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
+ mov rcx,[r12+NEBOC_LIST_LENGTH_OFFSET]
+ imul rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ xor eax,eax
+ rep stosb
+ cmp qword [r12+NEBOC_LIST_LENGTH_OFFSET],0
+ je .drop_clear_ok
+ mov qword [r12+NEBOC_LIST_LENGTH_OFFSET],0
+ inc qword [r12+NEBOC_LIST_GENERATION_OFFSET]
+.drop_clear_ok:
+ xor eax,eax
+ jmp .drop_clear_done
+.drop_clear_source:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.drop_clear_done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
 ; list_init(desc*, storage*, capacity, element_size, element_align, allocator)
 NEBOC_ABI_FUNCTION neboc_list_init
  push rbx
@@ -697,6 +882,87 @@ NEBOC_ABI_FUNCTION neboc_list_remove
  pop rbx
  ret
 .remove_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+; list_swap_remove(desc*, index, out*, found*) removes in O(1) by moving the
+; final element into the removed slot. The removed value is published only
+; after all bounds/generation checks have succeeded.
+NEBOC_ABI_FUNCTION neboc_list_swap_remove
+ test rdx,rdx
+ jz .swap_remove_invalid
+ test rcx,rcx
+ jz .swap_remove_invalid
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ mov r15,rcx
+ call neboc_list_validate
+ test eax,eax
+ jnz .swap_remove_done
+ bt qword [r12+NEBOC_LIST_GENERATION_OFFSET],63
+ jc .swap_remove_borrow
+ mov rbx,[r12+NEBOC_LIST_LENGTH_OFFSET]
+ cmp r13,rbx
+ jae .swap_remove_empty
+ mov rax,NEBOC_LIST_GENERATION_MASK
+ cmp [r12+NEBOC_LIST_GENERATION_OFFSET],rax
+ jae .swap_remove_limit
+ mov rax,r13
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rsi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rsi,rax
+ mov rdi,r14
+ mov rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ rep movsb
+ dec rbx
+ cmp r13,rbx
+ je .swap_remove_zero_tail
+ mov rax,rbx
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rsi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rsi,rax
+ mov rax,r13
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rdi,rax
+ mov rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ rep movsb
+.swap_remove_zero_tail:
+ mov rax,rbx
+ imul rax,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ mov rdi,[r12+NEBOC_LIST_DATA_OFFSET]
+ add rdi,rax
+ mov rcx,[r12+NEBOC_LIST_ELEMENT_SIZE_OFFSET]
+ xor eax,eax
+ rep stosb
+ mov [r12+NEBOC_LIST_LENGTH_OFFSET],rbx
+ inc qword [r12+NEBOC_LIST_GENERATION_OFFSET]
+ mov qword [r15],1
+ xor eax,eax
+ jmp .swap_remove_done
+.swap_remove_empty:
+ mov qword [r15],0
+ xor eax,eax
+ jmp .swap_remove_done
+.swap_remove_limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ jmp .swap_remove_done
+.swap_remove_borrow:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.swap_remove_done:
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+.swap_remove_invalid:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
  ret
 

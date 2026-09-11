@@ -1,0 +1,12 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Headless Console rendering</title><link rel="stylesheet" href="../assets/style.css"></head><body><a href="#main">Skip to content</a><nav aria-label="Home"><a href="../index.html">Nebo documentation home</a></nav><main id="main"><h1>Headless Console rendering</h1><p>RenderPlan renders the bold markup through .plain(), producing Local, then a typed format produces points=101. No display server is needed for the retained document.</p><p>Software, headless and live display profiles are distinct. This recipe promises the local retained text only. Opening a window is not proof of layout, pixels, lifecycle or event semantics; use the explicitly gated live profile when required.</p><p>Imports: the current implicit prelude. Required effects/capabilities: retained local Console rendering. No network, live display, external credentials or device capability is used.</p><h2>Complete Nebo source</h2><pre><code>// Plain rendering is available without a display server.
+start(){RenderPlan(&quot;/bold{Local}&quot;).render(.plain()).console();&quot;points=%d&quot;.format(101).console();67.return;}
+</code></pre><h2>Inputs and independent expectations</h2><pre>{
+  &quot;expected_exit&quot;: 67,
+  &quot;kinds&quot;: [
+    2,
+    2
+  ],
+  &quot;text&quot;: {
+    &quot;bytes_hex&quot;: &quot;4c6f63616c706f696e74733d313031&quot;
+  }
+}</pre></main></body></html>

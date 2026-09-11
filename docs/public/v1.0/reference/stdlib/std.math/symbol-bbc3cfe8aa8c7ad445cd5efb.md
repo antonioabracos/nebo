@@ -1,0 +1,87 @@
+# std.math — hypot
+
+Literal Int64/binary64 operands; at most 128 complete statements; independent arithmetic trace and return matrix Native checked scalar/vector mathematics; independent numeric oracle; explicit process return separate from intermediate value
+
+```text
+Identity: claim:090e1636b97a7c2ba7e9dcf7 (QUALIFIED_INTRINSIC_OR_REGISTRY_ID)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: STABLE_1_0
+```
+
+## Syntax or signature
+
+```text
+hypot
+Literal Int64/binary64 operands; at most 128 complete statements; independent arithmetic trace and return matrix Native checked scalar/vector mathematics; independent numeric oracle; explicit process return separate from intermediate value
+```
+
+## Ownership and complexity
+
+Exact typed owner contract; no copy/borrow/clone capability inferred from spelling Literal Int64/binary64 operands; at most 128 complete statements; independent arithmetic trace and return matrix Native checked scalar/vector mathematics; independent numeric oracle; explicit process return separate from intermediate value
+
+## Effects, capabilities and sandbox
+
+Per expression: pure computation plus explicit observed sinks; NO_IMPLICIT_GRANT. Import grants capability: NO.
+
+## Availability and errors
+
+Edition 1; x86_64-systemv-elf-linux; BOUNDED_PUBLIC_EXECUTED_WITHIN_LIMITS. Literal Int64/binary64 operands; at most 128 complete statements; independent arithmetic trace and return matrix Native checked scalar/vector mathematics; independent numeric oracle; explicit process return separate from intermediate value Use the declared operand and receiver domain; source rejection publishes no executable.
+
+## Identity and aliases
+
+TOKEN_TYPED_SCALAR_OWNER. Identity kind: QUALIFIED_INTRINSIC_OR_REGISTRY_ID. SymbolId: NOT_SERIALIZED. Alias entries describe the same qualified operation; they do not create another runtime API.
+
+## Executed examples
+
+### math:atomic-hypot; expected 23
+
+```nebo
+start(){std.math.hypot(8.0,15.0);23.return;}
+```
+
+Oracle: {"binary64_tolerance": {"absolute": 1e-12, "relative": 1e-12}, "capabilities": {"console": "NO_DOCUMENT_OBSERVER", "filesystem": "EXPLICIT_SCRATCH_EFFECT_ORACLE", "network": "DENIED_BY_SECCOMP"}, "filesystem_effects": {}, "independent_builds": 2, "independent_math_values": \[\[7, 2, 17.0\]\], "math_trace_sha256": "f8ff059097ae42c6e478f51164ec5ac12b1788d2c081674175fef1c18a25d2b3", "observed_math_calls": 1, "process_exit": 23, "runtime_determinism": "BYTE_IDENTICAL", "runtime_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+
+## Rejected examples
+
+### math:math-text-return; expected NEBO_TYPE_MISMATCH
+
+```nebo
+// Scalar owners expose checked integer domains and stable binary64 magnitude.
+start() {
+    141;
+    std.math.max(17, 29);
+    std.math.min(17, 29);
+    std.math.abs(-37);
+    std.math.clamp(41, 7, 23);
+    std.math.sqrt(9.0);
+    std.math.pow(2.0, 5.0);
+    std.math.hypot(5.0, 12.0);
+    "bad".return;
+}
+
+```
+
+Oracle: {"artifact_publication": "REJECTED", "compiler_exit": 1, "diagnostic": "NEBO_TYPE_MISMATCH"}
+
+## Related entries
+
+[Index](index.md)
+
+- [symbol-0fef57fdf61a21510a9634dc](symbol-0fef57fdf61a21510a9634dc.md)
+
+## Provenance
+
+- sdk/contracts/stdlib/STDLIB-STABLE-CATALOG.tsv — SHA-256 a66eec0cbb7f0a99f20ae489208f1ba1106cd2c327e475daf406d615e3e55bab
+
+- compiler/driver/cli/linux-x86_64/scalar_program.inc — SHA-256 54bad41b6d43ffc48c264adae8a0a776071c6a3917abaf05520344e11ae6afbe
+
+- compiler/codegen/functions/x86_64/function_codegen.asm — SHA-256 944358cec673b2132c51b5c4b5842edaf4cf9ce157b23d83892449fbb12487f7
+
+- runtime/core/runtime_core.asm — SHA-256 9786591602649f222e73dc91ea2449fba1c98d2e504ae779208caf7373e06797
+
+- tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0
+
+- tests/rf204/G170/math_oracle.py — SHA-256 a8b0d3e88a49a701df02b467c2a7e31fd5f235ea821907eb3701ae50e17524d4
+
+- tests/rf204/G170/math_return_test.py — SHA-256 80e2b9b0eb7f676a90c810e50ac8451ed7fe7145012a7e085715f85997e26b81

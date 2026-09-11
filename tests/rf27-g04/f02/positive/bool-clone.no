@@ -1,0 +1,5 @@
+start() {
+    true.source;
+    source.clone().cloned;
+    cloned;
+}

@@ -19,6 +19,30 @@ NEBOC_ABI_FUNCTION neboc_operator_unary_type
  test rdx,rdx
  jz .unary_invalid
  mov qword [rdx],0
+ cmp rdi,NEBOC_TOKEN_POSTFIX_PERCENT
+ je .unary_percent
+ cmp rdi,NEBOC_TOKEN_PER_MILLE
+ je .unary_per_mille
+ cmp rdi,NEBOC_TOKEN_BASIS_POINTS
+ je .unary_basis_points
+ cmp rdi,NEBOC_TOKEN_DEGREE
+ je .unary_angle
+ cmp rdi,NEBOC_TOKEN_CELSIUS
+ je .unary_temperature
+ cmp rdi,NEBOC_TOKEN_FAHRENHEIT
+ je .unary_temperature
+ cmp rdi,NEBOC_TOKEN_SQUARE_ROOT
+ je .unary_exact_math
+ cmp rdi,NEBOC_TOKEN_CUBE_ROOT
+ je .unary_exact_math
+ cmp rdi,NEBOC_TOKEN_FOURTH_ROOT
+ je .unary_exact_math
+ cmp rdi,NEBOC_TOKEN_POSTFIX_FACTORIAL
+ je .unary_exact_math
+ cmp rdi,NEBOC_TOKEN_FLOOR_OPEN
+ je .unary_round_math
+ cmp rdi,NEBOC_TOKEN_CEIL_OPEN
+ je .unary_round_math
  cmp rdi,NEBOC_TOKEN_MINUS
  je .unary_negate
  cmp rdi,NEBOC_TOKEN_BANG
@@ -36,6 +60,38 @@ NEBOC_ABI_FUNCTION neboc_operator_unary_type
  call neboc_operator_resolve_builtin_type
  add rsp,8
  ret
+.unary_percent:
+ mov eax,NEBOC_TYPE_ID_PERCENT
+ jmp .unary_quantity
+.unary_per_mille:
+ mov eax,NEBOC_TYPE_ID_PER_MILLE
+ jmp .unary_quantity
+.unary_basis_points:
+ mov eax,NEBOC_TYPE_ID_BASIS_POINTS
+ jmp .unary_quantity
+.unary_angle:
+ mov eax,NEBOC_TYPE_ID_ANGLE
+ jmp .unary_quantity
+.unary_temperature:
+ mov eax,NEBOC_TYPE_ID_TEMPERATURE
+.unary_quantity:
+ cmp rsi,NEBOC_TYPE_ID_INT
+ jne .unary_mismatch
+ mov [rdx],rax
+ xor eax,eax
+ ret
+.unary_exact_math:
+ cmp rsi,NEBOC_TYPE_ID_INT
+ jne .unary_mismatch
+ mov qword [rdx],NEBOC_TYPE_ID_INT
+ xor eax,eax
+ ret
+.unary_round_math:
+ cmp rsi,NEBOC_TYPE_ID_FLOAT
+ jne .unary_mismatch
+ mov qword [rdx],NEBOC_TYPE_ID_INT
+ xor eax,eax
+ ret
 .unary_mismatch:
  mov eax,NEBOC_STATUS_INVALID_SOURCE
  ret
@@ -49,6 +105,10 @@ NEBOC_ABI_FUNCTION neboc_operator_binary_type
  test rcx,rcx
  jz .binary_invalid
  mov qword [rcx],0
+ cmp rsi,NEBOC_TYPE_ID_PERCENT
+ jae .binary_quantity
+ cmp rdx,NEBOC_TYPE_ID_PERCENT
+ jae .binary_quantity
  cmp rdi,NEBOC_TOKEN_PLUS
  je .binary_add
  cmp rdi,NEBOC_TOKEN_MINUS
@@ -124,10 +184,165 @@ NEBOC_ABI_FUNCTION neboc_operator_binary_type
  call neboc_operator_resolve_builtin_type
  add rsp,8
  ret
+.binary_quantity:
+ ; Quantity arithmetic never falls through to scalar protocol coercion.
+ ; Addition/subtraction preserve an exact identity; multiply/divide accept an
+ ; Int scale; comparisons admit the three canonically scaled ratio identities.
+ ; Temperature is affine: without a public DeltaTemperature type, only
+ ; comparisons between two temperatures are valid.
+ cmp rsi,NEBOC_TYPE_ID_TEMPERATURE
+ ja .binary_mismatch
+ cmp rdx,NEBOC_TYPE_ID_TEMPERATURE
+ ja .binary_mismatch
+ cmp rsi,NEBOC_TYPE_ID_TEMPERATURE
+ je .quantity_temperature
+ cmp rdx,NEBOC_TYPE_ID_TEMPERATURE
+ je .quantity_temperature
+ cmp rdi,NEBOC_TOKEN_PLUS
+ je .quantity_same_result
+ cmp rdi,NEBOC_TOKEN_MINUS
+ je .quantity_same_result
+ cmp rdi,NEBOC_TOKEN_STAR
+ je .quantity_multiply
+ cmp rdi,NEBOC_TOKEN_SLASH
+ je .quantity_divide
+ cmp rdi,NEBOC_TOKEN_EQUAL_EQUAL
+ je .quantity_compare
+ cmp rdi,NEBOC_TOKEN_BANG_EQUAL
+ je .quantity_compare
+ cmp rdi,NEBOC_TOKEN_LESS
+ je .quantity_compare
+ cmp rdi,NEBOC_TOKEN_LESS_EQUAL
+ je .quantity_compare
+ cmp rdi,NEBOC_TOKEN_GREATER
+ je .quantity_compare
+ cmp rdi,NEBOC_TOKEN_GREATER_EQUAL
+ jne .binary_mismatch
+.quantity_compare:
+ cmp rsi,rdx
+ je .quantity_bool
+ cmp rsi,NEBOC_TYPE_ID_PERCENT
+ jb .binary_mismatch
+ cmp rsi,NEBOC_TYPE_ID_BASIS_POINTS
+ ja .binary_mismatch
+ cmp rdx,NEBOC_TYPE_ID_PERCENT
+ jb .binary_mismatch
+ cmp rdx,NEBOC_TYPE_ID_BASIS_POINTS
+ ja .binary_mismatch
+.quantity_bool:
+ mov qword [rcx],NEBOC_TYPE_ID_BOOL
+ xor eax,eax
+ ret
+.quantity_temperature:
+ cmp rsi,NEBOC_TYPE_ID_TEMPERATURE
+ jne .binary_mismatch
+ cmp rdx,NEBOC_TYPE_ID_TEMPERATURE
+ jne .binary_mismatch
+ cmp rdi,NEBOC_TOKEN_EQUAL_EQUAL
+ je .quantity_bool
+ cmp rdi,NEBOC_TOKEN_BANG_EQUAL
+ je .quantity_bool
+ cmp rdi,NEBOC_TOKEN_LESS
+ je .quantity_bool
+ cmp rdi,NEBOC_TOKEN_LESS_EQUAL
+ je .quantity_bool
+ cmp rdi,NEBOC_TOKEN_GREATER
+ je .quantity_bool
+ cmp rdi,NEBOC_TOKEN_GREATER_EQUAL
+ je .quantity_bool
+ jmp .binary_mismatch
+.quantity_same_result:
+ cmp rsi,rdx
+ jne .binary_mismatch
+ cmp rsi,NEBOC_TYPE_ID_PERCENT
+ jb .binary_mismatch
+ mov [rcx],rsi
+ xor eax,eax
+ ret
+.quantity_multiply:
+ cmp rsi,NEBOC_TYPE_ID_INT
+ je .quantity_right_result
+ cmp rdx,NEBOC_TYPE_ID_INT
+ jne .binary_mismatch
+ mov [rcx],rsi
+ xor eax,eax
+ ret
+.quantity_right_result:
+ cmp rdx,NEBOC_TYPE_ID_PERCENT
+ jb .binary_mismatch
+ mov [rcx],rdx
+ xor eax,eax
+ ret
+.quantity_divide:
+ cmp rsi,NEBOC_TYPE_ID_PERCENT
+ jb .binary_mismatch
+ cmp rdx,NEBOC_TYPE_ID_INT
+ jne .binary_mismatch
+ mov [rcx],rsi
+ xor eax,eax
+ ret
 .binary_mismatch:
  mov eax,NEBOC_STATUS_INVALID_SOURCE
  ret
 .binary_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+; quantity_normalize_constant(postfix_token, Int value, out canonical i64*)
+; Ratios use basis points, angles/temperatures use milli-units.  Fahrenheit is
+; affine and rejects target-scale precision loss.
+NEBOC_ABI_FUNCTION neboc_quantity_normalize_constant
+ test rdx,rdx
+ jz .quantity_constant_invalid
+ mov r8,rdx
+ mov qword [rdx],0
+ mov rax,rsi
+ cmp rdi,NEBOC_TOKEN_POSTFIX_PERCENT
+ je .quantity_scale_100
+ cmp rdi,NEBOC_TOKEN_PER_MILLE
+ je .quantity_scale_10
+ cmp rdi,NEBOC_TOKEN_BASIS_POINTS
+ je .quantity_constant_store
+ cmp rdi,NEBOC_TOKEN_DEGREE
+ je .quantity_scale_1000
+ cmp rdi,NEBOC_TOKEN_CELSIUS
+ je .quantity_scale_1000
+ cmp rdi,NEBOC_TOKEN_FAHRENHEIT
+ jne .quantity_constant_invalid
+ sub rax,32
+ jo .quantity_constant_overflow
+ imul rax,5000
+ jo .quantity_constant_overflow
+ mov rcx,9
+ cqo
+ idiv rcx
+ test rdx,rdx
+ jnz .quantity_constant_precision
+ mov [r8],rax
+ xor eax,eax
+ ret
+.quantity_scale_100:
+ imul rax,100
+ jo .quantity_constant_overflow
+ jmp .quantity_constant_store
+.quantity_scale_10:
+ imul rax,10
+ jo .quantity_constant_overflow
+ jmp .quantity_constant_store
+.quantity_scale_1000:
+ imul rax,1000
+ jo .quantity_constant_overflow
+.quantity_constant_store:
+ mov [r8],rax
+ xor eax,eax
+ ret
+.quantity_constant_precision:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ ret
+.quantity_constant_overflow:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ ret
+.quantity_constant_invalid:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
  ret
 
@@ -136,13 +351,18 @@ NEBOC_ABI_FUNCTION neboc_operator_binary_type
 NEBOC_ABI_FUNCTION neboc_checked_int_unary
  test rdx,rdx
  jz .checked_unary_invalid
- mov qword [rdx],0
+ cmp rdi,NEBOC_TOKEN_PLUS
+ je .checked_unary_plus
  cmp rdi,NEBOC_TOKEN_MINUS
  jne .checked_unary_invalid
  mov rax,rsi
  neg rax
  jo .checked_unary_overflow
  mov [rdx],rax
+ xor eax,eax
+ ret
+.checked_unary_plus:
+ mov [rdx],rsi
  xor eax,eax
  ret
 .checked_unary_overflow:
@@ -159,7 +379,6 @@ NEBOC_ABI_FUNCTION neboc_checked_int_binary
  mov rbx,rcx
  test rbx,rbx
  jz .checked_invalid
- mov qword [rbx],0
  cmp rdi,NEBOC_TOKEN_PLUS
  je .checked_add
  cmp rdi,NEBOC_TOKEN_MINUS

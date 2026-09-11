@@ -21,7 +21,7 @@ nebo_matrix_qr_f64:
  push r15
  push rbx
  push rbp
- sub rsp,32
+ sub rsp,40                 ; System V alignment before native owner calls.
  mov r12,rdi
  mov r13,rsi
  mov r14,rdx
@@ -29,8 +29,13 @@ nebo_matrix_qr_f64:
  ucomisd xmm0,[rel factor_zero]
  jp .qr_domain
  jb .qr_domain
+ movq rax,xmm0
+ shr rax,52
+ and eax,0x7ff
+ cmp eax,0x7ff
+ je .qr_domain
  mov rdi,r12
- call nebo_matrix_validate
+ call nebo_matrix_validate_finite_f64
  test eax,eax
  jnz .qr_ret
  mov rdi,r13
@@ -39,6 +44,29 @@ nebo_matrix_qr_f64:
  jnz .qr_ret
  mov rdi,r14
  call nebo_matrix_validate
+ test eax,eax
+ jnz .qr_ret
+ cmp qword [r13+NEBO_MATRIX_DTYPE],NEBO_MATRIX_DTYPE_F64
+ jne .qr_contract
+ cmp qword [r14+NEBO_MATRIX_DTYPE],NEBO_MATRIX_DTYPE_F64
+ jne .qr_contract
+ test qword [r13+NEBO_MATRIX_FLAGS],NEBO_MATRIX_FLAG_READONLY
+ jnz .qr_alias
+ test qword [r14+NEBO_MATRIX_FLAGS],NEBO_MATRIX_FLAG_READONLY
+ jnz .qr_alias
+ mov rdi,r12
+ mov rsi,r13
+ call factor_require_disjoint
+ test eax,eax
+ jnz .qr_ret
+ mov rdi,r12
+ mov rsi,r14
+ call factor_require_disjoint
+ test eax,eax
+ jnz .qr_ret
+ mov rdi,r13
+ mov rsi,r14
+ call factor_require_disjoint
  test eax,eax
  jnz .qr_ret
  mov r15,[r12+NEBO_MATRIX_ROWS]
@@ -51,6 +79,8 @@ nebo_matrix_qr_f64:
  ja .qr_shape
  cmp rbp,32
  ja .qr_shape
+ cmp r15,rbp
+ jb .qr_shape
  cmp r15,[r13+NEBO_MATRIX_ROWS]
  jne .qr_shape
  cmp rbp,[r13+NEBO_MATRIX_COLS]
@@ -120,6 +150,11 @@ nebo_matrix_qr_f64:
  inc r8
  jmp .qr_dot
 .qr_dot_done:
+ movq rax,xmm0
+ shr rax,52
+ and eax,0x7ff
+ cmp eax,0x7ff
+ je .qr_domain
  movsd [rsp+8],xmm0
  mov rax,r9
  imul rax,[r14+NEBO_MATRIX_ROW_STRIDE]
@@ -171,6 +206,11 @@ nebo_matrix_qr_f64:
  jmp .qr_norm_loop
 .qr_norm_done:
  sqrtsd xmm0,xmm0
+ movq rax,xmm0
+ shr rax,52
+ and eax,0x7ff
+ cmp eax,0x7ff
+ je .qr_domain
  ucomisd xmm0,[rsp]
  jbe .qr_domain
  movsd [rsp+8],xmm0
@@ -200,7 +240,7 @@ nebo_matrix_qr_f64:
  jmp .qr_j
 .qr_ok: xor eax,eax
 .qr_ret:
- add rsp,32
+ add rsp,40
  pop rbp
  pop rbx
  pop r15
@@ -212,6 +252,43 @@ nebo_matrix_qr_f64:
  jmp .qr_ret
 .qr_shape: mov eax,NEBO_NUMERIC_ERROR_SHAPE
  jmp .qr_ret
+.qr_contract: mov eax,NEBO_NUMERIC_ERROR_CONTRACT
+ jmp .qr_ret
+.qr_alias: mov eax,NEBO_NUMERIC_ERROR_ALIAS
+ jmp .qr_ret
+
+; Validated Matrix descriptors: reject storage overlap before output writes.
+; Strided descriptors retain their complete backing capacity, so this also
+; rejects overlapping views rather than merely comparing first-element ptrs.
+factor_require_disjoint:
+ mov r8,[rdi+NEBO_MATRIX_DATA]
+ mov r9,[rdi+NEBO_MATRIX_CAPACITY]
+ mov r10,[rsi+NEBO_MATRIX_DATA]
+ mov r11,[rsi+NEBO_MATRIX_CAPACITY]
+ test r9,r9
+ jz .ok
+ test r11,r11
+ jz .ok
+ mov rax,r9
+ or rax,r11
+ shr rax,61
+ jnz .alias
+ shl r9,3
+ add r9,r8
+ jc .alias
+ shl r11,3
+ add r11,r10
+ jc .alias
+ cmp r8,r11
+ jae .ok
+ cmp r10,r9
+ jb .alias
+.ok:
+ xor eax,eax
+ ret
+.alias:
+ mov eax,NEBO_NUMERIC_ERROR_ALIAS
+ ret
 
 ; A rdi, lower output rsi, threshold xmm0.
 nebo_matrix_cholesky_f64:
@@ -227,12 +304,26 @@ nebo_matrix_cholesky_f64:
  ucomisd xmm0,[rel factor_zero]
  jp .chol_domain
  jb .chol_domain
+ movq rax,xmm0
+ shr rax,52
+ and eax,0x7ff
+ cmp eax,0x7ff
+ je .chol_domain
  mov rdi,r12
- call nebo_matrix_validate
+ call nebo_matrix_validate_finite_f64
  test eax,eax
  jnz .chol_ret
  mov rdi,r13
  call nebo_matrix_validate
+ test eax,eax
+ jnz .chol_ret
+ cmp qword [r13+NEBO_MATRIX_DTYPE],NEBO_MATRIX_DTYPE_F64
+ jne .chol_contract
+ test qword [r13+NEBO_MATRIX_FLAGS],NEBO_MATRIX_FLAG_READONLY
+ jnz .chol_alias
+ mov rdi,r12
+ mov rsi,r13
+ call factor_require_disjoint
  test eax,eax
  jnz .chol_ret
  mov r14,[r12+NEBO_MATRIX_ROWS]
@@ -246,6 +337,40 @@ nebo_matrix_cholesky_f64:
  jne .chol_shape
  cmp r14,[r13+NEBO_MATRIX_COLS]
  jne .chol_shape
+ ; SPD requires symmetry, not merely a positive lower triangle. Compare
+ ; mirrored logical elements using the caller's explicit absolute threshold.
+ xor r8d,r8d
+.chol_symmetry_row:
+ cmp r8,r14
+ jae .chol_symmetry_done
+ lea r9,[r8+1]
+.chol_symmetry_column:
+ cmp r9,r14
+ jae .chol_symmetry_next
+ mov rax,r8
+ imul rax,[r12+NEBO_MATRIX_ROW_STRIDE]
+ mov rcx,r9
+ imul rcx,[r12+NEBO_MATRIX_COL_STRIDE]
+ add rax,rcx
+ mov rdx,[r12+NEBO_MATRIX_DATA]
+ movsd xmm0,[rdx+rax*8]
+ mov rax,r9
+ imul rax,[r12+NEBO_MATRIX_ROW_STRIDE]
+ mov rcx,r8
+ imul rcx,[r12+NEBO_MATRIX_COL_STRIDE]
+ add rax,rcx
+ subsd xmm0,[rdx+rax*8]
+ movq rax,xmm0
+ btr rax,63
+ movq xmm0,rax
+ ucomisd xmm0,[rsp]
+ ja .chol_domain
+ inc r9
+ jmp .chol_symmetry_column
+.chol_symmetry_next:
+ inc r8
+ jmp .chol_symmetry_row
+.chol_symmetry_done:
  mov rcx,[r13+NEBO_MATRIX_CAPACITY]
  mov rdi,[r13+NEBO_MATRIX_DATA]
  xor eax,eax
@@ -308,6 +433,11 @@ nebo_matrix_cholesky_f64:
  mov rdx,[r13+NEBO_MATRIX_DATA]
  divsd xmm0,[rdx+rax*8]
 .chol_store:
+ movq rax,xmm0
+ shr rax,52
+ and eax,0x7ff
+ cmp eax,0x7ff
+ je .chol_domain
  mov rax,rbx
  imul rax,[r13+NEBO_MATRIX_ROW_STRIDE]
  mov rcx,r15
@@ -331,6 +461,10 @@ nebo_matrix_cholesky_f64:
 .chol_domain: mov eax,NEBO_NUMERIC_ERROR_DOMAIN
  jmp .chol_ret
 .chol_shape: mov eax,NEBO_NUMERIC_ERROR_SHAPE
+ jmp .chol_ret
+.chol_contract: mov eax,NEBO_NUMERIC_ERROR_CONTRACT
+ jmp .chol_ret
+.chol_alias: mov eax,NEBO_NUMERIC_ERROR_ALIAS
  jmp .chol_ret
 
 matrix_one_norm:

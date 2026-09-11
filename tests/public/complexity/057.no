@@ -1,0 +1,14 @@
+// Local routing publishes explicit costs, alternatives, instructions, geometry, matching confidence, and replans.
+(Int.self)spatialGraphFromFeatures() { self.return; }
+(Int.self)routeFind() { self.return; }
+(Int.self)routeAlternatives() { self.return; }
+(Int.self)routeCosts() { self.return; }
+(Int.self)routeInstructions() { self.return; }
+(Int.self)routeGeometry() { self.return; }
+(Int.self)mapMatcherMatch() { self.return; }
+(Int.self)matchConfidence() { self.return; }
+(Int.self)routeReplan() { self.return; }
+
+start() {
+    127.spatialGraphFromFeatures().routeFind().routeAlternatives().routeCosts().routeInstructions().routeGeometry().mapMatcherMatch().matchConfidence().routeReplan();
+}

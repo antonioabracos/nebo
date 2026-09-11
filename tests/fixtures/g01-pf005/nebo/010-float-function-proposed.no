@@ -1,0 +1,7 @@
+(Float.a)identity() {
+    a.return;
+}
+
+start() {
+    Float(1.0).value;
+}

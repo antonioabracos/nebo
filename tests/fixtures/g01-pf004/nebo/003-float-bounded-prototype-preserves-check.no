@@ -1,0 +1,4 @@
+start() {
+    123456789012345.6.large_checked_float;
+    0.return;
+}

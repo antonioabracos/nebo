@@ -74,4 +74,52 @@ nebo_quantity_serialization_tag:
     mov edx, NEBO_QUANTITY_ERR_UNIT
     ret
 
+; rdi=canonical value, esi=unit, edx=locale, rcx=FormatPlan*. A plan is
+; committed only after every field validates, preserving failure atomicity.
+global nebo_quantity_format_plan
+nebo_quantity_format_plan:
+    push rbx
+    push r12
+    push r13
+    mov rbx, rcx
+    mov r12, rdi
+    mov r13d, esi
+    test rbx, rbx
+    jz .plan_syntax
+    cmp edx, NEBO_QUANTITY_LOCALE_FR
+    ja .plan_domain
+    sub rsp, 16
+    mov [rsp], rdx
+    mov edi, r13d
+    call nebo_quantity_format_suffix
+    mov r8, [rsp]
+    add rsp, 16
+    test ecx, ecx
+    jnz .plan_unit
+    mov [rbx + NEBO_QUANTITY_FORMAT_VALUE_OFFSET], r12
+    mov [rbx + NEBO_QUANTITY_FORMAT_UNIT_OFFSET], r13
+    mov [rbx + NEBO_QUANTITY_FORMAT_SUFFIX_OFFSET], rax
+    mov [rbx + NEBO_QUANTITY_FORMAT_SUFFIX_LENGTH_OFFSET], rdx
+    mov [rbx + NEBO_QUANTITY_FORMAT_LOCALE_OFFSET], r8
+    xor eax, eax
+    jmp .plan_done
+.plan_syntax:
+    mov eax, NEBO_QUANTITY_ERR_SYNTAX
+    jmp .plan_done
+.plan_domain:
+    mov eax, NEBO_QUANTITY_ERR_DOMAIN
+    jmp .plan_done
+.plan_unit:
+    mov eax, NEBO_QUANTITY_ERR_UNIT
+.plan_done:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+
+; Console labels deliberately reuse the FormatPlan suffix authority.
+global nebo_quantity_console_label
+nebo_quantity_console_label:
+    jmp nebo_quantity_format_suffix
+
 section .note.GNU-stack noalloc noexec nowrite progbits

@@ -1,0 +1,7 @@
+// Text, sanitized HTML, and image exports share a capability-checked host service.
+start() {
+    RenderPlan;
+    3401;
+    output.stdout().stderr().target("export-privacy-service").plain().visual().headlessEvent();
+    lifecycle.event("privacy-audited").payload("export-text-html-image").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

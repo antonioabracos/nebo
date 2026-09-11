@@ -1,0 +1,11 @@
+start() {
+    "outer".outer;
+    loop {
+        "break".inner;
+        inner.deferDrop().scheduled;
+        break;
+        99;
+    }
+    outer.deferDrop().outerScheduled;
+    44;
+}

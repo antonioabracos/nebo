@@ -1,0 +1,5 @@
+start() {
+    Tensor<Int>.zeros(Tuple.of()).scalarTensor;
+    Tensor<Int>.filled(Tuple.of(2, 2), 3).matrixShapedTensor;
+    0;
+}

@@ -1,0 +1,5 @@
+// A single chain crosses views, owned transformations, replacement,
+// TextSplit, padding and casing while retaining deterministic byte semantics.
+start() {
+    " \r\nAb::Cd \t".trim().normalizeNewlines().lower().replaceAll("::", "/").split("/").join("-").padStart(8, "0").upper().byteLength().return;
+}

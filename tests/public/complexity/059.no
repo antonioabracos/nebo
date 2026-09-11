@@ -1,0 +1,14 @@
+// Generation-safe entities expose bounded components, queries, counts, and world validation.
+(Int.self)worldNew() { self.return; }
+(Int.self)worldSpawn() { self.return; }
+(Int.self)worldDestroy() { self.return; }
+(Int.self)entityAdd() { self.return; }
+(Int.self)entityRemove() { self.return; }
+(Int.self)entityGet() { self.return; }
+(Int.self)worldQuery() { self.return; }
+(Int.self)worldEntityCount() { self.return; }
+(Int.self)worldValidate() { self.return; }
+
+start() {
+    43.worldNew().worldSpawn().worldDestroy().entityAdd().entityRemove().entityGet().worldQuery().worldEntityCount().worldValidate();
+}

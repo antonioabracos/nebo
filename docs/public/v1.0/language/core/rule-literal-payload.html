@@ -1,0 +1,20 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>literal payload</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>literal payload</h1><p>Radix/separator integer spellings preserve their values. Float is binary64, Char is one Unicode scalar, Text retains decoded UTF-8 bytes; raw and multiline forms preserve their respective escape and newline rules.</p><pre>Identity: N1-literal-payload (NORMATIVE_RULE)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: EDITION_1_BOUNDED_NORMATIVE</pre><h2>Syntax or signature</h2><pre>N1-literal-payload — EDITION_1_BOUNDED_NORMATIVE</pre><h2>Scope and constraints</h2><p>Radix/separator integer spellings preserve their values. Float is binary64, Char is one Unicode scalar, Text retains decoded UTF-8 bytes; raw and multiline forms preserve their respective escape and newline rules.</p><h2>Use and remediation</h2><p>Follow the admitted forms in the individual syntax and operator references. Keep source order and type identity; make imports and capability grants explicit. A native supplemental contract does not introduce source constructors or widen target support.</p><h2>Executed examples</h2><h3>literal:literal-ratio-0.75; expected 23</h3><pre><code>start(){(0.75==(3.0/4.0)).console();23.return;}</code></pre><p>Oracle: {&quot;console_text_utf8&quot;: &quot;true&quot;, &quot;independent_builds&quot;: 2, &quot;kinds&quot;: [5], &quot;process_exit&quot;: 23, &quot;runtime_sha256&quot;: &quot;26e99610443e30ab87a629aa5de2392ce6d0117574455307c7c97e44b2fcac90&quot;}</p><h2>Rejected examples</h2><h3>literal:mixed-ratio; expected NEBO_TYPE_MISMATCH</h3><pre><code>start(){(0.75==(3/4)).console();23.return;}</code></pre><p>Oracle: {&quot;artifact_publication&quot;: &quot;REJECTED&quot;, &quot;compiler_exit&quot;: 1, &quot;diagnostic&quot;: &quot;NEBO_TYPE_MISMATCH&quot;}</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;case_id&quot;: &quot;formatter:multiline-preserve&quot;,
+    &quot;formatted_sha256&quot;: &quot;43a0bbd8e2c010d0994b3a9432cfd45009ae0b06fdc3d701421b4d02365e9ef8&quot;
+  },
+  {
+    &quot;case_id&quot;: &quot;formatter:raw-preserve&quot;,
+    &quot;formatted_sha256&quot;: &quot;c49ae1de58acd7d1a2babd369d620af0f315b6a454c8328265fbebc9a977c546&quot;
+  },
+  {
+    &quot;case_id&quot;: &quot;literal:bits-0-rounding-0&quot;,
+    &quot;category&quot;: &quot;native-literal-bits&quot;,
+    &quot;expected_bits&quot;: &quot;0x0&quot;,
+    &quot;observed_bits&quot;: &quot;0x0&quot;,
+    &quot;rounding_mode&quot;: 0
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a> <a href="syntax-program.html">syntax-program</a> <a href="syntax-ordinary_program.html">syntax-ordinary_program</a> <a href="syntax-declaration.html">syntax-declaration</a> <a href="syntax-entry.html">syntax-entry</a></nav><h2>Provenance</h2><ul><li>docs/public/v1.0/language/specification/NORMATIVE-RULE-REGISTRY.tsv — SHA-256 2d2d4324cf615c0970e3dca2f4197cde9e32b445e0337dd8179967dc0cff2d16</li><li>tests/rf204/G170/float_literal_test.py — SHA-256 83f63f66f2dd0bebafa9bb2ca682c93c38b1c231205db2c253ac5b51f361f2a1</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

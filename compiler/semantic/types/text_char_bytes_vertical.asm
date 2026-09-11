@@ -35,8 +35,100 @@ name_byte_length: db "byteLength"
 name_byte_length_len equ $-name_byte_length
 name_codepoint_count: db "codepointCount"
 name_codepoint_count_len equ $-name_codepoint_count
+name_grapheme_count: db "graphemeCount"
+name_grapheme_count_len equ $-name_grapheme_count
+name_normalize_nfc: db "normalizeNfc"
+name_normalize_nfc_len equ $-name_normalize_nfc
+name_normalize_nfd: db "normalizeNfd"
+name_normalize_nfd_len equ $-name_normalize_nfd
+name_case_fold: db "caseFold"
+name_case_fold_len equ $-name_case_fold
+name_slice_codepoints: db "sliceCodepoints"
+name_slice_codepoints_len equ $-name_slice_codepoints
+name_slice_graphemes: db "sliceGraphemes"
+name_slice_graphemes_len equ $-name_slice_graphemes
 name_codepoint: db "codepoint"
 name_codepoint_len equ $-name_codepoint
+name_is_empty_text: db "isEmpty"
+name_is_empty_text_len equ $-name_is_empty_text
+name_equals_text: db "equals"
+name_equals_text_len equ $-name_equals_text
+name_equals_ascii_ignore_case: db "equalsAsciiIgnoreCase"
+name_equals_ascii_ignore_case_len equ $-name_equals_ascii_ignore_case
+name_starts_with_text: db "startsWith"
+name_starts_with_text_len equ $-name_starts_with_text
+name_ends_with_text: db "endsWith"
+name_ends_with_text_len equ $-name_ends_with_text
+name_contains_text: db "contains"
+name_contains_text_len equ $-name_contains_text
+name_index_of: db "indexOf"
+name_index_of_len equ $-name_index_of
+name_last_index_of: db "lastIndexOf"
+name_last_index_of_len equ $-name_last_index_of
+name_is_ascii: db "isAscii"
+name_is_ascii_len equ $-name_is_ascii
+name_is_utf8: db "isUtf8"
+name_is_utf8_len equ $-name_is_utf8
+name_is_blank: db "isBlank"
+name_is_blank_len equ $-name_is_blank
+name_is_digits: db "isDigits"
+name_is_digits_len equ $-name_is_digits
+name_is_alpha_ascii: db "isAlphaAscii"
+name_is_alpha_ascii_len equ $-name_is_alpha_ascii
+name_is_alnum_ascii: db "isAlnumAscii"
+name_is_alnum_ascii_len equ $-name_is_alnum_ascii
+name_concat_text: db "concat"
+name_concat_text_len equ $-name_concat_text
+name_trim: db "trim"
+name_trim_len equ $-name_trim
+name_trim_start: db "trimStart"
+name_trim_start_len equ $-name_trim_start
+name_trim_end: db "trimEnd"
+name_trim_end_len equ $-name_trim_end
+name_lower_text: db "lower"
+name_lower_text_len equ $-name_lower_text
+name_upper_text: db "upper"
+name_upper_text_len equ $-name_upper_text
+name_byte_slice_text: db "byteSlice"
+name_byte_slice_text_len equ $-name_byte_slice_text
+name_take_bytes: db "takeBytes"
+name_take_bytes_len equ $-name_take_bytes
+name_drop_bytes: db "dropBytes"
+name_drop_bytes_len equ $-name_drop_bytes
+name_normalize_newlines: db "normalizeNewlines"
+name_normalize_newlines_len equ $-name_normalize_newlines
+name_normalize_whitespace: db "normalizeWhitespace"
+name_normalize_whitespace_len equ $-name_normalize_whitespace
+name_replace_once: db "replaceOnce"
+name_replace_once_len equ $-name_replace_once
+name_replace_all: db "replaceAll"
+name_replace_all_len equ $-name_replace_all
+name_split_text: db "split"
+name_split_text_len equ $-name_split_text
+name_join_text: db "join"
+name_join_text_len equ $-name_join_text
+name_pad_start: db "padStart"
+name_pad_start_len equ $-name_pad_start
+name_pad_end: db "padEnd"
+name_pad_end_len equ $-name_pad_end
+name_parse_int_text: db "parseInt"
+name_parse_int_text_len equ $-name_parse_int_text
+name_parse_float_text: db "parseFloat"
+name_parse_float_text_len equ $-name_parse_float_text
+name_parse_bool_text: db "parseBool"
+name_parse_bool_text_len equ $-name_parse_bool_text
+name_split_checked: db "splitChecked"
+name_split_checked_len equ $-name_split_checked
+name_replace_all_checked: db "replaceAllChecked"
+name_replace_all_checked_len equ $-name_replace_all_checked
+name_to_text: db "toText"
+name_to_text_len equ $-name_to_text
+name_is_nebo_identifier: db "isNeboIdentifier"
+name_is_nebo_identifier_len equ $-name_is_nebo_identifier
+name_is_ok: db "isOk"
+name_is_ok_len equ $-name_is_ok
+name_is_err: db "isErr"
+name_is_err_len equ $-name_is_err
 name_empty: db "empty"
 name_empty_len equ $-name_empty
 name_from_byte: db "fromByte"
@@ -280,6 +372,55 @@ g04v_validate_call:
  test eax,eax
  jnz .done
 .accepted_method_ready:
+ mov rax,[rsp+neboc_text_char_unicode_e_bytes_API_METHOD_ID_OFFSET]
+ cmp rax,NEBOC_API_METHOD_TEXT_EQUALS
+ jb .query_argument_ready
+ cmp rax,NEBOC_API_METHOD_TEXT_LAST_INDEX_OF
+ ja .query_argument_ready
+ mov rdi,r12
+ mov rsi,r13
+ call g04v_validate_text_argument
+ test eax,eax
+ jnz .done
+.query_argument_ready:
+ mov rax,[rsp+neboc_text_char_unicode_e_bytes_API_METHOD_ID_OFFSET]
+ cmp rax,NEBOC_API_METHOD_TEXT_CONCAT
+ jb .transform_argument_ready
+ cmp rax,NEBOC_API_METHOD_TEXT_PAD_END
+ ja .transform_argument_ready
+ mov rdi,r12
+ mov rsi,r13
+ mov rdx,rax
+ call g04v_validate_text_transform_arguments
+ test eax,eax
+ jnz .done
+.transform_argument_ready:
+ mov rax,[rsp+neboc_text_char_unicode_e_bytes_API_METHOD_ID_OFFSET]
+ cmp rax,NEBOC_API_METHOD_TEXT_SPLIT_CHECKED
+ je .validate_checked_arguments
+ cmp rax,NEBOC_API_METHOD_TEXT_REPLACE_ALL_CHECKED
+ jne .checked_argument_ready
+.validate_checked_arguments:
+ mov rdi,r12
+ mov rsi,r13
+ mov rdx,rax
+ call g04v_validate_text_transform_arguments
+ test eax,eax
+ jnz .done
+.checked_argument_ready:
+ mov rax,[rsp+neboc_text_char_unicode_e_bytes_API_METHOD_ID_OFFSET]
+ cmp rax,NEBOC_API_METHOD_TEXT_SLICE_CODEPOINTS
+ je .validate_unicode_slice_arguments
+ cmp rax,NEBOC_API_METHOD_TEXT_SLICE_GRAPHEMES
+ jne .unicode_slice_arguments_ready
+.validate_unicode_slice_arguments:
+ mov rdi,r12
+ mov rsi,r13
+ mov rdx,rax
+ call g04v_validate_text_transform_arguments
+ test eax,eax
+ jnz .done
+.unicode_slice_arguments_ready:
  mov rax,[rsp+neboc_text_char_unicode_e_bytes_API_METHOD_ID_OFFSET]
  cmp rax,NEBOC_API_METHOD_BYTES_AT
  je .validate_access
@@ -604,11 +745,333 @@ g04v_expr_type:
  jnz .int
  mov rdi,r12
  mov rsi,r13
+ lea rdx,[rel name_grapheme_count]
+ mov ecx,name_grapheme_count_len
+ call g04v_token_match
+ test eax,eax
+ jnz .int
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_normalize_nfc]
+ mov ecx,name_normalize_nfc_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_normalize_nfd]
+ mov ecx,name_normalize_nfd_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_case_fold]
+ mov ecx,name_case_fold_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_slice_codepoints]
+ mov ecx,name_slice_codepoints_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_slice_graphemes]
+ mov ecx,name_slice_graphemes_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
  lea rdx,[rel name_codepoint]
  mov ecx,name_codepoint_len
  call g04v_token_match
  test eax,eax
  jnz .int
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_is_empty_text]
+ mov ecx,name_is_empty_text_len
+ call g04v_token_match
+ test eax,eax
+ jnz .bool
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_equals_text]
+ mov ecx,name_equals_text_len
+ call g04v_token_match
+ test eax,eax
+ jnz .bool
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_equals_ascii_ignore_case]
+ mov ecx,name_equals_ascii_ignore_case_len
+ call g04v_token_match
+ test eax,eax
+ jnz .bool
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_starts_with_text]
+ mov ecx,name_starts_with_text_len
+ call g04v_token_match
+ test eax,eax
+ jnz .bool
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_ends_with_text]
+ mov ecx,name_ends_with_text_len
+ call g04v_token_match
+ test eax,eax
+ jnz .bool
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_contains_text]
+ mov ecx,name_contains_text_len
+ call g04v_token_match
+ test eax,eax
+ jnz .bool
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_index_of]
+ mov ecx,name_index_of_len
+ call g04v_token_match
+ test eax,eax
+ jnz .option_int
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_last_index_of]
+ mov ecx,name_last_index_of_len
+ call g04v_token_match
+ test eax,eax
+ jnz .option_int
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_is_ascii]
+ mov ecx,name_is_ascii_len
+ call g04v_token_match
+ test eax,eax
+ jnz .bool
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_is_utf8]
+ mov ecx,name_is_utf8_len
+ call g04v_token_match
+ test eax,eax
+ jnz .bool
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_is_blank]
+ mov ecx,name_is_blank_len
+ call g04v_token_match
+ test eax,eax
+ jnz .bool
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_is_digits]
+ mov ecx,name_is_digits_len
+ call g04v_token_match
+ test eax,eax
+ jnz .bool
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_is_alpha_ascii]
+ mov ecx,name_is_alpha_ascii_len
+ call g04v_token_match
+ test eax,eax
+ jnz .bool
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_is_alnum_ascii]
+ mov ecx,name_is_alnum_ascii_len
+ call g04v_token_match
+ test eax,eax
+ jnz .bool
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_concat_text]
+ mov ecx,name_concat_text_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_trim]
+ mov ecx,name_trim_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_trim_start]
+ mov ecx,name_trim_start_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_trim_end]
+ mov ecx,name_trim_end_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_lower_text]
+ mov ecx,name_lower_text_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_upper_text]
+ mov ecx,name_upper_text_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_byte_slice_text]
+ mov ecx,name_byte_slice_text_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_take_bytes]
+ mov ecx,name_take_bytes_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_drop_bytes]
+ mov ecx,name_drop_bytes_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_normalize_newlines]
+ mov ecx,name_normalize_newlines_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_normalize_whitespace]
+ mov ecx,name_normalize_whitespace_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_replace_once]
+ mov ecx,name_replace_once_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_replace_all]
+ mov ecx,name_replace_all_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_split_text]
+ mov ecx,name_split_text_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text_split
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_join_text]
+ mov ecx,name_join_text_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_pad_start]
+ mov ecx,name_pad_start_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_pad_end]
+ mov ecx,name_pad_end_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_parse_int_text]
+ mov ecx,name_parse_int_text_len
+ call g04v_token_match
+ test eax,eax
+ jnz .result_int_text_error
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_parse_float_text]
+ mov ecx,name_parse_float_text_len
+ call g04v_token_match
+ test eax,eax
+ jnz .result_float_text_error
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_parse_bool_text]
+ mov ecx,name_parse_bool_text_len
+ call g04v_token_match
+ test eax,eax
+ jnz .result_bool_text_error
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_split_checked]
+ mov ecx,name_split_checked_len
+ call g04v_token_match
+ test eax,eax
+ jnz .result_text_split_text_error
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_replace_all_checked]
+ mov ecx,name_replace_all_checked_len
+ call g04v_token_match
+ test eax,eax
+ jnz .result_text_text_error
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_to_text]
+ mov ecx,name_to_text_len
+ call g04v_token_match
+ test eax,eax
+ jnz .text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_is_nebo_identifier]
+ mov ecx,name_is_nebo_identifier_len
+ call g04v_token_match
+ test eax,eax
+ jnz .bool
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_is_ok]
+ mov ecx,name_is_ok_len
+ call g04v_token_match
+ test eax,eax
+ jnz .bool
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel name_is_err]
+ mov ecx,name_is_err_len
+ call g04v_token_match
+ test eax,eax
+ jnz .bool
  mov rdi,r12
  mov rsi,r13
  lea rdx,[rel name_empty]
@@ -754,7 +1217,19 @@ g04v_expr_type:
  jmp .done
 .bytes: mov eax,NEBOC_TYPE_ID_BYTES
  jmp .done
+.text_split: mov eax,NEBOC_TYPE_ID_TEXT_SPLIT
+ jmp .done
 .option_int: mov eax,NEBOC_TYPE_ID_OPTION_INT
+ jmp .done
+.result_int_text_error: mov eax,NEBOC_TYPE_ID_RESULT_INT_TEXT_ERROR
+ jmp .done
+.result_float_text_error: mov eax,NEBOC_TYPE_ID_RESULT_FLOAT_TEXT_ERROR
+ jmp .done
+.result_bool_text_error: mov eax,NEBOC_TYPE_ID_RESULT_BOOL_TEXT_ERROR
+ jmp .done
+.result_text_text_error: mov eax,NEBOC_TYPE_ID_RESULT_TEXT_TEXT_ERROR
+ jmp .done
+.result_text_split_text_error: mov eax,NEBOC_TYPE_ID_RESULT_TEXT_SPLIT_TEXT_ERROR
  jmp .done
 .int: mov eax,NEBOC_TYPE_ID_INT
  jmp .done
@@ -968,6 +1443,307 @@ g04v_set_error:
  ret
 .internal:
  mov eax,NEBOC_STATUS_INTERNAL_ERROR
+ pop rbx
+ ret
+
+; request*, call node id. Query arguments are real Text expressions, never
+; arbitrary scalar values accepted merely because the arity happened to fit.
+g04v_validate_text_argument:
+ push rbx
+ push r12
+ push r13
+ sub rsp,8
+ mov r12,rdi
+ mov r13,rsi
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_VERTICAL_BUILDER_OFFSET]
+ mov rsi,r13
+ call g04v_node_ptr
+ test rax,rax
+ jz .query_argument_internal
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_VERTICAL_BUILDER_OFFSET]
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04v_node_ptr
+ test rax,rax
+ jz .query_argument_internal
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rbx,rbx
+ jz .query_argument_internal
+ mov rdi,r12
+ mov rsi,rbx
+ call g04v_expr_type
+ cmp eax,NEBOC_TYPE_ID_TEXT
+ je .query_argument_ok
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_VERTICAL_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04v_node_ptr
+ test rax,rax
+ jz .query_argument_internal
+ mov rdx,[rax+NEBOC_AST_NODE_PAYLOAD1_OFFSET]
+ mov rdi,r12
+ mov esi,NEBOC_API_DIAG_ARGUMENT_MUST_BE_TEXT
+ call g04v_set_error
+ jmp .query_argument_done
+.query_argument_ok:
+ xor eax,eax
+ jmp .query_argument_done
+.query_argument_internal:
+ mov eax,NEBOC_STATUS_INTERNAL_ERROR
+.query_argument_done:
+ add rsp,8
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; request*, call node id, G055/G057 method id. The source-facing bounded profile
+; accepts literal Text arguments and literal non-negative Int counts only. This
+; keeps allocation sizing deterministic and rejects malformed calls before
+; code generation can allocate a caller-owned workspace.
+g04v_validate_text_transform_arguments:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,32
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_VERTICAL_BUILDER_OFFSET]
+ mov rsi,r13
+ call g04v_node_ptr
+ test rax,rax
+ jz .internal
+ mov r15,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_VERTICAL_BUILDER_OFFSET]
+ mov rsi,r15
+ call g04v_node_ptr
+ test rax,rax
+ jz .internal
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ ; Zero-argument transforms were already checked by the API contract.
+ cmp r14,NEBOC_API_METHOD_TEXT_TRIM
+ je .ok
+ cmp r14,NEBOC_API_METHOD_TEXT_TRIM_START
+ je .ok
+ cmp r14,NEBOC_API_METHOD_TEXT_TRIM_END
+ je .ok
+ cmp r14,NEBOC_API_METHOD_TEXT_LOWER
+ je .ok
+ cmp r14,NEBOC_API_METHOD_TEXT_UPPER
+ je .ok
+ cmp r14,NEBOC_API_METHOD_TEXT_NORMALIZE_NEWLINES
+ je .ok
+ cmp r14,NEBOC_API_METHOD_TEXT_NORMALIZE_WHITESPACE
+ je .ok
+ test rbx,rbx
+ jz .internal
+ ; byteSlice/take/drop/pad start with a literal Int. Other transforms start
+ ; with Text (concat, replace, split, join).
+ cmp r14,NEBOC_API_METHOD_TEXT_BYTE_SLICE
+ je .first_int
+ cmp r14,NEBOC_API_METHOD_TEXT_TAKE_BYTES
+ je .first_int
+ cmp r14,NEBOC_API_METHOD_TEXT_DROP_BYTES
+ je .first_int
+ cmp r14,NEBOC_API_METHOD_TEXT_PAD_START
+ je .first_int
+ cmp r14,NEBOC_API_METHOD_TEXT_PAD_END
+ je .first_int
+ cmp r14,NEBOC_API_METHOD_TEXT_SLICE_CODEPOINTS
+ je .first_int
+ cmp r14,NEBOC_API_METHOD_TEXT_SLICE_GRAPHEMES
+ je .first_int
+ jmp .first_text
+.first_int:
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_VERTICAL_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04v_node_ptr
+ test rax,rax
+ jz .internal
+ mov [rsp],rax
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_INTEGER_LITERAL
+ jne .int_error_first
+ mov rax,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov [rsp+8],rax
+ jmp .second_select
+.first_text:
+ mov rdi,r12
+ mov rsi,rbx
+ call g04v_expr_type
+ cmp eax,NEBOC_TYPE_ID_TEXT
+ jne .text_error_first
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_VERTICAL_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04v_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_TEXT_LITERAL
+ je .first_text_literal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .text_error_first
+ test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
+ jz .text_error_first
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_VERTICAL_BUILDER_OFFSET]
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04v_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_TEXT_LITERAL
+ jne .text_error_first
+.first_text_literal:
+ mov [rsp+24],rax
+ cmp r14,NEBOC_API_METHOD_TEXT_SPLIT
+ je .first_text_nonempty
+ cmp r14,NEBOC_API_METHOD_TEXT_REPLACE_ONCE
+ je .first_text_nonempty
+ cmp r14,NEBOC_API_METHOD_TEXT_REPLACE_ALL
+ je .first_text_nonempty
+ jmp .second_select
+.first_text_nonempty:
+ mov rdi,r12
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD1_OFFSET]
+ call g04v_token_ptr
+ test rax,rax
+ jz .internal
+ mov rdx,[rax+NEBOC_TOKEN_END_OFFSET]
+ sub rdx,[rax+NEBOC_TOKEN_START_OFFSET]
+ cmp rdx,2
+ je .empty_error_first
+.second_select:
+ cmp r14,NEBOC_API_METHOD_TEXT_BYTE_SLICE
+ je .second_int
+ cmp r14,NEBOC_API_METHOD_TEXT_SLICE_CODEPOINTS
+ je .second_int
+ cmp r14,NEBOC_API_METHOD_TEXT_SLICE_GRAPHEMES
+ je .second_int
+ cmp r14,NEBOC_API_METHOD_TEXT_REPLACE_ONCE
+ je .second_text
+ cmp r14,NEBOC_API_METHOD_TEXT_REPLACE_ALL
+ je .second_text
+ cmp r14,NEBOC_API_METHOD_TEXT_REPLACE_ALL_CHECKED
+ je .second_text
+ cmp r14,NEBOC_API_METHOD_TEXT_PAD_START
+ je .second_text
+ cmp r14,NEBOC_API_METHOD_TEXT_PAD_END
+ je .second_text
+ jmp .ok
+.second_int:
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_VERTICAL_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04v_node_ptr
+ test rax,rax
+ jz .internal
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_VERTICAL_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04v_node_ptr
+ test rax,rax
+ jz .internal
+ mov [rsp+16],rax
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_INTEGER_LITERAL
+ jne .int_error_second
+ cmp r14,NEBOC_API_METHOD_TEXT_BYTE_SLICE
+ jne .ok
+ mov rax,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ cmp [rsp+8],rax
+ ja .bounds_error_second
+ jmp .ok
+.second_text:
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_VERTICAL_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04v_node_ptr
+ test rax,rax
+ jz .internal
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ call g04v_expr_type
+ cmp eax,NEBOC_TYPE_ID_TEXT
+ jne .text_error_second
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_VERTICAL_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04v_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_TEXT_LITERAL
+ je .second_text_literal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .text_error_second
+ test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
+ jz .text_error_second
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_VERTICAL_BUILDER_OFFSET]
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04v_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_TEXT_LITERAL
+ jne .text_error_second
+.second_text_literal:
+ cmp r14,NEBOC_API_METHOD_TEXT_PAD_START
+ je .second_text_nonempty
+ cmp r14,NEBOC_API_METHOD_TEXT_PAD_END
+ jne .ok
+.second_text_nonempty:
+ mov rdi,r12
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD1_OFFSET]
+ call g04v_token_ptr
+ test rax,rax
+ jz .internal
+ mov rdx,[rax+NEBOC_TOKEN_END_OFFSET]
+ sub rdx,[rax+NEBOC_TOKEN_START_OFFSET]
+ cmp rdx,2
+ je .empty_error_second
+.ok:
+ xor eax,eax
+ jmp .done
+.text_error_first:
+ mov esi,NEBOC_API_DIAG_TEXT_TRANSFORM_TEXT_ARGUMENT
+ mov r15,rbx
+ jmp .argument_error
+.int_error_first:
+ mov esi,NEBOC_API_DIAG_TEXT_TRANSFORM_INT_ARGUMENT
+ mov r15,rbx
+ jmp .argument_error
+.text_error_second:
+ mov esi,NEBOC_API_DIAG_TEXT_TRANSFORM_TEXT_ARGUMENT
+ mov r15,rbx
+ jmp .argument_error
+.int_error_second:
+ mov esi,NEBOC_API_DIAG_TEXT_TRANSFORM_INT_ARGUMENT
+ mov r15,rbx
+ jmp .argument_error
+.empty_error_first:
+ mov esi,NEBOC_API_DIAG_TEXT_TRANSFORM_EMPTY_SEPARATOR
+ mov r15,rbx
+ jmp .argument_error
+.empty_error_second:
+ mov esi,NEBOC_API_DIAG_TEXT_TRANSFORM_EMPTY_SEPARATOR
+ mov r15,rbx
+ jmp .argument_error
+.bounds_error_second:
+ mov esi,NEBOC_API_DIAG_TEXT_TRANSFORM_BOUNDS
+ mov r15,rbx
+.argument_error:
+ mov [rsp+24],rsi
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_VERTICAL_BUILDER_OFFSET]
+ mov rsi,r15
+ call g04v_node_ptr
+ test rax,rax
+ jz .internal
+ mov rdx,[rax+NEBOC_AST_NODE_PAYLOAD1_OFFSET]
+ mov rsi,[rsp+24]
+ mov rdi,r12
+ call g04v_set_error
+ jmp .done
+.internal:
+ mov eax,NEBOC_STATUS_INTERNAL_ERROR
+.done:
+ add rsp,32
+ pop r15
+ pop r14
+ pop r13
+ pop r12
  pop rbx
  ret
 

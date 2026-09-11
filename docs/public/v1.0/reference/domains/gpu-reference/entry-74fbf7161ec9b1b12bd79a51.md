@@ -1,0 +1,78 @@
+# gpu-reference — GpuError.operation()
+
+CPU reference only; zero authenticated GPU devices; no accelerator backend; original observation: GpuError.operation(); SDK bounds: {"MAX_BUFFER_BYTES":262144,"MAX_CONTEXT_BYTES":1048576,"MAX_LAUNCH_DIMENSION":65535,"MAX_LAUNCH_WORK_ITEMS":1048576,"MAX_PENDING_COMMANDS":256,"MAX_PINNED_BYTES":262144,"MAX_STREAMS":32,"MAX_TRACE_EVENTS":512}
+
+```text
+Identity: owner:G022:G022-S06-02 (DOMAIN_CONTRACT_ID)
+Edition: 1
+Target: PYTHON_CPU_REFERENCE
+Availability: EXPERIMENTAL
+```
+
+## Syntax or signature
+
+```text
+GpuError.operation(self) -> str
+```
+
+## Reference-model API
+
+The signature describes the Python reference model. Parameters and return annotations belong to that model; they are not an admitted Nebo spelling.
+
+## Complete executable Python example
+
+Run python3 -B tests/rf204/G022/sdk_oracle.py from the repository root with only synthetic inputs. Set G020_TMP and G021_TMP to an empty private temporary directory for the two checkpoint suites. This program contains the setup and independent assertions for the model. The line excerpt below is not a standalone program. No native Nebo binding is inferred.
+
+## Availability and maturity
+
+EXPERIMENTAL; evidence SDK_REFERENCE_MODEL. Documentation does not promote this identity to stable. Public and owner namespaces are separate contracts.
+
+## Limits and lifecycle
+
+CPU reference only; zero authenticated GPU devices; no accelerator backend; original observation: GpuError.operation(); SDK bounds: {"MAX_BUFFER_BYTES":262144,"MAX_CONTEXT_BYTES":1048576,"MAX_LAUNCH_DIMENSION":65535,"MAX_LAUNCH_WORK_ITEMS":1048576,"MAX_PENDING_COMMANDS":256,"MAX_PINNED_BYTES":262144,"MAX_STREAMS":32,"MAX_TRACE_EVENTS":512}
+
+## Privacy, dependencies and authority
+
+Capability: SYNTHETIC_LOCAL_DATA. Gate: NONE. Import grants capability: NO. Use synthetic local data. Hardware claim: NO. Security assurance: NO. RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE. SDK buffers and handles follow the owner lifecycle and reject invalid/released inputs where specified. No downloaded models, secrets, external network or device access is needed for the documented local proofs.
+
+## Additional observations and limits
+
+```text
+[
+  {
+    "classification": {
+      "capability": "SYNTHETIC_LOCAL_DATA",
+      "core": "NO",
+      "evidence_level": "SDK_REFERENCE_MODEL",
+      "external_gate": "NONE",
+      "hardware_claim": "NO",
+      "import_grants_capability": "NO",
+      "legal": "RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE",
+      "security_assurance": "NO",
+      "target": "PYTHON_CPU_REFERENCE",
+      "tier": "EXPERIMENTAL"
+    }
+  },
+  {
+    "excerpt": "33: \n34: def reject(category: str, label: str, code: str, operation: str, callable_) -> None:\n35:     try:\n36:         callable_()\n37:     except GpuError as error:",
+    "executed_assertions": 116,
+    "execution": "SDK_REFERENCE_MODEL_ONLY",
+    "language": "python",
+    "line": 34,
+    "source_path": "tests/rf204/G022/sdk_oracle.py",
+    "source_sha256": "e0401f145d76fdd7c2508733ea0aa27d5c065dd056208a30e5543a6d5f771d89"
+  }
+]
+```
+
+## Related entries
+
+[Index](index.md)
+
+## Provenance
+
+- compiler/sdk/gpu.py — SHA-256 69ddff3178824ab48f04f0233d9c06c6eab814f5b6647a1bd29eb0a573eae5b3
+
+- runtime/gpu/gpu_diagnostics.asm — SHA-256 a464028b9cbcdc15399fee2370abfbb9f99948f2147fafd76be908f43db9949e
+
+- tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0

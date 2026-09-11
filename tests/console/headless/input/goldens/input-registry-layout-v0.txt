@@ -1,0 +1,13 @@
+MF046 INPUT REGISTRY ABI v0
+InputHandle: u64 slot[0:31] generation[32:63]
+PendingHandle: u64 slot[0:31] generation[32:63]
+InputRecord: 128 bytes
+PendingRecord: 112 bytes
+InputRegistry: 96 bytes
+PendingRegistry: 96 bytes
+ScanRouteDescriptor: 112 bytes
+InputRuntimeStorageDescriptor: 48 bytes
+InputRuntime: 96 bytes
+Maximum active inputs per Console: 4096
+Embedded default active inputs per Console: 64
+Input text ceiling: 65536 bytes

@@ -1,0 +1,5 @@
+start() {
+    1.value;
+    2.count;
+    value.shiftLeft(count).result;
+}

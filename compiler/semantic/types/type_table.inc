@@ -28,6 +28,20 @@
 %define NEBOC_TYPE_SLICE_MAX_COUNT 13
 %define NEBOC_TYPE_ID_ORDERING 14
 %define NEBOC_TYPE_P02_MAX_COUNT 14
+; G129 exact fixed-point quantity identities.  Percent/PerMille/BasisPoints
+; remain distinct semantic types even though their runtime values use one
+; canonical ratio scale.  Celsius and Fahrenheit are spellings of the single
+; affine Temperature type.
+%define NEBOC_TYPE_ID_PERCENT 15
+%define NEBOC_TYPE_ID_PER_MILLE 16
+%define NEBOC_TYPE_ID_BASIS_POINTS 17
+%define NEBOC_TYPE_ID_ANGLE 18
+%define NEBOC_TYPE_ID_TEMPERATURE 19
+%define NEBOC_TYPE_QUANTITY_MAX_COUNT 19
+; G131's bounded Uncertain<Int>/Measurement<Int> carrier is one qword but
+; remains a distinct semantic identity throughout binding and codegen.
+%define NEBOC_TYPE_ID_UNCERTAIN_INT 20
+%define NEBOC_TYPE_MEASUREMENT_MAX_COUNT 20
 
 %define NEBOC_TYPE_KIND_VOID 1
 %define NEBOC_TYPE_KIND_BOOL 2
@@ -43,7 +57,13 @@
 %define NEBOC_TYPE_KIND_BUFFER 12
 %define NEBOC_TYPE_KIND_SLICE 13
 %define NEBOC_TYPE_KIND_ORDERING 14
-%define NEBOC_TYPE_KIND_COUNT 14
+%define NEBOC_TYPE_KIND_PERCENT 15
+%define NEBOC_TYPE_KIND_PER_MILLE 16
+%define NEBOC_TYPE_KIND_BASIS_POINTS 17
+%define NEBOC_TYPE_KIND_ANGLE 18
+%define NEBOC_TYPE_KIND_TEMPERATURE 19
+%define NEBOC_TYPE_KIND_UNCERTAIN_INT 20
+%define NEBOC_TYPE_KIND_COUNT 20
 
 %define NEBOC_TYPE_FLAG_NONE 0
 %define NEBOC_TYPE_FLAG_FUNDAMENTAL 1

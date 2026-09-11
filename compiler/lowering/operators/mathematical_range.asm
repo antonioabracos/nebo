@@ -4,21 +4,7 @@ default rel
 
 %include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"
 %include "compiler/support/status/status_codes.inc"
-
-%define NEBOC_RANGE_INCLUSIVE 1
-%define NEBOC_RANGE_EXCLUSIVE_END 2
-%define NEBOC_RANGE_EXCLUSIVE_START 3
-%define NEBOC_RANGE_EXCLUSIVE 4
-%define NEBOC_RANGE_MAX_EAGER_CARDINALITY 1048576
-%define NEBOC_RANGE_START_OFFSET 0
-%define NEBOC_RANGE_END_OFFSET 8
-%define NEBOC_RANGE_STEP_OFFSET 16
-%define NEBOC_RANGE_CARDINALITY_OFFSET 24
-%define NEBOC_RANGE_INCLUDE_START_OFFSET 32
-%define NEBOC_RANGE_INCLUDE_END_OFFSET 40
-%define NEBOC_RANGE_START_EVALUATIONS_OFFSET 48
-%define NEBOC_RANGE_END_EVALUATIONS_OFFSET 56
-%define NEBOC_RANGE_PLAN_SIZE 64
+%include "compiler/lowering/operators/mathematical_range.inc"
 
 section .text
 ; mathematical_range_plan(kind, start, end, out_plan*)

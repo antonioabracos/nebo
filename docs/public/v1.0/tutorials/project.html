@@ -1,0 +1,17 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Three units with a re-exported value</title><link rel="stylesheet" href="../assets/style.css"></head><body><a href="#main">Skip to content</a><nav aria-label="Home"><a href="../index.html">Nebo documentation home</a></nav><main id="main"><h1>Three units with a re-exported value</h1><p>This application is derived from the RF172 typed multiunit scenario. A core module exports token=29, a facade re-exports it, and the consumer calculates 29*3+7=94. Three separate source units are required.</p><p>Change the core value to 41 and the result must become 130. Emit a current .ni interface for the core and remove its source: the consumer must still produce the same result. The package project demonstrates two exact dependency pins, offline freeze/verify/build and deterministic relocation.</p><h2>Complete Nebo source</h2><pre><code>// Qualified module values flow into the typed application.
+module app;import &quot;project.facade&quot; { token; }.values;start(){(values.token*3+7).return;}
+</code></pre><h2>Inputs and independent expectations</h2><pre>{
+  &quot;expected_exit&quot;: 94,
+  &quot;units&quot;: {
+    &quot;core.no&quot;: &quot;module core;export public token = 29;\n&quot;,
+    &quot;facade.no&quot;: &quot;module facade;export import \&quot;project.core\&quot; { token; }.source;\n&quot;
+  }
+}</pre><h2>Local commands</h2><pre>neboc module-check main.no --unit core.no --unit facade.no
+neboc link main.no --unit core.no --unit facade.no -o app
+./app
+# Expected process status: 94. Provider sources are in the context above.
+neboc emit-interface core.no --unit interface-query.no --unit facade.no -o core.ni
+neboc link main.no --unit core.ni --unit facade.no -o app-ni
+./app-ni
+# Expected status: 94. interface-query.no is distributed with this project.
+</pre></main></body></html>

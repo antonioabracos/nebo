@@ -1,0 +1,8 @@
+(Int.self)inner(Slice<Int>.values) { values.length().return; }
+(Int.self)outer(Slice<Int>.values) { self.inner(values).return; }
+(Int.self)work() {
+    Array<Int,2> [11,22].source;
+    source.asSlice().view;
+    self.outer(view).return;
+}
+start() { 0.work().return; }

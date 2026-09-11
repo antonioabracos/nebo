@@ -1,0 +1,4 @@
+start() {
+    Tuple(7, true, 'x').triple;
+    triple.0.return;
+}

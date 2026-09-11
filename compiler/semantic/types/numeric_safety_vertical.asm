@@ -272,14 +272,14 @@ g03v_validate_call:
  mov ecx,name_wrapping_add_len
  call g03v_token_match
  test eax,eax
- jnz .deferred
+ jnz .g002_binary
  mov rdi,r12
  mov rsi,rbx
  lea rdx,[rel name_saturating_add]
  mov ecx,name_saturating_add_len
  call g03v_token_match
  test eax,eax
- jnz .deferred
+ jnz .g002_binary
  mov rdi,r12
  mov rsi,rbx
  lea rdx,[rel name_parse_int]
@@ -313,6 +313,31 @@ g03v_validate_call:
  jnz .unknown
  xor eax,eax
  jmp .done
+
+; G002 promotes the two alternate overflow policies from the historical
+; deferred list.  Keep this domain pass as an independent type/arity witness;
+; the binding vertical owns composition and native lowering.
+.g002_binary:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ jne .g002_args
+ cmp qword [rsp],NEBOC_VERTICAL_TYPE_INT
+ jne .need_int
+ mov rdi,r14
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g03v_node_ptr
+ test rax,rax
+ jz .internal
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rsi,rsi
+ jz .g002_args
+ mov rdi,r12
+ call g03v_expr_type
+ cmp rax,NEBOC_VERTICAL_TYPE_INT
+ jne .need_int
+ jmp .success
+.g002_args:
+ mov edx,NEBOC_VERTICAL_ERROR_ARGUMENTS_NOT_ALLOWED
+ jmp .error_method
 
 .to_float:
  cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0

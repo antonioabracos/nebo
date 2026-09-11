@@ -1,0 +1,6 @@
+start() {
+    loop {
+        break 173;
+    }.value;
+    value.return;
+}

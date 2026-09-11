@@ -1,4 +1,4 @@
-; MACHINE-LEARNING-NEURON-NETWORK-E-MODEL-F07 bounded backup verification and compaction.
+; RF46-G32-F07 bounded backup verification and compaction.
 bits 64
 default rel
 %include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"

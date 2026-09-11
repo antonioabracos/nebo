@@ -1,0 +1,4 @@
+start() {
+    Bool(100).invalid;
+    0;
+}

@@ -1,0 +1,5 @@
+start() {
+  7.value.mutable;
+  value = value;
+  value;
+}

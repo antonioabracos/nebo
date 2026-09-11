@@ -1,0 +1,7 @@
+// Parallel and training timelines preserve worker and lifecycle validation.
+start() {
+    RenderPlan;
+    3107;
+    output.stdout().stderr().target("observability-service").plain().visual().headlessEvent();
+    lifecycle.event("log-progress-timeline").payload("timeline-parallel-training").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

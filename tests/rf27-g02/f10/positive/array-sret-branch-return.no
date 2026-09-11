@@ -1,0 +1,14 @@
+(Int.self)make(Bool.choice) {
+    if (choice) {
+        Array<Int,2> [4,9].left;
+        left.return;
+    } else {
+        Array<Int,2> [7,11].right;
+        right.return;
+    }
+}
+
+start() {
+    0.make(true).result;
+    result.at(0).return;
+}

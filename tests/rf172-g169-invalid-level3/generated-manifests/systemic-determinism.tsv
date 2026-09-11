@@ -1,0 +1,6 @@
+case_id	domain	run_a	run_b	comparison	state
+RF172-G169-F11-SOURCE	all 12 canonical G169 source cases	full tri-mode corpus	full tri-mode corpus	exact structured outcome SHA-256	MATERIALIZED
+RF172-G169-F11-INTERFACE	compiled interfaces	RF166-G165	RF166-G165	exact exit/output	MATERIALIZED
+RF172-G169-F11-INCREMENTAL	syntax incremental	RF52-G49-F03	RF52-G49-F03	exact exit/output	MATERIALIZED
+RF172-G169-F11-DAEMON	local daemon	RF52-G49-F07	RF52-G49-F07	exact exit/output	MATERIALIZED
+RF172-G169-F11-RECOVERY	diagnostic recovery	RF52-G47-F05	RF52-G47-F05	exact exit/output	MATERIALIZED

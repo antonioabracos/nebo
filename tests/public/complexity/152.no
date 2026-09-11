@@ -1,0 +1,7 @@
+// Headless and live targets preserve logical results without ambient probing.
+start() {
+    RenderPlan;
+    3506;
+    output.stdout().stderr().target("console-abi-service").plain().visual().headlessEvent();
+    lifecycle.event("renderer-plugin").payload("target-neutral-window-facade-parity").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

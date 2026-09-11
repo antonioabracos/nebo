@@ -1,0 +1,4 @@
+enum State { Only }
+start() {
+    State.Only.discriminant().return;
+}

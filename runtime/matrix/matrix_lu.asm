@@ -23,6 +23,7 @@ nebo_matrix_lu_f64:
  push r15
  push rbx
  push rbp
+ sub rsp,8                  ; System V alignment for the validation call.
  mov r12,rdi
  mov r13,rsi
  mov r14,rdx
@@ -34,7 +35,12 @@ nebo_matrix_lu_f64:
  ucomisd xmm7,[rel lu_zero]
  jp .lu_domain
  jb .lu_domain
- call nebo_matrix_validate
+ movq rax,xmm7
+ shr rax,52
+ and eax,0x7ff
+ cmp eax,0x7ff
+ je .lu_domain
+ call nebo_matrix_validate_finite_f64
  test eax,eax
  jnz .lu_ret
  cmp qword [r12+NEBO_MATRIX_DTYPE],NEBO_MATRIX_DTYPE_F64
@@ -90,6 +96,10 @@ nebo_matrix_lu_f64:
  jp .lu_domain
  movq rax,xmm0
  and rax,[rel lu_abs_mask]
+ mov rdx,rax
+ shr rdx,52
+ cmp edx,0x7ff
+ je .lu_domain
  movq xmm0,rax
  ucomisd xmm0,xmm4
  jbe .lu_pivot_next
@@ -137,6 +147,11 @@ nebo_matrix_lu_f64:
  imul rcx,r15
  add rcx,rbx
  divsd xmm0,[r13+rcx*8]
+ movq rdx,xmm0
+ shr rdx,52
+ and edx,0x7ff
+ cmp edx,0x7ff
+ je .lu_domain
  movsd [r13+rax*8],xmm0
  lea r9,[rbx+1]
 .lu_j:
@@ -152,6 +167,11 @@ nebo_matrix_lu_f64:
  mulsd xmm1,xmm0
  movsd xmm2,[r13+rax*8]
  subsd xmm2,xmm1
+ movq rdx,xmm2
+ shr rdx,52
+ and edx,0x7ff
+ cmp edx,0x7ff
+ je .lu_domain
  movsd [r13+rax*8],xmm2
  inc r9
  jmp .lu_j
@@ -163,6 +183,7 @@ nebo_matrix_lu_f64:
  movsxd rdx,ebp
  xor eax,eax
 .lu_ret:
+ add rsp,8
  pop rbp
  pop rbx
  pop r15
@@ -232,6 +253,20 @@ nebo_matrix_solve_f64:
  test eax,eax
  jnz .solve_ret
  mov r11,[r12+NEBO_MATRIX_ROWS]
+ ; The algebra contract requires a finite RHS as well as a finite Matrix.
+ ; Check every lane before publishing any forward/back substitution result.
+ xor ecx,ecx
+.solve_rhs_finite:
+ cmp rcx,r11
+ jae .solve_rhs_ready
+ mov rax,[r13+rcx*8]
+ shr rax,52
+ and eax,0x7ff
+ cmp eax,0x7ff
+ je .solve_domain
+ inc rcx
+ jmp .solve_rhs_finite
+.solve_rhs_ready:
  xor ebx,ebx
 .forward_i:
  cmp rbx,r11
@@ -293,6 +328,9 @@ nebo_matrix_solve_f64:
 .solve_alias: mov eax,NEBO_NUMERIC_ERROR_ALIAS
  jmp .solve_ret
 
+.solve_domain: mov eax,NEBO_NUMERIC_ERROR_DOMAIN
+ jmp .solve_ret
+
 ; A rdi, output Matrix rsi, workspace rdx. Layout: LU n*n, piv n,
 ; b n, x n. threshold xmm0.
 nebo_matrix_inverse_f64:
@@ -310,7 +348,7 @@ nebo_matrix_inverse_f64:
  test r14,r14
  jz .inv_arg
  mov rdi,r12
- call nebo_matrix_validate
+ call nebo_matrix_validate_finite_f64
  test eax,eax
  jnz .inv_ret
  mov rdi,r13
@@ -318,6 +356,16 @@ nebo_matrix_inverse_f64:
  test eax,eax
  jnz .inv_ret
  mov r15,[r12+NEBO_MATRIX_ROWS]
+ test r15,r15
+ jz .inv_shape
+ cmp r15,32
+ ja .inv_shape
+ cmp r15,[r12+NEBO_MATRIX_COLS]
+ jne .inv_shape
+ cmp qword [r12+NEBO_MATRIX_DTYPE],NEBO_MATRIX_DTYPE_F64
+ jne .inv_shape
+ cmp qword [r13+NEBO_MATRIX_DTYPE],NEBO_MATRIX_DTYPE_F64
+ jne .inv_shape
  cmp r15,[r13+NEBO_MATRIX_ROWS]
  jne .inv_shape
  cmp r15,[r13+NEBO_MATRIX_COLS]

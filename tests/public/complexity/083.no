@@ -1,0 +1,6 @@
+// Encodes a table view as a bounded deterministic protocol event.
+start() {
+    RenderPlan;
+    1303;
+    protocol.event("console.table").payload("table-view").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

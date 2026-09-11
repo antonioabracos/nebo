@@ -1,0 +1,3 @@
+overload (Int.self)pick(Scalar.value) where Scalar symbol pick_scalar { 10.return; }
+overload (Int.self)pick(Integral.value) where Integral symbol pick_integral { 20.return; }
+start() { 1.pick(7).return; }

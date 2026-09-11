@@ -1,0 +1,2 @@
+(Bool.self)pick(Int.index) { Array<Char,2> ['A','B'].values; (values.at(index) == 'B').return; }
+start() { false.pick(1).return; }

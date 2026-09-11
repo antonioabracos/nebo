@@ -1,0 +1,2 @@
+// Signed arithmetic is observed in a static ELF for the declared host target.
+start(){(-127+200).answer;answer.return;}

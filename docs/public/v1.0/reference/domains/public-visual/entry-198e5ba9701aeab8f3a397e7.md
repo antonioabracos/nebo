@@ -1,0 +1,62 @@
+# public-visual — Chart.scatter(points)
+
+Corrected G018 explicitly says general GUI is not available and marks this high-level declaration P. Internal native/seed probes do not establish a source-visible implementation. It is not reclassified as a tested public API or as live evidence. Cria scatter plot. Corrected G018 SHA256=0944468ee395ee0c83aa6697baf52d111053327405fafd499e3cf08d57031718
+
+```text
+Identity: public:g018-declaration:Chart.scatter(points) (DOMAIN_CONTRACT_ID)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: EXCLUDED_1_0
+```
+
+## Syntax or signature
+
+```text
+Chart.scatter(points)
+Corrected G018 explicitly says general GUI is not available and marks this high-level declaration P. Internal native/seed probes do not establish a source-visible implementation. It is not reclassified as a tested public API or as live evidence. Cria scatter plot. Corrected G018 SHA256=0944468ee395ee0c83aa6697baf52d111053327405fafd499e3cf08d57031718
+```
+
+## Unavailable execution
+
+This row documents a boundary or reserved identity. No executable native implementation, display, device or network access is promised. The quoted classification is retained.
+
+## Availability and maturity
+
+EXCLUDED_1_0; evidence FROZEN_PROFILE_BOUNDARY. Documentation does not promote this identity to stable. Public and owner namespaces are separate contracts.
+
+## Limits and lifecycle
+
+Corrected G018 explicitly says general GUI is not available and marks this high-level declaration P. Internal native/seed probes do not establish a source-visible implementation. It is not reclassified as a tested public API or as live evidence. Cria scatter plot. Corrected G018 SHA256=0944468ee395ee0c83aa6697baf52d111053327405fafd499e3cf08d57031718
+
+## Privacy, dependencies and authority
+
+Capability: NONE. Gate: NONE. Import grants capability: NO. Use synthetic local data. Hardware claim: NO. Security assurance: NO. RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE. SDK buffers and handles follow the owner lifecycle and reject invalid/released inputs where specified. No downloaded models, secrets, external network or device access is needed for the documented local proofs.
+
+## Additional observations and limits
+
+```text
+[
+  {
+    "classification": {
+      "capability": "NONE",
+      "core": "NO",
+      "evidence_level": "FROZEN_PROFILE_BOUNDARY",
+      "external_gate": "NONE",
+      "hardware_claim": "NO",
+      "import_grants_capability": "NO",
+      "legal": "RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE",
+      "security_assurance": "NO",
+      "target": "x86_64-systemv-elf-linux",
+      "tier": "EXCLUDED_1_0"
+    }
+  }
+]
+```
+
+## Related entries
+
+[Index](index.md)
+
+## Provenance
+
+- tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0

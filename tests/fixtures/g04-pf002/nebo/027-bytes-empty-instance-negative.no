@@ -1,0 +1,3 @@
+start() {
+    Bytes.empty().empty().invalid_receiver_form;
+}

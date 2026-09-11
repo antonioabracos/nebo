@@ -11,6 +11,12 @@
 %define NEBOC_LIST_FLAGS_OFFSET 56
 %define NEBOC_LIST_SIZE 64
 %define NEBOC_LIST_QWORDS 8
+; Optional lifecycle trailer used only when semantic analysis classifies T as
+; move-only.  The frozen trivial-value descriptor stays 64 bytes.
+%define NEBOC_LIST_MOVE_FN_OFFSET 64
+%define NEBOC_LIST_DROP_FN_OFFSET 72
+%define NEBOC_LIST_OWNED_SIZE 80
+%define NEBOC_LIST_OWNED_QWORDS 10
 
 %define NEBOC_LIST_MAX_ELEMENTS 64
 %define NEBOC_LIST_MAX_BYTES 4096

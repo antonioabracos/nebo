@@ -21,6 +21,8 @@ nebo_render_scalar:
     mov rax, [rdi + NEBO_VALUE_FLAGS_OFFSET]
     test rax, NEBO_VALUE_SENSITIVE
     jnz .privacy
+    test rax, rax
+    jnz .invalid
     mov rcx, [rdi + NEBO_VALUE_TYPE_OFFSET]
     cmp rcx, NEBO_TYPE_INT
     jb .unsupported
@@ -70,6 +72,8 @@ nebo_render_buffer:
     mov rax, [rdi + NEBO_VALUE_FLAGS_OFFSET]
     test rax, NEBO_VALUE_SENSITIVE
     jnz .buffer_privacy
+    test rax, rax
+    jnz .buffer_invalid
     mov rcx, [rdi + NEBO_VALUE_TYPE_OFFSET]
     cmp rcx, nebo_render_model_TYPE_TEXT
     jb .buffer_unsupported
@@ -114,6 +118,8 @@ nebo_render_collection:
     mov rax, [rdi + NEBO_VALUE_FLAGS_OFFSET]
     test rax, NEBO_VALUE_SENSITIVE
     jnz .collection_privacy
+    test rax, rax
+    jnz .collection_invalid
     mov rcx, [rdi + NEBO_VALUE_TYPE_OFFSET]
     cmp rcx, NEBO_TYPE_LIST
     jb .collection_unsupported
@@ -158,6 +164,8 @@ nebo_render_tabular:
     mov rax, [rdi + NEBO_TABULAR_FLAGS_OFFSET]
     test rax, NEBO_VALUE_SENSITIVE
     jnz .tabular_privacy
+    test rax, rax
+    jnz .tabular_invalid
     mov rcx, [rdi + NEBO_TABULAR_TYPE_OFFSET]
     cmp rcx, NEBO_TYPE_ROW
     jb .tabular_unsupported
@@ -218,6 +226,8 @@ nebo_render_numeric_shape:
     mov rax, [rdi + NEBO_SHAPE_FLAGS_OFFSET]
     test rax, NEBO_VALUE_SENSITIVE
     jnz .shape_privacy
+    test rax, rax
+    jnz .shape_invalid
     mov rcx, [rdi + NEBO_SHAPE_TYPE_OFFSET]
     cmp rcx, NEBO_TYPE_VECTOR
     jb .shape_unsupported
@@ -256,6 +266,8 @@ nebo_render_numeric_shape:
     mov r11, [r9 + rdx * 8]
     test r11, r11
     jz .shape_schema
+    cmp r11, NEBO_MAX_RENDER_NODES
+    ja .shape_limit
     imul rax, r11
     cmp rax, NEBO_MAX_RENDER_NODES
     ja .shape_limit
@@ -298,6 +310,8 @@ nebo_render_dynamic:
     mov rax, [rdi + NEBO_DYNAMIC_FLAGS_OFFSET]
     test rax, NEBO_VALUE_SENSITIVE
     jnz .dynamic_privacy
+    test rax, rax
+    jnz .dynamic_invalid
     mov rcx, [rdi + NEBO_DYNAMIC_TYPE_OFFSET]
     cmp rcx, NEBO_TYPE_GRAPH
     jb .dynamic_unsupported
@@ -364,6 +378,8 @@ nebo_render_media_metadata:
     mov rax, [rdi + NEBO_MEDIA_FLAGS_OFFSET]
     test rax, NEBO_VALUE_SENSITIVE
     jnz .media_privacy
+    test rax, rax
+    jnz .media_invalid
     mov rcx, [rdi + NEBO_MEDIA_TYPE_OFFSET]
     cmp rcx, NEBO_TYPE_IMAGE
     jb .media_unsupported
@@ -378,6 +394,8 @@ nebo_render_media_metadata:
     mov r9, [rdi + NEBO_MEDIA_EXTENT_B_OFFSET]
     test r8, r8
     jz .media_schema
+    cmp r8, NEBO_MAX_RENDER_OUTPUT
+    ja .media_limit
     cmp rcx, NEBO_TYPE_ML_MODEL
     jae .media_commit
     test r9, r9

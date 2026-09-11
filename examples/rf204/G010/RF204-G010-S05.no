@@ -1,0 +1,20 @@
+// Dataset collection is bounded to eight partitions of at most 32 rows.
+(Table.self)observe() { self.rowCount().console(); }
+start() {
+    Table.fromColumns([Tuple.of("age", Column<Int>.from([17, 29]))]).first;
+    Table.fromColumns([Tuple.of("age", Column<Int>.from([71]))]).second;
+    Dataset.fromTables([first, second]).dataset;
+    dataset.schema().schema;
+    schema.indexOf("age").expect("index").console();
+    dataset.partitionCount().console();
+    dataset.scan().scan;
+    scan.sink(observe).console();
+    dataset.collect().rows;
+    rows.length().console();
+    rows.at(0).get("age").expect("first").console();
+    rows.at(2).get("age").expect("last").console();
+    dataset.repartition(1).repartitioned;
+    repartitioned.partitionCount().console();
+    dataset.cache(1);
+    95.return;
+}

@@ -1,0 +1,4 @@
+start() {
+    Int(100).numero;
+    numero.console();
+}

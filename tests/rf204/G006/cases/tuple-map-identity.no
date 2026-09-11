@@ -1,0 +1,2 @@
+(Int.self)keep() { self.return; }
+start() { Tuple.of(17, 29).p; p.mapEach(keep, keep).q; q.at<0>(); }

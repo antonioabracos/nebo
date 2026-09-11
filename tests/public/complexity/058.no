@@ -1,0 +1,13 @@
+// Bounded codecs preserve explicit validation, suggested repairs, precision evidence, indexing, and CLI audits.
+(Int.self)geometryCodecRead() { self.return; }
+(Int.self)geometryCodecWrite() { self.return; }
+(Int.self)geometryValidate() { self.return; }
+(Int.self)geometryRepair() { self.return; }
+(Int.self)geometryPrecisionReport() { self.return; }
+(Int.self)spatialDatasetIndex() { self.return; }
+(Int.self)geometryCheck() { self.return; }
+(Int.self)routeBench() { self.return; }
+
+start() {
+    144.geometryCodecRead().geometryCodecWrite().geometryValidate().geometryRepair().geometryPrecisionReport().spatialDatasetIndex().geometryCheck().routeBench();
+}

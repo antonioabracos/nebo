@@ -1,0 +1,3 @@
+start() {
+  Range.exclusive(1,5).stepBy(0).bad;
+}

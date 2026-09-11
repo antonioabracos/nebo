@@ -1,0 +1,66 @@
+# builtin.time — time.sleep
+
+Sleeps for a bounded duration using the local native system profile. Scheduling can extend elapsed time.
+
+```text
+Identity: material:time.sleep (QUALIFIED_INTRINSIC_OR_REGISTRY_ID)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: MATERIAL_BOUNDED_NOT_PROMOTED
+```
+
+## Syntax or signature
+
+```text
+time.sleep(Duration)
+```
+
+## Bounded behavior
+
+Sleeps for a bounded duration using the local native system profile. Scheduling can extend elapsed time. Integer nanoseconds; bounded monotonic/sleep observations; no exact wall-clock value promise
+
+## Lifecycle, safety and determinism
+
+Integer nanoseconds; bounded monotonic/sleep observations; no exact wall-clock value promise. Failures retain previous private files and do not grant network or device access. Cooperative execution is not proof of OS-thread race freedom.
+
+## Availability
+
+MATERIAL_BOUNDED_NOT_PROMOTED. This individual member retains its owning profile maturity. Only x86_64-systemv-elf-linux is observed.
+
+## Executed examples
+
+### system:monotonic-elapsed; expected 23
+
+```nebo
+start(){Instant.now().a;Duration.fromMillis(1).d;time.sleep(d);a.elapsed().asNanos().n;(n>=1000000).console();(n<1000000000).console();23.return;}
+```
+
+Oracle: {"capabilities": {"console": "RETAINED_DOCUMENT", "filesystem": "EXPLICIT_SCRATCH_EFFECT_ORACLE", "network": "DENIED_BY_SECCOMP"}, "console_text_utf8": "truetrue", "filesystem_effects": {}, "independent_builds": 2, "kinds": \[5, 5\], "process_exit": 23, "runtime_determinism": "BYTE_IDENTICAL", "runtime_sha256": "7c5a5c744a85139e619dd6af380ac0da839c61f677307f84da435f7478732751", "text": {"bytes_hex": "7472756574727565"}}
+
+## Rejected examples
+
+### system:channel-capacity-over; expected NEBO_LIMIT_EXCEEDED
+
+```nebo
+start(){Channel<Int>.bounded(65).c;23.return;}
+```
+
+Oracle: {"artifact_publication": "REJECTED", "compiler_exit": 1, "diagnostic": "NEBO_LIMIT_EXCEEDED"}
+
+## Related entries
+
+[Index](index.md)
+
+- [symbol-2d49d4064f6548b89379a4a0](symbol-2d49d4064f6548b89379a4a0.md)
+
+## Provenance
+
+- sdk/contracts/stdlib/STDLIB-PROFILE-BOUNDARIES.tsv — SHA-256 f75432d694f4cdd8f47bc28f34f8d031ba92fdf5147cd157161356c9832036e3
+
+- runtime/system/public.asm — SHA-256 d85945dd05ce3d69ff6ae77ae8608d661a6ff08d659f837065358a89a878366f
+
+- compiler/driver/cli/linux-x86_64/scalar_program.inc — SHA-256 54bad41b6d43ffc48c264adae8a0a776071c6a3917abaf05520344e11ae6afbe
+
+- tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0
+
+- tests/rf204/G170/random_test.py — SHA-256 a4d3692d30d6947812089d0ad64318a32a6a9279c567ac96481f207daeb95516

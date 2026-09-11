@@ -1,0 +1,13 @@
+// Workflow operations make migration, compatibility, inspection, replay, repair, and verification observable.
+(Int.self)workflowMigrate() { self.return; }
+(Int.self)workflowCompatibility() { self.return; }
+(Int.self)workflowInstances() { self.return; }
+(Int.self)workflowTimeline() { self.return; }
+(Int.self)workflowMetrics() { self.return; }
+(Int.self)workflowReplay() { self.return; }
+(Int.self)workflowRepair() { self.return; }
+(Int.self)workflowVerify() { self.return; }
+
+start() {
+    147.workflowMigrate().workflowCompatibility().workflowInstances().workflowTimeline().workflowMetrics().workflowReplay().workflowRepair().workflowVerify();
+}

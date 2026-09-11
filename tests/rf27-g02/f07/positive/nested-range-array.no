@@ -1,0 +1,10 @@
+start() {
+  Range.exclusive(1,3).outer;
+  Array<Int,2> [9,10].inner;
+  for (left in outer) {
+    for (right in inner) {
+      right.return;
+    }
+  }
+  outer.length().return;
+}

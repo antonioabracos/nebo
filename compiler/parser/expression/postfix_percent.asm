@@ -22,7 +22,12 @@ nebo_postfix_percent_classify:
 .not_format:
     test edi, NEBO_QCTX_HAS_COMPLETE_OPERAND
     jz .not_postfix
+    test edi, NEBO_QCTX_EXPECTS_INFIX
+    jnz .infix
     mov eax, NEBO_PERCENT_POSTFIX
+    ret
+.infix:
+    xor edx, edx
     ret
 .not_postfix:
     mov edx, NEBO_QUANTITY_ERR_SYNTAX

@@ -1,0 +1,8 @@
+start() {
+    5.owner;
+    owner.borrowUnique().view;
+    view.write(23).written;
+    view.read().observed;
+    view.release().done;
+    owner;
+}

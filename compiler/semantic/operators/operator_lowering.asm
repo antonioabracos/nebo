@@ -35,6 +35,8 @@ NEBOC_ABI_FUNCTION neboc_operator_lowering_plan
  je .token_slash
  cmp r8,NEBOC_OPERATOR_PROTOCOL_REMAINDER
  je .token_percent
+ cmp r8,NEBOC_OPERATOR_PROTOCOL_POWER
+ je .token_power
  cmp r8,NEBOC_OPERATOR_PROTOCOL_NEGATE
  je .token_minus
  cmp r8,NEBOC_OPERATOR_PROTOCOL_LOGICAL_NOT
@@ -43,6 +45,8 @@ NEBOC_ABI_FUNCTION neboc_operator_lowering_plan
  je .token_and
  cmp r8,NEBOC_OPERATOR_PROTOCOL_LOGICAL_OR
  je .token_or
+ cmp r8,NEBOC_OPERATOR_PROTOCOL_XOR
+ je .token_xor
  cmp r8,NEBOC_OPERATOR_PROTOCOL_EQUAL
  je .token_equality
  cmp r8,NEBOC_OPERATOR_PROTOCOL_ORDER
@@ -63,6 +67,9 @@ NEBOC_ABI_FUNCTION neboc_operator_lowering_plan
 .token_percent: cmp rsi,NEBOC_TOKEN_PERCENT
  je .token_ok
  jmp .invalid_source
+.token_power: cmp rsi,NEBOC_TOKEN_CARET
+ je .token_ok
+ jmp .invalid_source
 .token_bang: cmp rsi,NEBOC_TOKEN_BANG
  je .token_ok
  jmp .invalid_source
@@ -70,6 +77,9 @@ NEBOC_ABI_FUNCTION neboc_operator_lowering_plan
  je .token_ok
  jmp .invalid_source
 .token_or: cmp rsi,NEBOC_TOKEN_OR_OR
+ je .token_ok
+ jmp .invalid_source
+.token_xor: cmp rsi,NEBOC_TOKEN_XOR
  je .token_ok
  jmp .invalid_source
 .token_equality:

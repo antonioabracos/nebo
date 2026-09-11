@@ -1,0 +1,1 @@
+start() { Array<Int,4> [1,2,3,4].values; (values.at(1)+values.at(2)).return; }

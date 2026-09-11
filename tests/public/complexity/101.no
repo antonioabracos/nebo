@@ -1,0 +1,7 @@
+// The receiver-first RenderPlan path replaces every historical visual.* facade.
+start() {
+    RenderPlan;
+    3001;
+    output.stdout().stderr().target("visual-service").plain().visual().headlessEvent();
+    lifecycle.event("console-panel").payload("migration").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

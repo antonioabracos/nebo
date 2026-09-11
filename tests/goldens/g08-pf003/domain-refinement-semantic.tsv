@@ -1,0 +1,11 @@
+case_id	operation	input	semantic_result	invariant
+G08-SEM-001	toPositiveInt	7	Ok(PositiveInt(7))	value strictly positive
+G08-SEM-002	toPositiveInt	1	Ok(PositiveInt(1))	minimum accepted value
+G08-SEM-003	toPositiveInt	0	Err(1)	non-positive typed failure
+G08-SEM-004	toPositiveInt	-1	Err(1)	non-positive typed failure
+G08-SEM-005	isOk	Ok(7)	true	total predicate
+G08-SEM-006	isOk	Err(1)	false	total predicate
+G08-SEM-007	isErr	Ok(7)	false	total predicate
+G08-SEM-008	isErr	Err(1)	true	total predicate
+G08-SEM-009	unwrapOr	Ok(7),1	PositiveInt(7)	payload preserved
+G08-SEM-010	unwrapOr	Err(1),9	PositiveInt(9)	validated fallback selected

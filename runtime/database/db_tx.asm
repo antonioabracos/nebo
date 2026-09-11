@@ -1,4 +1,4 @@
-; MACHINE-LEARNING-NEURON-NETWORK-E-MODEL-F04 failure-atomic local transaction and savepoint core.
+; RF46-G32-F04 failure-atomic local transaction and savepoint core.
 bits 64
 default rel
 %include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"

@@ -1,0 +1,6 @@
+start() {
+    1.5.isFinite().finite;
+    (0.0 / 0.0).isNaN().nan;
+    (1.0 / 0.0).isInfinite().infinite;
+    (-0.0).isNegativeZero().negative_zero;
+}

@@ -1,0 +1,13 @@
+// A versioned registry drives approved base vectors, opaque key lifecycle, and factual status.
+(Int.self)cryptoAlgorithmLookup() { self.return; }
+(Int.self)algorithmSecurityLevel() { self.return; }
+(Int.self)algorithmParameterSet() { self.return; }
+(Int.self)algorithmStatus() { self.return; }
+(Int.self)keyGenerate() { self.return; }
+(Int.self)keyPublicPart() { self.return; }
+(Int.self)keyDestroy() { self.return; }
+(Int.self)cryptoSelfTest() { self.return; }
+
+start() {
+    44.cryptoAlgorithmLookup().algorithmSecurityLevel().algorithmParameterSet().algorithmStatus().keyGenerate().keyPublicPart().keyDestroy().cryptoSelfTest();
+}

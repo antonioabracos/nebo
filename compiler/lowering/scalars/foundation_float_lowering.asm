@@ -10,7 +10,7 @@ section .text
 
 ; foundation_float_materialize_literal(request*)
 ; Strict positive [0-9]+.[0-9]+ -> IEEE 754 binary64.
-; The conversion is deterministic and source-bounded, with no integer accumulator.
+; Exact integer-ratio rounding is deterministic and preserves the source bound.
 NEBOC_ABI_FUNCTION neboc_foundation_float_materialize_literal
  push rbx
  push r12
@@ -38,64 +38,18 @@ NEBOC_ABI_FUNCTION neboc_foundation_float_materialize_literal
  cmp r14,NEBOC_FLOAT_LOWERING_MAX_TOTAL_DIGITS+1
  ja .source_limit
 
- pxor xmm0,xmm0                    ; accumulated value
- mov r11,10
- cvtsi2sd xmm3,r11                 ; 10.0
- xor r15d,r15d                     ; source index
- xor r9d,r9d                       ; integer digits
- xor r10d,r10d                     ; fraction digits
-
-.integer_loop:
- cmp r15,r14
- jae .invalid_shape
- movzx r11d,byte [r13+r15]
- cmp r11b,'.'
- je .dot
- cmp r11b,'0'
- jb .invalid_shape
- cmp r11b,'9'
- ja .invalid_shape
- sub r11d,'0'
- mulsd xmm0,xmm3
- cvtsi2sd xmm1,r11
- addsd xmm0,xmm1
- inc r9
- inc r15
- jmp .integer_loop
-
-.dot:
- test r9,r9
- jz .invalid_shape
- inc r15
- cmp r15,r14
- jae .invalid_shape
- mov r11,1
- cvtsi2sd xmm4,r11
- divsd xmm4,xmm3                   ; decimal place = 0.1
-
-.fraction_loop:
- cmp r15,r14
- jae .materialize
- movzx r11d,byte [r13+r15]
- cmp r11b,'0'
- jb .invalid_shape
- cmp r11b,'9'
- ja .invalid_shape
- sub r11d,'0'
- cvtsi2sd xmm1,r11
- mulsd xmm1,xmm4
- addsd xmm0,xmm1
- divsd xmm4,xmm3
- inc r10
- inc r15
- jmp .fraction_loop
-
+ mov rdi,r13
+ mov rsi,r14
+ call neboc_decimal_binary64_exact
+ test eax,eax
+ jz .materialize
+ cmp eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ je .source_limit
+ jmp .invalid_shape
 .materialize:
- test r10,r10
- jz .invalid_shape
- mov [rbx+NEBOC_FLOAT_LOWERING_REQUEST_INTEGER_DIGITS_OFFSET],r9
- mov [rbx+NEBOC_FLOAT_LOWERING_REQUEST_FRACTION_DIGITS_OFFSET],r10
- movq [r12],xmm0
+ mov [rbx+NEBOC_FLOAT_LOWERING_REQUEST_INTEGER_DIGITS_OFFSET],rcx
+ mov [rbx+NEBOC_FLOAT_LOWERING_REQUEST_FRACTION_DIGITS_OFFSET],r8
+ mov [r12],rdx
  mov qword [rbx+NEBOC_FLOAT_LOWERING_REQUEST_FLAGS_OFFSET],NEBOC_FLOAT_LOWERING_REQUIRED_FLAGS
  xor eax,eax
  jmp .done
@@ -123,5 +77,7 @@ NEBOC_ABI_FUNCTION neboc_foundation_float_materialize_literal
  pop rbx
  cld
  ret
+
+%include "compiler/lowering/scalars/decimal_binary64.inc"
 
 section .note.GNU-stack noalloc noexec nowrite progbits

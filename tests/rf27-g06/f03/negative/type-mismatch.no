@@ -1,0 +1,3 @@
+start() {
+  Array<Int,1> [true].bad;
+}

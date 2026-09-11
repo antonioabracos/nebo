@@ -1,0 +1,7 @@
+// Captures target, maturity, counters, cleanup, and registry hash as live evidence.
+start() {
+    RenderPlan;
+    1409;
+    output.stdout().stderr().target("evidence-matrix").plain().visual().headlessEvent();
+    lifecycle.event("evidence.captured").payload("headless-renderer-green").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

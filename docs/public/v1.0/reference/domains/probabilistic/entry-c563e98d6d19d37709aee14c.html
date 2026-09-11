@@ -1,0 +1,28 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>probabilistic — Smc.new(particles,options)</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>probabilistic — Smc.new(particles,options)</h1><p>Bounded seeded CPU probability model; no statistical certification or unlimited sampling; original observation: 64 particles and explicit seed retained; SDK bounds: {&quot;MAX_ACTIONS&quot;:1024,&quot;MAX_CATEGORIES&quot;:4096,&quot;MAX_CHAINS&quot;:16,&quot;MAX_DRAWS&quot;:100000,&quot;MAX_EXACT_STATES&quot;:1000000,&quot;MAX_GRAPH_NODES&quot;:1024,&quot;MAX_LATENTS&quot;:256,&quot;MAX_OUTCOMES&quot;:4096,&quot;MAX_PARTICLES&quot;:100000,&quot;MAX_PLATE_SIZE&quot;:4096}</p><pre>Identity: owner:G037:G037-S04-05 (DOMAIN_CONTRACT_ID)
+Edition: 1
+Target: PYTHON_CPU_REFERENCE
+Availability: EXPERIMENTAL</pre><h2>Syntax or signature</h2><pre>Smc.new(cls, particles: int, options: Mapping[str, Any] | None=None) -&gt; &#x27;Smc&#x27;</pre><h2>Reference-model API</h2><p>The signature describes the Python reference model. Parameters and return annotations belong to that model; they are not an admitted Nebo spelling.</p><h2>Complete executable Python example</h2><p>Run python3 -B tests/rf204/G037/sdk_oracle.py from the repository root with only synthetic inputs. Set G020_TMP and G021_TMP to an empty private temporary directory for the two checkpoint suites. This program contains the setup and independent assertions for the model. The line excerpt below is not a standalone program. No native Nebo binding is inferred.</p><h2>Availability and maturity</h2><p>EXPERIMENTAL; evidence SDK_REFERENCE_MODEL. Documentation does not promote this identity to stable. Public and owner namespaces are separate contracts.</p><h2>Limits and lifecycle</h2><p>Bounded seeded CPU probability model; no statistical certification or unlimited sampling; original observation: 64 particles and explicit seed retained; SDK bounds: {&quot;MAX_ACTIONS&quot;:1024,&quot;MAX_CATEGORIES&quot;:4096,&quot;MAX_CHAINS&quot;:16,&quot;MAX_DRAWS&quot;:100000,&quot;MAX_EXACT_STATES&quot;:1000000,&quot;MAX_GRAPH_NODES&quot;:1024,&quot;MAX_LATENTS&quot;:256,&quot;MAX_OUTCOMES&quot;:4096,&quot;MAX_PARTICLES&quot;:100000,&quot;MAX_PLATE_SIZE&quot;:4096}</p><h2>Privacy, dependencies and authority</h2><p>Capability: SYNTHETIC_LOCAL_DATA. Gate: NONE. Import grants capability: NO. Use synthetic local data. Hardware claim: NO. Security assurance: NO. RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE. SDK buffers and handles follow the owner lifecycle and reject invalid/released inputs where specified. No downloaded models, secrets, external network or device access is needed for the documented local proofs.</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;classification&quot;: {
+      &quot;capability&quot;: &quot;SYNTHETIC_LOCAL_DATA&quot;,
+      &quot;core&quot;: &quot;NO&quot;,
+      &quot;evidence_level&quot;: &quot;SDK_REFERENCE_MODEL&quot;,
+      &quot;external_gate&quot;: &quot;NONE&quot;,
+      &quot;hardware_claim&quot;: &quot;NO&quot;,
+      &quot;import_grants_capability&quot;: &quot;NO&quot;,
+      &quot;legal&quot;: &quot;RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE&quot;,
+      &quot;security_assurance&quot;: &quot;NO&quot;,
+      &quot;target&quot;: &quot;PYTHON_CPU_REFERENCE&quot;,
+      &quot;tier&quot;: &quot;EXPERIMENTAL&quot;
+    }
+  },
+  {
+    &quot;excerpt&quot;: &quot;60: ok(\&quot;positive\&quot;, \&quot;Distribution.categorical\&quot;, categorical.support()[\&quot;values\&quot;] == (0, 1, 2))\n61: sample = normal.sample(Random.new(1701))\n62: ok(\&quot;positive\&quot;, \&quot;distribution.sample\&quot;, close(sample, 1.129482111631409, 1e-12))\n63: ok(\&quot;positive\&quot;, \&quot;distribution.logProbability\&quot;,\n64:    close(normal.logProbability(2), -math.log(3) - 0.5 * math.log(2 * math.pi)))&quot;,
+    &quot;executed_assertions&quot;: 169,
+    &quot;execution&quot;: &quot;SDK_REFERENCE_MODEL_ONLY&quot;,
+    &quot;language&quot;: &quot;python&quot;,
+    &quot;line&quot;: 61,
+    &quot;source_path&quot;: &quot;tests/rf204/G037/sdk_oracle.py&quot;,
+    &quot;source_sha256&quot;: &quot;9781fd42d9a09308329071fec9eb14961dbd34c6cae327beb938ab51e12ba651&quot;
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a></nav><h2>Provenance</h2><ul><li>compiler/sdk/probabilistic.py — SHA-256 2b2541e579e3f6222d99527a67dc7fa00bfb2ab9aa648663f1eb801a15a71535</li><li>runtime/probabilistic/mcmc_smc.asm — SHA-256 fe9e367b4b398ac84785e6c377c7d2d3083799f4631e3401333ed6879adf12dc</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

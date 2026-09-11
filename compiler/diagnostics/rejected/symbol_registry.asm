@@ -1,0 +1,98 @@
+; G145 compiled projection of NSR-REJ-001..026.  Every row remains
+; diagnostic-only: replacement guidance is explicit and no migration is
+; silently applied by the compiler, formatter or tooling.
+bits 64
+default rel
+
+%include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"
+%include "compiler/support/status/status_codes.inc"
+%include "compiler/tokens/token_kind.inc"
+%include "compiler/tokens/operator_registry.inc"
+%include "compiler/lexer/lexer.inc"
+%include "compiler/diagnostics/rejected/symbol_registry.inc"
+
+section .rodata align=8
+rejected_form_entries:
+%macro REJECTED_FORM_ROW 5
+ dq %1,159+%1,NEBOC_OPERATOR_CLASS_REJECTED,%2
+ dq NEBOC_TOKEN_REJECTED_FORM,NEBOC_LEX_DIAG_REJECTED_FORM,0,%3,%4,%5
+%endmacro
+ REJECTED_FORM_ROW 1,NEBOC_OPERATOR_STATE_REJECTED_PERMANENT,146001,0,0
+ REJECTED_FORM_ROW 2,NEBOC_OPERATOR_STATE_REJECTED_ALTERNATIVE,146002,0,0
+ REJECTED_FORM_ROW 3,NEBOC_OPERATOR_STATE_REJECTED_ALTERNATIVE,146003,1,0
+ REJECTED_FORM_ROW 4,NEBOC_OPERATOR_STATE_REJECTED_SEMANTIC_INTERPRETATION,0,0,0
+ REJECTED_FORM_ROW 5,NEBOC_OPERATOR_STATE_REJECTED,146005,0,0
+ REJECTED_FORM_ROW 6,NEBOC_OPERATOR_STATE_REJECTED,146006,0,0
+ REJECTED_FORM_ROW 7,NEBOC_OPERATOR_STATE_REJECTED,146007,0,0
+ REJECTED_FORM_ROW 8,NEBOC_OPERATOR_STATE_REJECTED,146008,0,0
+ REJECTED_FORM_ROW 9,NEBOC_OPERATOR_STATE_REJECTED,146009,0,0
+ REJECTED_FORM_ROW 10,NEBOC_OPERATOR_STATE_REJECTED,0,0,0
+ REJECTED_FORM_ROW 11,NEBOC_OPERATOR_STATE_REJECTED,146011,0,0
+ REJECTED_FORM_ROW 12,NEBOC_OPERATOR_STATE_REJECTED_ALTERNATIVE,146012,1,0
+ REJECTED_FORM_ROW 13,NEBOC_OPERATOR_STATE_REJECTED_PUBLIC_ALIAS,146013,1,0
+ REJECTED_FORM_ROW 14,NEBOC_OPERATOR_STATE_REJECTED_AMBIGUOUS,146014,0,0
+ REJECTED_FORM_ROW 15,NEBOC_OPERATOR_STATE_REJECTED,146015,1,0
+ REJECTED_FORM_ROW 16,NEBOC_OPERATOR_STATE_REJECTED_PUBLIC_ALIAS,146016,0,0
+ REJECTED_FORM_ROW 17,NEBOC_OPERATOR_STATE_REJECTED_AS_RANGE,146017,0,0
+ REJECTED_FORM_ROW 18,NEBOC_OPERATOR_STATE_REJECTED_SAFE_CORE,146018,0,0
+ REJECTED_FORM_ROW 19,NEBOC_OPERATOR_STATE_REJECTED_IMPLICIT_SEMANTICS,146019,0,0
+ REJECTED_FORM_ROW 20,NEBOC_OPERATOR_STATE_REJECTED_USAGE,146020,0,0
+ REJECTED_FORM_ROW 21,NEBOC_OPERATOR_STATE_REJECTED_USAGE,0,0,0
+ REJECTED_FORM_ROW 22,NEBOC_OPERATOR_STATE_REJECTED_SEMANTIC_INTERPRETATION,0,0,0
+ REJECTED_FORM_ROW 23,NEBOC_OPERATOR_STATE_REJECTED_IMPLICIT_COERCION,146023,0,0
+ REJECTED_FORM_ROW 24,NEBOC_OPERATOR_STATE_REJECTED_PERMANENT,0,0,0
+ REJECTED_FORM_ROW 25,NEBOC_OPERATOR_STATE_REJECTED_SECURITY,146025,1,0
+ REJECTED_FORM_ROW 26,NEBOC_OPERATOR_STATE_REJECTED_OUTSIDE_TEMPLATE,146026,0,0
+%undef REJECTED_FORM_ROW
+
+section .text
+; Returns RAX=entries, EDX=count, ECX=entry size.
+NEBOC_ABI_FUNCTION neboc_rejected_form_registry_table
+ lea rax,[rel rejected_form_entries]
+ mov edx,NEBOC_REJECTED_FORM_COUNT
+ mov ecx,NEBOC_REJECTED_FORM_ENTRY_SIZE
+ ret
+
+; rejected_form_metadata(ordinal, out*) -> StatusCode.  Invalid input is
+; failure-atomic and cannot expose a partial migration policy.
+NEBOC_ABI_FUNCTION neboc_rejected_form_metadata
+ test rsi,rsi
+ jz .invalid
+ test rdi,rdi
+ jz .source
+ cmp rdi,NEBOC_REJECTED_FORM_COUNT
+ ja .source
+ dec rdi
+ imul rdi,NEBOC_REJECTED_FORM_ENTRY_SIZE
+ lea r8,[rel rejected_form_entries]
+ add r8,rdi
+ mov rax,[r8]
+ mov rdx,[r8+8]
+ mov rcx,[r8+16]
+ mov r9,[r8+24]
+ mov r10,[r8+32]
+ mov r11,[r8+40]
+ mov [rsi],rax
+ mov [rsi+8],rdx
+ mov [rsi+16],rcx
+ mov [rsi+24],r9
+ mov [rsi+32],r10
+ mov [rsi+40],r11
+ mov rax,[r8+48]
+ mov [rsi+48],rax
+ mov rax,[r8+56]
+ mov [rsi+56],rax
+ mov rax,[r8+64]
+ mov [rsi+64],rax
+ mov rax,[r8+72]
+ mov [rsi+72],rax
+ xor eax,eax
+ ret
+.source:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ ret
+.invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+section .note.GNU-stack noalloc noexec nowrite progbits

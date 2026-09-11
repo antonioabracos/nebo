@@ -1,0 +1,53 @@
+start() {
+    "NEBO 1.0 — inventário Buffer-derived legível\n".console();
+    "------------------------------------------------------------\n".console();
+    "Buffer.view e Slice.sum\n".console();
+    Buffer.withCapacity(4).stock;
+    stock.push(12).p0;
+    stock.push(7).p1;
+    stock.push(3).p2;
+    stock.push(9).p3;
+    stock.view(0, 4).view;
+    view.sum().total;
+    "Total: ".console();
+    total.console();
+    "\n".console();
+
+    "Option sobre Buffer.get\n".console();
+    Buffer.zeroed(4).codes;
+    codes.set(2, 103).old;
+    codes.get(2).existing;
+    codes.get(9).missing;
+    existing.isSome().existingSome;
+    existing.unwrapOr(0).existingValue;
+    missing.isNone().missingNone;
+    missing.unwrapOr(255).missingValue;
+    "Existing some/value: ".console();
+    existingSome.console();
+    " / ".console();
+    existingValue.console();
+    "\nMissing none/fallback: ".console();
+    missingNone.console();
+    " / ".console();
+    missingValue.console();
+    "\n".console();
+
+    "Buffer.freeze e Bytes\n".console();
+    Buffer.zeroed(4).packet;
+    packet.set(0, 1).old0;
+    packet.set(1, 2).old1;
+    packet.set(2, 3).old2;
+    packet.set(3, 4).old3;
+    packet.freeze().bytes;
+    bytes.byteLength().length;
+    bytes.at(3).last;
+    packet.at(3).sourceLast;
+    "Length/last/source: ".console();
+    length.console();
+    " / ".console();
+    last.console();
+    " / ".console();
+    sourceLast.console();
+    "\nNEBO_TEST_RESULT|PASS\n".console();
+    0.return;
+}

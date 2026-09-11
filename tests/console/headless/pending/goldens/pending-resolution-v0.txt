@@ -1,0 +1,10 @@
+MF048 Pending resolution ABI v0
+ContinuationRecord=96
+DependencyBridge=96
+SubmissionStorage=24
+SubmissionContext=96
+SubmissionResult=64
+TextResult=immutable UTF-8
+EmptyText=valid
+ActivationOrder=source_order
+DuplicateResolution=rejected

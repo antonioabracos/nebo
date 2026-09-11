@@ -1,0 +1,7 @@
+// Pairs begin-frame and end-frame tokens before publishing a render digest.
+start() {
+    RenderPlan;
+    1404;
+    output.stdout().stderr().target("frame-token").plain().visual().headlessEvent();
+    lifecycle.event("frame.present").payload("digest-1404").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

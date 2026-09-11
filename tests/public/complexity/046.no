@@ -1,0 +1,13 @@
+// Filters carry their sampling assumptions, mutable state, and response evidence.
+(Int.self)filterLowPass() { self.return; }
+(Int.self)filterHighPass() { self.return; }
+(Int.self)filterBandPass() { self.return; }
+(Int.self)filterMovingAverage() { self.return; }
+(Int.self)filterKalman() { self.return; }
+(Int.self)filterStep() { self.return; }
+(Int.self)filterReset() { self.return; }
+(Int.self)filterFrequencyResponse() { self.return; }
+
+start() {
+    58.filterLowPass().filterHighPass().filterBandPass().filterMovingAverage().filterKalman().filterStep().filterReset().filterFrequencyResponse();
+}

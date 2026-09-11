@@ -1,0 +1,4 @@
+newtype UserId(Int);
+start() {
+    42.return;
+}

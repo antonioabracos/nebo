@@ -1,0 +1,2 @@
+diagnostic: NEBO_PARSE_INVALID_CONTROL_CHAIN
+source-shape: condicao.if

@@ -9,6 +9,7 @@ global nebo_task_group_init
 global nebo_task_group_spawn
 global nebo_task_group_join_all
 global nebo_task_result
+global nebo_task_group_cancel
 
 ; rdi=budget, rsi=max workers, rdx=max tasks, rcx=max queue,
 ; r8=max trace, r9=max polls.
@@ -88,6 +89,7 @@ nebo_task_group_init:
 nebo_task_group_spawn:
  push rbx
  push r12
+ sub rsp,8
  mov rbx,rdi
  mov r12,rsi
  test rbx,rbx
@@ -98,6 +100,8 @@ nebo_task_group_spawn:
  jz .spawn_invalid
  cmp qword [rbx+NEBO_TASK_GROUP_JOINED],0
  jne .spawn_transition
+ cmp qword [rbx+NEBO_TASK_GROUP_STATE],NEBO_TASK_STATE_CANCELLED
+ je .spawn_cancelled
  mov r8,[rbx+NEBO_TASK_GROUP_COUNT]
  cmp r8,[rbx+NEBO_TASK_GROUP_CAPACITY]
  jae .spawn_limit
@@ -138,9 +142,31 @@ nebo_task_group_spawn:
  jmp .spawn_return
 .spawn_limit:
  mov eax,NEBO_CONCURRENCY_ERROR_LIMIT_EXCEEDED
+ jmp .spawn_return
+.spawn_cancelled:
+ mov eax,NEBO_CONCURRENCY_ERROR_CANCELLED
 .spawn_return:
+ add rsp,8
  pop r12
  pop rbx
+ ret
+
+; The current scheduler executes one child at a time. Cancellation closes
+; admission without rewriting already completed child results; join still
+; consumes the scope once and reports those children.
+nebo_task_group_cancel:
+ test rdi,rdi
+ jz .invalid
+ cmp qword [rdi+NEBO_TASK_GROUP_JOINED],0
+ jne .closed
+ mov qword [rdi+NEBO_TASK_GROUP_STATE],NEBO_TASK_STATE_CANCELLED
+ xor eax,eax
+ ret
+.invalid:
+ mov eax,NEBO_CONCURRENCY_ERROR_INVALID_ARGUMENT
+ ret
+.closed:
+ mov eax,NEBO_CONCURRENCY_ERROR_ALREADY_COMPLETED
  ret
 
 ; rdi=group. eax=status, rdx=completed count. Consumes structured group.

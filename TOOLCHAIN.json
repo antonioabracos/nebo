@@ -5,6 +5,9 @@
   "nasm": "NASM version 2.16.01",
   "network_required": false,
   "ninja": "1.11.1",
-  "schema": "NEBO-1.0.1-TOOLCHAIN-v1",
-  "target": "x86_64-systemv-elf-linux"
+  "schema": "NEBO-PUBLIC-HOST-TOOLCHAIN-v1",
+  "target": "x86_64-systemv-elf-linux",
+  "scope": "Observed local prerequisites; not redistributed or certified",
+  "python": "Python 3",
+  "pillow": "Required for clean source-closure toolchain fingerprinting"
 }

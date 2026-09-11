@@ -1,0 +1,9 @@
+start() {
+  1.counter.mutable;
+  if (true) {
+    counter += 41;
+  } else {
+    counter -= 1;
+  }
+  counter;
+}

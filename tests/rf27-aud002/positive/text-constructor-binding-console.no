@@ -1,0 +1,5 @@
+start() {
+    "x".value;
+    Text("y").console();
+    value.console();
+}

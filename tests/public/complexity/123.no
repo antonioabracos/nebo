@@ -1,0 +1,7 @@
+// Preview, schema, and profile produce bounded metadata without materializing rows.
+start() {
+    RenderPlan;
+    3205;
+    output.stdout().stderr().target("chart-table-service").plain().visual().headlessEvent();
+    lifecycle.event("chart-table").payload("preview-schema-profile").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

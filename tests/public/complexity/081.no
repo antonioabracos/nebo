@@ -1,0 +1,6 @@
+// Versions the schema while transporting emit, clear, and scoped region events.
+start() {
+    RenderPlan;
+    1301;
+    protocol.event("console.emit").event("console.clear").event("console.region").payload("schema-v1").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

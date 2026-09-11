@@ -1,0 +1,7 @@
+// Title and panel type updates are observable before a bounded clear operation.
+start() {
+    RenderPlan;
+    3006;
+    output.stdout().stderr().target("visual-service").plain().visual().headlessEvent();
+    lifecycle.event("console-panel").payload("panel-clear-title-type").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

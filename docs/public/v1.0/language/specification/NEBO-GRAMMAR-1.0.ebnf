@@ -1,0 +1,105 @@
+(* Nebo Edition 1.0 normative structural grammar, current G182 profile.
+   The numbered lexical, operator and semantic clauses are mandatory predicates
+   on these forms. This is a factored grammar, not a second source parser.
+   expression groups bind by the precedence/associativity table, not EBNF
+   repetition order. Stronger P-number binds first; power is right associative.
+   Context resolves binding/member/return suffixes; a type name resolves typed
+   constructors. Every token/statement is consumed once. Profile alternatives
+   do not promise unrestricted cross-profile composition.
+   Lexical terminals are defined by chapter 01 and the exact Registry rows;
+   special sequences denote lexical token classes, not arbitrary source text.
+   for requires a bound iterable. Doc labels admitted by test-docs use
+   [public-|private-|secret-][law-]exit-N with N in 0..255.
+   ASCII and/or/not are rejected; their Boolean operators are &&/||/! and the
+   exact registered Unicode aliases. Whitespace and comments separate tokens. *)
+
+program = ordinary_program | module_program | profile_program ;
+ordinary_program = { import_decl } , { declaration } , entry ;
+declaration = function | struct_decl | nominal_decl | generic_decl | callable_decl | overload_decl ;
+entry = "start" , "(" , ")" , block ;
+function = "(" , type , "." , identifier , ")" , identifier , parameters , block ;
+parameters = "(" , [ parameter , { "," , parameter } ] , ")" ;
+parameter = type , "." , identifier , [ "=" , expression ] ;
+type = identifier , [ "<" , type_argument , { "," , type_argument } , ">" ] ;
+type_argument = type | integer ;
+block = "{" , { statement } , "}" ;
+statement = expression_statement | typed_declaration | assignment | if_statement | while_statement | do_statement | loop_statement | for_statement | break_statement | continue_statement | match_statement | function ;
+expression_statement = expression , [ binding | return_suffix ] , ";" ;
+binding = "." , identifier , [ ".mutable" ] ;
+typed_declaration = type , "." , identifier , ";" ;
+return_suffix = "." , "return" ;
+assignment = identifier , assignment_operator , expression , ";" ;
+assignment_operator = "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "^=" | "??=" ;
+if_statement = "if" , "(" , expression , ")" , block , [ "else" , ( block | if_statement ) ] ;
+while_statement = "while" , "(" , expression , ")" , block ;
+do_statement = "do" , block , "while" , "(" , expression , ")" , ";" ;
+loop_statement = "loop" , block ;
+for_statement = "for" , "(" , identifier , [ "," , identifier ] , "in" , identifier , [ "where" , identifier , ( "==" | "!=" | "<" | "<=" | ">" | ">=" ) , integer ] , ")" , block ;
+break_statement = "break" , ";" ;
+continue_statement = "continue" , ";" ;
+expression = primary , { suffix | infix_operator , primary } ;
+primary = literal | identifier | "(" , expression , ")" | prefix_operator , primary | array_value | struct_value | typed_constructor | delimited_math | reduction ;
+suffix = call_suffix | field_suffix | postfix_operator | lateral_block | legacy_index_suffix ;
+(* NSR-RES-015-COMPAT-1.0.1 only: bound immutable Array<Int,4>, literal 0..3.
+   General indexing and slicing remain RESERVED; normalize to Array.at. *)
+legacy_index_suffix = "[" , integer , "]" ;
+call_suffix = "." , identifier , [ "<" , type_argument , { "," , type_argument } , ">" ] , arguments | arguments ;
+field_suffix = "." , identifier | "?." , identifier , [ arguments ] ;
+arguments = "(" , [ argument , { "," , argument } ] , ")" ;
+argument = [ identifier , ":" ] , ( expression | "[" , [ expression , { "," , expression } ] , "]" ) | contextual_option ;
+contextual_option = "." , identifier , arguments ;
+lateral_block = ".." , block ;
+prefix_operator = ? registered prefix token, including exact Unicode aliases ?  ;
+infix_operator = ? registered infix token with native binding power, associativity and domain ?  ;
+postfix_operator = ? registered quantity, factorial, matrix or Result propagation suffix ?  ;
+literal = integer | float | char | text | "true" | "false" | math_constant ;
+integer = ? native INTEGER token, radix/separator/width rules and magnitude flags ?  ;
+float = ? native FLOAT token, finite decimal grammar and exact binary64 lowering ?  ;
+char = ? native CHAR token, one decoded Unicode scalar ?  ;
+text = plain_text | raw_text | multiline_text | interpolation ;
+plain_text = ? native quoted Text token with validated escapes ?  ;
+raw_text = ? native r-prefixed Text token, no interpolation or escape rewriting ?  ;
+multiline_text = ? native triple-quoted Text token and preserved payload ?  ;
+interpolation = ? native INTERPOLATION_HEAD token ? , expression , [ ":" , format_profile ] , { ? native INTERPOLATION_MIDDLE token ? , expression , [ ":" , format_profile ] } , ? native INTERPOLATION_TAIL token ?  ;
+format_profile = identifier , arguments ;
+(* Omitted type is restricted to the public immutable four-Int literal. *)
+array_value = [ type ] , "[" , [ expression , { "," , expression } ] , "]" ;
+typed_constructor = type , arguments | type , "." , identifier , arguments ;
+struct_decl = "struct" , identifier , "{" , type , "." , identifier , ";" , { type , "." , identifier , ";" } , "}" ;
+struct_value = identifier , "{" , field_initializer , { "," , field_initializer } , "}" ;
+field_initializer = identifier , ":" , expression ;
+nominal_decl = alias_decl | newtype_decl | enum_decl ;
+alias_decl = "type" , "alias" , identifier , "=" , type , ";" ;
+newtype_decl = "newtype" , identifier , "(" , type , ")" , ";" ;
+enum_decl = "enum" , identifier , "{" , variant , { "," , variant } , "}" ;
+variant = identifier , [ "(" , type , ")" ] ;
+generic_decl = [ "const" ] , "generic" , "<" , identifier , [ ":" , constraint ] , ">" , "(" , type , "." , identifier , ")" , identifier , parameters , [ "where" , identifier , ":" , constraint ] , block ;
+constraint = identifier , { "+" , identifier } ;
+callable_decl = "callable" , identifier , parameters , "capture" , ( "none" | ( "copy" | "move" | "borrow" ) , literal ) , block ;
+overload_decl = "overload" , "(" , type , "." , identifier , ")" , identifier , parameters , "where" , identifier , "symbol" , identifier , block ;
+match_statement = "match" , "(" , expression , ")" , "{" , match_arm , { match_arm } , "}" ;
+match_arm = identifier , [ "(" , [ identifier ] , ")" ] , "->" , expression_statement ;
+module_program = [ doc_block ] , "module" , identifier , ";" , { import_decl | export_decl } , [ "start" , module_expression , ";" ] ;
+import_decl = [ "export" ] , "import" , ( import_target | import_capsule ) , ";" ;
+import_target = plain_text , [ selection ] , "." , identifier ;
+selection = "{" , identifier , ";" , { identifier , ";" } , "}" ;
+import_capsule = "{" , import_decl , { import_decl } , "}" , [ "." , identifier ] ;
+export_decl = "export" , "public" , identifier , "=" , integer , ";" ;
+module_expression = identifier , "." , identifier , { "+" , identifier , "." , identifier } ;
+doc_block = "doc" , "{" , { doc_field | doc_contract | doc_example } , "}" ;
+doc_field = identifier , ":" , plain_text , ";" ;
+doc_contract = ( "effects" | "capabilities" ) , "{" , identifier , ";" , "}" ;
+doc_example = ( "example" | "law" ) , plain_text , "{" , ordinary_program , "}" ;
+profile_program = [ annotation ] , "start" , "(" , ")" , "{" , { profile_binding } , domain_expression , ";" , "}" ;
+profile_binding = type , ( "[" , profile_arguments , "]" | arguments ) , "." , identifier , ";" ;
+domain_expression = domain_atom , { domain_suffix | infix_operator , domain_atom } ;
+domain_atom = identifier | literal | "(" , domain_expression , ")" | domain_callee , "(" , profile_arguments , ")" | delimited_math ;
+domain_callee = identifier | ? exact calculus, reduction or formal quantifier token ?  ;
+profile_arguments = profile_argument , { ( "," | infix_operator ) , profile_argument } ;
+profile_argument = literal | identifier | "[" , profile_arguments , "]" | "(" , profile_arguments , ")" ;
+domain_suffix = "." , identifier , arguments | postfix_operator ;
+annotation = "@" , identifier , arguments ;
+math_constant = "inf" | "PI" | "TAU" | "∞" | "π" | "τ" ;
+delimited_math = "⌊" , expression , "⌋" | "⌈" , expression , "⌉" | "‖" , expression , "‖" | "⟨" , expression , "," , expression , "⟩" ;
+reduction = ( "∑" | "∏" ) , primary ;
+identifier = ? native exact ASCII identifier token; keywords are context checked, Unicode identifiers are rejected ?  ;

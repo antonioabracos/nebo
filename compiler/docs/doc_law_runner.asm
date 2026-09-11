@@ -1,71 +1,39 @@
-; EXAMPLES-EXECUTAVEIS-LAWS-STALENESS-E-COMPATIBILITY-DOCUMENTAL-F04: Laws/properties bounded e generated corpus
-; Bounded native semantic-documentation kernel.
-; rdi=input bytes, rsi=length, rdx=caller-owned 24-byte result.
-; Success publishes digest, length, and stable operation tag atomically.
-; Failure publishes nothing. No allocation, I/O, libc, network, or effects.
+; RF166-G158-F04 deterministic bounded law corpus validation.
 bits 64
 default rel
-
+%include "compiler/docs/doc_examples.inc"
 global neboc_doc_law_run
-
-%define DOC_MAX_INPUT 4096
-%define DOC_TAG 28
-%define hover_FNV_OFFSET 0xcbf29ce484222325
-%define hover_FNV_PRIME  0x100000001b3
-
+global neboc_doc_law_run_corpus
 section .text
-align 16
 neboc_doc_law_run:
-    test rdi, rdi
-    jz .argument
-    test rdx, rdx
-    jz .argument
-    test rdx, 7
-    jnz .argument
-    test rsi, rsi
-    jz .length
-    cmp rsi, DOC_MAX_INPUT
-    ja .length
-    lea rax, [rdi + rsi]
-    cmp rax, rdi
-    jb .length
-
-    mov rax, hover_FNV_OFFSET
-    mov r8, hover_FNV_PRIME
-    xor ecx, ecx
-.scan:
-    cmp rcx, rsi
-    jae .publish
-    movzx r9d, byte [rdi + rcx]
-    test r9b, r9b
-    jz .encoding
-    cmp r9b, 0x7f
-    ja .encoding
-    xor rax, r9
-    imul rax, r8
-    inc rcx
-    jmp .scan
-.publish:
-    xor rax, DOC_TAG
-    mov qword [rdx], rax
-    mov qword [rdx + 8], rsi
-    mov qword [rdx + 16], DOC_TAG
-    xor eax, eax
-    xor edx, edx
-    ret
-.argument:
-    mov eax, 1
-    mov edx, 1
-    ret
-.length:
-    mov eax, 2
-    mov edx, 2
-    ret
-.encoding:
-    mov eax, 3
-    mov edx, 3
-    ret
-.keyword:
-    mov eax, 4
-    mov edx, 4
-    ret
+neboc_doc_law_run_corpus:
+ DOCX_VALIDATE_REQUEST NEBOC_DOCX_OP_LAW,.validated
+.validated:
+ cmp qword [rdi+NEBOC_DOCX_KIND_OFFSET],NEBOC_DOCX_KIND_LAW
+ jne .contract
+ cmp qword [rdi+NEBOC_DOCX_SEED_OFFSET],0
+ je .contract
+ mov r8,[rdi+NEBOC_DOCX_BUDGET_OFFSET]
+ test r8,r8
+ jz .limit
+ cmp r8,NEBOC_DOCX_MAX_BUDGET
+ ja .limit
+ cmp qword [rdi+NEBOC_DOCX_OBSERVED_CASES_OFFSET],r8
+ jne .mismatch
+ cmp qword [rdi+NEBOC_DOCX_OBSERVED_FAILURES_OFFSET],0
+ jne .mismatch
+ mov r9,[rdi+NEBOC_DOCX_SEED_OFFSET]
+ rol r9,29
+ xor r9,[rdi+NEBOC_DOCX_SNIPPET_DIGEST_OFFSET]
+ xor r9,r8
+ DOCX_PUBLISH r9,NEBOC_DOCX_CLASS_LAW_PASS,r8,[rdi+NEBOC_DOCX_OBSERVED_CASES_OFFSET]
+.contract:
+ mov eax,NEBOC_DOCX_STATUS_CONTRACT
+ ret
+.mismatch:
+ mov eax,NEBOC_DOCX_STATUS_MISMATCH
+ ret
+.limit:
+ mov eax,NEBOC_DOCX_STATUS_LIMIT
+ ret
+section .note.GNU-stack noalloc noexec nowrite progbits

@@ -1,0 +1,4 @@
+start() {
+    Option<Int>(Some(1)).maybe;
+    maybe.isSome().flag;
+}

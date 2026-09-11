@@ -1,0 +1,3 @@
+overload (Int.self)pick(Int.value) where Any symbol pick_a { 11.return; }
+overload (Int.self)pick(Int.value) where Any symbol pick_b { 22.return; }
+start() { 1.pick(2).return; }

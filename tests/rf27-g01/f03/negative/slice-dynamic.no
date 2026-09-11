@@ -1,0 +1,4 @@
+start() {
+    2.bound;
+    Bytes.fromValues(10, 20, 30, 40).slice(1, bound).byteLength().return;
+}

@@ -1,0 +1,7 @@
+// Renderer plugins validate identity, ABI, layout, trust, state, and handle.
+start() {
+    RenderPlan;
+    3508;
+    output.stdout().stderr().target("console-abi-service").plain().visual().headlessEvent();
+    lifecycle.event("renderer-plugin").payload("renderer-load-call-unload-lifecycle").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

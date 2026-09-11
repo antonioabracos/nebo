@@ -14,6 +14,11 @@ global symbolic_integrate_monomial_i64
 symbolic_integrate_monomial_i64:
     test rcx, rcx
     jz .domain_return
+    mov qword [rcx], 0
+    mov qword [rcx + 8], 0
+    mov qword [rcx + 16], 0
+    mov qword [rcx + 24], 0
+    mov qword [rcx + 32], 0
     test rsi, rsi
     js .domain
     cmp rsi, rdx

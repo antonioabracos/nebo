@@ -1,0 +1,2 @@
+// Supply-chain payload: compare native effects after inventory, archive and rebuild.
+start(){70.left;13.right;(left+right).return;}

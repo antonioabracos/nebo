@@ -1,0 +1,258 @@
+symbol_id	canonical_identity	public_name	kind	origins	module	stability	material_coverage	source_row_count
+0x594012aa5915990b	nebo.1.0::K::import "module.path".alias;	`import "module.path".alias;`	K	RF166-G149-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x8f6a5d0302de0dc7	nebo.1.0::K::import { ... }.capsule;	`import { ... }.capsule;`	K	RF166-G149-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xa02d479172d8f15c	nebo.1.0::K::import { ... };	`import { ... };`	K	RF166-G149-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x532a5dd1f4ce0bca	nebo.1.0::K::import "module.path" { Name; function; }.alias;	`import "module.path" { Name; function; }.alias;`	K	RF166-G149-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x69ad5f0fc1248996	nebo.1.0::K::export import ...;	`export import ...;`	K	RF166-G149-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x4813660721a1ef28	nebo.1.0::K::doc { ... }	`doc { ... }`	K	RF166-G149-F03,RF166-G155-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	2
+0x7ad481308622a387	nebo.1.0::P::LanguageAuthorityAudit.new(head, registries)	`LanguageAuthorityAudit.new(head, registries)`	P	RF166-G149-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x943fc1dde120a81d	nebo.1.0::P::ImportSyntaxRegistry.freeze(decisions)	`ImportSyntaxRegistry.freeze(decisions)`	P	RF166-G149-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x4222ce183b9547d4	nebo.1.0::P::DocSchemaRegistry.freeze(schema)	`DocSchemaRegistry.freeze(schema)`	P	RF166-G149-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x4a1648d80968a766	nebo.1.0::P::InterfaceFormatRegistry.freeze(version)	`InterfaceFormatRegistry.freeze(version)`	P	RF166-G149-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xad4ead20990ffb11	nebo.1.0::P::PreludeContract.freeze(edition, surface)	`PreludeContract.freeze(edition, surface)`	P	RF166-G149-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x3a05d37e029af561	nebo.1.0::CLI::neboc language-contract modules --report <path>	`neboc language-contract modules --report <path>`	CLI	RF166-G149-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xc457380998fdc617	nebo.1.0::CLI::neboc language-contract docs --report <path>	`neboc language-contract docs --report <path>`	CLI	RF166-G149-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x5ff06a886e7868b1	nebo.1.0::CLI::neboc roadmap-audit rf166	`neboc roadmap-audit rf166`	CLI	RF166-G149-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x4890642ac47f1d92	nebo.1.0::P::ModuleId.new(packageId, logicalPath)	`ModuleId.new(packageId, logicalPath)`	P	RF166-G150-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x7c52f69f64ac130b	nebo.1.0::P::ModuleId.parse(text)	`ModuleId.parse(text)`	P	RF166-G150-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xdd72cce0c8c95fef	nebo.1.0::P::moduleId.digest()	`moduleId.digest()`	P	RF166-G150-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xc54e40b505f1e400	nebo.1.0::P::ModuleRoot.discover(workspace, policy)	`ModuleRoot.discover(workspace, policy)`	P	RF166-G150-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x1335b848c8440694	nebo.1.0::P::SourceUnit.discover(root, policy)	`SourceUnit.discover(root, policy)`	P	RF166-G150-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xb38a9977d32f3f50	nebo.1.0::P::Module.addUnit(sourceUnit)	`Module.addUnit(sourceUnit)`	P	RF166-G150-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x0ae7ce4a50c17227	nebo.1.0::P::ModuleGraph.build(modules, imports)	`ModuleGraph.build(modules, imports)`	P	RF166-G150-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x3fbae9634fbb5b45	nebo.1.0::P::graph.topologicalOrder()	`graph.topologicalOrder()`	P	RF166-G150-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xa65f0598775b8ccc	nebo.1.0::P::graph.detectCycles()	`graph.detectCycles()`	P	RF166-G150-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x77e88ba3e465c018	nebo.1.0::P::graph.invalidate(changes)	`graph.invalidate(changes)`	P	RF166-G150-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x66e04c5cf2946e8c	nebo.1.0::P::graph.explain(moduleId)	`graph.explain(moduleId)`	P	RF166-G150-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x67cad71a00150827	nebo.1.0::P::module.validateCaseUnicode(policy)	`module.validateCaseUnicode(policy)`	P	RF166-G150-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x53bab4ea95858535	nebo.1.0::CLI::neboc module-info <module>	`neboc module-info <module>`	CLI	RF166-G150-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x48cebe9921b015b4	nebo.1.0::CLI::neboc module-graph [--format text\|json\|dot]	`neboc module-graph [--format text\|json\|dot]`	CLI	RF166-G150-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x25dbd0d82bf707fd	nebo.1.0::K::import "project.users".users;	`import "project.users".users;`	K	RF166-G151-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xf25ce2921993f26e	nebo.1.0::K::import { import-decl* }.identity;	`import { import-decl* }.identity;`	K	RF166-G151-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xb17276330febcb2a	nebo.1.0::K::import { import-decl* };	`import { import-decl* };`	K	RF166-G151-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x6ff0d6749a8b4aa0	nebo.1.0::P::ImportDecl.parse(tokens)	`ImportDecl.parse(tokens)`	P	RF166-G151-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x1ced0ae660460253	nebo.1.0::P::ImportResolver.resolve(moduleId, target)	`ImportResolver.resolve(moduleId, target)`	P	RF166-G151-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xce0101ba84daca59	nebo.1.0::P::ImportAlias.bind(alias, moduleId)	`ImportAlias.bind(alias, moduleId)`	P	RF166-G151-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xe90ddf4359a0f5a4	nebo.1.0::P::ImportCapsule.named(name, entries)	`ImportCapsule.named(name, entries)`	P	RF166-G151-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x707c353a0825e55b	nebo.1.0::P::ImportCapsule.anonymous(entries)	`ImportCapsule.anonymous(entries)`	P	RF166-G151-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xa6daba3e04a1c1a4	nebo.1.0::P::imports.detectCollisions()	`imports.detectCollisions()`	P	RF166-G151-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x5cd0cabb25c46a5f	nebo.1.0::P::imports.importedModules()	`imports.importedModules()`	P	RF166-G151-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xf3e78be9e1e8ffe5	nebo.1.0::P::imports.explain(symbol)	`imports.explain(symbol)`	P	RF166-G151-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xfe823007a539bd40	nebo.1.0::CLI::neboc imports list <module>	`neboc imports list <module>`	CLI	RF166-G151-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x7d760f0e0dc9f957	nebo.1.0::CLI::neboc imports explain <symbol>	`neboc imports explain <symbol>`	CLI	RF166-G151-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xd2022e03051d51a0	nebo.1.0::K::import "project.users" { User; findUser; }.users;	`import "project.users" { User; findUser; }.users;`	K	RF166-G152-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x1428e1a18a6dd717	nebo.1.0::K::export import "project.users" { User; }.users;	`export import "project.users" { User; }.users;`	K	RF166-G152-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x03680bd63bbda3d5	nebo.1.0::K::public / internal / private	`public / internal / private`	K	RF166-G152-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xb22f9bc840085e62	nebo.1.0::P::SelectiveImport.resolve(names, interface)	`SelectiveImport.resolve(names, interface)`	P	RF166-G152-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x0c68df768717099b	nebo.1.0::P::ReexportGraph.add(origin, exportedNames)	`ReexportGraph.add(origin, exportedNames)`	P	RF166-G152-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x8b003d9326d17eb6	nebo.1.0::P::Visibility.check(requester, symbol)	`Visibility.check(requester, symbol)`	P	RF166-G152-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xd5cbdfc503439678	nebo.1.0::P::imports.unused()	`imports.unused()`	P	RF166-G152-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x801b4859f704ce16	nebo.1.0::P::imports.ambiguous()	`imports.ambiguous()`	P	RF166-G152-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xe44dd62161624270	nebo.1.0::P::AutoImportPlan.new(symbolId, destination)	`AutoImportPlan.new(symbolId, destination)`	P	RF166-G152-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x849989f50106cc23	nebo.1.0::P::autoImport.edits()	`autoImport.edits()`	P	RF166-G152-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xa605c636adbe0429	nebo.1.0::P::imports.organize(policy)	`imports.organize(policy)`	P	RF166-G152-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xcec53a36fe0f5c7b	nebo.1.0::P::imports.publicApiImpact()	`imports.publicApiImpact()`	P	RF166-G152-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xcff4915ceead802c	nebo.1.0::CLI::neboc organize-imports <paths> --check\|--apply	`neboc organize-imports <paths> --check\|--apply`	CLI	RF166-G152-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x2bc1debefece8730	nebo.1.0::CLI::neboc add-import <symbol> --to <module>	`neboc add-import <symbol> --to <module>`	CLI	RF166-G152-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xf1dfb0b3988b46f3	nebo.1.0::CLI::neboc imports api-impact <module>	`neboc imports api-impact <module>`	CLI	RF166-G152-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xd3f82cb387ff24d2	nebo.1.0::P::ModuleInitPlan.new(graph, target)	`ModuleInitPlan.new(graph, target)`	P	RF166-G153-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x0b0f795cedef68ce	nebo.1.0::P::init.addPureConstant(symbol, value)	`init.addPureConstant(symbol, value)`	P	RF166-G153-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x67f487e39ea2886b	nebo.1.0::P::init.topologicalOrder()	`init.topologicalOrder()`	P	RF166-G153-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xe580e5de7c576d83	nebo.1.0::P::init.requiredEffects()	`init.requiredEffects()`	P	RF166-G153-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x0e3018bb744ea16d	nebo.1.0::P::init.requiredCapabilities()	`init.requiredCapabilities()`	P	RF166-G153-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xb22798caaeed8f52	nebo.1.0::P::init.detectCycles()	`init.detectCycles()`	P	RF166-G153-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x75561f3a2c26abfb	nebo.1.0::P::init.executeOnce(runtimeState)	`init.executeOnce(runtimeState)`	P	RF166-G153-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xa32f0534dc148d78	nebo.1.0::P::init.rollback(failure)	`init.rollback(failure)`	P	RF166-G153-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x3d55ea14616f8cba	nebo.1.0::P::init.cleanup()	`init.cleanup()`	P	RF166-G153-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x141ba727dfe67088	nebo.1.0::P::init.report()	`init.report()`	P	RF166-G153-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x0fd112a19748e4fe	nebo.1.0::CLI::neboc module-init-report <entry>	`neboc module-init-report <entry>`	CLI	RF166-G153-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x8281e393a43eca57	nebo.1.0::CLI::neboc check <project> --deny-effectful-init	`neboc check <project> --deny-effectful-init`	CLI	RF166-G153-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xb8ad823cb1ea3345	nebo.1.0::P::NeboInterface.new(moduleId, edition, target)	`NeboInterface.new(moduleId, edition, target)`	P	RF166-G154-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x6e2204b2689401f5	nebo.1.0::P::interfaceWriter.addExport(symbol)	`interfaceWriter.addExport(symbol)`	P	RF166-G154-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x93cdd99485f4b934	nebo.1.0::P::interfaceWriter.addType(typeRecord)	`interfaceWriter.addType(typeRecord)`	P	RF166-G154-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x891bb21116ad24dc	nebo.1.0::P::interfaceWriter.addLayout(layoutRecord)	`interfaceWriter.addLayout(layoutRecord)`	P	RF166-G154-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x012ee1228227ad1a	nebo.1.0::P::interfaceWriter.addEffects(symbolId, effects)	`interfaceWriter.addEffects(symbolId, effects)`	P	RF166-G154-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xbf21f5b6389eb234	nebo.1.0::P::interfaceWriter.addCapabilities(symbolId, capabilities)	`interfaceWriter.addCapabilities(symbolId, capabilities)`	P	RF166-G154-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x97447ac72a984d8b	nebo.1.0::P::interfaceWriter.addDocRecord(docRecord)	`interfaceWriter.addDocRecord(docRecord)`	P	RF166-G154-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xf3be622215b0c02e	nebo.1.0::P::interfaceWriter.finalize()	`interfaceWriter.finalize()`	P	RF166-G154-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x5a7951ee0f9027dd	nebo.1.0::P::InterfaceReader.open(bytes, limits)	`InterfaceReader.open(bytes, limits)`	P	RF166-G154-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x46fc09e1bf35f043	nebo.1.0::P::interfaceReader.exports()	`interfaceReader.exports()`	P	RF166-G154-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xc909638f91359ea9	nebo.1.0::P::interface.apiFingerprint()	`interface.apiFingerprint()`	P	RF166-G154-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xcc36c13d6e467680	nebo.1.0::P::interface.abiFingerprint(target)	`interface.abiFingerprint(target)`	P	RF166-G154-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xea470bd3f8e31945	nebo.1.0::P::interface.compatibilityWith(other, policy)	`interface.compatibilityWith(other, policy)`	P	RF166-G154-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xae4fc3b53fe261c1	nebo.1.0::P::InterfaceCache.lookup(moduleId, key)	`InterfaceCache.lookup(moduleId, key)`	P	RF166-G154-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xb9a1e3ddc9ad93dc	nebo.1.0::CLI::neboc emit-interface <module> -o <module>.ni	`neboc emit-interface <module> -o <module>.ni`	CLI	RF166-G154-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xb81f391a4eb1751c	nebo.1.0::CLI::neboc interface inspect <file.ni> [--json]	`neboc interface inspect <file.ni> [--json]`	CLI	RF166-G154-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x515b4ce41108af39	nebo.1.0::CLI::neboc api-diff <old.ni> <new.ni>	`neboc api-diff <old.ni> <new.ni>`	CLI	RF166-G154-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x9fe37c11600acb7d	nebo.1.0::K::title / summary	`title / summary`	K	RF166-G155-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xde368180904fbf1c	nebo.1.0::K::parameters { ... }	`parameters { ... }`	K	RF166-G155-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xd856cc0fac54ee05	nebo.1.0::K::returns { ... }	`returns { ... }`	K	RF166-G155-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x31733bb1a79065e7	nebo.1.0::K::errors { ... }	`errors { ... }`	K	RF166-G155-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xebd81ffe21f2f548	nebo.1.0::K::effects { ... }	`effects { ... }`	K	RF166-G155-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xc44d5145a4db01c2	nebo.1.0::K::capabilities { ... }	`capabilities { ... }`	K	RF166-G155-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xf16e66c814ceefdf	nebo.1.0::K::ownership { ... }	`ownership { ... }`	K	RF166-G155-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x61328de8673a83dc	nebo.1.0::K::complexity { ... }	`complexity { ... }`	K	RF166-G155-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x473801fde926b72e	nebo.1.0::K::risks { ... }	`risks { ... }`	K	RF166-G155-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xefc63bb7fb976ff0	nebo.1.0::K::since / deprecated	`since / deprecated`	K	RF166-G155-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x29f3453fd1172d7f	nebo.1.0::K::example "name" { ... }	`example "name" { ... }`	K	RF166-G155-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xcf37fd85b3c6a121	nebo.1.0::K::law "name" { ... }	`law "name" { ... }`	K	RF166-G155-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xc71382b5d46e202c	nebo.1.0::P::DocParser.parse(tokens, attachmentContext)	`DocParser.parse(tokens, attachmentContext)`	P	RF166-G155-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x30c080a4a232fe46	nebo.1.0::CLI::neboc dump doc-ast <source>	`neboc dump doc-ast <source>`	CLI	RF166-G155-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x29ec3c3b2abb5a91	nebo.1.0::P::DocRecord.new(symbolId, sourceSpan)	`DocRecord.new(symbolId, sourceSpan)`	P	RF166-G156-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x60bc95f53e799340	nebo.1.0::P::docRecord.setSummary(text)	`docRecord.setSummary(text)`	P	RF166-G156-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x1c1103790b7d9b07	nebo.1.0::P::docRecord.addParameter(parameterId, description)	`docRecord.addParameter(parameterId, description)`	P	RF166-G156-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xcad26632d666835b	nebo.1.0::P::docRecord.setReturn(returnType, description)	`docRecord.setReturn(returnType, description)`	P	RF166-G156-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xb24655943b1df20a	nebo.1.0::P::docRecord.addError(errorType, conditions)	`docRecord.addError(errorType, conditions)`	P	RF166-G156-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x00f01aad4ff9e1c9	nebo.1.0::P::docRecord.addEffect(effectId)	`docRecord.addEffect(effectId)`	P	RF166-G156-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x0836c2e1bc0915b7	nebo.1.0::P::docRecord.addCapability(capabilityId)	`docRecord.addCapability(capabilityId)`	P	RF166-G156-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x7195d18ed0302aca	nebo.1.0::P::docRecord.setOwnership(contract)	`docRecord.setOwnership(contract)`	P	RF166-G156-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x311d5640c859df9d	nebo.1.0::P::docRecord.setComplexity(contract)	`docRecord.setComplexity(contract)`	P	RF166-G156-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x3722ec2550e8db4e	nebo.1.0::P::docRecord.addRisk(risk)	`docRecord.addRisk(risk)`	P	RF166-G156-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xd1fa69ac6d2c459b	nebo.1.0::P::docRecord.addExample(exampleId)	`docRecord.addExample(exampleId)`	P	RF166-G156-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xfcc3eab11fb2847f	nebo.1.0::P::docRecord.addLaw(lawId)	`docRecord.addLaw(lawId)`	P	RF166-G156-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xc27bf5fb57da7849	nebo.1.0::P::docRecord.signatureHash()	`docRecord.signatureHash()`	P	RF166-G156-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x21a56037201cc11b	nebo.1.0::P::docRecord.merge(origin, policy)	`docRecord.merge(origin, policy)`	P	RF166-G156-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x6ab327dfaf02635f	nebo.1.0::P::docRecord.serialize(interfaceWriter)	`docRecord.serialize(interfaceWriter)`	P	RF166-G156-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xc743f5255021d84a	nebo.1.0::CLI::neboc dump doc-record <symbol>	`neboc dump doc-record <symbol>`	CLI	RF166-G156-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x669728fa78251213	nebo.1.0::P::DocValidator.validate(docRecord, symbol)	`DocValidator.validate(docRecord, symbol)`	P	RF166-G157-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x98c4a245c0479bb8	nebo.1.0::P::validator.validateParameters()	`validator.validateParameters()`	P	RF166-G157-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x41c8ced36467d452	nebo.1.0::P::validator.validateReturn()	`validator.validateReturn()`	P	RF166-G157-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x733e95be55c8d9ef	nebo.1.0::P::validator.validateErrors()	`validator.validateErrors()`	P	RF166-G157-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x6f6153d32b4470ca	nebo.1.0::P::validator.validateEffects()	`validator.validateEffects()`	P	RF166-G157-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x5b6dcaf7887d865a	nebo.1.0::P::validator.validateCapabilities()	`validator.validateCapabilities()`	P	RF166-G157-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x3e3676c4fc4e1de9	nebo.1.0::P::validator.validateOwnership()	`validator.validateOwnership()`	P	RF166-G157-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x28c9eb653e36e8e8	nebo.1.0::P::validator.validateComplexity()	`validator.validateComplexity()`	P	RF166-G157-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x300986081999709c	nebo.1.0::P::validator.validateRisks()	`validator.validateRisks()`	P	RF166-G157-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x4f3acef0828657fc	nebo.1.0::P::validator.validateLifecycle()	`validator.validateLifecycle()`	P	RF166-G157-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x6b685ae0b4dd7fba	nebo.1.0::P::validator.validateTargetAvailability()	`validator.validateTargetAvailability()`	P	RF166-G157-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x0efc9fbcb7a025a9	nebo.1.0::P::DocLint.missingDocumentation(policy)	`DocLint.missingDocumentation(policy)`	P	RF166-G157-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x07c78f706ee214f0	nebo.1.0::P::DocLint.staleDocumentation()	`DocLint.staleDocumentation()`	P	RF166-G157-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x7b1e8b94ebd65581	nebo.1.0::CLI::neboc check-docs <paths> [--deny warnings]	`neboc check-docs <paths> [--deny warnings]`	CLI	RF166-G157-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xa0be89ebe3ffde69	nebo.1.0::CLI::neboc lint <paths> --group docs	`neboc lint <paths> --group docs`	CLI	RF166-G157-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xa502169956b437d5	nebo.1.0::K::example "name" { statements }	`example "name" { statements }`	K	RF166-G158-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x38c559dc7936bb48	nebo.1.0::K::law "name" { property }	`law "name" { property }`	K	RF166-G158-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x2676837f520c0702	nebo.1.0::P::DocExample.compile(context)	`DocExample.compile(context)`	P	RF166-G158-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x41ece3a4685d674f	nebo.1.0::P::docExample.run(policy)	`docExample.run(policy)`	P	RF166-G158-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x3ca195d891fa6c4d	nebo.1.0::P::docExample.expectedOutput()	`docExample.expectedOutput()`	P	RF166-G158-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x3566a6dd6d051d63	nebo.1.0::P::docExample.isolate(capabilities)	`docExample.isolate(capabilities)`	P	RF166-G158-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x870d41be5f3944d2	nebo.1.0::P::DocLaw.compileProperty()	`DocLaw.compileProperty()`	P	RF166-G158-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x1daf534797eff50f	nebo.1.0::P::docLaw.runCorpus(seed, budget)	`docLaw.runCorpus(seed, budget)`	P	RF166-G158-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xecea3b371d0c6364	nebo.1.0::P::docRecord.detectStaleness(symbol)	`docRecord.detectStaleness(symbol)`	P	RF166-G158-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xcc11bb00b615ee26	nebo.1.0::P::DocCompatibility.compare(old, new)	`DocCompatibility.compare(old, new)`	P	RF166-G158-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x4732102a85ed5815	nebo.1.0::P::DocRefactorMap.apply(symbolChanges)	`DocRefactorMap.apply(symbolChanges)`	P	RF166-G158-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xa20b477cda0e7593	nebo.1.0::P::docExample.redact(policy)	`docExample.redact(policy)`	P	RF166-G158-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x585a87b21afb0c4e	nebo.1.0::CLI::neboc test-docs <paths>	`neboc test-docs <paths>`	CLI	RF166-G158-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x6bf03329020b9a78	nebo.1.0::CLI::neboc docs --verify <paths>	`neboc docs --verify <paths>`	CLI	RF166-G158-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x7f6481dd41f5600b	nebo.1.0::P::DocsGraph.build(interfaces, policy)	`DocsGraph.build(interfaces, policy)`	P	RF166-G159-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x207e2a2f0a853d65	nebo.1.0::P::docsGraph.moduleIndex()	`docsGraph.moduleIndex()`	P	RF166-G159-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x4033725f43502fdf	nebo.1.0::P::DocsRenderer.renderMarkdown(graph)	`DocsRenderer.renderMarkdown(graph)`	P	RF166-G159-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x67307cbc76d32897	nebo.1.0::P::DocsRenderer.renderHtml(graph)	`DocsRenderer.renderHtml(graph)`	P	RF166-G159-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x6200d009e59c086e	nebo.1.0::P::DocsRenderer.renderJson(graph)	`DocsRenderer.renderJson(graph)`	P	RF166-G159-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xa561a7c96136561f	nebo.1.0::P::docs.searchIndex()	`docs.searchIndex()`	P	RF166-G159-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x69b68d351a0aaa9c	nebo.1.0::P::docs.crossLinks()	`docs.crossLinks()`	P	RF166-G159-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x02f2fd6562282f53	nebo.1.0::P::docs.sourceLinks(policy)	`docs.sourceLinks(policy)`	P	RF166-G159-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x16827e05da472353	nebo.1.0::P::docs.versionView(edition, target)	`docs.versionView(edition, target)`	P	RF166-G159-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x3f66ca322588eb27	nebo.1.0::P::docs.packageArchive()	`docs.packageArchive()`	P	RF166-G159-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xb27b9742b09e1b15	nebo.1.0::P::docs.incrementalUpdate(changes)	`docs.incrementalUpdate(changes)`	P	RF166-G159-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x3e70f208061d9234	nebo.1.0::CLI::neboc docs <package> -o <dir>	`neboc docs <package> -o <dir>`	CLI	RF166-G159-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x687e6b0bc8c6f004	nebo.1.0::CLI::neboc docs --verify <package>	`neboc docs --verify <package>`	CLI	RF166-G159-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xff6ce3be9d90df1a	nebo.1.0::CLI::neboc docs search <query> --index <path>	`neboc docs search <query> --index <path>`	CLI	RF166-G159-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xdc299c69cd8ed789	nebo.1.0::CLI::neboc docs diff <old.ni> <new.ni>	`neboc docs diff <old.ni> <new.ni>`	CLI	RF166-G159-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x230522e4bd30e3eb	nebo.1.0::CLI::neboc docs serve <dir> --local-only	`neboc docs serve <dir> --local-only`	CLI	RF166-G159-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xa5063e559e49a8f3	nebo.1.0::P::ProjectSymbolIndex.new(workspace, revision)	`ProjectSymbolIndex.new(workspace, revision)`	P	RF166-G160-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xc431968c59305dd2	nebo.1.0::P::index.addSourceSymbol(symbol)	`index.addSourceSymbol(symbol)`	P	RF166-G160-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xb536d5bf342a2609	nebo.1.0::P::index.addInterfaceSymbol(record)	`index.addInterfaceSymbol(record)`	P	RF166-G160-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x2e7e4ed8ec71ff21	nebo.1.0::P::index.addPackageIndex(package)	`index.addPackageIndex(package)`	P	RF166-G160-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x8b263467e3b939ee	nebo.1.0::P::index.removeRevision(revision)	`index.removeRevision(revision)`	P	RF166-G160-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x373b0d9ce2b6091f	nebo.1.0::P::index.queryByName(name)	`index.queryByName(name)`	P	RF166-G160-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xa1e3e2d237b8315b	nebo.1.0::P::index.queryByReceiver(typeId)	`index.queryByReceiver(typeId)`	P	RF166-G160-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xf624b8b9448fa072	nebo.1.0::P::index.queryByModule(moduleId)	`index.queryByModule(moduleId)`	P	RF166-G160-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x3ce26765d4f870b9	nebo.1.0::P::index.filterByTarget(target)	`index.filterByTarget(target)`	P	RF166-G160-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xf5b62a2886e3aac7	nebo.1.0::P::index.filterByEdition(edition)	`index.filterByEdition(edition)`	P	RF166-G160-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x265386294ed1ea9b	nebo.1.0::P::index.filterByContext(context)	`index.filterByContext(context)`	P	RF166-G160-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xafe3e3d78d6440ac	nebo.1.0::P::index.incrementalUpdate(changes)	`index.incrementalUpdate(changes)`	P	RF166-G160-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x8564ad452cb3ed05	nebo.1.0::P::index.memoryReport()	`index.memoryReport()`	P	RF166-G160-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x9a35354bd5b69b36	nebo.1.0::CLI::neboc symbols <workspace> [--json]	`neboc symbols <workspace> [--json]`	CLI	RF166-G160-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x6531372e32b150f5	nebo.1.0::CLI::neboc symbol-index --rebuild\|--verify	`neboc symbol-index --rebuild\|--verify`	CLI	RF166-G160-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xb9e9887e9eded2d9	nebo.1.0::P::CompletionContext.fromPosition(snapshot, position)	`CompletionContext.fromPosition(snapshot, position)`	P	RF166-G161-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xd1ec4cabc51124bb	nebo.1.0::P::completion.receiverType()	`completion.receiverType()`	P	RF166-G161-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x579bf2532cbdd286	nebo.1.0::P::completion.preludeMembers()	`completion.preludeMembers()`	P	RF166-G161-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xf2b15cfac50fd135	nebo.1.0::P::completion.importedMembers()	`completion.importedMembers()`	P	RF166-G161-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x2f0dcbfb8b4259be	nebo.1.0::P::completion.autoImportCandidates()	`completion.autoImportCandidates()`	P	RF166-G161-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xf7ee97d32ff2da2b	nebo.1.0::P::completion.filterEffects(context)	`completion.filterEffects(context)`	P	RF166-G161-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x555ca1eab195f5e3	nebo.1.0::P::completion.filterCapabilities(context)	`completion.filterCapabilities(context)`	P	RF166-G161-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x0426349d90affbdb	nebo.1.0::P::completion.filterConstraints(receiver)	`completion.filterConstraints(receiver)`	P	RF166-G161-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x06f1dea74799fa41	nebo.1.0::P::completion.filterTargetEdition()	`completion.filterTargetEdition()`	P	RF166-G161-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x9469da927fbcb876	nebo.1.0::P::completion.rank(policy)	`completion.rank(policy)`	P	RF166-G161-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x5e10a671f3fd673b	nebo.1.0::P::completion.details(symbolId)	`completion.details(symbolId)`	P	RF166-G161-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xa6db7714ecff269b	nebo.1.0::P::completion.applyAutoImport(candidate)	`completion.applyAutoImport(candidate)`	P	RF166-G161-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xc2a684eb678a2224	nebo.1.0::P::completion.resolve(itemId)	`completion.resolve(itemId)`	P	RF166-G161-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xe8bc6f38bdde93bc	nebo.1.0::CLI::neboc completion-debug <file>:<line>:<column>	`neboc completion-debug <file>:<line>:<column>`	CLI	RF166-G161-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x604151e4ebff6816	nebo.1.0::CLI::neboc completion-corpus --verify	`neboc completion-corpus --verify`	CLI	RF166-G161-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xaee5815395a3d34f	nebo.1.0::P::Hover.resolve(snapshot, position)	`Hover.resolve(snapshot, position)`	P	RF166-G162-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xd3529d98185c09f8	nebo.1.0::P::SignatureHelp.resolve(callSite)	`SignatureHelp.resolve(callSite)`	P	RF166-G162-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xef05c37ecb0b3942	nebo.1.0::P::Definition.resolve(symbolId)	`Definition.resolve(symbolId)`	P	RF166-G162-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x46d574f0d48cef0f	nebo.1.0::P::References.resolve(symbolId, scope)	`References.resolve(symbolId, scope)`	P	RF166-G162-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xd66d0a97ffab8403	nebo.1.0::P::RenamePlan.new(symbolId, newName)	`RenamePlan.new(symbolId, newName)`	P	RF166-G162-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x7ba9b1171041b6c2	nebo.1.0::P::rename.preview()	`rename.preview()`	P	RF166-G162-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x017db4236bc83678	nebo.1.0::P::rename.apply(policy)	`rename.apply(policy)`	P	RF166-G162-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x221df49f81477b21	nebo.1.0::P::InterfaceDefinition.resolve(record)	`InterfaceDefinition.resolve(record)`	P	RF166-G162-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xf7ffb2957e559733	nebo.1.0::P::RelatedDocs.resolve(symbolId)	`RelatedDocs.resolve(symbolId)`	P	RF166-G162-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x627dd777017d32ed	nebo.1.0::P::snapshot.validate(revision)	`snapshot.validate(revision)`	P	RF166-G162-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x22a84f30fbb28c0a	nebo.1.0::P::SourceChange.verifySemantics(plan)	`SourceChange.verifySemantics(plan)`	P	RF166-G162-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xb3423ea014db6cf8	nebo.1.0::CLI::neboc hover <file>:<line>:<column>	`neboc hover <file>:<line>:<column>`	CLI	RF166-G162-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x6681a9126dc891d0	nebo.1.0::CLI::neboc references <symbol>	`neboc references <symbol>`	CLI	RF166-G162-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x8d79c1172a03055a	nebo.1.0::CLI::neboc rename <symbol> <new> --preview\|--apply	`neboc rename <symbol> <new> --preview\|--apply`	CLI	RF166-G162-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x42770a0b4d3855ed	nebo.1.0::P::PreludeProfile.forEdition(edition)	`PreludeProfile.forEdition(edition)`	P	RF166-G163-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x39f06c3a5cd4b3ac	nebo.1.0::P::PreludeInterface.load(profile, target)	`PreludeInterface.load(profile, target)`	P	RF166-G163-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x6036282ec308d804	nebo.1.0::P::Prelude.inject(resolver)	`Prelude.inject(resolver)`	P	RF166-G163-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xa872c35e8c63e610	nebo.1.0::P::Prelude.symbols()	`Prelude.symbols()`	P	RF166-G163-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xef8b838ec4a78078	nebo.1.0::P::Prelude.disable(profile)	`Prelude.disable(profile)`	P	RF166-G163-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x136e36cec2f487e3	nebo.1.0::P::StdlibModuleRegistry.resolve(name, edition, target)	`StdlibModuleRegistry.resolve(name, edition, target)`	P	RF166-G163-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x24ef276a49d81409	nebo.1.0::P::stdlib.reachableComponents(program)	`stdlib.reachableComponents(program)`	P	RF166-G163-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x3d817708af7ee3a3	nebo.1.0::P::PreludeMigration.plan(fromEdition, toEdition)	`PreludeMigration.plan(fromEdition, toEdition)`	P	RF166-G163-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x91552f7348d881fa	nebo.1.0::P::PreludeMigration.publicApiImpact()	`PreludeMigration.publicApiImpact()`	P	RF166-G163-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x132375ef0fd2aa6a	nebo.1.0::CLI::neboc check <source> --no-prelude	`neboc check <source> --no-prelude`	CLI	RF166-G163-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x8ac4ab6fc489b96a	nebo.1.0::CLI::neboc prelude-report [--edition <v>]	`neboc prelude-report [--edition <v>]`	CLI	RF166-G163-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xadb82c8bd3ad1850	nebo.1.0::CLI::neboc migrate-imports <paths> --edition <v>	`neboc migrate-imports <paths> --edition <v>`	CLI	RF166-G163-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xeb36cebf4ef1f598	nebo.1.0::CLI::neboc stdlib modules [--target <triple>]	`neboc stdlib modules [--target <triple>]`	CLI	RF166-G163-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xd4769c21bc46f3cc	nebo.1.0::K::// ...	`// ...`	K	RF166-G164-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x05cb1acf73fcdac8	nebo.1.0::K::/* ... */	`/* ... */`	K	RF166-G164-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x43b0c5d339a43ba4	nebo.1.0::P::BlockCommentLexer.begin(offset)	`BlockCommentLexer.begin(offset)`	P	RF166-G164-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xf2e9ea240e896c5c	nebo.1.0::P::blockComment.pushNested(offset)	`blockComment.pushNested(offset)`	P	RF166-G164-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x057243b3fd33d36c	nebo.1.0::P::blockComment.pop(offset)	`blockComment.pop(offset)`	P	RF166-G164-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x2cb1f276fe681bbd	nebo.1.0::P::blockComment.finish(eof)	`blockComment.finish(eof)`	P	RF166-G164-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x3aeabb9d3145bf84	nebo.1.0::P::TriviaStore.attach(node, trivia)	`TriviaStore.attach(node, trivia)`	P	RF166-G164-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xda7f6212b9211e6b	nebo.1.0::P::Formatter.preserveTrivia(policy)	`Formatter.preserveTrivia(policy)`	P	RF166-G164-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xcec84392bb5ac854	nebo.1.0::P::SourceMap.mapTrivia(span)	`SourceMap.mapTrivia(span)`	P	RF166-G164-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x454217bf8878e697	nebo.1.0::P::FoldingRange.comments(document)	`FoldingRange.comments(document)`	P	RF166-G164-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x50c2da06a0cee33d	nebo.1.0::P::CommentPolicy.maxNesting()	`CommentPolicy.maxNesting()`	P	RF166-G164-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x278f6c5686a83037	nebo.1.0::P::DocCommentClassifier.classify(token)	`DocCommentClassifier.classify(token)`	P	RF166-G164-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x3020a14b3bce64b4	nebo.1.0::CLI::neboc format <paths> --preserve-comments	`neboc format <paths> --preserve-comments`	CLI	RF166-G164-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x123f540b70a2f6c0	nebo.1.0::CLI::neboc lint <paths> --group comments	`neboc lint <paths> --group comments`	CLI	RF166-G164-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x4f3dd57724394b01	nebo.1.0::P::ModuleConformanceSuite.run(profile)	`ModuleConformanceSuite.run(profile)`	P	RF166-G165-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x184c32bd33084fc8	nebo.1.0::P::InterfaceConformanceSuite.run(profile)	`InterfaceConformanceSuite.run(profile)`	P	RF166-G165-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x267158fc3e707f2f	nebo.1.0::P::DocConformanceSuite.run(profile)	`DocConformanceSuite.run(profile)`	P	RF166-G165-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xb8d879816d8337c2	nebo.1.0::P::LspParitySuite.run(profile)	`LspParitySuite.run(profile)`	P	RF166-G165-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x6973cd7b9d02e6fc	nebo.1.0::P::TriviaConformanceSuite.run(profile)	`TriviaConformanceSuite.run(profile)`	P	RF166-G165-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xae0357768e462842	nebo.1.0::P::ImportFuzzer.run(seed, budget)	`ImportFuzzer.run(seed, budget)`	P	RF166-G165-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x9976ceda14d48ec8	nebo.1.0::P::InterfaceFuzzer.run(seed, budget)	`InterfaceFuzzer.run(seed, budget)`	P	RF166-G165-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x8595fad8fd7445e9	nebo.1.0::P::DocFuzzer.run(seed, budget)	`DocFuzzer.run(seed, budget)`	P	RF166-G165-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xea7ae93c22f11894	nebo.1.0::P::TriviaFuzzer.run(seed, budget)	`TriviaFuzzer.run(seed, budget)`	P	RF166-G165-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x6c0b96da255045ce	nebo.1.0::P::MigrationSuite.run(from, to)	`MigrationSuite.run(from, to)`	P	RF166-G165-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x89ada407cf1375f6	nebo.1.0::P::Rf166PerformanceBudget.measure()	`Rf166PerformanceBudget.measure()`	P	RF166-G165-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xf3218ab6076a95b2	nebo.1.0::P::Rf166DeterminismSuite.doubleClean()	`Rf166DeterminismSuite.doubleClean()`	P	RF166-G165-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xf6f3e5cb60b1fe58	nebo.1.0::CLI::neboc conformance modules-docs-lsp	`neboc conformance modules-docs-lsp`	CLI	RF166-G165-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xb05c1a706e947e1b	nebo.1.0::CLI::neboc fuzz-source --domains imports,docs,comments	`neboc fuzz-source --domains imports,docs,comments`	CLI	RF166-G165-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x0008d82327c8d460	nebo.1.0::CLI::neboc migration-check rf166 <paths>	`neboc migration-check rf166 <paths>`	CLI	RF166-G165-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x208b5dc131953283	nebo.1.0::P::RF166CoverageReport.build()	`RF166CoverageReport.build()`	P	RF166-G166-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x8384312d4e9aa34b	nebo.1.0::P::ModuleImportCloseoutReport.build()	`ModuleImportCloseoutReport.build()`	P	RF166-G166-F01	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xfb9a88a395b1c5c4	nebo.1.0::P::SemanticDocCloseoutReport.build()	`SemanticDocCloseoutReport.build()`	P	RF166-G166-F02	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x37a50572fc92bfbc	nebo.1.0::P::DeveloperExperienceCloseoutReport.build()	`DeveloperExperienceCloseoutReport.build()`	P	RF166-G166-F03	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x7ab1ff9658121b94	nebo.1.0::P::RF166PublicExamplePack.materialize()	`RF166PublicExamplePack.materialize()`	P	RF166-G166-F04	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0xbe69573e546ff661	nebo.1.0::P::RF166OfflineRestore.verify()	`RF166OfflineRestore.verify()`	P	RF166-G166-F05	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x3cbd19d4bcdbfd41	nebo.1.0::P::RF166IndependentAudit.runReadOnly()	`RF166IndependentAudit.runReadOnly()`	P	RF166-G166-F06	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x4cfe2d412765c435	nebo.1.0::P::RF166MaturityMatrix.reconcile()	`RF166MaturityMatrix.reconcile()`	P	RF166-G166-F07	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x1d17fdbb1fdcb102	nebo.1.0::P::RF166Closeout.verifyOpenFindings()	`RF166Closeout.verifyOpenFindings()`	P	RF166-G166-F08	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x1af3bfb1648345e6	nebo.1.0::CLI::neboc selftest modules-docs-devex	`neboc selftest modules-docs-devex`	CLI	RF166-G166-F09	nebo.1.0.public	BOUNDED_EXISTING	COVERED	1
+0x657f0cd645db0166	nebo.1.0::CLI::neboc roadmap-closeout rf166	`neboc roadmap-closeout rf166`	CLI	RF166-G166-F10	nebo.1.0.public	POST_1_0	PLANNED_PENDING	1

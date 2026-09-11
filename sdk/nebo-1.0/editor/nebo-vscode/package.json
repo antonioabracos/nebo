@@ -1,5 +1,25 @@
 {
+  "activationEvents": [
+    "onLanguage:nebo"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false
+    },
+    "virtualWorkspaces": false
+  },
   "contributes": {
+    "configuration": {
+      "properties": {
+        "nebo.sdkPath": {
+          "default": "",
+          "description": "Absolute directory containing the offline SDK bin/neboc entry point.",
+          "scope": "machine",
+          "type": "string"
+        }
+      },
+      "title": "Nebo offline SDK"
+    },
     "languages": [
       {
         "configuration": "./language-configuration.json",
@@ -15,9 +35,10 @@
   "engines": {
     "vscode": "^1.80.0"
   },
+  "main": "./extension.js",
   "name": "nebo-language",
   "network": false,
   "private": true,
   "telemetry": false,
-  "version": "1.0.1"
+  "version": "1.1.0"
 }

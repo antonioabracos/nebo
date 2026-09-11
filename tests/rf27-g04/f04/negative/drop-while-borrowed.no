@@ -1,0 +1,6 @@
+start() {
+    "borrow".owner;
+    owner.borrowShared().view;
+    owner.drop().bad;
+    0;
+}

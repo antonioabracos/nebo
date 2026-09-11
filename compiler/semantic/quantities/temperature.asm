@@ -59,10 +59,10 @@ global nebo_temperature_suffix_classify
 nebo_temperature_suffix_classify:
     xor eax, eax
     mov edx, NEBO_QUANTITY_ERR_SYNTAX
-    mov ecx, NEBO_QCTX_HAS_COMPLETE_OPERAND | NEBO_QCTX_DOMAIN_ENABLED
-    and esi, ecx
-    cmp esi, ecx
-    jne .done
+    test esi, NEBO_QCTX_HAS_COMPLETE_OPERAND
+    jz .done
+    test esi, NEBO_QCTX_DOMAIN_ENABLED
+    jz .domain_error
     cmp edi, 'C'
     je .celsius
     cmp edi, 'F'
@@ -74,6 +74,9 @@ nebo_temperature_suffix_classify:
     mov eax, NEBO_UNIT_MILLI_CELSIUS
     xor edx, edx
 .done:
+    ret
+.domain_error:
+    mov edx, NEBO_QUANTITY_ERR_DOMAIN
     ret
 
 section .note.GNU-stack noalloc noexec nowrite progbits

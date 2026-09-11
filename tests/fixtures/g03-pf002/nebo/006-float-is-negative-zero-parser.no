@@ -1,0 +1,3 @@
+start() {
+    (-0.0).isNegativeZero().negative_zero;
+}

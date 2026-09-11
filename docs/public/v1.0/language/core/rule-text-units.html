@@ -1,0 +1,20 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>text units</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>text units</h1><p>UTF-8 byte length, Unicode scalar count and grapheme segmentation are distinct operations. Each operation must obey its declared unit and boundary behavior; no implicit normalization is performed.</p><pre>Identity: N1-text-units (NORMATIVE_RULE)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: EDITION_1_BOUNDED_NORMATIVE</pre><h2>Syntax or signature</h2><pre>N1-text-units — EDITION_1_BOUNDED_NORMATIVE</pre><h2>Scope and constraints</h2><p>UTF-8 byte length, Unicode scalar count and grapheme segmentation are distinct operations. Each operation must obey its declared unit and boundary behavior; no implicit normalization is performed.</p><h2>Use and remediation</h2><p>Follow the admitted forms in the individual syntax and operator references. Keep source order and type identity; make imports and capability grants explicit. A native supplemental contract does not introduce source constructors or widen target support.</p><h2>Executed examples</h2><h3>text:trim-2; expected 23</h3><pre><code>start(){&quot;&quot;.trim().console();23.return;}</code></pre><p>Oracle: {&quot;console_text_utf8&quot;: &quot;&quot;, &quot;independent_builds&quot;: 2, &quot;kinds&quot;: [], &quot;process_exit&quot;: 23, &quot;publications&quot;: 1, &quot;runtime_sha256&quot;: &quot;bb7902ccefdecac2dc18792c91b9097229164142e3a6b5a9ab7832a78f745e3d&quot;}</p><h2>Rejected examples</h2><h3>text:arity-trim; expected NEBO-TEXT-TRANSFORM-ARITY</h3><pre><code>start(){&quot;Nebo&quot;.trim(1);23.return;}</code></pre><p>Oracle: {&quot;artifact_publication&quot;: &quot;REJECTED&quot;, &quot;compiler_exit&quot;: 1, &quot;diagnostic&quot;: &quot;NEBO-TEXT-TRANSFORM-ARITY&quot;}</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;case_id&quot;: &quot;text:native-g054_adversarial_test&quot;,
+    &quot;category&quot;: &quot;native-control&quot;,
+    &quot;elf_sha256&quot;: &quot;b2ce8979439d6b94e542f4c634c0109a55c8ad13653b538e5f2c7f51be7b42b1&quot;
+  },
+  {
+    &quot;case_id&quot;: &quot;text:native-g055_adversarial_test&quot;,
+    &quot;category&quot;: &quot;native-control&quot;,
+    &quot;elf_sha256&quot;: &quot;5598991281df87c5f61c63b904980a4f6b7c9b85eafd99852418b16da934be25&quot;
+  },
+  {
+    &quot;case_id&quot;: &quot;text:native-g057_adversarial_test&quot;,
+    &quot;category&quot;: &quot;native-control&quot;,
+    &quot;elf_sha256&quot;: &quot;4679293e36505f4a153c444f4f143cfd8ec56ef45c7bc92282913902fb39fa5d&quot;
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a> <a href="syntax-program.html">syntax-program</a> <a href="syntax-ordinary_program.html">syntax-ordinary_program</a> <a href="syntax-declaration.html">syntax-declaration</a> <a href="syntax-entry.html">syntax-entry</a></nav><h2>Provenance</h2><ul><li>docs/public/v1.0/language/specification/NORMATIVE-RULE-REGISTRY.tsv — SHA-256 2d2d4324cf615c0970e3dca2f4197cde9e32b445e0337dd8179967dc0cff2d16</li><li>sdk/contracts/stdlib/STDLIB-STABLE-CATALOG.tsv — SHA-256 a66eec0cbb7f0a99f20ae489208f1ba1106cd2c327e475daf406d615e3e55bab</li><li>tests/rf204/G170/text_test.py — SHA-256 2a6be89787726ec8c3e4acbcb2c728b82e1c9fc7acc8a2680f2d830648448f52</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

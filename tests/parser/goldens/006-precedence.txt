@@ -1,0 +1,4 @@
+root: ||
+left: ==
+left.left: +
+left.left.right: *

@@ -1,0 +1,8 @@
+start() {
+    Range.exclusive(2, 5).items;
+    0.total.mutable;
+    for (index, item in items where item > 2) {
+        total += item;
+    }
+    total.return;
+}

@@ -65,6 +65,8 @@ sync_init:
 nebo_mutex_lock:
  push rbx
  push r12
+ push r13
+ xor r13d,r13d
  mov rbx,rdi
  mov r12,rsi
  test rbx,rbx
@@ -84,17 +86,22 @@ nebo_mutex_lock:
  test rdx,rdx
  jz .mutex_timeout
  dec rdx
- cmp qword [rbx+NEBO_SYNC_WAITERS],0
- jne .mutex_yield
- inc qword [rbx+NEBO_SYNC_WAITERS]
+ test r13,r13
+ jnz .mutex_yield
+ mov eax,1
+ lock xadd [rbx+NEBO_SYNC_WAITERS],rax
+ cmp rax,[rbx+NEBO_SYNC_MAX_WAITERS]
+ jb .mutex_registered
+ lock dec qword [rbx+NEBO_SYNC_WAITERS]
+ mov eax,NEBO_CONCURRENCY_ERROR_LIMIT_EXCEEDED
+ jmp .mutex_return
+.mutex_registered:
+ mov r13d,1
 .mutex_yield:
  mov eax,NEBO_LINUX_X86_64_SYS_SCHED_YIELD
  syscall
  jmp .mutex_retry
 .mutex_acquired:
- cmp qword [rbx+NEBO_SYNC_WAITERS],0
- je .mutex_store
- dec qword [rbx+NEBO_SYNC_WAITERS]
 .mutex_store:
  mov [rbx+NEBO_SYNC_OWNER],r8
  mov [r12+NEBO_GUARD_LOCK],rbx
@@ -109,6 +116,11 @@ nebo_mutex_lock:
  jmp .mutex_return
 .mutex_timeout: mov eax,NEBO_CONCURRENCY_ERROR_TIMEOUT
 .mutex_return:
+ test r13,r13
+ jz .mutex_pop
+ lock dec qword [rbx+NEBO_SYNC_WAITERS]
+.mutex_pop:
+ pop r13
  pop r12
  pop rbx
  ret
@@ -128,7 +140,7 @@ nebo_mutex_unlock:
  jne .unlock_denied
  mov qword [r8+NEBO_SYNC_OWNER],0
  mov qword [r8+NEBO_SYNC_STATE],0
- inc qword [r8+NEBO_SYNC_GENERATION]
+ lock inc qword [r8+NEBO_SYNC_GENERATION]
  mov qword [rdi+NEBO_GUARD_STATE],0
  mov eax,NEBO_LINUX_X86_64_SYS_FUTEX
  mov rdi,r8
@@ -165,7 +177,9 @@ nebo_rwlock_read:
  jnz .read_retry
  mov [r12+NEBO_GUARD_LOCK],rbx
  mov qword [r12+NEBO_GUARD_KIND],2
- mov qword [r12+NEBO_GUARD_OWNER],0
+ mov eax,NEBO_LINUX_X86_64_SYS_GETTID
+ syscall
+ mov [r12+NEBO_GUARD_OWNER],rax
  mov qword [r12+NEBO_GUARD_STATE],1
  xor eax,eax
  jmp .read_return
@@ -234,6 +248,10 @@ nebo_rwlock_unlock:
  jz .rwunlock_invalid
  cmp qword [rdi+NEBO_GUARD_STATE],1
  jne .rwunlock_again
+ mov eax,NEBO_LINUX_X86_64_SYS_GETTID
+ syscall
+ cmp rax,[rdi+NEBO_GUARD_OWNER]
+ jne .rwunlock_denied
  mov r8,[rdi+NEBO_GUARD_LOCK]
  cmp qword [rdi+NEBO_GUARD_KIND],2
  je .rwunlock_reader
@@ -245,7 +263,7 @@ nebo_rwlock_unlock:
 .rwunlock_reader:
  lock dec qword [r8+NEBO_SYNC_STATE]
 .rwunlock_done:
- inc qword [r8+NEBO_SYNC_GENERATION]
+ lock inc qword [r8+NEBO_SYNC_GENERATION]
  mov qword [rdi+NEBO_GUARD_STATE],0
  mov eax,NEBO_LINUX_X86_64_SYS_FUTEX
  mov rdi,r8
@@ -257,6 +275,8 @@ nebo_rwlock_unlock:
 .rwunlock_invalid: mov eax,NEBO_CONCURRENCY_ERROR_INVALID_ARGUMENT
  ret
 .rwunlock_again: mov eax,NEBO_CONCURRENCY_ERROR_ALREADY_COMPLETED
+ ret
+.rwunlock_denied: mov eax,NEBO_CONCURRENCY_ERROR_PERMISSION_DENIED
  ret
 
 nebo_atomic_init:
@@ -294,7 +314,7 @@ nebo_atomic_store:
  cmp rdx,NEBO_MEMORY_ORDER_ACQREL
  je atomic_order
  xchg rsi,[rdi+NEBO_ATOMIC_VALUE]
- inc qword [rdi+NEBO_ATOMIC_GENERATION]
+ lock inc qword [rdi+NEBO_ATOMIC_GENERATION]
  xor eax,eax
  ret
 
@@ -311,7 +331,7 @@ nebo_atomic_compare_exchange:
  movzx r9,r9b
  test r9,r9
  jz .cas_ok
- inc qword [rdi+NEBO_ATOMIC_GENERATION]
+ lock inc qword [rdi+NEBO_ATOMIC_GENERATION]
 .cas_ok: xor eax,eax
  ret
 
@@ -323,7 +343,7 @@ nebo_atomic_fetch_add:
  ja atomic_order
  mov r8,rsi
  lock xadd [rdi+NEBO_ATOMIC_VALUE],r8
- inc qword [rdi+NEBO_ATOMIC_GENERATION]
+ lock inc qword [rdi+NEBO_ATOMIC_GENERATION]
  xor eax,eax
  ret
 atomic_invalid: mov eax,NEBO_CONCURRENCY_ERROR_INVALID_ARGUMENT
@@ -336,3 +356,5 @@ atomic_invalid_result: mov eax,NEBO_CONCURRENCY_ERROR_INVALID_ARGUMENT
 atomic_order_result: mov eax,NEBO_CONCURRENCY_ERROR_WRONG_ORDER
  xor edx,edx
  ret
+
+section .note.GNU-stack noalloc noexec nowrite progbits

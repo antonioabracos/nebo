@@ -1,0 +1,6 @@
+start() {
+  loop {
+    continue;
+    1;
+  }
+}

@@ -8,8 +8,10 @@ section .text
 global nebo_random_seed
 global nebo_random_next_u64
 global nebo_random_next_range
+global nebo_random_float_unit
 global nebo_entropy_capability_init
 global nebo_random_fill_secure
+global nebo_random_secure_bytes
 
 ; rdi=Random, rsi=seed. eax=status.
 nebo_random_seed:
@@ -98,6 +100,23 @@ nebo_random_next_range:
  pop r13
  pop r12
  pop rbx
+ ret
+
+; rdi=Random. eax=status, rdx=IEEE-754 binary64 bits in [0,1).
+; The upper 52 random bits form the mantissa of [1,2), then one is subtracted.
+nebo_random_float_unit:
+ call nebo_random_next_u64
+ test eax,eax
+ jnz .float_return
+ shr rdx,12
+ mov rax,0x3ff0000000000000
+ or rdx,rax
+ movq xmm0,rdx
+ mov rax,0x3ff0000000000000
+ movq xmm1,rax
+ subsd xmm0,xmm1
+ movq rdx,xmm0
+.float_return:
  ret
 
 ; rdi=EntropyCapability, rsi=max cumulative bytes, rdx=max calls.
@@ -213,3 +232,8 @@ nebo_random_fill_secure:
  pop r12
  pop rbx
  ret
+
+; SecureRandom.bytes uses caller-owned storage in the no-allocator core.
+; This exact alias preserves the secure fill's budgets and failure atomicity.
+nebo_random_secure_bytes:
+ jmp nebo_random_fill_secure

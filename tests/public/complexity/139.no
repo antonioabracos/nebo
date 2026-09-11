@@ -1,0 +1,7 @@
+// Recording opens one bounded handle and stopRecord closes the same generation.
+start() {
+    RenderPlan;
+    3402;
+    output.stdout().stderr().target("export-privacy-service").plain().visual().headlessEvent();
+    lifecycle.event("privacy-audited").payload("record-stop-record-lifecycle").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

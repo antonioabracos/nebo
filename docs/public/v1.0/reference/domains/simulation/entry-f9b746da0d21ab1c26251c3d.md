@@ -1,0 +1,76 @@
+# simulation — simulation.fixedStep(duration)
+
+Seeded bounded ECS/physics model; no physical fidelity or safety certification; original observation: logical timestep is one quarter second; SDK bounds: {"MAX_ADVANCE_TICKS":256,"MAX_BODIES":1024,"MAX_CONSTRAINTS":4096,"MAX_CONTACTS":4096,"MAX_ENTITIES":4096,"MAX_PARTICLES":65536,"MAX_RESOURCES":1024,"MAX_ROLLBACK_TICKS":1024,"MAX_SYSTEMS":128,"MAX_TRACE_TICKS":1024}
+
+```text
+Identity: owner:G043:G043-S04-02 (DOMAIN_CONTRACT_ID)
+Edition: 1
+Target: PYTHON_CPU_REFERENCE
+Availability: EXPERIMENTAL
+```
+
+## Syntax or signature
+
+```text
+Simulation.fixedStep(self, duration: Any) -> None
+```
+
+## Reference-model API
+
+The signature describes the Python reference model. Parameters and return annotations belong to that model; they are not an admitted Nebo spelling.
+
+## Complete executable Python example
+
+Run python3 -B tests/rf204/G043/sdk_oracle.py from the repository root with only synthetic inputs. Set G020_TMP and G021_TMP to an empty private temporary directory for the two checkpoint suites. This program contains the setup and independent assertions for the model. The line excerpt below is not a standalone program. No native Nebo binding is inferred.
+
+## Availability and maturity
+
+EXPERIMENTAL; evidence SDK_REFERENCE_MODEL. Documentation does not promote this identity to stable. Public and owner namespaces are separate contracts.
+
+## Limits and lifecycle
+
+Seeded bounded ECS/physics model; no physical fidelity or safety certification; original observation: logical timestep is one quarter second; SDK bounds: {"MAX_ADVANCE_TICKS":256,"MAX_BODIES":1024,"MAX_CONSTRAINTS":4096,"MAX_CONTACTS":4096,"MAX_ENTITIES":4096,"MAX_PARTICLES":65536,"MAX_RESOURCES":1024,"MAX_ROLLBACK_TICKS":1024,"MAX_SYSTEMS":128,"MAX_TRACE_TICKS":1024}
+
+## Privacy, dependencies and authority
+
+Capability: SYNTHETIC_LOCAL_DATA. Gate: NONE. Import grants capability: NO. Use synthetic local data. Hardware claim: NO. Security assurance: NO. RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE. SDK buffers and handles follow the owner lifecycle and reject invalid/released inputs where specified. No downloaded models, secrets, external network or device access is needed for the documented local proofs.
+
+## Additional observations and limits
+
+```text
+[
+  {
+    "classification": {
+      "capability": "SYNTHETIC_LOCAL_DATA",
+      "core": "NO",
+      "evidence_level": "SDK_REFERENCE_MODEL",
+      "external_gate": "NONE",
+      "hardware_claim": "NO",
+      "import_grants_capability": "NO",
+      "legal": "RELEASE-LEGAL_PENDING_SEPARATE_FROM_CORE_FUNCTIONAL_PROFILE",
+      "security_assurance": "NO",
+      "target": "PYTHON_CPU_REFERENCE",
+      "tier": "EXPERIMENTAL"
+    }
+  },
+  {
+    "excerpt": "141: ok(\"positive\", \"Simulation.new(world,options)\", simulation.world is sim_world)\n142: simulation.fixedStep(0.25)\n143: ok(\"positive\", \"simulation.fixedStep(duration)\", simulation._fixed_step == 0.25)\n144: simulation.deterministicMode(True)\n145: ok(\"positive\", \"simulation.deterministicMode(enabled)\", simulation._deterministic)",
+    "executed_assertions": 227,
+    "execution": "SDK_REFERENCE_MODEL_ONLY",
+    "language": "python",
+    "line": 142,
+    "source_path": "tests/rf204/G043/sdk_oracle.py",
+    "source_sha256": "3c3374efd2b6de206926bc3affc7054951b94791ae1b654576a170d4861f81a9"
+  }
+]
+```
+
+## Related entries
+
+[Index](index.md)
+
+## Provenance
+
+- compiler/sdk/simulation.py — SHA-256 e2fc6b4955e985f0b89d1a24b93dd816d2f655852ae7f0f8ad519231c92a2f50
+
+- tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0

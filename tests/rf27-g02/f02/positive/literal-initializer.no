@@ -1,0 +1,5 @@
+start() {
+  20.answer.mutable;
+  answer = 43;
+  answer;
+}

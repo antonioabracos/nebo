@@ -1,0 +1,7 @@
+// Text and sanitized HTML exports preserve the same pointer-free receipt.
+start() {
+    RenderPlan;
+    3304;
+    output.stdout().stderr().target("domain-visual-service").plain().visual().headlessEvent();
+    lifecycle.event("domain-visual").payload("dashboard-export-text-html").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

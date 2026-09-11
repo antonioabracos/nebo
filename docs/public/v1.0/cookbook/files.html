@@ -1,0 +1,17 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Write and read a bounded file</title><link rel="stylesheet" href="../assets/style.css"></head><body><a href="#main">Skip to content</a><nav aria-label="Home"><a href="../index.html">Nebo documentation home</a></nav><main id="main"><h1>Write and read a bounded file</h1><p>Write Nebo83 atomically and read it with a 64-byte bound. The expected file and retained Console bytes are exactly Nebo83.</p><p>Filesystem permission belongs to the execution environment; importing std.fs does not grant it. Paths are relative to the private working directory. Do not use real credentials or personal files for the walkthrough.</p><p>Imports: explicit std.fs File and Path. Required effects/capabilities: read/write access to this private working directory. No network, live display, external credentials or device capability is used.</p><h2>Complete Nebo source</h2><pre><code>import &quot;std.fs&quot; { Path; File; }.fs;
+// Atomic output is confined to the working directory.
+start(){Path.parse(&quot;note.txt&quot;).p;File.writeText(p,&quot;Nebo83&quot;,utf8,atomic);File.readText(p,utf8,64).console();53.return;}
+</code></pre><h2>Inputs and independent expectations</h2><pre>{
+  &quot;expected_exit&quot;: 53,
+  &quot;expected_files&quot;: {
+    &quot;note.txt&quot;: {
+      &quot;bytes_hex&quot;: &quot;4e65626f3833&quot;
+    }
+  },
+  &quot;kinds&quot;: [
+    2
+  ],
+  &quot;text&quot;: {
+    &quot;bytes_hex&quot;: &quot;4e65626f3833&quot;
+  }
+}</pre></main></body></html>

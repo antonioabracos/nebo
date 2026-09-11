@@ -1,0 +1,13 @@
+// An explicit bare-metal target drives startup, vectors, linker layout, image encoding, and memory reporting.
+(Int.self)targetBareMetal() { self.return; }
+(Int.self)boardDefine() { self.return; }
+(Int.self)firmwareEntry() { self.return; }
+(Int.self)firmwareVectorTable() { self.return; }
+(Int.self)firmwareLinkerScript() { self.return; }
+(Int.self)firmwareImage() { self.return; }
+(Int.self)firmwareMemoryMap() { self.return; }
+(Int.self)firmwareBuildCommand() { self.return; }
+
+start() {
+    38.targetBareMetal().boardDefine().firmwareEntry().firmwareVectorTable().firmwareLinkerScript().firmwareImage().firmwareMemoryMap().firmwareBuildCommand();
+}

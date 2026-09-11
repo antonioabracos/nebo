@@ -1,0 +1,6 @@
+start() {
+  Array<Int,4> [2,4,6,8].values;
+  values.asSlice().view;
+  view.subslice(1,4).middle;
+  middle.at(1).return;
+}

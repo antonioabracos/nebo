@@ -1,0 +1,13 @@
+// Seeded MCMC and sequential particles expose budgets, chain evidence, thinning, and cancellation state.
+(Int.self)mcmcMetropolis() { self.return; }
+(Int.self)mcmcHamiltonian() { self.return; }
+(Int.self)mcmcNuts() { self.return; }
+(Int.self)modelInferMcmc() { self.return; }
+(Int.self)smcNew() { self.return; }
+(Int.self)modelInferSequential() { self.return; }
+(Int.self)samplesThin() { self.return; }
+(Int.self)samplesCancel() { self.return; }
+
+start() {
+    91.mcmcMetropolis().mcmcHamiltonian().mcmcNuts().modelInferMcmc().smcNew().modelInferSequential().samplesThin().samplesCancel();
+}

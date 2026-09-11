@@ -1,0 +1,73 @@
+# builtin — Dataset.scan
+
+Up to 8 owned tables/256 rows/16384 value bytes; by-size repartition accepts 1..32 rows and preserves order; local cache policy 0/1; scan and collect preserve independent values/schema/missing; native registry identity and runtime profile are explicit; serialized interface metadata is verified by the separate metadata suite Typed nullable integer rows/columns/tables/datasets/streams; finite schema, rows and stages; lazy callbacks once
+
+```text
+Identity: g010-public:Dataset.scan (QUALIFIED_INTRINSIC_OR_REGISTRY_ID)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: STABLE_1_0
+```
+
+## Syntax or signature
+
+```text
+Dataset.scan
+Up to 8 owned tables/256 rows/16384 value bytes; by-size repartition accepts 1..32 rows and preserves order; local cache policy 0/1; scan and collect preserve independent values/schema/missing; native registry identity and runtime profile are explicit; serialized interface metadata is verified by the separate metadata suite Typed nullable integer rows/columns/tables/datasets/streams; finite schema, rows and stages; lazy callbacks once
+```
+
+## Ownership and complexity
+
+Exact typed owner contract; no copy/borrow/clone capability inferred from spelling Up to 8 owned tables/256 rows/16384 value bytes; by-size repartition accepts 1..32 rows and preserves order; local cache policy 0/1; scan and collect preserve independent values/schema/missing; native registry identity and runtime profile are explicit; serialized interface metadata is verified by the separate metadata suite Typed nullable integer rows/columns/tables/datasets/streams; finite schema, rows and stages; lazy callbacks once
+
+## Effects, capabilities and sandbox
+
+Per expression: pure computation plus explicit observed sinks; NO_IMPLICIT_GRANT. Import grants capability: NO.
+
+## Availability and errors
+
+Edition 1; x86_64-systemv-elf-linux; BOUNDED_PUBLIC_EXECUTED_WITHIN_LIMITS. Up to 8 owned tables/256 rows/16384 value bytes; by-size repartition accepts 1..32 rows and preserves order; local cache policy 0/1; scan and collect preserve independent values/schema/missing; native registry identity and runtime profile are explicit; serialized interface metadata is verified by the separate metadata suite Typed nullable integer rows/columns/tables/datasets/streams; finite schema, rows and stages; lazy callbacks once Use the declared operand and receiver domain; source rejection publishes no executable.
+
+## Identity and aliases
+
+CORRECTED_PUBLIC_CONTRACT_TYPED_NATIVE_OWNER. Identity kind: QUALIFIED_INTRINSIC_OR_REGISTRY_ID. SymbolId: NOT_SERIALIZED. Alias entries describe the same qualified operation; they do not create another runtime API.
+
+## Executed examples
+
+### data:dataset-scan-missing; expected 1
+
+```nebo
+(Row.self)observe(){self.get("age").unwrapOr(89).console();true.return;}(Table.self)consume(){self.rowCount().console();self.filter(observe);}start(){List<Int>.new().a;Table.fromColumns([Tuple.of("age",Column<Int>.from([17,a.get(0)]))]).t;Dataset.fromTables([t]).d;d.scan().s;s.sink(consume).return;}
+```
+
+Oracle: {"capabilities": {"console": "RETAINED_DOCUMENT", "filesystem": "EXPLICIT_SCRATCH_EFFECT_ORACLE", "network": "DENIED_BY_SECCOMP"}, "console_text_utf8": "21789", "filesystem_effects": {}, "independent_builds": 2, "kinds": \[4, 4, 4\], "process_exit": 1, "runtime_determinism": "BYTE_IDENTICAL", "runtime_sha256": "feddf878c3ec71d63207b6104193436278e789d8b9e4b7fcab15c7fc135590d8", "text": {"bytes_hex": "3231373839"}}
+
+## Rejected examples
+
+### data:dataset-scan-copy; expected NEBO_COPY_UNIQUE
+
+```nebo
+start(){Table.fromColumns([Tuple.of("age",Column<Int>.from([17]))]).t;Dataset.fromTables([t]).d;d.scan().s;s.copy;23.return;}
+```
+
+Oracle: {"artifact_publication": "REJECTED", "compiler_exit": 1, "diagnostic": "NEBO_COPY_UNIQUE"}
+
+## Related entries
+
+[Index](index.md)
+
+- [symbol-9d8a5564938a4f18e79eb824](symbol-9d8a5564938a4f18e79eb824.md)
+
+## Provenance
+
+- sdk/contracts/stdlib/STDLIB-STABLE-CATALOG.tsv — SHA-256 a66eec0cbb7f0a99f20ae489208f1ba1106cd2c327e475daf406d615e3e55bab
+
+- compiler/driver/cli/linux-x86_64/scalar_program.inc — SHA-256 54bad41b6d43ffc48c264adae8a0a776071c6a3917abaf05520344e11ae6afbe
+
+- compiler/codegen/functions/x86_64/function_codegen.asm — SHA-256 944358cec673b2132c51b5c4b5842edaf4cf9ce157b23d83892449fbb12487f7
+
+- runtime/core/runtime_core.asm — SHA-256 9786591602649f222e73dc91ea2449fba1c98d2e504ae779208caf7373e06797
+
+- tests/rf204/G170/data_test.py — SHA-256 f1a7df13b11c4ec4c931662edeac8d25f3cbb8822b8edcf9d99b32daa451429b
+
+- tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0

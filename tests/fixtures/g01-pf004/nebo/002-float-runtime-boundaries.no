@@ -1,0 +1,6 @@
+start() {
+    Float(42.25).answer;
+    0.125.eighth;
+    0.0.zero;
+    0.return;
+}

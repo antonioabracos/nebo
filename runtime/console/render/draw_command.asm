@@ -269,6 +269,35 @@ nebo_console_draw_commands_build:
     imul rax, NEBO_LAYOUT_BOX_SIZE
     add rax, [r13+NEBO_LAYOUT_TREE_BOXES_PTR_OFFSET]
     mov r10, rax
+    test dword [rbx+NEBO_RENDER_NODE_FLAGS_OFFSET], NEBO_RENDER_NODE_FLAG_EXPLICIT_BACKGROUND
+    jz .build_glyph_command
+    push r10
+    sub rsp, 8
+    lea rdi, [rsp+16]
+    xor eax, eax
+    mov ecx, NEBO_DRAW_COMMAND_QWORDS
+    cld
+    rep stosq
+    mov dword [rsp+16+NEBO_DRAW_COMMAND_KIND_OFFSET], NEBO_DRAW_COMMAND_FILL_RECT
+    mov dword [rsp+16+NEBO_DRAW_COMMAND_FLAGS_OFFSET], NEBO_DRAW_COMMAND_FLAG_LIVE | NEBO_DRAW_COMMAND_FLAG_LOGICAL_UNITS
+    mov rax, [r10+NEBO_LAYOUT_BOX_X_OFFSET]
+    mov [rsp+16+NEBO_DRAW_COMMAND_X_OFFSET], rax
+    mov rax, [r10+NEBO_LAYOUT_BOX_Y_OFFSET]
+    mov [rsp+16+NEBO_DRAW_COMMAND_Y_OFFSET], rax
+    mov rax, [r10+NEBO_LAYOUT_BOX_WIDTH_OFFSET]
+    mov [rsp+16+NEBO_DRAW_COMMAND_WIDTH_OFFSET], rax
+    mov rax, [r10+NEBO_LAYOUT_BOX_HEIGHT_OFFSET]
+    mov [rsp+16+NEBO_DRAW_COMMAND_HEIGHT_OFFSET], rax
+    mov rax, [rbx+NEBO_RENDER_NODE_BACKGROUND_OFFSET]
+    mov [rsp+16+NEBO_DRAW_COMMAND_COLOR_OFFSET], rax
+    mov rdi, r12
+    lea rsi, [rsp+16]
+    call nebo_draw_append_internal
+    add rsp, 8
+    pop r10
+    test eax, eax
+    jnz .build_done
+.build_glyph_command:
     mov rdi, rsp
     xor eax, eax
     mov ecx, NEBO_DRAW_COMMAND_QWORDS

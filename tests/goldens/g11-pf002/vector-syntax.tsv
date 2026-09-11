@@ -1,0 +1,9 @@
+shape_id	canonical_shape	operation	state
+G11-S01	Vector<Int> [1, 2, 3, 4]	literal	PF002_CONTRACT
+G11-S02	values[0]	constant_index_zero	PF002_CONTRACT
+G11-S03	values[3]	constant_index_last	PF002_CONTRACT
+G11-S04	values.len	length_observer	PF002_CONTRACT
+G11-S05	values.sum()	checked_sum	PF002_CONTRACT
+G11-S06	left.dot(right)	checked_dot	PF002_CONTRACT
+G11-S07	values.sum() + values.len	composition	PF002_CONTRACT
+G11-S08	values.dot(values)	self_dot	PF002_CONTRACT

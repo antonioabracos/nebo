@@ -1,0 +1,6 @@
+// Transports text and write events through the canonical headless record.
+start() {
+    RenderPlan;
+    1302;
+    protocol.event("console.text").event("console.write").payload("text-view").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

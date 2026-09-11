@@ -1,0 +1,2 @@
+(Int.self)pair(Int.x = 2) { Tuple.of(self, x).return; }
+start() { 7.pair().return; }

@@ -1,0 +1,6 @@
+Test ID: NEBO-SOURCE-DETERMINISM-008
+Logical Path: src/main.no
+Absolute Path: ABSENT
+Pointer-Derived Output: ABSENT
+Equivalent Inputs: BYTE-EQUIVALENT LOCATIONS AND SNIPPETS
+Result: PASS

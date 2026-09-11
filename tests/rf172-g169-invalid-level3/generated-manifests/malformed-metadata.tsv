@@ -1,0 +1,7 @@
+case_id	surface	oracle	malformation_class	replays	state
+RF172-G169-F05-NI	compiled interface .ni	RF166-G165 interface fuzz conformance	truncation,magic,version,offsets	2	MATERIALIZED
+RF172-G169-F05-LOCK	package lock	G26-PF001 package lock unit oracle	malformed records and bounds	2	MATERIALIZED
+RF172-G169-F05-MANIFEST	package manifest	G26-PF002 package manifest oracle	malformed keys and values	2	MATERIALIZED
+RF172-G169-F05-OBJECT	object writer	RF52-G52-F04 object writer oracle	layout and bounded records	2	MATERIALIZED
+RF172-G169-F05-TRUST	trust manifest	RF52-G52-F09 trust manifest oracle	integrity and malformed records	2	MATERIALIZED
+RF172-G169-F05-ELF	ELF reader	GNU readelf malformed header rejection	truncated ELF64 header	2	MATERIALIZED

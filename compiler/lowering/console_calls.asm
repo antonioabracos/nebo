@@ -63,6 +63,22 @@ neboc_console_options_evaluate:
     xor eax, eax
     jmp .done
 .failed:
+    ; The failing evaluator owns its own partial state.  Release only values
+    ; which completed successfully, in reverse order, without publishing the
+    ; caller-owned output array or plan.
+.cleanup:
+    test r15, r15
+    jz .failed_done
+    dec r15
+    mov rax, r15
+    imul rax, NEBOC_EVALUATOR_SIZE
+    mov rdx, [rbx + rax + NEBOC_EVALUATOR_CLEANUP_OFFSET]
+    test rdx, rdx
+    jz .cleanup
+    mov rdi, [rbx + rax + NEBOC_EVALUATOR_CONTEXT_OFFSET]
+    call rdx
+    jmp .cleanup
+.failed_done:
     mov eax, NEBOC_OPTION_EVALUATION_FAILED
 .done:
     add rsp, NEBOC_MAX_CONSOLE_OPTIONS * 8

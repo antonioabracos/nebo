@@ -1,0 +1,1675 @@
+{
+  "schema": "nebo.complexity-oracles.v1",
+  "cases": [
+    {
+      "id": "case-001",
+      "path": "tests/public/complexity/001.no",
+      "sha256": "237248d9479a7b1f0d804950e19e85de4e6dfee3313bdeee38635b081518113b",
+      "oracle": {
+        "kind": "LEGACY_TENSOR_SIGNATURE",
+        "code": "NEBO_TYPE_MISMATCH",
+        "phase": 6,
+        "token": "tensor.sum()"
+      }
+    },
+    {
+      "id": "case-002",
+      "path": "tests/public/complexity/002.no",
+      "sha256": "f329dd23fd71d946922bf317f83c5babd28aa47dd56f5f9de70986bc69dacbc6",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 57
+      }
+    },
+    {
+      "id": "case-003",
+      "path": "tests/public/complexity/003.no",
+      "sha256": "4e20a4936e1ef9d9d007bf1f9344424df239f8f2934f19df326d82c81aa3c4c6",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 33
+      }
+    },
+    {
+      "id": "case-004",
+      "path": "tests/public/complexity/004.no",
+      "sha256": "f52b516ac4da98ada9c2dd12ec3352d58a88eaf321f69652d9815682ea060ee0",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 51
+      }
+    },
+    {
+      "id": "case-005",
+      "path": "tests/public/complexity/005.no",
+      "sha256": "ad6f911a147d0ec63a4f4be5f6de7f88daec8cd0be480bb5808eeb8f2d9ba36c",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 69
+      }
+    },
+    {
+      "id": "case-006",
+      "path": "tests/public/complexity/006.no",
+      "sha256": "72db3e68cf4c1c1021229ae6ab44b3a4da3c29e4b03e40babd1b499b92967180",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 87
+      }
+    },
+    {
+      "id": "case-007",
+      "path": "tests/public/complexity/007.no",
+      "sha256": "0f0b553a13a0aa3026cce6d16c98093b326bbbcfe270ec6a0df44b197b46fed8",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 105
+      }
+    },
+    {
+      "id": "case-008",
+      "path": "tests/public/complexity/008.no",
+      "sha256": "c8b35d1630aec64f1a74b152ff60a5ac0128a6178fd19cbaae55f874ee561c33",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 123
+      }
+    },
+    {
+      "id": "case-009",
+      "path": "tests/public/complexity/009.no",
+      "sha256": "232f5b318cbabc36614a385c794712c99d66b30af21564aff2dd6f6bf7f7fb43",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 34
+      }
+    },
+    {
+      "id": "case-010",
+      "path": "tests/public/complexity/010.no",
+      "sha256": "19a3259c87e25f38b1d42aff4dfc0741a33519f0488c3075ede2be5f76df232c",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 51
+      }
+    },
+    {
+      "id": "case-011",
+      "path": "tests/public/complexity/011.no",
+      "sha256": "ef696ee581e48947ca0c47f60d039867166d7bbf3d7b83f33ff98fff96cf02ed",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 68
+      }
+    },
+    {
+      "id": "case-012",
+      "path": "tests/public/complexity/012.no",
+      "sha256": "e00c7d1b83e314a32e8e6e5d5a04038147904749b36270f9b81064e0ef1b644d",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 85
+      }
+    },
+    {
+      "id": "case-013",
+      "path": "tests/public/complexity/013.no",
+      "sha256": "dc7987a5fe78a6cdb76d656fcd149f1dd3caad0266f371b8be5805b533d3bb55",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 102
+      }
+    },
+    {
+      "id": "case-014",
+      "path": "tests/public/complexity/014.no",
+      "sha256": "e9b7769c38acd9fe705e4782cfd20118939b41ae09a46060228da102fa7c2258",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 119
+      }
+    },
+    {
+      "id": "case-015",
+      "path": "tests/public/complexity/015.no",
+      "sha256": "1afeea9d0276cf34a47ae1c7ad895c5e84bb4c9ccd75f709ed19d1da91a642cc",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 36
+      }
+    },
+    {
+      "id": "case-016",
+      "path": "tests/public/complexity/016.no",
+      "sha256": "b4ac68a574e63da7f77fb96e8bfd3f5efb116f21729b62165cac9981e969ce9b",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 53
+      }
+    },
+    {
+      "id": "case-017",
+      "path": "tests/public/complexity/017.no",
+      "sha256": "3d2f10542060def9c8f5c92b1873767b041be5af61d3854cc998965ebd245708",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 70
+      }
+    },
+    {
+      "id": "case-018",
+      "path": "tests/public/complexity/018.no",
+      "sha256": "4a407cc51827aefe9ec30f923758dc799bce8996d9cbee30976b90108f616dbf",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 87
+      }
+    },
+    {
+      "id": "case-019",
+      "path": "tests/public/complexity/019.no",
+      "sha256": "63d531c339945864f4902b8a6c4f656e04df33135ee45d853e669f649781722f",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 104
+      }
+    },
+    {
+      "id": "case-020",
+      "path": "tests/public/complexity/020.no",
+      "sha256": "0e0ee5e4635c750d18c6ac9cafe113858fff75e93d187d25b8694a0afd19b7dd",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 121
+      }
+    },
+    {
+      "id": "case-021",
+      "path": "tests/public/complexity/021.no",
+      "sha256": "6ae849929b8b376e6387ccea7f3decc6c85392f49152acf5204fb601aebc0b47",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 37
+      }
+    },
+    {
+      "id": "case-022",
+      "path": "tests/public/complexity/022.no",
+      "sha256": "05f432265034cf8807296bab72ea541d8fdc6c76c5a8008801ae9bfdaa38b526",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 55
+      }
+    },
+    {
+      "id": "case-023",
+      "path": "tests/public/complexity/023.no",
+      "sha256": "bc076e36dfd5cd26dbcceafad8bfd028f59d438fce586eb24a8d12f863ea239e",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 91
+      }
+    },
+    {
+      "id": "case-024",
+      "path": "tests/public/complexity/024.no",
+      "sha256": "6f38d8442cc085455af82171a7e7b32545e491d312076165cfb39312f09f5157",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 109
+      }
+    },
+    {
+      "id": "case-025",
+      "path": "tests/public/complexity/025.no",
+      "sha256": "e5d8e179c9f9317c4606399fb89f9be5af29363f1a1579f636089cb75e68751a",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 127
+      }
+    },
+    {
+      "id": "case-026",
+      "path": "tests/public/complexity/026.no",
+      "sha256": "c69e061270391ac9b5ef934ed9d2757a630eeaa662431d0b00e4c9ae7d653ba7",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 145
+      }
+    },
+    {
+      "id": "case-027",
+      "path": "tests/public/complexity/027.no",
+      "sha256": "f554c0f752ed94508202daa16dee4ea3b76499916bf0d5e98e7f1d71023274ea",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 38
+      }
+    },
+    {
+      "id": "case-028",
+      "path": "tests/public/complexity/028.no",
+      "sha256": "328ed22603e1165e2ab4e5104f9367f040ef4b0f3a7bf8d0fc188cbee55f9729",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 56
+      }
+    },
+    {
+      "id": "case-029",
+      "path": "tests/public/complexity/029.no",
+      "sha256": "dffe93c9181b2aa5aadbc0ed74170e14cfb731dd08b8d6f1ef4e643bfdd05214",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 74
+      }
+    },
+    {
+      "id": "case-030",
+      "path": "tests/public/complexity/030.no",
+      "sha256": "1102f3757b5a14b668fa238dbfb03918efea9eca2692cf1cc10deeaf914b3476",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 92
+      }
+    },
+    {
+      "id": "case-031",
+      "path": "tests/public/complexity/031.no",
+      "sha256": "3221cc8f520f079636f5a634f8f386676fbabc66b208f953b4fa6bbdd6a03b59",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 110
+      }
+    },
+    {
+      "id": "case-032",
+      "path": "tests/public/complexity/032.no",
+      "sha256": "affa6badbde83d201e902a3bd3bfde16273ee6360267c417d1e7cceec2fbb1be",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 128
+      }
+    },
+    {
+      "id": "case-033",
+      "path": "tests/public/complexity/033.no",
+      "sha256": "4080f8321e996d4a60257d3dbb97991a13379ad89c86d77c52cfea40abb0f080",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 146
+      }
+    },
+    {
+      "id": "case-034",
+      "path": "tests/public/complexity/034.no",
+      "sha256": "9e45305d44c9e300967997264d0b446ab31944fb8d8600f909cba5043a862f2c",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 39
+      }
+    },
+    {
+      "id": "case-035",
+      "path": "tests/public/complexity/035.no",
+      "sha256": "5842f0a85411b086390d0cffe6c92bcef8465186763f653b864d59d3b881cb10",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 65
+      }
+    },
+    {
+      "id": "case-036",
+      "path": "tests/public/complexity/036.no",
+      "sha256": "3546e2da9576bd548379d2fd45d23a23124d5ae3216bec60a68efd0ade2c7dcf",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 78
+      }
+    },
+    {
+      "id": "case-037",
+      "path": "tests/public/complexity/037.no",
+      "sha256": "42850ef30db9942c921e7e329c472fefbf6d62125929829742e474f4b6778894",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 91
+      }
+    },
+    {
+      "id": "case-038",
+      "path": "tests/public/complexity/038.no",
+      "sha256": "66846c28e035af000ae91caf785a3a51b62316d2b188d559df6c349fae0019a0",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 40
+      }
+    },
+    {
+      "id": "case-039",
+      "path": "tests/public/complexity/039.no",
+      "sha256": "9d117af7528782f936d40e5cffb227ae8cc6a7716c52f80ff20163b4626de945",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 58
+      }
+    },
+    {
+      "id": "case-040",
+      "path": "tests/public/complexity/040.no",
+      "sha256": "387c8225d22299643506f6252284c1edf91cf0aaf28826d2225ab1a405d1a453",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 76
+      }
+    },
+    {
+      "id": "case-041",
+      "path": "tests/public/complexity/041.no",
+      "sha256": "f6fc107c91b61d4179912b7b9bb606128e614dab76b6f69290762ccbb33f0753",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 94
+      }
+    },
+    {
+      "id": "case-042",
+      "path": "tests/public/complexity/042.no",
+      "sha256": "ed11445aebf7c76ac96e54ef781abbdda01ec5412279a24568b25c36f9fba65d",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 112
+      }
+    },
+    {
+      "id": "case-043",
+      "path": "tests/public/complexity/043.no",
+      "sha256": "dafc6c76a687f26e0df1f7ba479ca2b5585b7cd5f5db6a2822a15a6b40c97131",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 130
+      }
+    },
+    {
+      "id": "case-044",
+      "path": "tests/public/complexity/044.no",
+      "sha256": "807146258411443a208fe158427ee06ea21a0dd64dc8d655cf2c70543c8eb7c1",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 148
+      }
+    },
+    {
+      "id": "case-045",
+      "path": "tests/public/complexity/045.no",
+      "sha256": "e50415fc9604b66f0eb2ba2b2be5bfb3d194b743441b590a6df1c65161d5cb5f",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 41
+      }
+    },
+    {
+      "id": "case-046",
+      "path": "tests/public/complexity/046.no",
+      "sha256": "07e6080560bfdea66cb17f525b7d686ff6217ec92a6b34784b4664d5f21c5a7e",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 58
+      }
+    },
+    {
+      "id": "case-047",
+      "path": "tests/public/complexity/047.no",
+      "sha256": "70e4365e23fe61169508b6ecb230581ea2b76cd89f85c48dab82f51bd2c4c2ee",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 75
+      }
+    },
+    {
+      "id": "case-048",
+      "path": "tests/public/complexity/048.no",
+      "sha256": "0fe60a50341a9a8eaefe2a18c47d058a05efe231eb9cc6b5523ecf172e5d8baa",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 92
+      }
+    },
+    {
+      "id": "case-049",
+      "path": "tests/public/complexity/049.no",
+      "sha256": "022843f4076d0dcfef846b4c805f6a43396982456b10ce2d22456bde3e52f5ac",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 109
+      }
+    },
+    {
+      "id": "case-050",
+      "path": "tests/public/complexity/050.no",
+      "sha256": "e410c7a045b34befb45a678722d30ccb48836370142dd3d1f4670a26004dc6e8",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 126
+      }
+    },
+    {
+      "id": "case-051",
+      "path": "tests/public/complexity/051.no",
+      "sha256": "1fd20c976f961ed9502d6f259a9d6634f2c6d0cd599028407506874305eea74b",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 143
+      }
+    },
+    {
+      "id": "case-052",
+      "path": "tests/public/complexity/052.no",
+      "sha256": "5881a30c953de695698ea4981cece04a77c821af418914be5ee7bd346f8589e2",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 42
+      }
+    },
+    {
+      "id": "case-053",
+      "path": "tests/public/complexity/053.no",
+      "sha256": "3bfac5090c014541d27755da26ee1f64565ff9479023d1563bdb14452dbc06c6",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 59
+      }
+    },
+    {
+      "id": "case-054",
+      "path": "tests/public/complexity/054.no",
+      "sha256": "e846446a8f06fa7f3609dcf4a04973b9a3d53a1e10403a1ded8051014d257ef8",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 76
+      }
+    },
+    {
+      "id": "case-055",
+      "path": "tests/public/complexity/055.no",
+      "sha256": "cd2e981bb568c3f3a601be635e5c06abe47ecfe1601580ebacd2d2e061004fe4",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 93
+      }
+    },
+    {
+      "id": "case-056",
+      "path": "tests/public/complexity/056.no",
+      "sha256": "aebd65d66080f0642db5eb1d82053a38813d1021f75d2f8bfd81f838a4ea178e",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 110
+      }
+    },
+    {
+      "id": "case-057",
+      "path": "tests/public/complexity/057.no",
+      "sha256": "8cb0fa563ec9bf46c814090e4f1e9f0e074a882f115ebc6a752eacbe2dc1ba90",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 127
+      }
+    },
+    {
+      "id": "case-058",
+      "path": "tests/public/complexity/058.no",
+      "sha256": "f55ad86e919eacaa66bd83e4a9aacb1077d6f1a18ca623920054829d66aea800",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 144
+      }
+    },
+    {
+      "id": "case-059",
+      "path": "tests/public/complexity/059.no",
+      "sha256": "2f9940a8b7f32d2c2ae4ec4750ed9a5819b7094e778d791533f9afe2e59b8f60",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 43
+      }
+    },
+    {
+      "id": "case-060",
+      "path": "tests/public/complexity/060.no",
+      "sha256": "c2314c68efc0fd881df3ced731c1f4c6e8c8508abc864515676e47383ab57076",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 60
+      }
+    },
+    {
+      "id": "case-061",
+      "path": "tests/public/complexity/061.no",
+      "sha256": "b7bfa52993d65a5c55305486192764ae8fed27436bef489d6574974feb768a00",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 77
+      }
+    },
+    {
+      "id": "case-062",
+      "path": "tests/public/complexity/062.no",
+      "sha256": "58c1838666ec1bdfdb3986cda0e078860bda1fc11fc2ef1c2cc3d5a19efa50f7",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 94
+      }
+    },
+    {
+      "id": "case-063",
+      "path": "tests/public/complexity/063.no",
+      "sha256": "e3a63e60fece83e800852a6df0de041215618a01a522c93ae97616774ed97a7d",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 111
+      }
+    },
+    {
+      "id": "case-064",
+      "path": "tests/public/complexity/064.no",
+      "sha256": "8fec08c89a35a5cbdcce573089d5b9616182ea0c5287e64e1fece58a96363fa7",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 128
+      }
+    },
+    {
+      "id": "case-065",
+      "path": "tests/public/complexity/065.no",
+      "sha256": "d38ec39704c1dbe1d512a91cbec0bc2235c96ae6b86e1b5083f5f02a0a4b2adc",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 145
+      }
+    },
+    {
+      "id": "case-066",
+      "path": "tests/public/complexity/066.no",
+      "sha256": "68c17324fb0fb53511a99acd8755fca07f43a8ee3b8c0b39eb4d966b99433460",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 44
+      }
+    },
+    {
+      "id": "case-067",
+      "path": "tests/public/complexity/067.no",
+      "sha256": "8c0190cfb749d70f4dba1f5ba830b647ff576b74dcb361843a08529a756f069e",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 55
+      }
+    },
+    {
+      "id": "case-068",
+      "path": "tests/public/complexity/068.no",
+      "sha256": "dd9d8a966a2e3d4f330fa1991e6dc3b111fa60a0e4f2031f8b8b19ae1b97f86c",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 66
+      }
+    },
+    {
+      "id": "case-069",
+      "path": "tests/public/complexity/069.no",
+      "sha256": "614ff1769e420b1cf66d5c9938da489f7b60c2f991142b60de29bd8b78618ff5",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 77
+      }
+    },
+    {
+      "id": "case-070",
+      "path": "tests/public/complexity/070.no",
+      "sha256": "66f470c76d7668ae0db0bc344e0066a2c3513df99a704c60cd2365b96c6f1ece",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 88
+      }
+    },
+    {
+      "id": "case-071",
+      "path": "tests/public/complexity/071.no",
+      "sha256": "75f89ac6d8b861fc634d0d1d2b415dd6eedc65307b15f62f9774bf5cdb0fdc55",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 110
+      }
+    },
+    {
+      "id": "case-072",
+      "path": "tests/public/complexity/072.no",
+      "sha256": "99cf19a4679281f2e7bf03de73beea0831d1f01b3fea90e46cb49ce9b76b71fb",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 45
+      }
+    },
+    {
+      "id": "case-073",
+      "path": "tests/public/complexity/073.no",
+      "sha256": "64b9e0e12ba34407f616de66e1ccce80e20ed98d0942ba29bd473ff8909380b1",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 62
+      }
+    },
+    {
+      "id": "case-074",
+      "path": "tests/public/complexity/074.no",
+      "sha256": "e41ed7a9260974abcbc60638e45813b4d56b2e919f8021e63efb194021a7a94e",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 79
+      }
+    },
+    {
+      "id": "case-075",
+      "path": "tests/public/complexity/075.no",
+      "sha256": "e5ba42f5f218d04409740b3e84974108b27eaa3b7bdf7a2654726ea94335e078",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 96
+      }
+    },
+    {
+      "id": "case-076",
+      "path": "tests/public/complexity/076.no",
+      "sha256": "9bb26f0853c6a8d19df10754bcc3ada48882c333f4aab011cb5c4acc88d7f7be",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 113
+      }
+    },
+    {
+      "id": "case-077",
+      "path": "tests/public/complexity/077.no",
+      "sha256": "953a99d1394c57756ab59e3033efe5c963c624949d09a6897be4d3dcd8ac8129",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 130
+      }
+    },
+    {
+      "id": "case-078",
+      "path": "tests/public/complexity/078.no",
+      "sha256": "ec54a93fbc5dd37d52e32aa8d7fa94f1fd0abcb7714c9e5dbf3f3333a8c2e695",
+      "oracle": {
+        "kind": "IDENTITY_CALLBACK_VALUE",
+        "exit": 147
+      }
+    },
+    {
+      "id": "case-079",
+      "path": "tests/public/complexity/079.no",
+      "sha256": "f00ceb39ec4db8b01d51ef7895628392a75fec7e4a36190f1d0a7e8e651acc90",
+      "oracle": {
+        "kind": "COMPOSED_TEXT_VALUE",
+        "exit": 8
+      }
+    },
+    {
+      "id": "case-080",
+      "path": "tests/public/complexity/080.no",
+      "sha256": "a9e42282bb12ebe04dbf47ef62996a12e090975a0184fb4c32e2b8ab80fb7f6f",
+      "oracle": {
+        "kind": "LEGACY_SLASH_GRAMMAR",
+        "code": "NEBO_PARSE_UNEXPECTED_TOKEN",
+        "phase": 4,
+        "token": "/"
+      }
+    },
+    {
+      "id": "case-081",
+      "path": "tests/public/complexity/081.no",
+      "sha256": "8fa365e2fb331f64419ad649b79081b1835a0e55ce15a0da039a542f79428e6e",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "protocol"
+      }
+    },
+    {
+      "id": "case-082",
+      "path": "tests/public/complexity/082.no",
+      "sha256": "521235c88998679a7d6fa45e432c388f6838c528c61c95d722717c10b5d8e9eb",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "protocol"
+      }
+    },
+    {
+      "id": "case-083",
+      "path": "tests/public/complexity/083.no",
+      "sha256": "a85327b316eb796c2a2059eb15e6b8144aaa7c25497034421405b296deb02349",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "protocol"
+      }
+    },
+    {
+      "id": "case-084",
+      "path": "tests/public/complexity/084.no",
+      "sha256": "66e47d1f5ee5f7aae2eed7ac3c13951b57e38792c8eb5f485c8797ee119743ab",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "protocol"
+      }
+    },
+    {
+      "id": "case-085",
+      "path": "tests/public/complexity/085.no",
+      "sha256": "c8298d20ab3c9e5a9904f02c49014a072cf1dfa4c100856916300ae2d819abcd",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "protocol"
+      }
+    },
+    {
+      "id": "case-086",
+      "path": "tests/public/complexity/086.no",
+      "sha256": "a987092007ab8ad6a0b0448f3660f25600d53ecf7bd5871d8729a232b6455982",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "protocol"
+      }
+    },
+    {
+      "id": "case-087",
+      "path": "tests/public/complexity/087.no",
+      "sha256": "cb57349a155256fe5fafcc20d8a234ec1a49df00f6df2fcf5a285ab57f07ec80",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "protocol"
+      }
+    },
+    {
+      "id": "case-088",
+      "path": "tests/public/complexity/088.no",
+      "sha256": "b9c78d8d8efb25150f8cddea9b40597dbba7d850d6d3c185036c23dbcd1f9f74",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "protocol"
+      }
+    },
+    {
+      "id": "case-089",
+      "path": "tests/public/complexity/089.no",
+      "sha256": "c11e8e55529723b6ef27df8e29ee0e93f4ef8eb39f2b9368f3f5919e2794dee0",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "protocol"
+      }
+    },
+    {
+      "id": "case-090",
+      "path": "tests/public/complexity/090.no",
+      "sha256": "1ce8db38d9f1d8dbbd7f1d2f76637630d050eac3ca4b3ece372953f50328f1a6",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "protocol"
+      }
+    },
+    {
+      "id": "case-091",
+      "path": "tests/public/complexity/091.no",
+      "sha256": "b370d0f709065dbfaa6265e8c41dc576ffdf8012b9dfb348d98a941718aefa42",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-092",
+      "path": "tests/public/complexity/092.no",
+      "sha256": "3944ad1681924e1fc39f3a26e67a36f37cee66d60b29b14dba50d949a51695e4",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-093",
+      "path": "tests/public/complexity/093.no",
+      "sha256": "86080f79c92c7c5279cb92a3e2dd60cbb4bbb2f5d62c2cc72401631c1129473b",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-094",
+      "path": "tests/public/complexity/094.no",
+      "sha256": "fb13826e23b490ea5784e3952035704bfa2564f7e84ec639c91ad91cd5b9f5c9",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-095",
+      "path": "tests/public/complexity/095.no",
+      "sha256": "cc19189d19bd9a7430ba5b0dc71aa969ea4a522c1ca44243a84b872d96b699b9",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-096",
+      "path": "tests/public/complexity/096.no",
+      "sha256": "02a931dd7b00ded11fe030a5f8d27a4975ac94858f3a24c3cc05f7d9683f3b52",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-097",
+      "path": "tests/public/complexity/097.no",
+      "sha256": "85b649c2dfe4d8dace178f568c1ec66e0234b0cb21b1d903ecb1f1933365e2d8",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-098",
+      "path": "tests/public/complexity/098.no",
+      "sha256": "c8dde054a3fd4b516c38a9d1be95c4e50b7bb4fe43e9ecea9ac67c3d84fe3c63",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-099",
+      "path": "tests/public/complexity/099.no",
+      "sha256": "f0fa15eafe818c287a047638c758356aab0bf3f440abd627b86f76129b865ee0",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-100",
+      "path": "tests/public/complexity/100.no",
+      "sha256": "cc2ec98342b66c1b49fbadfe5e06fae768b3cc60b15b4538bc3ef51d07eac21d",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-101",
+      "path": "tests/public/complexity/101.no",
+      "sha256": "0eba2152424e12fb9ae8f8df754790c6469b2297e49ac57eac4a6c8021671791",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-102",
+      "path": "tests/public/complexity/102.no",
+      "sha256": "006f8f27eb728794d72ae9d9015b1fbccd7614e3388ccce7e2cbc0a1d9ae811d",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-103",
+      "path": "tests/public/complexity/103.no",
+      "sha256": "bf4ce66637eaade21aaaf48638df1ed741019a11d66a6b4e9756b2452c9bceb2",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-104",
+      "path": "tests/public/complexity/104.no",
+      "sha256": "9601e8bb12e28779154706f5c02de76d23545e7575f72e1cbd5673b87c9da07f",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-105",
+      "path": "tests/public/complexity/105.no",
+      "sha256": "1181bf00bb0cacf0d71519e2ccc1bef9e2cdf3e20dd0a2adca2253a5fcfcdde3",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-106",
+      "path": "tests/public/complexity/106.no",
+      "sha256": "ae57443fd4fc70c62c74d9418117e36944b48da7e8919ce1f6e3a1537e7e12ee",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-107",
+      "path": "tests/public/complexity/107.no",
+      "sha256": "2a4e9b504cafcc72808b4602de9de47bdc2ecf7fc53e796f85064c2180100a0d",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-108",
+      "path": "tests/public/complexity/108.no",
+      "sha256": "0e53ca7889ac3e9d8b257c8ce557cca8aedbd05a671cd9b4ce1bb9c67579f1ae",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-109",
+      "path": "tests/public/complexity/109.no",
+      "sha256": "c6b30f2dde8c5d26222d9f899f1283cd8660070b4aa11d3daad7e4b006a62d31",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-110",
+      "path": "tests/public/complexity/110.no",
+      "sha256": "66b8f3ccda9349a65d2bad8a0f64ec72ee01c7f27ed1e09f1b2b94369a43d492",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-111",
+      "path": "tests/public/complexity/111.no",
+      "sha256": "b2cbf5bf3781be46eb95eed41b6476b664130a692d6a5392e3882a4fadb39b0d",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-112",
+      "path": "tests/public/complexity/112.no",
+      "sha256": "ea6180cb10fb99433b215309de98d16a4733193e429e5ca774c832d86b4eff89",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-113",
+      "path": "tests/public/complexity/113.no",
+      "sha256": "a058bfc4e7165dc2d633d11c72042ce7a040dc4fd1548e824328b536cbc42c02",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-114",
+      "path": "tests/public/complexity/114.no",
+      "sha256": "1b259de1fe7bb027f2db63372a3ba26aa0911b3a1a40f74e3d03a2c2ff4cd2cb",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-115",
+      "path": "tests/public/complexity/115.no",
+      "sha256": "1e128b7e40ce806576e28df8197ecd0037bfaecc6f83513f15ccc2da293de8d4",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-116",
+      "path": "tests/public/complexity/116.no",
+      "sha256": "b7fae46f112b415b65b78aaf574581ca1c1155f5566a9d14bdfbd4644be876ee",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-117",
+      "path": "tests/public/complexity/117.no",
+      "sha256": "aea04c00fd8f6e67b909f39e5165811245f7e742d980385231401ebb2f253535",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-118",
+      "path": "tests/public/complexity/118.no",
+      "sha256": "8d62b6ab88f457ab2d3ad83a1a0d523a0b14330bb7631a35a9d7329640d9f372",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-119",
+      "path": "tests/public/complexity/119.no",
+      "sha256": "396a4becab68febc4f5f4a701e78a922d2ad17fa2d97124a3d742be8620a8e0b",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-120",
+      "path": "tests/public/complexity/120.no",
+      "sha256": "caea2390d3071b89a5cc9df5854e61a1ead9593ab47eb902ba8ef054e428d132",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-121",
+      "path": "tests/public/complexity/121.no",
+      "sha256": "0fb6819ae71ccc68d8e2b326a8f616c71ab49e1cf7caa8d6032044e723d9f136",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-122",
+      "path": "tests/public/complexity/122.no",
+      "sha256": "ae44bfe1d9a8d523487fe92cdc606e1ccf8299b32582beefec5fae3bacc7de2c",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-123",
+      "path": "tests/public/complexity/123.no",
+      "sha256": "4b7c9a45f471de0d7b9a026ced2f1ca67e1b63fa217bc221c8fcc97668d19cc2",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-124",
+      "path": "tests/public/complexity/124.no",
+      "sha256": "6c7fa0c3780239164c7bf0477ff1803f98b09a6a410d349a8d3d9b86a3226b06",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-125",
+      "path": "tests/public/complexity/125.no",
+      "sha256": "c2994609866064b636db8726cc3e7b53c4a101e4380a7ad7177dde741212f2e5",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-126",
+      "path": "tests/public/complexity/126.no",
+      "sha256": "52c9816f74af56aa459179a256171fa8cf5edd5acea2821931de17729d1ffcb7",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-127",
+      "path": "tests/public/complexity/127.no",
+      "sha256": "3a7c7594830aec0bd8db19d834492955796747b7f40f5bf93fb61aff4563555b",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-128",
+      "path": "tests/public/complexity/128.no",
+      "sha256": "ce6e708282f3c038657ebd5cf0077c66992f7abedde5886a919c9e5ecbb5be82",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-129",
+      "path": "tests/public/complexity/129.no",
+      "sha256": "ed2f5df2bb4465bbddfead85b09e800461e1346df12ad57f1bb0a2e16ef79529",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-130",
+      "path": "tests/public/complexity/130.no",
+      "sha256": "f8ebf1ef9e55433c457a980d353b2820ce3ee0c32db4bd69e92a3fc9262c41e9",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-131",
+      "path": "tests/public/complexity/131.no",
+      "sha256": "9b8a62dcdf220b536cbf26c329969cb50d558a97dd66fe32aab21a5498d47b06",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-132",
+      "path": "tests/public/complexity/132.no",
+      "sha256": "e68c4d2a3c85be359c24ab7c35459adda9298fb317ebec170f4a6e3944c398be",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-133",
+      "path": "tests/public/complexity/133.no",
+      "sha256": "09fc8dde0e7dd787bb692ac53129263f8198d4f5b063a8be8172fedb5bd9e1e2",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-134",
+      "path": "tests/public/complexity/134.no",
+      "sha256": "063f36813abc0eac884aa296fcf91f60769dcd1fb81bc12bda60aee9fd597a85",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-135",
+      "path": "tests/public/complexity/135.no",
+      "sha256": "b0aba1884c430de803b9b21d3fc391c4c0494e7e5672008c5624c1fe614ccd45",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-136",
+      "path": "tests/public/complexity/136.no",
+      "sha256": "81985569e2a2c21563d12427f4a04ecab60f8770ac1255fa0ad348fd853ae709",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-137",
+      "path": "tests/public/complexity/137.no",
+      "sha256": "4d763bde831d2dc82b00223d13ccd57864cc4e8062b7c27b7809b34576cd5371",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-138",
+      "path": "tests/public/complexity/138.no",
+      "sha256": "a94aad3bded9534d9260e00487b4c7c65f3704bd859048564b32d50fcdb4507b",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-139",
+      "path": "tests/public/complexity/139.no",
+      "sha256": "caf26dab5c7eb9a22a988d26772f75e229f146677a7dfdb7213e5a2549835d26",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-140",
+      "path": "tests/public/complexity/140.no",
+      "sha256": "3e65cb573ba87cd3ca2f7b555330c6741d081af7e9bd47ebaaca090e0354c20c",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-141",
+      "path": "tests/public/complexity/141.no",
+      "sha256": "57fe0ccd56fb21e62e47a2b3962229d8678c29470f83051ed4aaa288b364a90f",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-142",
+      "path": "tests/public/complexity/142.no",
+      "sha256": "4f7882e2f59be2c54a3f452acc68d342d28207a64392cc94b7a9c1a4ea63240d",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-143",
+      "path": "tests/public/complexity/143.no",
+      "sha256": "6b6a46ac03c6b6c1a9d3ff9ebffa59002ecde07ee60f3c047c2cf033b9a434a6",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-144",
+      "path": "tests/public/complexity/144.no",
+      "sha256": "cb12935dd1313929ee7438331fd37d488d6e4d2d1a5a2dae905f4e34219bd2f7",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-145",
+      "path": "tests/public/complexity/145.no",
+      "sha256": "9daa1c8f4d4fb6cb70bf1087ca2b7ea36c6bdc26f6814e7ae6f51e657f49f8a1",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-146",
+      "path": "tests/public/complexity/146.no",
+      "sha256": "69b9c1202ef86a3432d353d676ce2c9f8373a6854638b70d31d15b8e8096db17",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-147",
+      "path": "tests/public/complexity/147.no",
+      "sha256": "4f469bb2949598b1d94fc5d32147dac7d2539e8f3aa19bdc8ec6c8f26b9f98d6",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-148",
+      "path": "tests/public/complexity/148.no",
+      "sha256": "4dce382dbf103ce8e0e53f9050d8fcab8a363c26d11954e171af9bd10715dcaa",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-149",
+      "path": "tests/public/complexity/149.no",
+      "sha256": "243abef8fc0f69ed13222171ca1d0c28d3fee392db09b68f194f6491e56f07ae",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-150",
+      "path": "tests/public/complexity/150.no",
+      "sha256": "516919233280112ba426d8a808f77c803d1354e425cbdb95eaa636c946255d59",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-151",
+      "path": "tests/public/complexity/151.no",
+      "sha256": "758b96b8dde342a61684d676be0e923870b5dadd33282aed6b330c07ef3f5a2a",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-152",
+      "path": "tests/public/complexity/152.no",
+      "sha256": "ddbe17ecdf225488640803bd3b97521b17a24e1082d1ec0c9e4a2eb60c2096a8",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-153",
+      "path": "tests/public/complexity/153.no",
+      "sha256": "3610bd1fdb20cd8b753a646036ecb54735a2f4708e1d0c1c23342eb327b0c194",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-154",
+      "path": "tests/public/complexity/154.no",
+      "sha256": "1aeaacc22317f04aa235d1d60d6a4cc43bf897764089530f43ddfa8ccf721596",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-155",
+      "path": "tests/public/complexity/155.no",
+      "sha256": "77ea5e90262bf2c5008cc77f76a5a78f2284d2bf456f8321d5d11afb8deb7da7",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-156",
+      "path": "tests/public/complexity/156.no",
+      "sha256": "1107209a5af969399f3d559db3853c7899b6a07ce0137d75a78ff61f690be538",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-157",
+      "path": "tests/public/complexity/157.no",
+      "sha256": "be29c88bd8342659c94c8e3448939db33a03fc6358890083bc95b21d68fbd129",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-158",
+      "path": "tests/public/complexity/158.no",
+      "sha256": "87d7c029c195da2861f71e04d263b3a47b40046c3cd14c87cc4f02bc6c45bfee",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-159",
+      "path": "tests/public/complexity/159.no",
+      "sha256": "fe2eccfdacbf7236a49a86ad77e64c842bd4ff7fcb875428f651271fc9e521d3",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-160",
+      "path": "tests/public/complexity/160.no",
+      "sha256": "33630369b8c7967fdf5a78060a2f65ad09d0456393b3fcf779a0ec08540f2b9f",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-161",
+      "path": "tests/public/complexity/161.no",
+      "sha256": "4545d5465a1d0616c92c0636778f6217235884eb0b07608bbb1f580bbd25b6ac",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-162",
+      "path": "tests/public/complexity/162.no",
+      "sha256": "466baf7c73f8e7a90fb76e8bfab1bba2c2d5384ab1c25273758d7578741c780f",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-163",
+      "path": "tests/public/complexity/163.no",
+      "sha256": "a240b8695a1820bea0cc103187d3bdea17468f8745eb953ae2927ecb15bb0b8b",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-164",
+      "path": "tests/public/complexity/164.no",
+      "sha256": "33ccb26d99f4486188f39ba4b08051a2c3039a7a0e70a22e6ce8ce37cc5a616b",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-165",
+      "path": "tests/public/complexity/165.no",
+      "sha256": "6a3e1fc8c9abc8efeb14f1ad4a783aa3cec4586b8eb78b52648d4174bd557ed9",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    },
+    {
+      "id": "case-166",
+      "path": "tests/public/complexity/166.no",
+      "sha256": "8d120f57f695506703f7fc8a941f28288b72a217456a390a4169ada5cf3f82f4",
+      "oracle": {
+        "kind": "UNBOUND_RECEIVER",
+        "code": "NEBO_NAME_UNDEFINED",
+        "phase": 5,
+        "token": "lifecycle"
+      }
+    }
+  ]
+}

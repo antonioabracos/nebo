@@ -1,0 +1,6 @@
+start() {
+    5.owner;
+    owner.borrowShared().view;
+    view.alias;
+    0;
+}

@@ -1,0 +1,2 @@
+// Independent dictionaries expose accidental state sharing in a restored runtime.
+start(){Dict<Int,Int>.new().a;Dict<Int,Int>.new().b;a.insert(7,57);b.insert(7,28);(a.get(7).expect("a")+b.get(7).expect("b")).return;}

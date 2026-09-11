@@ -1,0 +1,9 @@
+start() {
+    Int.value;
+    1.value;
+    if (true) {
+        Int.value;
+    } else {
+        0;
+    }
+}

@@ -1,0 +1,4 @@
+start() {
+    Number(3.5).invalid_alias;
+    0.return;
+}

@@ -1,0 +1,7 @@
+// Effects must be a subset of registered capabilities before any receipt write.
+start() {
+    RenderPlan;
+    3507;
+    output.stdout().stderr().target("console-abi-service").plain().visual().headlessEvent();
+    lifecycle.event("renderer-plugin").payload("effects-capability-registry-subset-check").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

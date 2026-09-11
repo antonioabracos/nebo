@@ -1,17 +1,53 @@
 {
-  "format": "NEBO-TOOLING-CONFIG-SCHEMAS-v1",
-  "formatter": {
-    "write": {
-      "default": false,
-      "type": "boolean"
+  "$id": "urn:nebo:tooling:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Local CLI invocation settings; no schema download is required. Formatter transactions are per file; refactor plans validate and roll back the complete source set.",
+  "properties": {
+    "formatter": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "default": "write",
+          "enum": [
+            "write",
+            "check",
+            "diff",
+            "stdout"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "linter": {
+      "additionalProperties": false,
+      "properties": {
+        "report": {
+          "default": "text",
+          "enum": [
+            "text",
+            "json",
+            "sarif"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "refactor": {
+      "additionalProperties": false,
+      "properties": {
+        "apply": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "sdkPath": {
+      "minLength": 1,
+      "type": "string"
     }
   },
-  "linter": {
-    "machine": "JSON"
-  },
-  "network": false,
-  "refactor": {
-    "preview_default": true,
-    "transactional_apply": true
-  }
+  "title": "Offline Nebo tooling settings",
+  "type": "object"
 }

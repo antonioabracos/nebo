@@ -1,0 +1,13 @@
+diagnostic_id	code	trigger	primary_span	help	state
+G09-DIAG-01	NEBO-STRUCTS-ENUMS-VARIANTS-E-TIPOS-DO-PROGRAMADOR-EXPECTED-TYPE-NAME	missing or malformed nominal type name	type declaration subject	provide one PascalCase type name	PROVISIONAL
+G09-DIAG-02	NEBO-STRUCTS-ENUMS-VARIANTS-E-TIPOS-DO-PROGRAMADOR-DUPLICATE-TYPE	duplicate nominal declaration	second type name	rename or remove the duplicate type	PROVISIONAL
+G09-DIAG-03	NEBO-STRUCTS-ENUMS-VARIANTS-E-TIPOS-DO-PROGRAMADOR-EXPECTED-FIELD-NAME	missing named field	field declaration subject	provide one receiver-first field name	PROVISIONAL
+G09-DIAG-04	NEBO-STRUCTS-ENUMS-VARIANTS-E-TIPOS-DO-PROGRAMADOR-DUPLICATE-FIELD	field declared or initialized twice	second field name	keep each field exactly once	PROVISIONAL
+G09-DIAG-05	NEBO-STRUCTS-ENUMS-VARIANTS-E-TIPOS-DO-PROGRAMADOR-MISSING-FIELD	struct literal is incomplete	struct literal	initialize every declared field	PROVISIONAL
+G09-DIAG-06	NEBO-STRUCTS-ENUMS-VARIANTS-E-TIPOS-DO-PROGRAMADOR-UNKNOWN-FIELD	literal/access names no declared field	unknown field name	use a field declared by this nominal type	PROVISIONAL
+G09-DIAG-07	NEBO-STRUCTS-ENUMS-VARIANTS-E-TIPOS-DO-PROGRAMADOR-FIELD-TYPE-MISMATCH	field value differs from declared type	field value	use the exact declared field type	PROVISIONAL
+G09-DIAG-08	NEBO-STRUCTS-ENUMS-VARIANTS-E-TIPOS-DO-PROGRAMADOR-DUPLICATE-VARIANT	variant name repeated	second variant name	keep variant names unique	PROVISIONAL
+G09-DIAG-09	NEBO-STRUCTS-ENUMS-VARIANTS-E-TIPOS-DO-PROGRAMADOR-PAYLOAD-TYPE-MISMATCH	variant payload differs from declaration	payload expression	use the exact declared payload type	PROVISIONAL
+G09-DIAG-10	NEBO-STRUCTS-ENUMS-VARIANTS-E-TIPOS-DO-PROGRAMADOR-RECURSIVE-BY-VALUE	direct or mutual by-value recursion	recursive field type	by-value recursion is unavailable in this profile	PROVISIONAL
+G09-DIAG-11	NEBO-STRUCTS-ENUMS-VARIANTS-E-TIPOS-DO-PROGRAMADOR-EMPTY-DECLARATION	empty struct or enum	declaration body	declare at least one field or two variants	PROVISIONAL
+G09-DIAG-12	NEBO-STRUCTS-ENUMS-VARIANTS-E-TIPOS-DO-PROGRAMADOR-DEFERRED-FEATURE	visibility discriminant match update method or other deferred form	deferred token	use only the bounded G09 foundation profile	PROVISIONAL

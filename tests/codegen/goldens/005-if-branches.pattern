@@ -1,0 +1,31 @@
+bits 64
+default rel
+extern nebo_runtime_trap_overflow
+extern nebo_runtime_trap_division_by_zero
+global _start
+extern nebo_runtime_start
+
+section .text
+_start:
+    lea rdi, [rel nebo_fn_1]
+    call nebo_runtime_start
+    ud2
+
+section .text
+global nebo_fn_1
+nebo_fn_1:
+    push rbp
+    mov rbp, rsp
+    mov eax, 1
+    test rax, rax
+    jz .nebo_if_else_@IF@
+    mov rax, 5
+    jmp .nebo_if_end_@IF@
+.nebo_if_else_@IF@:
+    mov rax, 9
+.nebo_if_end_@IF@:
+    mov rsp, rbp
+    pop rbp
+    ret
+
+section .note.GNU-stack noalloc noexec nowrite progbits

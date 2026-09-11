@@ -1,0 +1,19 @@
+// Iterators hold an authenticated borrow until release. Adaptors update only
+// cursor bounds; collect creates an independently owned List of remaining data.
+start() {
+    List<Int>.from([4, 8, 12, 16]).items;
+    items.iterator().reader;
+    reader.next().first;
+    reader.enumerate();
+    reader.next().second;
+    reader.release();
+    items.iteratorMutable().mutableReader;
+    mutableReader.next().mutableFirst;
+    mutableReader.release();
+    items.iterator().ranged;
+    ranged.skip(1);
+    ranged.take(2);
+    ranged.collect<List<Int>>().middle;
+    ranged.release();
+    middle.at(1);
+}

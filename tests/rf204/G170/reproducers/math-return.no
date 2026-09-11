@@ -1,0 +1,12 @@
+// Scalar owners expose checked integer domains and stable binary64 magnitude.
+start() {
+    141;
+    std.math.max(17, 29);
+    std.math.min(17, 29);
+    std.math.abs(-37);
+    std.math.clamp(41, 7, 23);
+    std.math.sqrt(9.0);
+    std.math.pow(2.0, 5.0);
+    std.math.hypot(5.0, 12.0);
+    23.return;
+}

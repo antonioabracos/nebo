@@ -1,0 +1,3 @@
+start() {
+  Array<Int,257> [1].bad;
+}

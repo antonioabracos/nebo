@@ -1,5 +1,2 @@
-start() {
-  Text("Hello from Nebo").message;
-  message.console();
-  0;
-}
+// Use a computed result from the installed native compiler.
+start(){(31+6).answer;answer.return;}

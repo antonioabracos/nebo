@@ -1,0 +1,4 @@
+start() {
+  Range.exclusive(1,5).up;
+  up.length().return;
+}

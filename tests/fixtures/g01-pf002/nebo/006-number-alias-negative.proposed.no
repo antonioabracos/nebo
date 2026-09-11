@@ -1,0 +1,4 @@
+// Number is not an approved public scalar alias.
+start() {
+    Number(10).value;
+}

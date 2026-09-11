@@ -1,0 +1,3 @@
+start() {
+    Option<Int, Bool>(Some(1)).value;
+}

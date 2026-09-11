@@ -1,0 +1,2 @@
+// The private declaration is the related location for the cross-unit error.
+module core export private secret = 89;

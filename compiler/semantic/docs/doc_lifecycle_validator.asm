@@ -1,71 +1,38 @@
-; VALIDACAO-SEMANTICA-DE-PARAMS-RETURNS-ERRORS-EFFECTS-CAPABILITIES-OWNERSHIP-E-RISKS-F07: Since/deprecated/target/stability consistency
-; Bounded native semantic-documentation kernel.
-; rdi=input bytes, rsi=length, rdx=caller-owned 24-byte result.
-; Success publishes digest, length, and stable operation tag atomically.
-; Failure publishes nothing. No allocation, I/O, libc, network, or effects.
+; RF166-G157-F07 resolved lifecycle, edition and target availability.
 bits 64
 default rel
-
+%include "compiler/semantic/docs/doc_validation.inc"
 global neboc_doc_lifecycle_validate
-
-%define DOC_MAX_INPUT 4096
-%define DOC_TAG 23
-%define hover_FNV_OFFSET 0xcbf29ce484222325
-%define hover_FNV_PRIME  0x100000001b3
-
+global neboc_doc_validate_lifecycle
+global neboc_doc_validate_target_availability
 section .text
-align 16
 neboc_doc_lifecycle_validate:
-    test rdi, rdi
-    jz .argument
-    test rdx, rdx
-    jz .argument
-    test rdx, 7
-    jnz .argument
-    test rsi, rsi
-    jz .length
-    cmp rsi, DOC_MAX_INPUT
-    ja .length
-    lea rax, [rdi + rsi]
-    cmp rax, rdi
-    jb .length
-
-    mov rax, hover_FNV_OFFSET
-    mov r8, hover_FNV_PRIME
-    xor ecx, ecx
-.scan:
-    cmp rcx, rsi
-    jae .publish
-    movzx r9d, byte [rdi + rcx]
-    test r9b, r9b
-    jz .encoding
-    cmp r9b, 0x7f
-    ja .encoding
-    xor rax, r9
-    imul rax, r8
-    inc rcx
-    jmp .scan
-.publish:
-    xor rax, DOC_TAG
-    mov qword [rdx], rax
-    mov qword [rdx + 8], rsi
-    mov qword [rdx + 16], DOC_TAG
-    xor eax, eax
-    xor edx, edx
-    ret
-.argument:
-    mov eax, 1
-    mov edx, 1
-    ret
-.length:
-    mov eax, 2
-    mov edx, 2
-    ret
-.encoding:
-    mov eax, 3
-    mov edx, 3
-    ret
-.keyword:
-    mov eax, 4
-    mov edx, 4
-    ret
+neboc_doc_validate_lifecycle:
+ DOCV_VALIDATE_REQUEST .lifecycle
+.lifecycle:
+ mov r8,[rdi+NEBOC_DOCV_CURRENT_VERSION_OFFSET]
+ mov r9,[rdi+NEBOC_DOCV_SINCE_OFFSET]
+ cmp r9,r8
+ ja .life_issue
+ mov rax,[rdi+NEBOC_DOCV_DEPRECATED_OFFSET]
+ test rax,rax
+ jz neboc_doc_validate_target_availability.validated
+ cmp rax,r9
+ jb .life_issue
+ jmp neboc_doc_validate_target_availability.validated
+.life_issue:
+ DOCV_PUBLISH_ISSUE NEBOC_DOCV_CODE_LIFECYCLE,NEBOC_DOCV_SEVERITY_WARNING,r8,r9,NEBOC_DOCV_FIX_NONE
+neboc_doc_validate_target_availability:
+ DOCV_VALIDATE_REQUEST neboc_doc_validate_target_availability.validated
+.validated:
+ mov r8,[rdi+NEBOC_DOCV_ACTIVE_TARGET_OFFSET]
+ mov r9,[rdi+NEBOC_DOCV_DOC_TARGET_OFFSET]
+ test r9,r9
+ jz .same
+ test r8,r9
+ jz .target_issue
+.same:
+ DOCV_PUBLISH_NONE
+.target_issue:
+ DOCV_PUBLISH_ISSUE NEBOC_DOCV_CODE_TARGET,NEBOC_DOCV_SEVERITY_ERROR,r8,r9,NEBOC_DOCV_FIX_NONE
+section .note.GNU-stack noalloc noexec nowrite progbits

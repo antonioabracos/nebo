@@ -14,6 +14,7 @@
 %define FMT_STATE_CONTRACT 1
 %define FMT_STATE_INTERNAL 2
 %define FMT_STATE_EXTERNAL 3
+%define FMT_STATE_PUBLIC   4
 
 %define FMT_UNKNOWN        0
 %define FMT_CSV            1

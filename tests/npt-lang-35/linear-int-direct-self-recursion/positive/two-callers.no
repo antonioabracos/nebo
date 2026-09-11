@@ -1,0 +1,4 @@
+(Int.self)countdown(){ if (self <= 0) { 7.return; } else { (self - 1).countdown().return; } }
+(Int.self)first(){ self.countdown().return; }
+(Int.self)second(){ self.countdown().return; }
+start(){ 5.first(); 6.second().return; }

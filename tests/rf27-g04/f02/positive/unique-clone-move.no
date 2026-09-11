@@ -1,0 +1,7 @@
+start() {
+    "Nebo".source;
+    source.clone().cloned;
+    cloned.move().transferred;
+    source.clone().again;
+    17;
+}

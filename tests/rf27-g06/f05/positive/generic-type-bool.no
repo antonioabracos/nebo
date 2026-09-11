@@ -1,0 +1,7 @@
+generic<T: Eq> struct Flag {
+    T.value;
+}
+
+start() {
+    Flag<Bool>(true).value;
+}

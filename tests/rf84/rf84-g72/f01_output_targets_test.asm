@@ -1,0 +1,4 @@
+%define G072_FEATURE_ID 7201
+%define G072_TARGET_TOKEN RENDER_TARGET_TOKEN_OUTPUT
+%define G072_TARGET_AUX RENDER_TARGET_HEADLESS
+%include "tests/rf84/rf84-g72/target_front_test.inc"

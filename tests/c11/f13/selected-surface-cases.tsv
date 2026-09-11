@@ -1,0 +1,31 @@
+surface	expected_exit	source
+add	0	start(){Matrix<Int>.zeros(2,3).a;Matrix<Int>.zeros(2,3).b;a.add(b).sum();}
+at	7	start(){ Matrix<Int>.filled(2,3,7).m; m.at(1,2); }
+column	14	start(){ Matrix<Int>.filled(2,3,7).m; m.column(1).r; r.sum(); }
+columns	3	start(){ Matrix<Int>.filled(2,3,7).m; m.columns(); }
+contiguous	42	start(){ Matrix<Int>.filled(2,3,7).m; m.transposeView().v; v.contiguous().r; r.sum(); }
+deserializeNBM1	42	start(){Matrix<Int>.filled(2,3,7).m;m.serializeNBM1().a;a.asSlice().s;Matrix<Int>.deserializeNBM1(s,m.serializedSizeNBM1()).r;r.sum();}
+filled	42	start(){ Matrix<Int>.filled(2,3,7).m; m.sum(); }
+fromBuffer	21	start(){ Array<Int,6> [1,2,3,4,5,6].a; a.asSlice().s; Matrix<Int>.fromBuffer(s,2,3).m; m.sum(); }
+fromRows	21	start(){ Matrix<Int>.fromRows(Tuple.of(Tuple.of(1,2,3),Tuple.of(4,5,6))).m; m.sum(); }
+function_parameter	42	(Int.self)f(Matrix<Int>.m){m.sum().return;} start(){Matrix<Int>.filled(2,3,7).m;0.f(m).return;}
+function_return	42	(Matrix<Int>.self)f(){Matrix<Int>.filled(2,3,7).m;m.return;} start(){0.f().m;m.sum();}
+isSquare	0	start(){ Matrix<Int>.filled(2,3,7).m; m.isSquare(); }
+layout	1	start(){ Matrix<Int>.filled(2,3,7).m; m.layout(); }
+matmul	48	start(){ Matrix<Int>.filled(2,2,2).a; Matrix<Int>.filled(2,2,3).b; a.matmul(b).r; r.sum(); }
+matmulInto	48	start(){ Matrix<Int>.filled(2,2,2).a; Matrix<Int>.filled(2,2,3).b; a.matmulInto(b).r; r.sum(); }
+max	7	start(){ Matrix<Int>.filled(2,3,7).m; m.max(); }
+min	7	start(){ Matrix<Int>.filled(2,3,7).m; m.min(); }
+multiplyElements	24	start(){ Matrix<Int>.filled(2,2,2).a; Matrix<Int>.filled(2,2,3).b; a.multiplyElements(b).r; r.sum(); }
+row	21	start(){ Matrix<Int>.filled(2,3,7).m; m.row(1).r; r.sum(); }
+rows	2	start(){ Matrix<Int>.filled(2,3,7).m; m.rows(); }
+scale	84	start(){ Matrix<Int>.filled(2,3,7).m; m.scale(2).r; r.sum(); }
+serializeNBM1	70	start(){Matrix<Int>.filled(2,3,7).m;m.serializeNBM1().a;a.length();}
+serializedSizeNBM1	96	start(){ Matrix<Int>.filled(2,3,7).m; m.serializedSizeNBM1(); }
+set	44	start(){ Matrix<Int>.filled(2,3,7).m; m.set(1,2,9).r; r.sum(); }
+slice	28	start(){ Matrix<Int>.filled(2,3,7).m; m.slice(0,2,0,2).r; r.sum(); }
+subtract	252	start(){ Matrix<Int>.filled(2,2,2).a; Matrix<Int>.filled(2,2,3).b; a.subtract(b).r; r.sum(); }
+sum	42	start(){ Matrix<Int>.filled(2,3,7).m; m.sum(); }
+trace	14	start(){ Matrix<Int>.filled(2,3,7).m; m.trace(); }
+transposeView	42	start(){ Matrix<Int>.filled(2,3,7).m; m.transposeView().r; r.sum(); }
+zeros	0	start(){ Matrix<Int>.zeros(2,3).m; m.sum(); }

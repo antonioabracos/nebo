@@ -1,0 +1,9 @@
+(Int.self)lessThanFour() {
+    (self < 4).return;
+}
+
+start() {
+    List<Int>.from([7, 2, 5]).items;
+    items.filter(lessThanFour).selected;
+    selected.at(0);
+}

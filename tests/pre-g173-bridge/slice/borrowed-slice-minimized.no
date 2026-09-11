@@ -1,0 +1,5 @@
+start() {
+  Array<Int,4> [2,4,6,8].a;
+  a.asSlice().s;
+  s.sum().return;
+}

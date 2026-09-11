@@ -1,0 +1,4 @@
+enum Node { Empty, Next(Node) }
+start() {
+    Node.Empty.discriminant().return;
+}

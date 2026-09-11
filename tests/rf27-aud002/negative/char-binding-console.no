@@ -1,0 +1,4 @@
+start() {
+    'A'.letra;
+    letra.console();
+}

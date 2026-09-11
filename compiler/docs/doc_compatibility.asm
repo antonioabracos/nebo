@@ -1,71 +1,42 @@
-; EXAMPLES-EXECUTAVEIS-LAWS-STALENESS-E-COMPATIBILITY-DOCUMENTAL-F06: Doc/API compatibility diff e migration
-; Bounded native semantic-documentation kernel.
-; rdi=input bytes, rsi=length, rdx=caller-owned 24-byte result.
-; Success publishes digest, length, and stable operation tag atomically.
-; Failure publishes nothing. No allocation, I/O, libc, network, or effects.
+; RF166-G158-F06 old/new API and documentation compatibility classification.
 bits 64
 default rel
-
+%include "compiler/docs/doc_examples.inc"
 global neboc_doc_compatibility
-
-%define DOC_MAX_INPUT 4096
-%define DOC_TAG 30
-%define hover_FNV_OFFSET 0xcbf29ce484222325
-%define hover_FNV_PRIME  0x100000001b3
-
+global neboc_doc_compatibility_compare
 section .text
-align 16
 neboc_doc_compatibility:
-    test rdi, rdi
-    jz .argument
-    test rdx, rdx
-    jz .argument
-    test rdx, 7
-    jnz .argument
-    test rsi, rsi
-    jz .length
-    cmp rsi, DOC_MAX_INPUT
-    ja .length
-    lea rax, [rdi + rsi]
-    cmp rax, rdi
-    jb .length
-
-    mov rax, hover_FNV_OFFSET
-    mov r8, hover_FNV_PRIME
-    xor ecx, ecx
-.scan:
-    cmp rcx, rsi
-    jae .publish
-    movzx r9d, byte [rdi + rcx]
-    test r9b, r9b
-    jz .encoding
-    cmp r9b, 0x7f
-    ja .encoding
-    xor rax, r9
-    imul rax, r8
-    inc rcx
-    jmp .scan
-.publish:
-    xor rax, DOC_TAG
-    mov qword [rdx], rax
-    mov qword [rdx + 8], rsi
-    mov qword [rdx + 16], DOC_TAG
-    xor eax, eax
-    xor edx, edx
-    ret
-.argument:
-    mov eax, 1
-    mov edx, 1
-    ret
-.length:
-    mov eax, 2
-    mov edx, 2
-    ret
-.encoding:
-    mov eax, 3
-    mov edx, 3
-    ret
-.keyword:
-    mov eax, 4
-    mov edx, 4
-    ret
+neboc_doc_compatibility_compare:
+ DOCX_VALIDATE_REQUEST NEBOC_DOCX_OP_COMPATIBILITY,.validated
+.validated:
+ mov r8,[rdi+NEBOC_DOCX_FLAGS_OFFSET]
+ mov r9,r8
+ and r9,NEBOC_DOCX_FLAG_OLD_PRESENT | NEBOC_DOCX_FLAG_NEW_PRESENT
+ cmp r9,NEBOC_DOCX_FLAG_NEW_PRESENT
+ je .additive
+ cmp r9,NEBOC_DOCX_FLAG_OLD_PRESENT
+ je .breaking
+ cmp r9,NEBOC_DOCX_FLAG_OLD_PRESENT | NEBOC_DOCX_FLAG_NEW_PRESENT
+ jne .unknown
+ mov r10,[rdi+NEBOC_DOCX_OLD_API_DIGEST_OFFSET]
+ mov r11,[rdi+NEBOC_DOCX_NEW_API_DIGEST_OFFSET]
+ test r10,r10
+ jz .unknown
+ test r11,r11
+ jz .unknown
+ cmp r10,r11
+ jne .breaking
+ mov rax,r10
+ xor rax,[rdi+NEBOC_DOCX_DOC_REVISION_OFFSET]
+ DOCX_PUBLISH rax,NEBOC_DOCX_CLASS_COMPATIBLE,r10,r11
+.additive:
+ mov rax,[rdi+NEBOC_DOCX_NEW_API_DIGEST_OFFSET]
+ DOCX_PUBLISH rax,NEBOC_DOCX_CLASS_ADDITIVE,0,rax
+.breaking:
+ mov rax,[rdi+NEBOC_DOCX_OLD_API_DIGEST_OFFSET]
+ xor rax,[rdi+NEBOC_DOCX_NEW_API_DIGEST_OFFSET]
+ DOCX_PUBLISH rax,NEBOC_DOCX_CLASS_BREAKING,[rdi+NEBOC_DOCX_OLD_API_DIGEST_OFFSET],[rdi+NEBOC_DOCX_NEW_API_DIGEST_OFFSET]
+.unknown:
+ xor eax,eax
+ DOCX_PUBLISH rax,NEBOC_DOCX_CLASS_UNKNOWN,0,0
+section .note.GNU-stack noalloc noexec nowrite progbits

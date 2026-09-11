@@ -1,0 +1,7 @@
+operator	arity	preserves_single_fault	deterministic_seed_policy	mapping_state
+DELETE_ONE_TOKEN	1	YES	seed_id_plus_token_index	MAPPED
+DUPLICATE_ONE_TOKEN	1	YES	seed_id_plus_token_index	MAPPED
+REPLACE_ONE_TOKEN	1	YES	seed_id_plus_token_index_plus_replacement_class	MAPPED
+INSERT_ONE_UNEXPECTED_TOKEN	1	YES	seed_id_plus_boundary_plus_token_class	MAPPED
+TRANSPOSE_ADJACENT_TOKENS	2	YES	seed_id_plus_left_index	MAPPED
+TRUNCATE_AT_TOKEN_BOUNDARY	1	YES	seed_id_plus_boundary	MAPPED

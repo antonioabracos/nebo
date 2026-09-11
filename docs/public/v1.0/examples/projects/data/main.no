@@ -1,0 +1,3 @@
+import "std.fs" { Path; File; }.fs;
+// Canonical key ordering has independently specified bytes.
+start(){Path.parse("input.json").p;File.readText(p,utf8,4096).raw;Json.parse(raw).v;v.toJson(canonicalKeys).s;Path.parse("output.json").q;File.writeText(q,s,utf8,atomic);s.console();47.return;}

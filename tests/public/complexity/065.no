@@ -1,0 +1,13 @@
+// Bounded particles consume sampled fields while simulation profiling, trace, and replay stay observable.
+(Int.self)particleSystemNew() { self.return; }
+(Int.self)particlesEmit() { self.return; }
+(Int.self)particlesStep() { self.return; }
+(Int.self)fieldVector() { self.return; }
+(Int.self)particlesApplyField() { self.return; }
+(Int.self)simulationProfile() { self.return; }
+(Int.self)simulationTrace() { self.return; }
+(Int.self)simulationReplayCli() { self.return; }
+
+start() {
+    145.particleSystemNew().particlesEmit().particlesStep().fieldVector().particlesApplyField().simulationProfile().simulationTrace().simulationReplayCli();
+}

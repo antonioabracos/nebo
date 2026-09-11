@@ -1,0 +1,2 @@
+(Char.self)choose(Char.value = 'z') { (value).return; }
+start() { 'a'.choose().return; }

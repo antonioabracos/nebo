@@ -1,0 +1,7 @@
+// Receiver-first RenderPlan calls migrate to host services without a public factory.
+start() {
+    RenderPlan;
+    3407;
+    output.stdout().stderr().target("export-privacy-service").plain().visual().headlessEvent();
+    lifecycle.event("privacy-audited").payload("receiver-first-host-service-migration").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

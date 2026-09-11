@@ -1,0 +1,4 @@
+// PROTOTYPE_NATIVE_ONLY — public integration belongs to G03-PF005.
+start() {
+    (-0.0).isNegativeZero().classified;
+}

@@ -1,0 +1,4 @@
+start() {
+    List<Text>.new().items;
+    items.length();
+}

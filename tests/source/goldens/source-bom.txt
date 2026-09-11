@@ -1,0 +1,3 @@
+code=NEBO_SOURCE_BOM_FORBIDDEN
+path=src/bom.no
+offset=0

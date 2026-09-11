@@ -1,0 +1,7 @@
+// Prediction, checkpoint, and model summaries use redacted semantic receipts.
+start() {
+    RenderPlan;
+    3307;
+    output.stdout().stderr().target("domain-visual-service").plain().visual().headlessEvent();
+    lifecycle.event("domain-visual").payload("ml-prediction-checkpoint-summary").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

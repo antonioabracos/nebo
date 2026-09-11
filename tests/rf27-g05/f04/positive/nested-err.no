@@ -1,0 +1,8 @@
+(Result<Int,Int>.context)propagate(Result<Int,Int>.value) {
+    Result<Int,Int>(Ok(1)).outer;
+    Result<Int,Int>(Err(2)).inner;
+    value?.return;
+}
+start() {
+    Result<Int,Int>(Ok(0)).propagate(Result<Int,Int>(Err(9))).getErr().return;
+}

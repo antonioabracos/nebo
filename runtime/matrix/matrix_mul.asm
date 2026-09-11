@@ -7,6 +7,8 @@ section .text
 global nebo_matrix_matmul_f64
 global nebo_matrix_matvec_f64
 global nebo_matrix_outer_f64
+global nebo_matrix_dot_flattened_f64
+global nebo_matrix_batched_matmul_f64
 
 ; rdi output desc, rsi A, rdx B
 nebo_matrix_matmul_f64:
@@ -148,8 +150,28 @@ nebo_matrix_matvec_f64:
  call nebo_matrix_validate
  test eax,eax
  jnz .mv_ret
+ cmp qword [r13+NEBO_MATRIX_DTYPE],NEBO_MATRIX_DTYPE_F64
+ jne .mv_contract
  cmp r15,[r13+NEBO_MATRIX_COLS]
  jne .mv_shape
+ ; A raw result span must be disjoint from both input storage spans.
+ mov r8,r12
+ mov r9,[r13+NEBO_MATRIX_ROWS]
+ lea r9,[r8+r9*8]
+ mov r10,[r13+NEBO_MATRIX_DATA]
+ mov r11,[r13+NEBO_MATRIX_CAPACITY]
+ lea r11,[r10+r11*8]
+ cmp r8,r11
+ jae .mv_vector_alias
+ cmp r10,r9
+ jb .mv_alias
+.mv_vector_alias:
+ lea r11,[r14+r15*8]
+ cmp r8,r11
+ jae .mv_disjoint
+ cmp r14,r9
+ jb .mv_alias
+.mv_disjoint:
  xor ebx,ebx
 .mv_i:
  cmp rbx,[r13+NEBO_MATRIX_ROWS]
@@ -186,6 +208,11 @@ nebo_matrix_matvec_f64:
 .mv_shape: mov eax,NEBO_NUMERIC_ERROR_SHAPE
  jmp .mv_ret
 
+.mv_contract: mov eax,NEBO_NUMERIC_ERROR_CONTRACT
+ jmp .mv_ret
+.mv_alias: mov eax,NEBO_NUMERIC_ERROR_ALIAS
+ jmp .mv_ret
+
 ; output desc rdi, x rsi nx rdx, y rcx ny r8
 nebo_matrix_outer_f64:
  push r12
@@ -207,10 +234,29 @@ nebo_matrix_outer_f64:
  call nebo_matrix_validate
  test eax,eax
  jnz .outer_ret
+ cmp qword [r12+NEBO_MATRIX_DTYPE],NEBO_MATRIX_DTYPE_F64
+ jne .outer_contract
+ test qword [r12+NEBO_MATRIX_FLAGS],NEBO_MATRIX_FLAG_READONLY
+ jnz .outer_alias
  cmp r14,[r12+NEBO_MATRIX_ROWS]
  jne .outer_shape
  cmp rbp,[r12+NEBO_MATRIX_COLS]
  jne .outer_shape
+ mov r8,[r12+NEBO_MATRIX_DATA]
+ mov r9,[r12+NEBO_MATRIX_CAPACITY]
+ lea r9,[r8+r9*8]
+ lea r11,[r13+r14*8]
+ cmp r8,r11
+ jae .outer_second_alias
+ cmp r13,r9
+ jb .outer_alias
+.outer_second_alias:
+ lea r11,[r15+rbp*8]
+ cmp r8,r11
+ jae .outer_disjoint
+ cmp r15,r9
+ jb .outer_alias
+.outer_disjoint:
  xor ebx,ebx
 .outer_i:
  cmp rbx,r14
@@ -245,4 +291,106 @@ nebo_matrix_outer_f64:
  jmp .outer_ret
 .outer_shape: mov eax,NEBO_NUMERIC_ERROR_SHAPE
  jmp .outer_ret
+
+.outer_contract: mov eax,NEBO_NUMERIC_ERROR_CONTRACT
+ jmp .outer_ret
+.outer_alias: mov eax,NEBO_NUMERIC_ERROR_ALIAS
+ jmp .outer_ret
+
+; A rdi, B rsi -> flattened dot in xmm0. Logical shape equality is required.
+nebo_matrix_dot_flattened_f64:
+ push r12
+ push r13
+ push rbx
+ push rbp
+ sub rsp,8
+ mov r12,rdi
+ mov r13,rsi
+ call nebo_matrix_validate
+ test eax,eax
+ jnz .dot_ret
+ mov rdi,r13
+ call nebo_matrix_validate
+ test eax,eax
+ jnz .dot_ret
+ cmp qword [r12+NEBO_MATRIX_DTYPE],NEBO_MATRIX_DTYPE_F64
+ jne .dot_contract
+ cmp qword [r13+NEBO_MATRIX_DTYPE],NEBO_MATRIX_DTYPE_F64
+ jne .dot_contract
+ mov rax,[r12+NEBO_MATRIX_ROWS]
+ cmp rax,[r13+NEBO_MATRIX_ROWS]
+ jne .dot_shape
+ mov rcx,[r12+NEBO_MATRIX_COLS]
+ cmp rcx,[r13+NEBO_MATRIX_COLS]
+ jne .dot_shape
+ xorpd xmm0,xmm0
+ xor ebx,ebx
+.dot_rows:
+ cmp rbx,rax
+ jae .dot_ok
+ xor ebp,ebp
+.dot_columns:
+ cmp rbp,rcx
+ jae .dot_next_row
+ mov rdx,rbx
+ imul rdx,[r12+NEBO_MATRIX_ROW_STRIDE]
+ mov r8,rbp
+ imul r8,[r12+NEBO_MATRIX_COL_STRIDE]
+ add rdx,r8
+ mov r8,[r12+NEBO_MATRIX_DATA]
+ movsd xmm1,[r8+rdx*8]
+ mov rdx,rbx
+ imul rdx,[r13+NEBO_MATRIX_ROW_STRIDE]
+ mov r8,rbp
+ imul r8,[r13+NEBO_MATRIX_COL_STRIDE]
+ add rdx,r8
+ mov r8,[r13+NEBO_MATRIX_DATA]
+ mulsd xmm1,[r8+rdx*8]
+ addsd xmm0,xmm1
+ inc rbp
+ jmp .dot_columns
+.dot_next_row:
+ inc rbx
+ jmp .dot_rows
+.dot_ok:
+ xor eax,eax
+.dot_ret:
+ add rsp,8
+ pop rbp
+ pop rbx
+ pop r13
+ pop r12
+ ret
+.dot_contract:
+ mov eax,NEBO_NUMERIC_ERROR_CONTRACT
+ jmp .dot_ret
+.dot_shape:
+ mov eax,NEBO_NUMERIC_ERROR_SHAPE
+ jmp .dot_ret
+
+; Reserved until the Tensor group. Valid Matrix descriptors fail closed with
+; the public unsupported status and the output is never touched.
+nebo_matrix_batched_matmul_f64:
+ push r12
+ push r13
+ sub rsp,8
+ mov r12,rsi
+ mov r13,rdx
+ call nebo_matrix_validate
+ test eax,eax
+ jnz .batch_ret
+ mov rdi,r12
+ call nebo_matrix_validate
+ test eax,eax
+ jnz .batch_ret
+ mov rdi,r13
+ call nebo_matrix_validate
+ test eax,eax
+ jnz .batch_ret
+ mov eax,NEBO_NUMERIC_ERROR_UNSUPPORTED
+.batch_ret:
+ add rsp,8
+ pop r13
+ pop r12
+ ret
 section .note.GNU-stack noalloc noexec nowrite progbits

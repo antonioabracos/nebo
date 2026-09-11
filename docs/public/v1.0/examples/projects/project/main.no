@@ -1,0 +1,2 @@
+// Qualified module values flow into the typed application.
+module app;import "project.facade" { token; }.values;start(){(values.token*3+7).return;}

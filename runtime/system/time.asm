@@ -11,9 +11,11 @@ section .text
 global nebo_clock_capability_init
 global nebo_duration_from_millis
 global nebo_duration_to_millis
+global nebo_duration_as_nanos
 global nebo_duration_add
 global nebo_instant_now
 global nebo_system_time_now
+global nebo_system_time_to_unix_seconds
 global nebo_instant_elapsed
 global nebo_duration_sleep
 
@@ -90,6 +92,36 @@ nebo_duration_to_millis:
  xor edx,edx
  ret
 
+; rdi=Duration. eax=status, rdx=nanoseconds. Checked and non-lossy.
+nebo_duration_as_nanos:
+ call duration_validate
+ test eax,eax
+ jnz .nanos_return
+ mov rax,[rdi+NEBO_DURATION_SECONDS]
+ mov rcx,NANOS_PER_SECOND
+ mul rcx
+ test rdx,rdx
+ jnz .nanos_overflow
+ add rax,[rdi+NEBO_DURATION_NANOS]
+ jc .nanos_overflow
+ mov rdx,rax
+ xor eax,eax
+.nanos_return:
+ ret
+.nanos_overflow:
+ mov eax,NEBO_SYSTEM_ERROR_LIMIT_EXCEEDED
+ xor edx,edx
+ ret
+
+; rdi=SystemTime. eax=status, rdx=whole Unix seconds.
+nebo_system_time_to_unix_seconds:
+ call duration_validate
+ test eax,eax
+ jnz .unix_return
+ mov rdx,[rdi+NEBO_SYSTEM_TIME_SECONDS]
+ xor eax,eax
+.unix_return:
+ ret
 ; rdi=out, rsi=a, rdx=b. eax=status. Output is failure-atomic.
 nebo_duration_add:
  test rdi,rdi
@@ -149,6 +181,10 @@ nebo_instant_elapsed:
  mov r12,rdi
  mov rbx,rsi
  sub rsp,16
+ test r12,r12
+ jz .elapsed_invalid
+ test rbx,rbx
+ jz .elapsed_invalid
  mov rdi,rsp
  mov rsi,rdx
  call nebo_instant_now
@@ -249,6 +285,8 @@ clock_now:
  mov r12,rdi
  mov rbx,rsi
  mov r13d,ecx
+ test r12,r12
+ jz .now_invalid
  mov rdi,rbx
  mov esi,edx
  call clock_capability_validate

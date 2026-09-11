@@ -1,0 +1,2 @@
+// Second dependency with a distinct value.
+module util; export public delta = 17;

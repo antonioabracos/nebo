@@ -1,0 +1,7 @@
+// Checks RF84 receiver-first equivalence through the single RenderPlan owner.
+start() {
+    RenderPlan;
+    3604;
+    output.stdout().stderr().target("rf116-closeout").plain().visual().headlessEvent();
+    lifecycle.event("integration-conformance").payload("rf84-impact-equivalence").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

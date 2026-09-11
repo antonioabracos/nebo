@@ -1,0 +1,7 @@
+Test ID: NEBO-SOURCE-GOLDEN-005
+Logical Path: src/main.no
+Newline: CRLF
+Logical Line Count: 3
+Line Starts: 0,7,14
+Line 2 Bytes: béta
+Result: PASS

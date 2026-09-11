@@ -1,0 +1,27 @@
+usage: neboc symbol-index [-h] (--rebuild | --verify) [-o OUTPUT]
+                          [--index INDEX] [--revision REVISION]
+                          [--edition EDITION] [--target TARGET]
+                          [--context-effect CONTEXT_EFFECT]
+                          [--context-capability CONTEXT_CAPABILITY]
+                          [--context-constraint CONTEXT_CONSTRAINT]
+                          [--memory-budget MEMORY_BUDGET]
+                          [--deadline-ms DEADLINE_MS]
+                          workspace
+
+positional arguments:
+  workspace
+
+options:
+  -h, --help            show this help message and exit
+  --rebuild
+  --verify
+  -o OUTPUT, --output OUTPUT
+  --index INDEX
+  --revision REVISION
+  --edition EDITION
+  --target TARGET
+  --context-effect CONTEXT_EFFECT
+  --context-capability CONTEXT_CAPABILITY
+  --context-constraint CONTEXT_CONSTRAINT
+  --memory-budget MEMORY_BUDGET
+  --deadline-ms DEADLINE_MS

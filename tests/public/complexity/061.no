@@ -1,0 +1,14 @@
+// Bounded rigid physics exposes bodies, velocities, constraints, contacts, queries, and energy evidence.
+(Int.self)physicsWorldNew() { self.return; }
+(Int.self)physicsBody() { self.return; }
+(Int.self)bodySetVelocity() { self.return; }
+(Int.self)physicsConstraint() { self.return; }
+(Int.self)physicsStep() { self.return; }
+(Int.self)physicsContacts() { self.return; }
+(Int.self)physicsRaycast() { self.return; }
+(Int.self)physicsOverlap() { self.return; }
+(Int.self)physicsEnergyReport() { self.return; }
+
+start() {
+    77.physicsWorldNew().physicsBody().bodySetVelocity().physicsConstraint().physicsStep().physicsContacts().physicsRaycast().physicsOverlap().physicsEnergyReport();
+}

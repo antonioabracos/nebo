@@ -1,0 +1,7 @@
+start() {
+    Option<Char>(Some('A')).value;
+    match(value) {
+        Some(payload) -> payload.return;
+        None() -> 'Z'.return;
+    }
+}

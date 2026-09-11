@@ -1,0 +1,13 @@
+// The eBPF static subset verifies maps and forward-only code before simulated local loading.
+(Int.self)bpfProgramNew() { self.return; }
+(Int.self)bpfMapDefine() { self.return; }
+(Int.self)programAttach() { self.return; }
+(Int.self)programDetach() { self.return; }
+(Int.self)programVerify() { self.return; }
+(Int.self)programLoad() { self.return; }
+(Int.self)programEvents() { self.return; }
+(Int.self)emitBpf() { self.return; }
+
+start() {
+    78.bpfProgramNew().bpfMapDefine().programAttach().programDetach().programVerify().programLoad().programEvents().emitBpf();
+}

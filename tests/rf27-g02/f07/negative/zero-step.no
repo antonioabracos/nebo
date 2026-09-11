@@ -1,0 +1,6 @@
+start() {
+  Range.exclusive(0,3).stepBy(0).items;
+  for (item in items) {
+  }
+  items.length().return;
+}

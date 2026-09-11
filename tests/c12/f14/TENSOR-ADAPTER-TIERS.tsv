@@ -1,0 +1,9 @@
+adapter	tier	implementation	public_composition	display_used	reason
+NBT1	STABLE_BOUNDED	NATIVE_CPU_I64	YES	NO	canonical contiguous owner codec version 1
+headless_descriptor_shape	STABLE_BOUNDED	NATIVE_NO_IO	YES	NO	validated rank shape element count and layout metadata only
+Console_2D	EXPERIMENTAL_NATIVE	EXISTING_NATIVE_CONSUMER	NO	NO	does not establish public Tensor composition
+chart_heatmap	EXPERIMENTAL_NATIVE	EXISTING_NATIVE_CONSUMER	NO	NO	does not establish public Tensor composition
+live_2D	TARGET_GATED_DEFERRED	NOT_IMPLEMENTED	NO	NO	outside selected headless profile
+Plot3D	TARGET_GATED_DEFERRED	NOT_IMPLEMENTED	NO	NO	outside selected profile
+volume	TARGET_GATED_DEFERRED	NOT_IMPLEMENTED	NO	NO	outside selected profile
+shape_inspector_rendering	TARGET_GATED_DEFERRED	NOT_IMPLEMENTED	NO	NO	headless metadata does not imply rendering

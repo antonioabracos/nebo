@@ -1,0 +1,2 @@
+callable add(Int.value) capture copy 5 { sum.return; }
+start() { add.call(7).drop().return; }

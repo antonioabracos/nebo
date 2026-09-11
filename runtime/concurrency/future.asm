@@ -138,7 +138,11 @@ nebo_future_take:
 ; rdi=out, rsi=ready input, rdx=map(value)->value, rcx=max polls.
 nebo_future_map:
  push rbx
+ push r12
+ push r13
  mov rbx,rdi
+ mov r12,rsi
+ mov r13,rdx
  test rbx,rbx
  jz .map_invalid
  test rsi,rsi
@@ -148,15 +152,14 @@ nebo_future_map:
  cmp qword [rsi+NEBO_FUTURE_STATE],NEBO_FUTURE_STATE_READY
  jne .map_transition
  mov rdi,rbx
- mov r8,rsi
  mov rsi,rcx
  call nebo_future_init
  test eax,eax
  jnz .map_return
- mov rdi,[r8+NEBO_FUTURE_VALUE]
- call rdx
+ mov rdi,[r12+NEBO_FUTURE_VALUE]
+ call r13
  mov rsi,rax
- mov rdx,[r8+NEBO_FUTURE_ERROR]
+ mov rdx,[r12+NEBO_FUTURE_ERROR]
  mov rdi,rbx
  call nebo_future_complete
  jmp .map_return
@@ -166,6 +169,8 @@ nebo_future_map:
 .map_transition:
  mov eax,NEBO_CONCURRENCY_ERROR_WOULD_BLOCK
 .map_return:
+ pop r13
+ pop r12
  pop rbx
  ret
 

@@ -1,0 +1,4 @@
+start() {
+  Option<Array<Int,2>>(Some(Array<Int,2> [1,2])).values;
+  values.drop().return;
+}

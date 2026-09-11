@@ -1,0 +1,7 @@
+// Send, replace, and append have distinct atomic mutations and content identities.
+start() {
+    RenderPlan;
+    3007;
+    output.stdout().stderr().target("visual-service").plain().visual().headlessEvent();
+    lifecycle.event("console-panel").payload("panel-send-replace-append").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

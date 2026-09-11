@@ -1,0 +1,14 @@
+// Indexed meshes expose bounded topology, normals, triangulation, welding, simplification, and transforms.
+(Int.self)meshFrom() { self.return; }
+(Int.self)meshVertexCount() { self.return; }
+(Int.self)meshFaceCount() { self.return; }
+(Int.self)meshComputeNormals() { self.return; }
+(Int.self)meshTriangulate() { self.return; }
+(Int.self)meshWeld() { self.return; }
+(Int.self)meshSimplify() { self.return; }
+(Int.self)meshValidate() { self.return; }
+(Int.self)meshTransform() { self.return; }
+
+start() {
+    76.meshFrom().meshVertexCount().meshFaceCount().meshComputeNormals().meshTriangulate().meshWeld().meshSimplify().meshValidate().meshTransform();
+}

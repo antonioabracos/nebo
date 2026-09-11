@@ -1,0 +1,5 @@
+start() {
+    Matrix<Int>.zeros(2, 3).left;
+    Matrix<Int>.zeros(2, 3).right;
+    left.add(right).sum();
+}

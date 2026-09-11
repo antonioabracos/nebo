@@ -1,0 +1,15 @@
+// A typed capture-free callable is evaluated once per fixed Array position.
+callable addOne(Int.value) capture none {
+    (value + 1).return;
+}
+
+start() {
+    Array<Int, 4>.filled(6).values;
+    values.length().extent;
+    values.at(2).third;
+    values.asSlice().view;
+    view.at(1).fromSlice;
+    view.release();
+    values.map(addOne).mapped;
+    mapped.at(3);
+}

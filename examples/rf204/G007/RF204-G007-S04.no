@@ -1,0 +1,12 @@
+// Stack exposes LIFO behavior without leaking the underlying List descriptor.
+// clear drops all live elements and leaves a valid reusable empty stack.
+start() {
+    Stack<Int>.new().stack;
+    stack.push(17);
+    stack.push(23);
+    stack.peek().top;
+    stack.length().beforeClear;
+    stack.pop().removed;
+    stack.clear();
+    stack.length();
+}

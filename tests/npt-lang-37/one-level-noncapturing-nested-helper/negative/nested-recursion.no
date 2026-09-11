@@ -1,0 +1,2 @@
+(Int.self)outer(){ (Int.self)helper(){ self.helper().return; } self.helper().return; }
+start(){ 7.outer().return; }

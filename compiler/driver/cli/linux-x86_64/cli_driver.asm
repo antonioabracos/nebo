@@ -18,12 +18,14 @@ default rel
 %include "compiler/tokens/token.inc"
 %include "compiler/tokens/token_kind.inc"
 %include "compiler/lexer/lexer.inc"
+%include "compiler/source/utf8/unicode_source_security.inc"
 %include "compiler/lexer/numeric_literal_contract.inc"
 %include "compiler/lexer/text_char_literal_contract.inc"
 %include "compiler/ast/ast_node.inc"
 %include "compiler/parser/parser.inc"
 %include "compiler/parser/expression/pratt.inc"
 %include "compiler/parser/text_char_bytes_api_contract.inc"
+%include "compiler/parser/binary_foundation_parser.inc"
 %include "compiler/parser/binding_definite_assignment_contract.inc"
 %include "compiler/parser/mutable_assignment_parser.inc"
 %include "compiler/parser/parameters_parser.inc"
@@ -67,15 +69,18 @@ default rel
 %include "compiler/lowering/scalars/option_result_plan.inc"
 %include "compiler/lowering/functions/parameters_plan.inc"
 %include "compiler/lowering/modules/module_plan.inc"
+%include "compiler/semantic/modules/modules.inc"
 %include "compiler/lowering/generics/generic_plan.inc"
 %include "compiler/lowering/aggregates/nominal_plan.inc"
 %include "compiler/lowering/textual/buffer_plan.inc"
+%include "compiler/lowering/textual/binary_foundation_plan.inc"
 %include "compiler/codegen/scalars/x86_64/option_layout_codegen.inc"
 %include "compiler/codegen/functions/x86_64/parameters_codegen.inc"
 %include "compiler/codegen/modules/x86_64/module_graph_codegen.inc"
 %include "compiler/codegen/generics/x86_64/generic_instance_codegen.inc"
 %include "compiler/codegen/aggregates/x86_64/nominal_codegen.inc"
 %include "compiler/codegen/textual/x86_64/buffer_codegen.inc"
+%include "compiler/codegen/textual/x86_64/binary_foundation_codegen.inc"
 %include "compiler/lowering/aggregates/struct_tuple_plan.inc"
 %include "compiler/lowering/collections/array_range_plan.inc"
 %include "compiler/lowering/collections/slice_view_plan.inc"
@@ -151,7 +156,12 @@ extern neboc_statement_set_error
 extern neboc_foundation_float_recognize
 extern neboc_numeric_safety_vertical_recognize
 extern neboc_text_char_bytes_vertical_recognize
+extern neboc_percent_diagnostic_name
 extern neboc_text_char_bytes_api_contract
+extern neboc_binary_foundation_parse
+extern neboc_binary_foundation_analyze
+extern neboc_binary_foundation_lower
+extern neboc_binary_foundation_codegen_emit
 extern neboc_binding_vertical_recognize
 extern neboc_loop_plan_lower
 extern neboc_mutable_assignment_recognize
@@ -161,6 +171,9 @@ extern neboc_parameters_lower
 extern neboc_seguranca_numerica_conversoes_e_overflow_module_parse
 extern neboc_module_analyze
 extern neboc_module_lower
+extern neboc_module_id
+extern neboc_module_graph_build
+extern neboc_module_graph_order
 extern neboc_generic_parse
 extern neboc_generic_analyze
 extern neboc_generic_lower
@@ -180,6 +193,7 @@ extern neboc_generic_vertical_recognize
 extern neboc_domain_refinement_vertical_recognize
 extern neboc_programmer_type_vertical_recognize
 extern neboc_struct_tuple_recognize
+extern neboc_struct_declarations_recognize
 extern neboc_struct_tuple_lower
 extern neboc_array_vertical_recognize
 extern neboc_array_range_recognize
@@ -315,6 +329,10 @@ extern neboc_diagnostic_catalog_lookup
 extern neboc_diagnostic_encoder_json
 extern neboc_diagnostic_encoder_json_lines
 extern neboc_diagnostic_encoder_sarif
+extern neboc_unicode_operator_scan
+extern neboc_build_event_diagnostic
+extern neboc_build_event_phase_started
+extern neboc_build_event_phase_finished
 extern neboc_ice_report_new
 extern neboc_ice_report_node_identity
 extern neboc_ice_report_phase_trace
@@ -325,6 +343,9 @@ extern neboc_ice_report_write
 extern neboc_ice_bundle_inspect
 extern neboc_ice_bundle_minimize
 extern neboc_terminal_capabilities
+extern nebo_g029_source_probe
+extern nebo_g030_source_probe
+extern nebo_g030_explain_model
 
 section .rodata
 cli_help_text:
@@ -332,24 +353,118 @@ cli_help_text:
  db 'Usage:',10
  db '  neboc --help',10
  db '  neboc --version',10
+ db '  neboc --version-json',10
  db '  neboc bench numeric',10
+ db '  neboc scientific-bench <suite>',10
+ db '  neboc numeric-report <artifact>',10
  db '  neboc probabilistic-report <artifact>',10
+ db '  neboc reactive-report <program>',10
+ db '  neboc db migrate <path>',10
+ db '  neboc db verify <path>',10
  db '  neboc firmware build --board NEBO_REFERENCE_BOARD_SIM_V1',10
  db '  neboc firmware test --simulator NEBO_REFERENCE_BOARD_SIM_V1',10
  db '  neboc simulation-replay <log>',10
  db '  neboc crypto-audit <artifact>',10
  db '  neboc optimize-explain <file>',10
  db '  neboc bootstrap --verify',10
+ db '  neboc bootstrap --stage 0|1|2',10
+ db '  neboc toolchain-report <artifact-or-trace>',10
+ db '  neboc self-contained-audit <file.no>',10
+ db '  neboc assemble <file> --target <triple> -o <object>',10
+ db '  neboc object-build <file> --target <triple> -o <object>',10
+ db '  neboc object-verify <object>',10
+ db '  neboc reproducibility-report <a> <b>',10
+ db '  neboc diverse-build --plan|--report <path>',10
+ db '  neboc trust-manifest <artifact-or-sdk>',10
+ db '  neboc provenance-verify <manifest>',10
+ db '  neboc sdk pack|verify|restore|self-test ...',10
  db '  neboc protocol generate <schema>',10
  db '  neboc protocol fuzz <schema>',10
+ db '  neboc workflow verify <definition>',10
+ db '  neboc geometry-check <file>',10
+ db '  neboc route-bench <suite>',10
+ db '  neboc emit-wasm <file.no>',10
+ db '  neboc wasm-inspect <module.wasm>',10
+ db '  neboc emit-bpf <file.no>',10
+ db '  neboc portable-test <artifact>',10
+ db '  neboc portable-sbom <artifact>',10
  db '  neboc warnings --list',10
  db '  neboc diagnostic-schema --version 1',10
  db '  neboc explain <diagnostic-code>',10
+ db '  neboc format <path> --check|--diff|--stdout|--write',10
+ db '  neboc format <paths> --preserve-comments',10
+ db '  neboc lint <path> [--profile recommended] [--report text|json|sarif]',10
+ db '             [--warnings-as-errors] [--fix-preview]',10
+ db '  neboc lint <paths> --group comments [--report text|json|sarif]',10
+ db '  neboc repl [--script <commands>]',10
+ db '  neboc init|add|remove|resolve|vendor|package|audit ...',10
+ db '  neboc lsp',10
+ db '  neboc completion-debug <file>:<line>:<column>',10
+ db '  neboc completion-corpus --verify',10
+ db '  neboc hover|signature-help|definition <file>:<line>:<column>',10
+ db '  neboc references <name-or-SymbolId>',10
+ db '  neboc rename <name-or-SymbolId> <new-name> --preview|--apply',10
+ db '  neboc navigation-corpus --verify',10
+ db '  neboc check <source> --no-prelude [--edition <v>]',10
+ db '  neboc emit-asm|build <source> --no-prelude -o <output> [--edition <v>]',10
+ db '  neboc prelude-report [--edition <v>] [--source <path>]',10
+ db '  neboc migrate-imports <paths> --edition <v> --profile default|no-prelude --preview|--apply',10
+ db '  neboc stdlib modules [--target <triple>]',10
+ db '  neboc operator-info <NSR-ID> [--format terminal|json|jsonl|lsp|sarif]',10
+ db '  neboc profile <file.no>',10
+ db '  neboc emit-hir|emit-lir <file.no>',10
+ db '  neboc test [root] [--filter <glob>]',10
+ db '  neboc conformance <manifest.json>',10
+ db '  neboc fuzz <file.no> [--cases N] [--seed N]',10
+ db '  neboc conformance modules-docs-lsp',10
+ db '  neboc fuzz-source --domains imports,docs,comments [--seed N] [--budget N]',10
+ db '  neboc migration-check rf166 <paths>',10
+ db '  neboc selftest modules-docs-devex',10
+ db '  neboc roadmap-closeout rf166',10
+ db '  neboc abi-report',10
+ db '  neboc runtime-report [--feature <name>]',10
+ db '  neboc check <source> --edition 1|2',10
+ db '  neboc migrate --from 1 --to 2 [--features <list>]',10
+ db '  neboc migrate <paths> [--root <dir>] [--profile keep|default|no-prelude] [--apply]',10
+ db '  neboc migrate --workspace <json> --rename-package <old:new> --allow-api-change',10
+ db '  neboc migrate --root <dir> --rollback [--journal <relative-path>]',10
+ db '  neboc compatibility-report',10
+ db '  neboc conformance-manifest --target <triple>',10
+ db '  neboc doctor',10
+ db '  neboc security-report',10
+ db '  neboc release prepare|materialize|restore-test|verify|sbom|provenance|lifecycle ...',10
+ db '  neboc examples verify-all',10
+ db '  neboc nebo-1.0-readiness',10
+ db '  neboc api-diff <baseline.json> <current.json>',10
+ db '  neboc fix <paths> --check|--preview|--apply',10
+ db '  neboc fix --verify parse|check|tests|differential <plan.json>',10
+ db '  neboc refactor <operation> [options] <paths>',10
+ db '  neboc source-optimize <paths> --check|--preview|--apply',10
+ db '  neboc modernize <paths> --edition <version>',10
+ db '  neboc change-review <plan.json>',10
+ db '  neboc timings <source-or-project>',10
+ db '  neboc compiler-profile <project> --output <path>',10
+ db '  neboc compiler-report <artifact>',10
+ db '  neboc compiler-memory <project>',10
+ db '  neboc incremental-report <project> --phase syntax',10
+ db '  neboc query-report <project>',10
+ db '  neboc cache stats|verify|prune|clear',10
+ db '  neboc cache explain <source-or-artifact>',10
+ db '  neboc serve --local',10
+ db '  neboc server status|stop',10
+ db '  neboc project-report <manifest>',10
+ db '  neboc compiler-bench <suite> [--compare <baseline>]',10
+ db '  neboc performance-gate <report> <policy>',10
  db '  neboc diagnostics --search <term>',10
  db '  neboc bug-report --local <source>',10
  db '  neboc bug-report --inspect <bundle>',10
  db '  neboc minimize-ice <bundle>',10
  db '  neboc exit-codes',10
+ db '  neboc meta-check <file.no>',10
+ db '  neboc meta-expand <file.no>',10
+ db '  neboc verify [--property safety29|--counterexample] <file.no>',10
+ db '  neboc solve <model.no>',10
+ db '  neboc solve --explain-unsat <model.no>',10
  db '  neboc check <file.no> [--message-format human|short|json|json-lines|sarif]',10
  db '              [--color auto|always|never] [--emit-build-events <path>]',10
  db '              [--path-style relative|workspace|absolute] [--diagnostic-width 40..240]',10
@@ -359,34 +474,125 @@ cli_help_text:
  db '  neboc check --manifest <nebo.targets> [--target <TargetId>]',10
  db '  neboc emit-asm <file.no> -o <file.asm> [--unit <file.no>] [--target-kind executable|example|library]',10
  db '  neboc emit-asm --manifest <nebo.targets> [--target <TargetId>] -o <file.asm>',10
- db '  neboc build <file.no> -o <artifact> [--keep-temp] [--unit <file.no>] [--target-kind executable|example|library]',10
+ db '  neboc build <file.no> -o <artifact> [--debug] [--keep-temp] [--unit <file.no>] [--target-kind executable|example|library]',10
  db '  neboc build --manifest <nebo.targets> [--target <TargetId>] -o <artifact>',10
  db '              [--progress auto|always|never] [--quiet|--verbose] [--trace driver|diagnostics|codegen]',10,10
+ db '  neboc module-check <file.no> [--unit <file.no>]...',10
+ db '  neboc module-info <file.no> --unit <file.no> --unit <file.no>',10
+ db '  neboc module-graph <file.no> --unit <file.no> --unit <file.no> [--format text|json|dot]',10
+ db '  neboc dump doc-ast <source>',10
+ db '  neboc dump doc-record <symbol>',10
+ db '  neboc check-docs <paths> [--deny warnings] [--report text|json|lsp|sarif]',10
+ db '  neboc lint <paths> --group docs [--deny warnings] [--report text|json|lsp|sarif]',10
+ db '  neboc test-docs <paths> [--seed N] [--budget N] [--report text|json]',10
+ db '  neboc docs --verify <paths> [--baseline file] [--refactor-map file] [--report text|json]',10
+ db '  neboc docs [build] <package> -o <dir> [--incremental] [--archive file]',10
+ db '  neboc docs search <query> --index <path> [--limit N]',10
+ db '  neboc docs diff <old.ni> <new.ni>',10
+ db '  neboc docs serve <dir> --local-only [--port N]',10
+ db '  neboc docs restore <archive> -o <dir>',10
+ db '  neboc symbols <workspace> [--json]',10
+ db '  neboc symbol-index --rebuild <workspace> -o <index.json>',10
+ db '  neboc symbol-index --verify <workspace> --index <index.json>',10
+ db '  neboc dump comment-trivia <source>',10
+ db '  neboc imports list <file.no> --unit <file.no> --unit <file.no>',10
+ db '  neboc imports explain <alias.symbol> <file.no> --unit <file.no> --unit <file.no>',10
+ db '  neboc imports api-impact <module.no> [--baseline <sha256>]',10
+ db '  neboc organize-imports <paths> --check|--apply',10
+ db '  neboc add-import <symbol> --to <module.no>',10
+ db '  neboc module-init-report <entry.no> --unit <file.no> --unit <file.no>',10
+ db '  neboc check <entry.no> --unit <file.no> --unit <file.no> --deny-effectful-init',10
+ db '  neboc emit-interface <module.no> --unit <file.no> --unit <file.no> -o <module.ni> [--cache-dir <dir>]',10
+ db '  neboc interface inspect <file.ni> [--json]',10
+ db '  neboc api-diff <old.ni> <new.ni>',10
+ db '  neboc emit-object <file.no> -o <file.o>',10
+ db '  neboc link <root.no> --unit <file.no> --unit <file.no> -o <executable>',10,10
  db 'Commands:',10
  db '  bench       Run the bounded local numeric benchmark.',10
  db '  probabilistic-report  Inspect a redacted versioned probabilistic artifact.',10
+ db '  reactive-report  Analyze a bounded local reactive dependency graph.',10
+ db '  db          Verify or dry-run a compatible local database migration.',10
  db '  firmware    Build or test the bounded simulator-only reference image.',10
  db '  simulation-replay  Validate and replay a bounded versioned simulation log.',10
  db '  crypto-audit  Inspect crypto metadata without reading secret bytes.',10
  db '  optimize-explain  Report bounded optimization facts.',10
  db '  bootstrap   Verify factual stage0 and source-compiler availability.',10
+ db '  toolchain-report/self-contained-audit  Report factual external dependencies.',10
+ db '  assemble/object-build/object-verify/link  Use the bounded internal ELF profile.',10
+ db '  reproducibility-report  Compare local build bytes without hidden normalization.',10
+ db '  diverse-build/trust-manifest/provenance-verify  Report bootstrap trust honestly.',10
+ db '  sdk         Pack, verify, restore and self-test a deterministic offline SDK.',10
  db '  protocol    Generate bounded typed protocol artifacts.',10
+ db '  geometry-check  Validate bounded local geometry metadata and syntax.',10
+ db '  route-bench  Validate a versioned bounded local routing suite.',10
+ db '  emit-wasm/wasm-inspect  Emit or inspect a deterministic Wasm envelope.',10
+ db '  emit-bpf  Emit the verified two-instruction local eBPF subset.',10
+ db '  portable-test/portable-sbom  Validate or describe a local portable artifact.',10
  db '  warnings    List the stable warning groups and defaults.',10
  db '  explain     Show a versioned diagnostic explanation from the offline catalog.',10
+ db '  format      Canonically format compiler-admitted Nebo sources.',10
+ db '  lint        Run bounded source-style rules and preview safe fixes.',10
+ db '  repl        Evaluate Nebo sources in a bounded local session.',10
+ db '  init/add/remove/resolve/vendor/package/audit  Manage deterministic offline packages.',10
+ db '  lsp         Serve bounded JSON-RPC language features over stdio.',10
+ db '  completion-debug/completion-corpus  Inspect or verify revision-bound completion.',10
+ db '  hover/signature-help/definition/references/rename  Navigate or refactor by SymbolId.',10
+ db '  prelude-report/migrate-imports/stdlib  Inspect or migrate edition-owned SDK visibility.',10
+ db '  profile     Emit a deterministic local compiler/source profile.',10
+ db '  emit-hir/emit-lir  Inspect normalized compiler-admitted source IR.',10
+ db '  test/conformance/fuzz  Run fixed local test and conformance plans.',10
+ db '  abi-report/runtime-report  Inspect the versioned native compatibility boundary.',10
+ db '  compatibility-report/migrate  Inspect editions and bounded mechanical migration.',10
+ db '  conformance-manifest/doctor/security-report  Audit local release inputs.',10
+ db '  release/examples/nebo-1.0-readiness  Exercise local dry-run readiness without publication.',10
+ db '  api-diff    Compare semantic public API baselines.',10
+ db '  fix         Preview or atomically apply snapshot-bound fixes.',10
+ db '  refactor    Prepare identity-resolved semantic refactorings.',10
+ db '  source-optimize/modernize  Run explicit source transformations.',10
+ db '  change-review  Verify bounded before/after source equivalence.',10
+ db '  timings/compiler-profile/compiler-report  Inspect bounded compiler metrics.',10
+ db '  compiler-memory  Inspect bounded arena, interning, and pressure facts.',10
+ db '  incremental-report/query-report  Inspect cold-equivalent reuse facts.',10
+ db '  cache       Operate the bounded local content-addressed cache.',10
+ db '  serve/server  Operate the optional bounded local compiler service.',10
+ db '  project-report  Inspect bounded project scalability and pressure.',10
+ db '  compiler-bench/performance-gate  Evaluate reproducible local budgets.',10
  db '  diagnostics Search the bounded offline diagnostic catalog.',10
  db '  bug-report  Create or inspect a redacted local ICE bundle.',10
  db '  minimize-ice  Emit a bounded local ICE reproducer summary.',10
  db '  exit-codes  List the stable public process exit contract.',10
+ db '  meta-check   Validate a bounded typed metaprogram.',10
+ db '  meta-expand  Emit its normalized generated assembly to stdout.',10
+ db '  verify       Verify bounded contracts or emit a reproducible counterexample.',10
+ db '  solve        Execute a bounded local model and emit a structured report.',10
  db '  check       Validate source without invoking the toolchain.',10
  db '  emit-asm    Emit deterministic NASM Intel assembly.',10
  db '  build       Produce a native ELF64 executable.',10,10
+ db '  module-check  Validate a bounded module graph without linking.',10
+ db '  module-info   Explain one module from the authenticated graph snapshot.',10
+ db '  module-graph  Render that snapshot as deterministic text, JSON, or DOT.',10
+ db '  imports       List, explain, or inspect public API impact.',10
+ db '  organize-imports/add-import  Apply explicit snapshot-bound import edits.',10
+ db '  module-init-report  Report the authenticated bounded startup plan.',10
+ db '  emit-interface  Emit a deterministic bounded compiled interface.',10
+ db '  interface      Inspect a native-validated compiled interface.',10
+ db '  symbols        Query the revision-bound project symbol index.',10
+ db '  symbol-index   Rebuild or verify the incremental local index.',10
+ db '  api-diff       Classify source, ABI and behavior compatibility.',10
+ db '  emit-object   Produce one deterministic relocatable ELF64 object.',10
+ db '  link          Compile and statically link a bounded three-unit module graph.',10,10
  db 'Target: x86_64-systemv-elf-linux',10
 cli_help_text_end:
 
 cli_version_text: db 'neboc ',NEBO_VERSION_STRING,10
 cli_version_text_end:
+cli_version_machine:
+ incbin "version/NEBO-VERSION.json"
+cli_version_machine_end:
 cli_function_console_name: db 'console'
 cli_function_console_name_len equ $-cli_function_console_name
+cli_type_text_name: db 'Text'
+cli_type_text_name_len equ $-cli_type_text_name
 cli_function_scan_name: db 'scan'
 cli_function_scan_name_len equ $-cli_function_scan_name
 cli_function_mutable_name: db 'mutable'
@@ -404,12 +610,167 @@ cli_error_usage: db 'neboc: usage error',10
 cli_error_usage_end:
 cli_error_unknown: db 'neboc: unknown command',10
 cli_error_unknown_end:
+cli_g150_error: db 'NEBO-RF166-G150-001: invalid or non-canonical module snapshot',10
+cli_g150_error_end:
+cli_g151_error_syntax: db 'NEBO-RF166-G151-001: invalid canonical import; expected import "logical.path".alias;',10
+ db 'note: imports are compile-time only; aliases are mandatory and ::, *, dynamic and selective forms are closed here',10
+ db 'fix: add a lowercase alias after the quoted logical path',10
+cli_g151_error_syntax_end:
+cli_g151_error_wildcard: db 'NEBO-RF166-G151-002: wildcard imports are not part of the canonical G151 grammar',10
+ db 'note: imported visibility must be explicit and deterministic',10
+ db 'fix: bind the module with a lowercase alias',10
+cli_g151_error_wildcard_end:
+cli_g151_error_alias_collision: db 'NEBO-RF166-G151-003: incompatible import alias or target collision',10
+ db 'note: no binding was published',10
+ db 'fix: use distinct aliases and logical module targets',10
+cli_g151_error_alias_collision_end:
+cli_g151_error_capsule_collision: db 'NEBO-RF166-G151-004: named capsule shadows one of its entry aliases',10
+ db 'note: namespace publication is failure-atomic',10
+ db 'fix: choose a capsule name distinct from every entry alias',10
+cli_g151_error_capsule_collision_end:
+cli_g151_error_alias_required: db 'NEBO-RF166-G151-006: a full import requires an explicit lowercase alias',10
+ db 'note: implicit module scopes are forbidden',10
+ db 'fix: append .alias before the declaration terminator',10
+cli_g151_error_alias_required_end:
+cli_g151_error_reserved: db 'NEBO-RF166-G151-007: :: is reserved and cannot qualify an import alias',10
+ db 'note: alias qualification uses alias.symbol',10
+ db 'fix: replace :: with one dot in a symbol reference',10
+cli_g151_error_reserved_end:
+cli_g151_error_dynamic: db 'NEBO-RF166-G151-008: dynamic imports are outside the compile-time import model',10
+ db 'note: imports allocate no runtime object and run no initializer',10
+ db 'fix: use a canonical static logical path',10
+cli_g151_error_dynamic_end:
+cli_g151_error_selective: db 'NEBO-RF166-G151-009: selective import syntax is deferred to G152',10
+ db 'note: G151 accepts simple, named-capsule and anonymous-capsule declarations',10
+ db 'fix: import the module with an explicit alias',10
+cli_g151_error_selective_end:
+cli_g151_error_ambiguous: db 'NEBO-RF166-G151-010: named import capsule resolves the symbol ambiguously',10
+ db 'note: related public exports have the same SymbolId',10
+ db 'fix: rename an export or split the capsule into distinct aliases',10
+cli_g151_error_ambiguous_end:
+cli_g152_error_syntax: db 'NEBO-RF166-G152-001: invalid selective import; expected import "logical.path" { Symbol; }.alias;',10
+ db 'note: wildcard and implicit selective bindings are forbidden',10
+ db 'fix: list one to eight distinct SymbolIds explicitly',10
+cli_g152_error_syntax_end:
+cli_g152_error_duplicate: db 'NEBO-RF166-G152-003: duplicate SymbolId in selective import',10
+ db 'note: no import binding was published',10
+ db 'fix: retain each selected SymbolId exactly once',10
+cli_g152_error_duplicate_end:
+cli_g152_error_missing: db 'NEBO-RF166-G152-004: referenced SymbolId is absent from the selective import set',10
+ db 'note: importing a module does not expose unlisted symbols',10
+ db 'fix: add the SymbolId explicitly or qualify another import',10
+cli_g152_error_missing_end:
+cli_g152_error_visibility: db 'NEBO-RF166-G152-006: reexport requires an explicit selective public import',10
+ db 'note: internal and private declarations cannot become public through reexport',10
+cli_g152_error_visibility_end:
+cli_g152_error_capacity: db 'NEBO-RF166-G152-015: selective import exceeds the bounded member capacity',10
+cli_g152_error_capacity_end:
+cli_g151_diag_primary: db 'primary: bytes '
+cli_g151_diag_primary_len equ $-cli_g151_diag_primary
+cli_g151_diag_range: db '..'
+cli_g151_diag_range_len equ $-cli_g151_diag_range
+cli_g151_diag_related: db 10,'related: canonical module import namespace and exported SymbolId',10
+cli_g151_diag_related_len equ $-cli_g151_diag_related
+cli_g151_form_simple: db 'simple'
+cli_g151_form_simple_len equ $-cli_g151_form_simple
+cli_g151_form_named: db 'named-capsule'
+cli_g151_form_named_len equ $-cli_g151_form_named
+cli_g151_form_anonymous: db 'anonymous-capsule'
+cli_g151_form_anonymous_len equ $-cli_g151_form_anonymous
+cli_g152_form_selective: db 'selective'
+cli_g152_form_selective_len equ $-cli_g152_form_selective
+cli_g151_out_form: db 'imports.form='
+cli_g151_out_form_len equ $-cli_g151_out_form
+cli_g151_out_count: db 10,'imports.count='
+cli_g151_out_count_len equ $-cli_g151_out_count
+cli_g151_out_capsule: db 10,'imports.capsule='
+cli_g151_out_capsule_len equ $-cli_g151_out_capsule
+cli_g151_out_path0: db 10,'import.0.path='
+cli_g151_out_path0_len equ $-cli_g151_out_path0
+cli_g151_out_alias0: db 10,'import.0.alias='
+cli_g151_out_alias0_len equ $-cli_g151_out_alias0
+cli_g151_out_path1: db 10,'import.1.path='
+cli_g151_out_path1_len equ $-cli_g151_out_path1
+cli_g151_out_alias1: db 10,'import.1.alias='
+cli_g151_out_alias1_len equ $-cli_g151_out_alias1
+cli_g152_out_symbol: db 10,'import.symbol='
+cli_g152_out_symbol_len equ $-cli_g152_out_symbol
+cli_g151_out_trace: db 10,'imports.trace='
+cli_g151_out_trace_len equ $-cli_g151_out_trace
+cli_g151_out_query: db 'imports.explain.symbol='
+cli_g151_out_query_len equ $-cli_g151_out_query
+cli_g151_out_steps: db 10,'imports.explain.steps=parse>module-graph>alias-bind>export>symbol',10
+cli_g151_out_steps_len equ $-cli_g151_out_steps
+cli_g150_package: db 'workspace'
+cli_g150_package_len equ $-cli_g150_package
+cli_g150_info_id: db 'module.id='
+cli_g150_info_id_len equ $-cli_g150_info_id
+cli_g150_info_logical: db 10,'module.logical='
+cli_g150_info_logical_len equ $-cli_g150_info_logical
+cli_g150_info_rank: db 10,'module.rank='
+cli_g150_info_rank_len equ $-cli_g150_info_rank
+cli_g150_info_source: db 10,'module.sourceRevision='
+cli_g150_info_source_len equ $-cli_g150_info_source
+cli_g150_info_snapshot: db 10,'graph.snapshot='
+cli_g150_info_snapshot_len equ $-cli_g150_info_snapshot
+cli_g150_info_units: db 10,'graph.units=3',10
+cli_g150_info_units_len equ $-cli_g150_info_units
+cli_g153_info_imports: db 'module.imports='
+cli_g153_info_imports_len equ $-cli_g153_info_imports
+cli_g153_info_starts: db 10,'module.startRefs='
+cli_g153_info_starts_len equ $-cli_g153_info_starts
+cli_g153_info_visibility: db 10,'module.visibility='
+cli_g153_info_visibility_len equ $-cli_g153_info_visibility
+cli_g154_info_export_symbol: db 10,'module.exportSymbolId='
+cli_g154_info_export_symbol_len equ $-cli_g154_info_export_symbol
+cli_g153_info_export: db 10,'module.exportValue='
+cli_g153_info_export_len equ $-cli_g153_info_export
+cli_module_typed_result: db 10,'module.resolvedInt='
+cli_module_typed_result_len equ $-cli_module_typed_result
+cli_g150_json_info_a: db '{"schema":1,"package":"workspace","logical":"'
+cli_g150_json_info_a_len equ $-cli_g150_json_info_a
+cli_g150_json_info_b: db '","moduleId":'
+cli_g150_json_info_b_len equ $-cli_g150_json_info_b
+cli_g150_json_info_c: db ',"rank":'
+cli_g150_json_info_c_len equ $-cli_g150_json_info_c
+cli_g150_json_info_d: db ',"sourceRevision":'
+cli_g150_json_info_d_len equ $-cli_g150_json_info_d
+cli_g150_json_info_e: db ',"snapshot":'
+cli_g150_json_info_e_len equ $-cli_g150_json_info_e
+cli_g150_json_info_f: db ',"units":3}',10
+cli_g150_json_info_f_len equ $-cli_g150_json_info_f
+cli_g150_graph_snapshot: db 'snapshot='
+cli_g150_graph_snapshot_len equ $-cli_g150_graph_snapshot
+cli_g150_graph_order: db 10,'order='
+cli_g150_graph_order_len equ $-cli_g150_graph_order
+cli_g150_graph_links: db 10,'links='
+cli_g150_graph_links_len equ $-cli_g150_graph_links
+cli_g150_graph_end: db 10
+cli_g150_graph_end_len equ $-cli_g150_graph_end
+cli_g150_comma: db ','
+cli_g150_arrow: db '->'
+cli_g150_json_a: db '{"schema":1,"snapshot":'
+cli_g150_json_a_len equ $-cli_g150_json_a
+cli_g150_json_b: db ',"order":['
+cli_g150_json_b_len equ $-cli_g150_json_b
+cli_g150_json_c: db '],"links":['
+cli_g150_json_c_len equ $-cli_g150_json_c
+cli_g150_json_link_a: db '['
+cli_g150_json_link_b: db ','
+cli_g150_json_link_c: db ']'
+cli_g150_json_d: db ']}',10
+cli_g150_json_d_len equ $-cli_g150_json_d
+cli_g150_dot_a: db 'digraph nebo_modules {',10
+cli_g150_dot_a_len equ $-cli_g150_dot_a
+cli_g150_dot_indent: db '  '
+cli_g150_dot_node_end: db ';',10
+cli_g150_dot_edge: db ' -> '
+cli_g150_dot_end: db '}',10
+cli_g150_dot_end_len equ $-cli_g150_dot_end
 cli_error_extension: db 'neboc: source file must use the .no extension',10
 cli_error_extension_end:
 cli_error_output_path: db 'neboc: invalid output path',10
 cli_error_output_path_end:
-cli_error_source: db 'neboc: source validation failed',10
-cli_error_source_end:
 cli_error_target_manifest: db 'NEBO-C03-TARGET-002: target manifest validation failed',10
 cli_error_target_manifest_end:
 cli_error_target_selection: db 'NEBO-C03-TARGET-009: exact TargetId selection failed',10
@@ -442,6 +803,8 @@ cli_target_json_prefix: db '{"schema":1,"code":"'
 cli_target_json_prefix_len equ $-cli_target_json_prefix
 cli_target_json_suffix: db '","severity":1,"category":3,"phase":4,"messageKey":"target.validation.failed","primary":{"sourceId":1,"start":0,"end":1}}',10
 cli_target_json_suffix_len equ $-cli_target_json_suffix
+cli_target_message_key: db 'target.validation.failed'
+cli_target_message_key_len equ $-cli_target_message_key
 cli_target_sarif_prefix: db '{"version":"2.1.0","runs":[{"tool":{"driver":{"name":"neboc"}},"results":[{"ruleId":"'
 cli_target_sarif_prefix_len equ $-cli_target_sarif_prefix
 cli_target_sarif_suffix: db '","level":"error","message":{"text":"target validation failed"}}]}]}',10
@@ -522,6 +885,24 @@ text_char_unicode_e_bytes_cli_error_arguments: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTE
 text_char_unicode_e_bytes_cli_error_arguments_end:
 cli_error_need_text: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTES-TEXTUAL-RECEIVER-MUST-BE-TEXT: this API requires a Text receiver',10
 cli_error_need_text_end:
+cli_error_text_argument: db 'NEBO-TEXT-QUERY-ARGUMENT-MUST-BE-TEXT: Text query argument must have type Text',10
+cli_error_text_argument_end:
+cli_error_text_query_arity: db 'NEBO-TEXT-QUERY-ARITY: Text query requires exactly one Text argument',10
+cli_error_text_query_arity_end:
+cli_error_text_transform_arity: db 'NEBO-TEXT-TRANSFORM-ARITY: Text transformation received the wrong number of arguments',10
+cli_error_text_transform_arity_end:
+cli_error_text_transform_text_argument: db 'NEBO-TEXT-TRANSFORM-TEXT-ARGUMENT: Text transformation argument must have type Text',10
+cli_error_text_transform_text_argument_end:
+cli_error_text_transform_int_argument: db 'NEBO-TEXT-TRANSFORM-INT-ARGUMENT: Text transformation count/index must be a non-negative Int literal',10
+cli_error_text_transform_int_argument_end:
+cli_error_text_transform_bounds: db 'NEBO-TEXT-TRANSFORM-BOUNDS: Text byte range must be ordered and within the bounded source profile',10
+cli_error_text_transform_bounds_end:
+cli_error_text_transform_empty_separator: db 'NEBO-TEXT-TRANSFORM-EMPTY-SEPARATOR: split, replacement patterns and padding fills must not be empty',10
+cli_error_text_transform_empty_separator_end:
+cli_error_text_parse_arity: db 'NEBO-TEXT-PARSE-ARITY: Text parse, checked, conversion, and identifier methods received the wrong number of arguments',10
+cli_error_text_parse_arity_end:
+cli_error_text_conversion_receiver: db 'NEBO-TEXT-CONVERSION-RECEIVER: toText requires a Text, Int, or Bool receiver',10
+cli_error_text_conversion_receiver_end:
 cli_error_need_char: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTES-TEXTUAL-RECEIVER-MUST-BE-CHAR: codepoint() requires a Char receiver',10
 cli_error_need_char_end:
 cli_error_need_bytes: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTES-TEXTUAL-RECEIVER-MUST-BE-BYTES: this API requires a Bytes receiver',10
@@ -616,6 +997,10 @@ literais_numericos_bases_e_representacao_cli_error_005: db 'NEBO-LITERAIS-NUMERI
 literais_numericos_bases_e_representacao_cli_error_005_end:
 literais_numericos_bases_e_representacao_cli_error_006: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-006: assignment target is immutable',10
 literais_numericos_bases_e_representacao_cli_error_006_end:
+cli_semantic_code_assignment_immutable: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-006'
+cli_semantic_code_assignment_immutable_end:
+cli_semantic_message_assignment_immutable: db 'assignment target is immutable'
+cli_semantic_message_assignment_immutable_end:
 literais_numericos_bases_e_representacao_cli_error_007: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-007: assignment target is not an assignable local place',10
 literais_numericos_bases_e_representacao_cli_error_007_end:
 literais_numericos_bases_e_representacao_cli_error_008: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-008: local binding is outside its lexical scope',10
@@ -628,10 +1013,18 @@ cli_semantic_message_assignment_type: db 'assignment value type does not match t
 cli_semantic_message_assignment_type_end:
 literais_numericos_bases_e_representacao_cli_error_012: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-012: assignment is a statement and cannot be used as an expression',10
 literais_numericos_bases_e_representacao_cli_error_012_end:
+cli_semantic_code_assignment_expression: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-012'
+cli_semantic_code_assignment_expression_end:
+cli_semantic_message_assignment_expression: db 'assignment is a statement and cannot be used as an expression'
+cli_semantic_message_assignment_expression_end:
 literais_numericos_bases_e_representacao_cli_error_013: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-013: chained assignment is forbidden in the F02 profile',10
 literais_numericos_bases_e_representacao_cli_error_013_end:
-literais_numericos_bases_e_representacao_cli_error_014: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-014: compound assignment is limited to mutable Int += and -= in the F04 profile',10
+literais_numericos_bases_e_representacao_cli_error_014: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-014: compound assignment requires mutable Int and one of += -= *= /= %= ^=',10
 literais_numericos_bases_e_representacao_cli_error_014_end:
+cli_semantic_code_compound_unsupported: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-014'
+cli_semantic_code_compound_unsupported_end:
+cli_semantic_message_compound_unsupported: db 'compound assignment requires mutable Int and one of += -= *= /= %= ^='
+cli_semantic_message_compound_unsupported_end:
 cli_error_030: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-030: break is only valid inside a lexical loop',10
 cli_error_030_end:
 cli_error_031: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-031: continue is only valid inside a lexical loop',10
@@ -640,6 +1033,8 @@ cli_error_032: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-032: while cond
 cli_error_032_end:
 cli_error_034: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-034: loop CFG contains unreachable code or violates cleanup invariants',10
 cli_error_034_end:
+cli_error_035: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-035: break values require one consistent Int payload and a receiver-first loop result binding',10
+cli_error_035_end:
 cli_error_036: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-036: bounded loop nesting capacity exceeded',10
 cli_error_036_end:
 cli_error_037: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-037: for iterator source must be a live bounded Range, Array or Slice',10
@@ -652,31 +1047,127 @@ cli_error_040: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-040: invalid ca
 cli_error_040_end:
 cli_error_041: db 'NEBO-LITERAIS-NUMERICOS-BASES-E-REPRESENTACAO-041: bounded for nesting capacity exceeded',10
 cli_error_041_end:
-text_char_unicode_e_bytes_cli_error_001: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTES-001: value cannot be used after it has been moved',10
+text_char_unicode_e_bytes_cli_error_001: db 'NEBO-OWNERSHIP-USE-AFTER-MOVE: value cannot be used after it has been moved',10
 text_char_unicode_e_bytes_cli_error_001_end:
-cli_semantic_code_use_after_move: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTES-001'
+cli_semantic_code_use_after_move: db 'NEBO-OWNERSHIP-USE-AFTER-MOVE'
 cli_semantic_code_use_after_move_end:
 cli_semantic_message_use_after_move: db 'value cannot be used after it has been moved'
 cli_semantic_message_use_after_move_end:
+cli_semantic_code_double_drop: db 'NEBO-OWNERSHIP-DOUBLE-DROP'
+cli_semantic_code_double_drop_end:
+cli_semantic_message_double_drop: db 'resource cannot be dropped more than once'
+cli_semantic_message_double_drop_end:
+cli_semantic_code_borrow_conflict: db 'NEBO-BORROW-MUTABLE-CONFLICT'
+cli_semantic_code_borrow_conflict_end:
+cli_semantic_message_borrow_conflict: db 'shared and mutable borrows conflict'
+cli_semantic_message_borrow_conflict_end:
+cli_semantic_message_move_while_borrowed: db 'value cannot be moved or mutated while borrowed'
+cli_semantic_message_move_while_borrowed_end:
+cli_semantic_code_lifetime_escape: db 'NEBO-LIFETIME-ESCAPE'
+cli_semantic_code_lifetime_escape_end:
+cli_semantic_message_lifetime_escape: db 'reference cannot escape its owner lifetime'
+cli_semantic_message_lifetime_escape_end:
+cli_semantic_code_copy_unique: db 'NEBO-OWNERSHIP-COPY-REQUIRES-COPY'
+cli_semantic_code_copy_unique_end:
+cli_semantic_message_copy_unique: db 'unique owner cannot be copied or implicitly cloned'
+cli_semantic_message_copy_unique_end:
+cli_semantic_code_operation_unavailable: db 'NEBO-OWNERSHIP-OPERATION-UNAVAILABLE'
+cli_semantic_code_operation_unavailable_end:
+cli_semantic_message_operation_unavailable: db 'ownership operation is unavailable for this value'
+cli_semantic_message_operation_unavailable_end:
+cli_semantic_code_allocator_layout: db 'NEBO-OWNERSHIP-ALLOCATOR-LAYOUT'
+cli_semantic_code_allocator_layout_end:
+cli_semantic_message_allocator_layout: db 'allocation layout must have bounded size and power-of-two alignment'
+cli_semantic_message_allocator_layout_end:
+cli_semantic_code_arena_exhausted: db 'NEBO-OWNERSHIP-ARENA-EXHAUSTED'
+cli_semantic_code_arena_exhausted_end:
+cli_semantic_message_arena_exhausted: db 'arena capacity is insufficient for this allocation'
+cli_semantic_message_arena_exhausted_end:
+cli_semantic_code_resource_leak: db 'NEBO-RESOURCE-LEAK-PATH'
+cli_semantic_code_resource_leak_end:
+cli_semantic_message_resource_leak: db 'resource path would leak without cleanup'
+cli_semantic_message_resource_leak_end:
+cli_semantic_code_ownership_internal: db 'NEBO-OWNERSHIP-INTERNAL'
+cli_semantic_code_ownership_internal_end:
+cli_semantic_message_ownership_internal: db 'ownership plan authentication failed'
+cli_semantic_message_ownership_internal_end:
 cli_semantic_code_textual_unknown: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTES-TEXTUAL-API-UNKNOWN'
 cli_semantic_code_textual_unknown_end:
 cli_semantic_message_textual_unknown: db 'unknown Text/Char/Bytes foundation API'
 cli_semantic_message_textual_unknown_end:
-text_char_unicode_e_bytes_cli_error_002: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTES-002: resource cannot be dropped more than once',10
+cli_semantic_code_textual_alias: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTES-TEXTUAL-ALIAS-FORBIDDEN'
+cli_semantic_code_textual_alias_end:
+cli_semantic_message_textual_alias: db 'use canonical Text, Char, Bytes and method names'
+cli_semantic_message_textual_alias_end:
+cli_semantic_code_text_query_argument: db 'NEBO-TEXT-QUERY-ARGUMENT-MUST-BE-TEXT'
+cli_semantic_code_text_query_argument_end:
+cli_semantic_message_text_query_argument: db 'Text query argument must have type Text'
+cli_semantic_message_text_query_argument_end:
+cli_semantic_message_typed_format: db 'Invalid typed format template or arguments'
+cli_semantic_message_typed_format_end:
+cli_semantic_code_interpolation_effect: db 'NEBO_INTERPOLATION_EFFECT_FORBIDDEN'
+cli_semantic_code_interpolation_effect_end:
+cli_semantic_message_interpolation_effect: db 'Interpolation requires a proven pure expression'
+cli_semantic_message_interpolation_effect_end:
+cli_semantic_code_text_result_fallback: db 'NEBO-OPTION-RESULT-NULL-EXTERNO-E-ERROS-TIPADOS-OPTION-RESULT-FALLBACK-TYPE-MISMATCH'
+cli_semantic_code_text_result_fallback_end:
+cli_semantic_message_text_result_fallback: db 'unwrapOr fallback must exactly match the success type'
+cli_semantic_message_text_result_fallback_end:
+cli_semantic_code_text_zero_arguments: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTES-TEXTUAL-ARGUMENTS-NOT-ALLOWED'
+cli_semantic_code_text_zero_arguments_end:
+cli_semantic_message_text_zero_arguments: db 'This foundation API takes zero arguments'
+cli_semantic_message_text_zero_arguments_end:
+cli_semantic_code_text_query_arity: db 'NEBO-TEXT-QUERY-ARITY'
+cli_semantic_code_text_query_arity_end:
+cli_semantic_message_text_query_arity: db 'Text query requires exactly one Text argument'
+cli_semantic_message_text_query_arity_end:
+cli_semantic_code_text_transform_arity: db 'NEBO-TEXT-TRANSFORM-ARITY'
+cli_semantic_code_text_transform_arity_end:
+cli_semantic_message_text_transform_arity: db 'Text transformation received the wrong number of arguments'
+cli_semantic_message_text_transform_arity_end:
+cli_semantic_code_text_transform_text_argument: db 'NEBO-TEXT-TRANSFORM-TEXT-ARGUMENT'
+cli_semantic_code_text_transform_text_argument_end:
+cli_semantic_message_text_transform_text_argument: db 'Text transformation argument must have type Text'
+cli_semantic_message_text_transform_text_argument_end:
+cli_semantic_code_text_transform_int_argument: db 'NEBO-TEXT-TRANSFORM-INT-ARGUMENT'
+cli_semantic_code_text_transform_int_argument_end:
+cli_semantic_message_text_transform_int_argument: db 'Text transformation count/index must be a non-negative Int literal'
+cli_semantic_message_text_transform_int_argument_end:
+cli_semantic_code_text_transform_bounds: db 'NEBO-TEXT-TRANSFORM-BOUNDS'
+cli_semantic_code_text_transform_bounds_end:
+cli_semantic_message_text_transform_bounds: db 'Text byte range must be ordered and within the bounded source profile'
+cli_semantic_message_text_transform_bounds_end:
+cli_semantic_code_text_transform_empty_separator: db 'NEBO-TEXT-TRANSFORM-EMPTY-SEPARATOR'
+cli_semantic_code_text_transform_empty_separator_end:
+cli_semantic_message_text_transform_empty_separator: db 'split, replacement patterns and padding fills must not be empty'
+cli_semantic_message_text_transform_empty_separator_end:
+cli_semantic_code_text_parse_arity: db 'NEBO-TEXT-PARSE-ARITY'
+cli_semantic_code_text_parse_arity_end:
+cli_semantic_message_text_parse_arity: db 'Text parse, checked, conversion, and identifier methods received the wrong number of arguments'
+cli_semantic_message_text_parse_arity_end:
+cli_semantic_code_text_conversion_receiver: db 'NEBO-TEXT-CONVERSION-RECEIVER'
+cli_semantic_code_text_conversion_receiver_end:
+cli_semantic_message_text_conversion_receiver: db 'toText requires a Text, Int, or Bool receiver'
+cli_semantic_message_text_conversion_receiver_end:
+text_char_unicode_e_bytes_cli_error_002: db 'NEBO-OWNERSHIP-DOUBLE-DROP: resource cannot be dropped more than once',10
 text_char_unicode_e_bytes_cli_error_002_end:
-text_char_unicode_e_bytes_cli_error_003: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTES-003: shared and unique borrows conflict',10
+text_char_unicode_e_bytes_cli_error_003: db 'NEBO-BORROW-MUTABLE-CONFLICT: shared and mutable borrows conflict',10
 text_char_unicode_e_bytes_cli_error_003_end:
-text_char_unicode_e_bytes_cli_error_004: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTES-004: value cannot be moved or mutated while borrowed',10
+text_char_unicode_e_bytes_cli_error_004: db 'NEBO-BORROW-MUTABLE-CONFLICT: value cannot be moved or mutated while borrowed',10
 text_char_unicode_e_bytes_cli_error_004_end:
-text_char_unicode_e_bytes_cli_error_005: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTES-005: borrow cannot escape its owner region',10
+text_char_unicode_e_bytes_cli_error_005: db 'NEBO-LIFETIME-ESCAPE: reference cannot escape its owner lifetime',10
 text_char_unicode_e_bytes_cli_error_005_end:
-text_char_unicode_e_bytes_cli_error_006: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTES-006: unique owner cannot be copied or implicitly cloned',10
+text_char_unicode_e_bytes_cli_error_006: db 'NEBO-OWNERSHIP-COPY-REQUIRES-COPY: unique owner cannot be copied or implicitly cloned',10
 text_char_unicode_e_bytes_cli_error_006_end:
-text_char_unicode_e_bytes_cli_error_007: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTES-007: clone or ownership operation is unavailable for this bounded value',10
+text_char_unicode_e_bytes_cli_error_007: db 'NEBO-OWNERSHIP-OPERATION-UNAVAILABLE: ownership operation is unavailable for this value',10
 text_char_unicode_e_bytes_cli_error_007_end:
-text_char_unicode_e_bytes_cli_error_013: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTES-013: resource path would leak without cleanup',10
+text_char_unicode_e_bytes_cli_error_008: db 'NEBO-OWNERSHIP-ALLOCATOR-LAYOUT: allocation layout must have bounded size and power-of-two alignment',10
+text_char_unicode_e_bytes_cli_error_008_end:
+text_char_unicode_e_bytes_cli_error_009: db 'NEBO-OWNERSHIP-ARENA-EXHAUSTED: arena capacity is insufficient for this allocation',10
+text_char_unicode_e_bytes_cli_error_009_end:
+text_char_unicode_e_bytes_cli_error_013: db 'NEBO-RESOURCE-LEAK-PATH: resource path would leak without cleanup',10
 text_char_unicode_e_bytes_cli_error_013_end:
-text_char_unicode_e_bytes_cli_error_internal: db 'NEBO-TEXT-CHAR-UNICODE-E-BYTES-INTERNAL: bounded ownership plan authentication failed',10
+text_char_unicode_e_bytes_cli_error_internal: db 'NEBO-OWNERSHIP-INTERNAL: ownership plan authentication failed',10
 text_char_unicode_e_bytes_cli_error_internal_end:
 seguranca_numerica_conversoes_e_overflow_cli_error_001: db 'NEBO-SEGURANCA-NUMERICA-CONVERSOES-E-OVERFLOW-001: invalid bounded receiver-first function signature',10
 seguranca_numerica_conversoes_e_overflow_cli_error_001_end:
@@ -720,6 +1211,16 @@ seguranca_numerica_conversoes_e_overflow_cli_error_021: db 'NEBO-SEGURANCA-NUMER
 seguranca_numerica_conversoes_e_overflow_cli_error_021_end:
 seguranca_numerica_conversoes_e_overflow_cli_error_022: db 'NEBO-SEGURANCA-NUMERICA-CONVERSOES-E-OVERFLOW-022: private module export is inaccessible from the importing unit',10
 seguranca_numerica_conversoes_e_overflow_cli_error_022_end:
+cli_semantic_code_module_interface: db 'NEBO-RF166-G154-007'
+cli_semantic_code_module_interface_end:
+cli_semantic_message_module_interface: db 'compiled interface lacks a valid typed module constant payload'
+cli_semantic_message_module_interface_end:
+cli_semantic_code_module_reexport: db 'NEBO-RF166-G152-006'
+cli_semantic_code_module_reexport_end:
+cli_semantic_message_module_reexport: db 'only an explicitly selected public symbol may be reexported'
+cli_semantic_message_module_reexport_end:
+cli_module_interface_error: db 'NEBO-RF166-G154-007: compiled interface lacks a valid typed module constant payload',10
+cli_module_interface_error_end:
 cli_semantic_code_module_private: db 'NEBO-SEGURANCA-NUMERICA-CONVERSOES-E-OVERFLOW-022'
 cli_semantic_code_module_private_end:
 cli_semantic_message_module_private: db 'private module export is inaccessible from the importing unit'
@@ -983,6 +1484,28 @@ cli_error_buffer_slice_arity: db 'NEBO-TIPOS-PRIMITIVOS-ESCALARES-050: bounded S
 cli_error_buffer_slice_arity_end:
 cli_error_buffer_internal: db 'NEBO-TIPOS-PRIMITIVOS-ESCALARES-099: bounded Buffer semantic lowering or native plan invariant failed',10
 cli_error_buffer_internal_end:
+cli_error_bf_syntax: db 'NEBO-BYTES-BITS-BUFFER-SLICE-001: malformed binary operation syntax',10
+cli_error_bf_syntax_end:
+cli_error_bf_arity: db 'NEBO-BYTES-BITS-BUFFER-SLICE-002: binary operation received the wrong number of arguments',10
+cli_error_bf_arity_end:
+cli_error_bf_type: db 'NEBO-BYTES-BITS-BUFFER-SLICE-003: binary operation requires bounded literal operands of the declared type',10
+cli_error_bf_type_end:
+cli_error_bf_bounds: db 'NEBO-BYTES-BITS-BUFFER-SLICE-004: binary read write or slice is outside its owner bounds',10
+cli_error_bf_bounds_end:
+cli_error_bf_hex: db 'NEBO-BYTES-BITS-BUFFER-SLICE-005: Bytes.fromHex requires an even bounded hexadecimal text',10
+cli_error_bf_hex_end:
+cli_error_bf_encoding: db 'NEBO-BYTES-BITS-BUFFER-SLICE-006: Bytes.fromText requires explicit utf-8 or ascii encoding',10
+cli_error_bf_encoding_end:
+cli_error_bf_alignment: db 'NEBO-BYTES-BITS-BUFFER-SLICE-007: alignment must be a nonzero power of two',10
+cli_error_bf_alignment_end:
+cli_error_bf_length: db 'NEBO-BYTES-BITS-BUFFER-SLICE-008: binary operands require compatible bounded lengths',10
+cli_error_bf_length_end:
+cli_error_bf_capacity: db 'NEBO-BYTES-BITS-BUFFER-SLICE-009: bounded Buffer capacity or arithmetic overflow',10
+cli_error_bf_capacity_end:
+cli_error_bf_ownership: db 'NEBO-BYTES-BITS-BUFFER-SLICE-010: Slice borrow conflicts with Buffer mutation or lifetime',10
+cli_error_bf_ownership_end:
+cli_error_bf_internal: db 'NEBO-BYTES-BITS-BUFFER-SLICE-099: binary semantic lowering or codegen invariant failed',10
+cli_error_bf_internal_end:
 
 cli_error_expected: db 'NEBO-GENERICS-CONSTRAINTS-OVERLOAD-E-DISPATCH-GENERIC-EXPECTED-TYPE-PARAMETER: generic declaration requires T',10
 cli_error_expected_end:
@@ -1078,12 +1601,980 @@ colecoes_primitivas_cli_error_constant: db 'NEBO-COLECOES-PRIMITIVAS-CONSTANT-IN
 colecoes_primitivas_cli_error_constant_end:
 cli_error_mutation: db 'NEBO-COLECOES-PRIMITIVAS-MUTATION-DEFERRED: Array mutation is deferred',10
 cli_error_mutation_end:
-cli_error_list: db 'NEBO-COLECOES-PRIMITIVAS-LIST-DEFERRED: List and general collections are deferred',10
+cli_error_list: db 'NEBO-COLLECTION-SYNTAX: malformed bounded sequential collection source',10
 cli_error_list_end:
 cli_error_dict: db 'NEBO-COLECOES-PRIMITIVAS-DICT-DEFERRED: Dict is deferred',10
 cli_error_dict_end:
 cli_error_capacity: db 'NEBO-COLECOES-PRIMITIVAS-CAPACITY-DEFERRED: capacity and allocation policies are deferred',10
 cli_error_capacity_end:
+cli_error_g007_type: db 'NEBO-COLLECTION-ELEMENT-TYPE: bounded sequential collections require Int elements',10
+cli_error_g007_type_end:
+cli_error_g007_bounds: db 'NEBO-COLLECTION-BOUNDS: sequential collection index or endpoint is out of bounds',10
+cli_error_g007_bounds_end:
+cli_error_g007_capacity: db 'NEBO-COLLECTION-CAPACITY: requested bounded capacity exceeds 16 elements',10
+cli_error_g007_capacity_end:
+cli_error_g007_method: db 'NEBO-COLLECTION-METHOD: method is unavailable for this sequential collection type',10
+cli_error_g007_method_end:
+cli_error_g007_callback: db 'NEBO-COLLECTION-CALLBACK: callback declaration does not satisfy the required operation',10
+cli_error_g007_callback_end:
+cli_error_g007_limit: db 'NEBO-COLLECTION-LIMIT: bounded sequential collection resource limit exceeded',10
+cli_error_g007_limit_end:
+cli_error_g007_borrow: db 'NEBO-COLLECTION-BORROW-CONFLICT: live iterator forbids mutation or a second borrow',10
+cli_error_g007_borrow_end:
+cli_g007_atom_list: db 'List'
+cli_g007_atom_list_len equ $-cli_g007_atom_list
+cli_typed_stream: db 'Stream'
+cli_typed_schema: db 'Schema'
+cli_typed_row: db 'Row'
+cli_typed_table: db 'Table'
+cli_typed_dataset: db 'Dataset'
+cli_typed_event: db 'Event'
+cli_typed_flow: db 'Flow'
+cli_typed_column: db 'Column'
+cli_typed_tree: db 'Tree'
+cli_typed_node: db 'Node'
+cli_typed_graph: db 'Graph'
+cli_g007_atom_stack: db 'Stack'
+cli_g007_atom_stack_len equ $-cli_g007_atom_stack
+cli_g007_atom_queue: db 'Queue'
+cli_g007_atom_queue_len equ $-cli_g007_atom_queue
+cli_g007_atom_deque: db 'Deque'
+cli_g007_atom_deque_len equ $-cli_g007_atom_deque
+cli_g008_atom_dict: db 'Dict'
+cli_g008_atom_dict_len equ $-cli_g008_atom_dict
+cli_g008_atom_set: db 'Set'
+cli_g008_atom_set_len equ $-cli_g008_atom_set
+cli_g008_atom_hasher: db 'Hasher'
+cli_g008_atom_hasher_len equ $-cli_g008_atom_hasher
+cli_associative_name_equals: db 'equals'
+cli_associative_name_hash: db 'hash'
+cli_associative_name_hash_stable: db 'hashStable'
+cli_g009_atom_node: db 'Node'
+cli_g009_atom_node_len equ $-cli_g009_atom_node
+cli_g009_atom_tree: db 'Tree'
+cli_g009_atom_tree_len equ $-cli_g009_atom_tree
+cli_g009_atom_graph: db 'Graph'
+cli_g009_atom_graph_len equ $-cli_g009_atom_graph
+cli_g009_atom_replace_value: db 'replaceValue'
+cli_g009_atom_replace_value_len equ $-cli_g009_atom_replace_value
+cli_g010_atom_schema: db 'Schema'
+cli_g010_atom_schema_len equ $-cli_g010_atom_schema
+cli_g010_atom_row: db 'Row'
+cli_g010_atom_row_len equ $-cli_g010_atom_row
+cli_g010_atom_table: db 'Table'
+cli_g010_atom_table_len equ $-cli_g010_atom_table
+cli_g010_atom_dataset: db 'Dataset'
+cli_g010_atom_dataset_len equ $-cli_g010_atom_dataset
+cli_g010_atom_cast: db 'cast'
+cli_g010_atom_cast_len equ $-cli_g010_atom_cast
+cli_g010_atom_drop_missing: db 'dropMissing'
+cli_g010_atom_drop_missing_len equ $-cli_g010_atom_drop_missing
+cli_g010_atom_batch: db 'batch'
+cli_g010_atom_batch_len equ $-cli_g010_atom_batch
+cli_g025_atom_file_capability: db 'FileCapability'
+cli_g025_atom_file_capability_len equ $-cli_g025_atom_file_capability
+cli_g025_atom_sensitive: db 'Sensitive'
+cli_g025_atom_sensitive_len equ $-cli_g025_atom_sensitive
+cli_g025_atom_privacy_policy: db 'PrivacyPolicy'
+cli_g025_atom_privacy_policy_len equ $-cli_g025_atom_privacy_policy
+cli_g025_atom_metrics: db 'Metrics'
+cli_g025_atom_metrics_len equ $-cli_g025_atom_metrics
+cli_g025_atom_provenance: db 'Provenance'
+cli_g025_atom_provenance_len equ $-cli_g025_atom_provenance
+cli_g025_atom_audit: db 'Audit'
+cli_g025_atom_audit_len equ $-cli_g025_atom_audit
+cli_g025_atom_explain_effects: db 'explainEffects'
+cli_g025_atom_explain_effects_len equ $-cli_g025_atom_explain_effects
+cli_g025_atom_console_write: db 'console_write'
+cli_g025_atom_console_write_len equ $-cli_g025_atom_console_write
+cli_g025_atom_permit: db 'permit'
+cli_g025_atom_permit_len equ $-cli_g025_atom_permit
+cli_g025_atom_effects: db 'effects'
+cli_g025_atom_effects_len equ $-cli_g025_atom_effects
+cli_g025_atom_file_read: db 'fileRead'
+cli_g025_atom_file_read_len equ $-cli_g025_atom_file_read
+cli_g025_atom_evaluate: db 'evaluate'
+cli_g025_atom_evaluate_len equ $-cli_g025_atom_evaluate
+cli_g031_atom_signal: db 'Signal'
+cli_g031_atom_signal_len equ $-cli_g031_atom_signal
+cli_g031_atom_cell: db 'Cell'
+cli_g031_atom_cell_len equ $-cli_g031_atom_cell
+cli_g031_atom_computed: db 'Computed'
+cli_g031_atom_computed_len equ $-cli_g031_atom_computed
+cli_g031_atom_reactive_list: db 'ReactiveList'
+cli_g031_atom_reactive_list_len equ $-cli_g031_atom_reactive_list
+cli_g031_atom_reactive_dict: db 'ReactiveDict'
+cli_g031_atom_reactive_dict_len equ $-cli_g031_atom_reactive_dict
+cli_g031_atom_dataflow_graph: db 'DataflowGraph'
+cli_g031_atom_dataflow_graph_len equ $-cli_g031_atom_dataflow_graph
+cli_g031_atom_graph_report: db 'graphReport'
+cli_g031_atom_graph_report_len equ $-cli_g031_atom_graph_report
+cli_g031_atom_await_stable: db 'awaitStable'
+cli_g031_atom_await_stable_len equ $-cli_g031_atom_await_stable
+cli_g032_atom_database: db 'Database'
+cli_g032_atom_database_len equ $-cli_g032_atom_database
+cli_g032_atom_db_schema: db 'DbSchema'
+cli_g032_atom_db_schema_len equ $-cli_g032_atom_db_schema
+cli_g032_atom_storage_options: db 'StorageOptions'
+cli_g032_atom_storage_options_len equ $-cli_g032_atom_storage_options
+cli_g032_atom_query: db 'Query'
+cli_g032_atom_query_len equ $-cli_g032_atom_query
+cli_g032_atom_migration: db 'Migration'
+cli_g032_atom_migration_len equ $-cli_g032_atom_migration
+cli_g014_atom_hypot: db 'hypot'
+cli_g014_atom_hypot_len equ $-cli_g014_atom_hypot
+cli_g014_atom_atan2: db 'atan2'
+cli_g014_atom_atan2_len equ $-cli_g014_atom_atan2
+cli_g014_atom_approx_equals: db 'approxEquals'
+cli_g014_atom_approx_equals_len equ $-cli_g014_atom_approx_equals
+cli_g014_atom_standard_deviation: db 'standardDeviation'
+cli_g014_atom_standard_deviation_len equ $-cli_g014_atom_standard_deviation
+cli_g014_atom_categorical: db 'categorical'
+cli_g014_atom_categorical_len equ $-cli_g014_atom_categorical
+cli_g014_atom_normalize: db 'normalize'
+cli_g014_atom_normalize_len equ $-cli_g014_atom_normalize
+cli_g014_atom_vector: db 'Vector'
+cli_g014_atom_vector_len equ $-cli_g014_atom_vector
+cli_g015_atom_matrix: db 'Matrix'
+cli_g015_atom_matrix_len equ $-cli_g015_atom_matrix
+cli_g015_atom_get: db 'get'
+cli_g015_atom_get_len equ $-cli_g015_atom_get
+cli_g015_atom_divide_elements: db 'divideElements'
+cli_g015_atom_divide_elements_len equ $-cli_g015_atom_divide_elements
+cli_g015_atom_trace: db 'trace'
+cli_g015_atom_trace_len equ $-cli_g015_atom_trace
+cli_g015_atom_matvec: db 'matvec'
+cli_g015_atom_matvec_len equ $-cli_g015_atom_matvec
+cli_g015_atom_determinant: db 'determinant'
+cli_g015_atom_determinant_len equ $-cli_g015_atom_determinant
+cli_g015_atom_from_rows: db 'fromRows'
+cli_g015_atom_from_rows_len equ $-cli_g015_atom_from_rows
+cli_g015_atom_from_buffer: db 'fromBuffer'
+cli_g015_atom_from_buffer_len equ $-cli_g015_atom_from_buffer
+cli_g016_atom_tensor: db 'Tensor'
+cli_g016_atom_tensor_len equ $-cli_g016_atom_tensor
+cli_g016_atom_storage_id: db 'storageId'
+cli_g016_atom_storage_id_len equ $-cli_g016_atom_storage_id
+cli_g016_atom_element_count: db 'elementCount'
+cli_g016_atom_element_count_len equ $-cli_g016_atom_element_count
+cli_g016_atom_axis_size: db 'axisSize'
+cli_g016_atom_axis_size_len equ $-cli_g016_atom_axis_size
+cli_g016_atom_select: db 'select'
+cli_g016_atom_select_len equ $-cli_g016_atom_select
+cli_g016_atom_broadcast_to: db 'broadcastTo'
+cli_g016_atom_broadcast_to_len equ $-cli_g016_atom_broadcast_to
+cli_g016_atom_maximum: db 'maximum'
+cli_g016_atom_maximum_len equ $-cli_g016_atom_maximum
+cli_g016_atom_arg_max: db 'argMax'
+cli_g016_atom_arg_max_len equ $-cli_g016_atom_arg_max
+cli_g016_atom_concatenate: db 'concatenate'
+cli_g016_atom_concatenate_len equ $-cli_g016_atom_concatenate
+cli_g016_atom_einsum: db 'einsum'
+cli_g016_atom_einsum_len equ $-cli_g016_atom_einsum
+cli_g018_atom_window: db 'Window'
+cli_g018_atom_window_len equ $-cli_g018_atom_window
+cli_g018_atom_console: db 'Console'
+cli_g018_atom_console_len equ $-cli_g018_atom_console
+cli_g018_atom_visual: db 'visual'
+cli_g018_atom_visual_len equ $-cli_g018_atom_visual
+cli_g018_atom_canvas: db 'Canvas'
+cli_g018_atom_canvas_len equ $-cli_g018_atom_canvas
+cli_g018_atom_layout: db 'Layout'
+cli_g018_atom_layout_len equ $-cli_g018_atom_layout
+cli_g018_atom_chart: db 'Chart'
+cli_g018_atom_chart_len equ $-cli_g018_atom_chart
+cli_g018_atom_scroll_to_end: db 'scrollToEnd'
+cli_g018_atom_scroll_to_end_len equ $-cli_g018_atom_scroll_to_end
+cli_g018_atom_events: db 'events'
+cli_g018_atom_events_len equ $-cli_g018_atom_events
+cli_g018_atom_request_redraw: db 'requestRedraw'
+cli_g018_atom_request_redraw_len equ $-cli_g018_atom_request_redraw
+cli_g018_atom_prevent_default: db 'preventDefault'
+cli_g018_atom_prevent_default_len equ $-cli_g018_atom_prevent_default
+cli_g018_atom_accessibility: db 'accessibility'
+cli_g018_atom_accessibility_len equ $-cli_g018_atom_accessibility
+cli_g018_atom_histogram: db 'histogram'
+cli_g018_atom_histogram_len equ $-cli_g018_atom_histogram
+cli_g018_atom_present: db 'present'
+cli_g018_atom_present_len equ $-cli_g018_atom_present
+cli_g018_atom_summarize: db 'summarize'
+cli_g018_atom_summarize_len equ $-cli_g018_atom_summarize
+cli_g018_atom_color: db 'color'
+cli_g018_atom_color_len equ $-cli_g018_atom_color
+cli_g059_atom_format_plan: db 'FormatPlan'
+cli_g059_atom_format_plan_len equ $-cli_g059_atom_format_plan
+cli_g059_atom_format_node: db 'FormatNode'
+cli_g059_atom_format_node_len equ $-cli_g059_atom_format_node
+cli_g059_atom_format_string: db 'FormatString'
+cli_g059_atom_format_string_len equ $-cli_g059_atom_format_string
+cli_g059_atom_static_format_string: db 'StaticFormatString'
+cli_g059_atom_static_format_string_len equ $-cli_g059_atom_static_format_string
+cli_g059_atom_formatted_text: db 'FormattedText'
+cli_g059_atom_formatted_text_len equ $-cli_g059_atom_formatted_text
+cli_g059_atom_format_error: db 'FormatError'
+cli_g059_atom_format_error_len equ $-cli_g059_atom_format_error
+cli_g059_atom_evaluation_order: db 'EvaluationOrder'
+cli_g059_atom_evaluation_order_len equ $-cli_g059_atom_evaluation_order
+cli_g059_atom_console_options: db 'ConsoleOptions'
+cli_g059_atom_console_options_len equ $-cli_g059_atom_console_options
+cli_g059_atom_format: db 'format'
+cli_g059_atom_format_len equ $-cli_g059_atom_format
+cli_g059_atom_format_named: db 'formatNamed'
+cli_g059_atom_format_named_len equ $-cli_g059_atom_format_named
+cli_g059_atom_format_with: db 'formatWith'
+cli_g059_atom_format_with_len equ $-cli_g059_atom_format_with
+cli_g059_atom_render_to: db 'renderTo'
+cli_g059_atom_render_to_len equ $-cli_g059_atom_render_to
+cli_g059_atom_console: db 'console'
+cli_g059_atom_console_len equ $-cli_g059_atom_console
+cli_g076_atom_root: db 'ScanPlan'
+cli_g076_atom_root_len equ $-cli_g076_atom_root
+cli_g076_atom_text: db 'textRules'
+cli_g076_atom_text_len equ $-cli_g076_atom_text
+cli_g077_atom_privacy: db 'privacy'
+cli_g077_atom_privacy_len equ $-cli_g077_atom_privacy
+cli_g077_atom_events: db 'events'
+cli_g077_atom_events_len equ $-cli_g077_atom_events
+cli_g077_atom_formatted: db 'formatted'
+cli_g077_atom_formatted_len equ $-cli_g077_atom_formatted
+cli_g077_atom_secret_life: db 'secretLife'
+cli_g077_atom_secret_life_len equ $-cli_g077_atom_secret_life
+cli_g077_atom_outcome: db 'outcome'
+cli_g077_atom_outcome_len equ $-cli_g077_atom_outcome
+cli_g077_atom_closeout: db 'closeout77'
+cli_g077_atom_closeout_len equ $-cli_g077_atom_closeout
+cli_g078_atom_blocks: db 'blocks'
+cli_g078_atom_blocks_len equ $-cli_g078_atom_blocks
+cli_g078_atom_editor: db 'editor'
+cli_g078_atom_editor_len equ $-cli_g078_atom_editor
+cli_g078_atom_sources: db 'sources'
+cli_g078_atom_sources_len equ $-cli_g078_atom_sources
+cli_g078_atom_forms: db 'forms'
+cli_g078_atom_forms_len equ $-cli_g078_atom_forms
+cli_g078_atom_meta: db 'meta78'
+cli_g078_atom_meta_len equ $-cli_g078_atom_meta
+cli_g078_atom_closeout: db 'closeout78'
+cli_g078_atom_closeout_len equ $-cli_g078_atom_closeout
+cli_g079_atom_root: db 'FormatSystem'
+cli_g079_atom_root_len equ $-cli_g079_atom_root
+cli_g079_atom_contracts: db 'contracts79'
+cli_g079_atom_contracts_len equ $-cli_g079_atom_contracts
+cli_g079_atom_reports: db 'reports79'
+cli_g079_atom_reports_len equ $-cli_g079_atom_reports
+cli_g079_atom_schemas: db 'schemas79'
+cli_g079_atom_schemas_len equ $-cli_g079_atom_schemas
+cli_g079_atom_options: db 'options79'
+cli_g079_atom_options_len equ $-cli_g079_atom_options
+cli_g079_atom_detection: db 'detection79'
+cli_g079_atom_detection_len equ $-cli_g079_atom_detection
+cli_g079_atom_io: db 'io79'
+cli_g079_atom_io_len equ $-cli_g079_atom_io
+cli_g079_atom_conversion: db 'conversion79'
+cli_g079_atom_conversion_len equ $-cli_g079_atom_conversion
+cli_g079_atom_closeout: db 'closeout79'
+cli_g079_atom_closeout_len equ $-cli_g079_atom_closeout
+cli_g080_atom_root: db 'FormatData'
+cli_g080_atom_root_len equ $-cli_g080_atom_root
+cli_g080_atom_csv_types: db 'csvTypes80'
+cli_g080_atom_csv_types_len equ $-cli_g080_atom_csv_types
+cli_g080_atom_csv_io: db 'csvIo80'
+cli_g080_atom_csv_io_len equ $-cli_g080_atom_csv_io
+cli_g080_atom_tsv: db 'tsv80'
+cli_g080_atom_tsv_len equ $-cli_g080_atom_tsv
+cli_g080_atom_json_values: db 'jsonValues80'
+cli_g080_atom_json_values_len equ $-cli_g080_atom_json_values
+cli_g080_atom_json_io: db 'jsonIo80'
+cli_g080_atom_json_io_len equ $-cli_g080_atom_json_io
+cli_g080_atom_json_typed: db 'jsonTyped80'
+cli_g080_atom_json_typed_len equ $-cli_g080_atom_json_typed
+cli_g080_atom_jsonl: db 'jsonl80'
+cli_g080_atom_jsonl_len equ $-cli_g080_atom_jsonl
+cli_g080_atom_closeout: db 'closeout80'
+cli_g080_atom_closeout_len equ $-cli_g080_atom_closeout
+cli_g081_atom_root: db 'FormatAdvanced'
+cli_g081_atom_root_len equ $-cli_g081_atom_root
+cli_g081_atom_markdown: db 'markdown81'
+cli_g081_atom_markdown_len equ $-cli_g081_atom_markdown
+cli_g081_atom_toml: db 'toml81'
+cli_g081_atom_toml_len equ $-cli_g081_atom_toml
+cli_g081_atom_logs: db 'logs81'
+cli_g081_atom_logs_len equ $-cli_g081_atom_logs
+cli_g081_atom_atom: db 'atom81'
+cli_g081_atom_atom_len equ $-cli_g081_atom_atom
+cli_g081_atom_rss: db 'rss81'
+cli_g081_atom_rss_len equ $-cli_g081_atom_rss
+cli_g081_atom_feed: db 'feed81'
+cli_g081_atom_feed_len equ $-cli_g081_atom_feed
+cli_g081_atom_xml: db 'xml81'
+cli_g081_atom_xml_len equ $-cli_g081_atom_xml
+cli_g081_atom_html: db 'html81'
+cli_g081_atom_html_len equ $-cli_g081_atom_html
+cli_g081_atom_yaml: db 'yaml81'
+cli_g081_atom_yaml_len equ $-cli_g081_atom_yaml
+cli_g081_atom_ini: db 'ini81'
+cli_g081_atom_ini_len equ $-cli_g081_atom_ini
+cli_g081_atom_external: db 'externalProfiles81'
+cli_g081_atom_external_len equ $-cli_g081_atom_external
+cli_g081_atom_closeout: db 'closeout81'
+cli_g081_atom_closeout_len equ $-cli_g081_atom_closeout
+cli_g082_atom_root: db 'TextVectorData'
+cli_g082_atom_root_len equ $-cli_g082_atom_root
+cli_g082_atom_list: db 'listText82'
+cli_g082_atom_list_len equ $-cli_g082_atom_list
+cli_g082_atom_row: db 'rowText82'
+cli_g082_atom_row_len equ $-cli_g082_atom_row
+cli_g082_atom_column: db 'columnText82'
+cli_g082_atom_column_len equ $-cli_g082_atom_column
+cli_g082_atom_table: db 'tableText82'
+cli_g082_atom_table_len equ $-cli_g082_atom_table
+cli_g082_atom_dataset: db 'datasetText82'
+cli_g082_atom_dataset_len equ $-cli_g082_atom_dataset
+cli_g082_atom_stream: db 'streamText82'
+cli_g082_atom_stream_len equ $-cli_g082_atom_stream
+cli_g082_atom_kernel: db 'kernelText82'
+cli_g082_atom_kernel_len equ $-cli_g082_atom_kernel
+cli_g082_atom_closeout: db 'closeout82'
+cli_g082_atom_closeout_len equ $-cli_g082_atom_closeout
+cli_g028_atom_root: db 'TypedMeta28'
+cli_g028_atom_root_len equ $-cli_g028_atom_root
+cli_g028_atom_code: db 'codeMeta28'
+cli_g028_atom_code_len equ $-cli_g028_atom_code
+cli_g028_atom_hygiene: db 'hygieneMeta28'
+cli_g028_atom_hygiene_len equ $-cli_g028_atom_hygiene
+cli_g028_atom_reflect: db 'reflectMeta28'
+cli_g028_atom_reflect_len equ $-cli_g028_atom_reflect
+cli_g028_atom_derive: db 'deriveMeta28'
+cli_g028_atom_derive_len equ $-cli_g028_atom_derive
+cli_g028_atom_compile: db 'compileMeta28'
+cli_g028_atom_compile_len equ $-cli_g028_atom_compile
+cli_g028_atom_macro: db 'macroMeta28'
+cli_g028_atom_macro_len equ $-cli_g028_atom_macro
+cli_g029_atom_root: db 'FormalVerification29'
+cli_g029_atom_root_len equ $-cli_g029_atom_root
+cli_g029_atom_contract: db 'contractCase29'
+cli_g029_atom_contract_len equ $-cli_g029_atom_contract
+cli_g029_atom_refinement: db 'refinementCase29'
+cli_g029_atom_refinement_len equ $-cli_g029_atom_refinement
+cli_g029_atom_obligation: db 'obligationCase29'
+cli_g029_atom_obligation_len equ $-cli_g029_atom_obligation
+cli_g029_atom_model: db 'modelCase29'
+cli_g029_atom_model_len equ $-cli_g029_atom_model
+cli_g029_atom_proof: db 'proofCase29'
+cli_g029_atom_proof_len equ $-cli_g029_atom_proof
+cli_g029_atom_tooling: db 'toolingCase29'
+cli_g029_atom_tooling_len equ $-cli_g029_atom_tooling
+cli_g030_atom_root: db 'BoundedSolver30'
+cli_g030_atom_root_len equ $-cli_g030_atom_root
+cli_g030_atom_domain: db 'domainModel30'
+cli_g030_atom_domain_len equ $-cli_g030_atom_domain
+cli_g030_atom_constraint: db 'constraintModel30'
+cli_g030_atom_constraint_len equ $-cli_g030_atom_constraint
+cli_g030_atom_optimize: db 'optimizeModel30'
+cli_g030_atom_optimize_len equ $-cli_g030_atom_optimize
+cli_g030_atom_schedule: db 'scheduleModel30'
+cli_g030_atom_schedule_len equ $-cli_g030_atom_schedule
+cli_g030_atom_incremental: db 'incrementalModel30'
+cli_g030_atom_incremental_len equ $-cli_g030_atom_incremental
+cli_g030_atom_diagnostic: db 'diagnosticModel30'
+cli_g030_atom_diagnostic_len equ $-cli_g030_atom_diagnostic
+cli_g019_atom_color: db 'Color'
+cli_g019_atom_color_len equ $-cli_g019_atom_color
+cli_g019_atom_image: db 'Image'
+cli_g019_atom_image_len equ $-cli_g019_atom_image
+cli_g019_atom_audio_buffer: db 'AudioBuffer'
+cli_g019_atom_audio_buffer_len equ $-cli_g019_atom_audio_buffer
+cli_g019_atom_video_frame: db 'VideoFrame'
+cli_g019_atom_video_frame_len equ $-cli_g019_atom_video_frame
+cli_g019_atom_png: db 'Png'
+cli_g019_atom_png_len equ $-cli_g019_atom_png
+cli_g019_atom_to_linear: db 'toLinear'
+cli_g019_atom_to_linear_len equ $-cli_g019_atom_to_linear
+cli_g019_atom_from_buffer: db 'fromBuffer'
+cli_g019_atom_from_buffer_len equ $-cli_g019_atom_from_buffer
+cli_g019_atom_flip_horizontal: db 'flipHorizontal'
+cli_g019_atom_flip_horizontal_len equ $-cli_g019_atom_flip_horizontal
+cli_g019_atom_frame_count: db 'frameCount'
+cli_g019_atom_frame_count_len equ $-cli_g019_atom_frame_count
+cli_g019_atom_timestamp: db 'timestamp'
+cli_g019_atom_timestamp_len equ $-cli_g019_atom_timestamp
+cli_g019_atom_progress: db 'progress'
+cli_g019_atom_progress_len equ $-cli_g019_atom_progress
+cli_g087_atom_parse_hex: db 'parseHex'
+cli_g087_atom_parse_hex_len equ $-cli_g087_atom_parse_hex
+cli_g087_atom_red: db 'red'
+cli_g087_atom_red_len equ $-cli_g087_atom_red
+cli_g087_atom_green: db 'green'
+cli_g087_atom_green_len equ $-cli_g087_atom_green
+cli_g087_atom_blue: db 'blue'
+cli_g087_atom_blue_len equ $-cli_g087_atom_blue
+cli_g087_atom_alpha: db 'alpha'
+cli_g087_atom_alpha_len equ $-cli_g087_atom_alpha
+cli_g087_atom_with_alpha: db 'withAlpha'
+cli_g087_atom_with_alpha_len equ $-cli_g087_atom_with_alpha
+cli_g087_atom_is_opaque: db 'isOpaque'
+cli_g087_atom_is_opaque_len equ $-cli_g087_atom_is_opaque
+cli_g087_atom_to_hex: db 'toHex'
+cli_g087_atom_to_hex_len equ $-cli_g087_atom_to_hex
+cli_g087_atom_to_hex_alpha: db 'toHexWithAlpha'
+cli_g087_atom_to_hex_alpha_len equ $-cli_g087_atom_to_hex_alpha
+cli_g087_atom_equals: db 'equals'
+cli_g087_atom_equals_len equ $-cli_g087_atom_equals
+cli_g087_atom_hash: db 'hash'
+cli_g087_atom_hash_len equ $-cli_g087_atom_hash
+cli_g089_atom_console_call: db 'ConsoleCall'
+cli_g089_atom_console_call_len equ $-cli_g089_atom_console_call
+cli_g089_atom_console_option: db 'ConsoleOption'
+cli_g089_atom_console_option_len equ $-cli_g089_atom_console_option
+cli_g089_atom_render_intent: db 'RenderIntent'
+cli_g089_atom_render_intent_len equ $-cli_g089_atom_render_intent
+cli_g089_atom_receiver_first: db 'receiverFirst'
+cli_g089_atom_receiver_first_len equ $-cli_g089_atom_receiver_first
+cli_g089_atom_model: db 'model'
+cli_g089_atom_model_len equ $-cli_g089_atom_model
+cli_g089_atom_normalize: db 'normalize'
+cli_g089_atom_normalize_len equ $-cli_g089_atom_normalize
+cli_g089_atom_named: db 'named'
+cli_g089_atom_named_len equ $-cli_g089_atom_named
+cli_g089_atom_receipt: db 'receipt'
+cli_g089_atom_receipt_len equ $-cli_g089_atom_receipt
+cli_g089_atom_safe_plan: db 'safePlan'
+cli_g089_atom_safe_plan_len equ $-cli_g089_atom_safe_plan
+cli_g089_atom_budget: db 'budget'
+cli_g089_atom_budget_len equ $-cli_g089_atom_budget
+cli_g089_atom_diagnostic: db 'diagnostic'
+cli_g089_atom_diagnostic_len equ $-cli_g089_atom_diagnostic
+cli_g089_atom_prepare: db 'prepare'
+cli_g089_atom_prepare_len equ $-cli_g089_atom_prepare
+cli_g090_atom_renderable: db 'ConsoleRenderable'
+cli_g090_atom_renderable_len equ $-cli_g090_atom_renderable
+cli_g090_atom_value_type: db 'ConsoleValue'
+cli_g090_atom_value_type_len equ $-cli_g090_atom_value_type
+cli_g090_atom_kind: db 'ConsoleRenderableKind'
+cli_g090_atom_kind_len equ $-cli_g090_atom_kind
+cli_g090_atom_result: db 'ConsoleRenderResult'
+cli_g090_atom_result_len equ $-cli_g090_atom_result
+cli_g090_atom_scalar: db 'scalar'
+cli_g090_atom_scalar_len equ $-cli_g090_atom_scalar
+cli_g090_atom_buffer: db 'buffer'
+cli_g090_atom_buffer_len equ $-cli_g090_atom_buffer
+cli_g090_atom_collection: db 'collection'
+cli_g090_atom_collection_len equ $-cli_g090_atom_collection
+cli_g090_atom_tabular: db 'tabular'
+cli_g090_atom_tabular_len equ $-cli_g090_atom_tabular
+cli_g090_atom_numeric_shape: db 'numericShape'
+cli_g090_atom_numeric_shape_len equ $-cli_g090_atom_numeric_shape
+cli_g090_atom_dynamic: db 'dynamic'
+cli_g090_atom_dynamic_len equ $-cli_g090_atom_dynamic
+cli_g090_atom_media_metadata: db 'mediaMetadata'
+cli_g090_atom_media_metadata_len equ $-cli_g090_atom_media_metadata
+cli_g090_atom_value: db 'value'
+cli_g090_atom_value_len equ $-cli_g090_atom_value
+cli_g092_atom_decoration: db 'TextDecoration'
+cli_g092_atom_decoration_len equ $-cli_g092_atom_decoration
+cli_g092_atom_optional: db 'OptionalStyle'
+cli_g092_atom_optional_len equ $-cli_g092_atom_optional
+cli_g092_atom_token: db 'StyleToken'
+cli_g092_atom_token_len equ $-cli_g092_atom_token
+cli_g092_atom_status: db 'SemanticStatus'
+cli_g092_atom_status_len equ $-cli_g092_atom_status
+cli_g092_atom_color: db 'StyleColor'
+cli_g092_atom_color_len equ $-cli_g092_atom_color
+cli_g092_atom_typography: db 'Typography'
+cli_g092_atom_typography_len equ $-cli_g092_atom_typography
+cli_g092_atom_fallback: db 'FallbackProfile'
+cli_g092_atom_fallback_len equ $-cli_g092_atom_fallback
+cli_g092_atom_accessible: db 'AccessibleText'
+cli_g092_atom_accessible_len equ $-cli_g092_atom_accessible
+cli_g092_atom_plan: db 'StylePlan'
+cli_g092_atom_plan_len equ $-cli_g092_atom_plan
+cli_g092_atom_bold: db 'bold'
+cli_g092_atom_bold_len equ $-cli_g092_atom_bold
+cli_g092_atom_italic: db 'italic'
+cli_g092_atom_italic_len equ $-cli_g092_atom_italic
+cli_g092_atom_underline: db 'underline'
+cli_g092_atom_underline_len equ $-cli_g092_atom_underline
+cli_g092_atom_style: db 'style'
+cli_g092_atom_style_len equ $-cli_g092_atom_style
+cli_g092_atom_font: db 'font'
+cli_g092_atom_font_len equ $-cli_g092_atom_font
+cli_g092_atom_font_size: db 'fontSize'
+cli_g092_atom_font_size_len equ $-cli_g092_atom_font_size
+cli_g092_atom_title: db 'title'
+cli_g092_atom_title_len equ $-cli_g092_atom_title
+cli_g092_atom_suffix: db 'suffix'
+cli_g092_atom_suffix_len equ $-cli_g092_atom_suffix
+cli_g093_atom_grid_root: db 'LayoutGrid'
+cli_g093_atom_grid_root_len equ $-cli_g093_atom_grid_root
+cli_g093_atom_cell_root: db 'LayoutCell'
+cli_g093_atom_cell_root_len equ $-cli_g093_atom_cell_root
+cli_g093_atom_profile_root: db 'LayoutProfile'
+cli_g093_atom_profile_root_len equ $-cli_g093_atom_profile_root
+cli_g093_atom_dashboard_root: db 'DashboardLayout'
+cli_g093_atom_dashboard_root_len equ $-cli_g093_atom_dashboard_root
+cli_g093_atom_box_root: db 'BoxLayout'
+cli_g093_atom_box_root_len equ $-cli_g093_atom_box_root
+cli_g093_atom_responsive_root: db 'ResponsiveLayout'
+cli_g093_atom_responsive_root_len equ $-cli_g093_atom_responsive_root
+cli_g093_atom_composite_root: db 'CompositeLayout'
+cli_g093_atom_composite_root_len equ $-cli_g093_atom_composite_root
+cli_g093_atom_lifecycle_root: db 'LayoutLifecycle'
+cli_g093_atom_lifecycle_root_len equ $-cli_g093_atom_lifecycle_root
+cli_g093_atom_oracle_root: db 'LayoutOracle'
+cli_g093_atom_oracle_root_len equ $-cli_g093_atom_oracle_root
+cli_g093_atom_tree_root: db 'LayoutTree'
+cli_g093_atom_tree_root_len equ $-cli_g093_atom_tree_root
+cli_g093_atom_grid: db 'grid'
+cli_g093_atom_grid_len equ $-cli_g093_atom_grid
+cli_g093_atom_cell: db 'cell'
+cli_g093_atom_cell_len equ $-cli_g093_atom_cell
+cli_g093_atom_layout: db 'layout'
+cli_g093_atom_layout_len equ $-cli_g093_atom_layout
+cli_g093_atom_present: db 'present'
+cli_g093_atom_present_len equ $-cli_g093_atom_present
+cli_g093_atom_view: db 'view'
+cli_g093_atom_view_len equ $-cli_g093_atom_view
+cli_g094_atom_table_root: db 'StructuredTable'
+cli_g094_atom_table_root_len equ $-cli_g094_atom_table_root
+cli_g094_atom_config_root: db 'TableConfiguration'
+cli_g094_atom_config_root_len equ $-cli_g094_atom_config_root
+cli_g094_atom_query_root: db 'TableQuery'
+cli_g094_atom_query_root_len equ $-cli_g094_atom_query_root
+cli_g094_atom_hierarchy_root: db 'HierarchyView'
+cli_g094_atom_hierarchy_root_len equ $-cli_g094_atom_hierarchy_root
+cli_g094_atom_record_root: db 'RecordSchemaView'
+cli_g094_atom_record_root_len equ $-cli_g094_atom_record_root
+cli_g094_atom_inspect_root: db 'SafeInspection'
+cli_g094_atom_inspect_root_len equ $-cli_g094_atom_inspect_root
+cli_g094_atom_value_root: db 'ValueMarkerView'
+cli_g094_atom_value_root_len equ $-cli_g094_atom_value_root
+cli_g094_atom_virtual_root: db 'VirtualizedView'
+cli_g094_atom_virtual_root_len equ $-cli_g094_atom_virtual_root
+cli_g094_atom_oracle_root: db 'StructuredOracle'
+cli_g094_atom_oracle_root_len equ $-cli_g094_atom_oracle_root
+cli_g094_atom_closeout_root: db 'StructuredCloseout'
+cli_g094_atom_closeout_root_len equ $-cli_g094_atom_closeout_root
+cli_g094_atom_table: db 'table'
+cli_g094_atom_table_len equ $-cli_g094_atom_table
+cli_g094_atom_columns: db 'columns'
+cli_g094_atom_columns_len equ $-cli_g094_atom_columns
+cli_g094_atom_page_size: db 'pageSize'
+cli_g094_atom_page_size_len equ $-cli_g094_atom_page_size
+cli_g094_atom_freeze_header: db 'freezeHeader'
+cli_g094_atom_freeze_header_len equ $-cli_g094_atom_freeze_header
+cli_g094_atom_preview: db 'preview'
+cli_g094_atom_preview_len equ $-cli_g094_atom_preview
+cli_g097_atom_matrix_root: db 'MatrixScientificView'
+cli_g097_atom_matrix_root_len equ $-cli_g097_atom_matrix_root
+cli_g097_atom_shape_root: db 'TensorShapeView'
+cli_g097_atom_shape_root_len equ $-cli_g097_atom_shape_root
+cli_g097_atom_tensor_slice_root: db 'TensorSliceView'
+cli_g097_atom_tensor_slice_root_len equ $-cli_g097_atom_tensor_slice_root
+cli_g097_atom_volume_slice_root: db 'VolumeSliceView'
+cli_g097_atom_volume_slice_root_len equ $-cli_g097_atom_volume_slice_root
+cli_g097_atom_isosurface_root: db 'VolumeIsosurfaceView'
+cli_g097_atom_isosurface_root_len equ $-cli_g097_atom_isosurface_root
+cli_g097_atom_compare_root: db 'ScientificCompareView'
+cli_g097_atom_compare_root_len equ $-cli_g097_atom_compare_root
+cli_g097_atom_color_root: db 'ScientificColorQualityView'
+cli_g097_atom_color_root_len equ $-cli_g097_atom_color_root
+cli_g097_atom_bounded_root: db 'BoundedTensorView'
+cli_g097_atom_bounded_root_len equ $-cli_g097_atom_bounded_root
+cli_g097_atom_oracle_root: db 'ScientificOracleView'
+cli_g097_atom_oracle_root_len equ $-cli_g097_atom_oracle_root
+cli_g097_atom_closeout_root: db 'ScientificCloseoutView'
+cli_g097_atom_closeout_root_len equ $-cli_g097_atom_closeout_root
+cli_g097_atom_compare: db 'compare'
+cli_g097_atom_compare_len equ $-cli_g097_atom_compare
+cli_g097_atom_index: db 'index'
+cli_g097_atom_index_len equ $-cli_g097_atom_index
+cli_g097_atom_isosurface: db 'isosurface'
+cli_g097_atom_isosurface_len equ $-cli_g097_atom_isosurface
+cli_g097_atom_matrix: db 'matrix'
+cli_g097_atom_matrix_len equ $-cli_g097_atom_matrix
+cli_g097_atom_shape_inspector: db 'shapeInspector'
+cli_g097_atom_shape_inspector_len equ $-cli_g097_atom_shape_inspector
+cli_g097_atom_slice: db 'slice'
+cli_g097_atom_slice_len equ $-cli_g097_atom_slice
+cli_g097_atom_tensor: db 'tensor'
+cli_g097_atom_tensor_len equ $-cli_g097_atom_tensor
+cli_g097_atom_tensor_slice: db 'tensorSlice'
+cli_g097_atom_tensor_slice_len equ $-cli_g097_atom_tensor_slice
+cli_g097_atom_threshold: db 'threshold'
+cli_g097_atom_threshold_len equ $-cli_g097_atom_threshold
+cli_g097_atom_volume: db 'volume'
+cli_g097_atom_volume_len equ $-cli_g097_atom_volume
+cli_g097_atom_with: db 'with'
+cli_g097_atom_with_len equ $-cli_g097_atom_with
+cli_g098_atom_graph_root: db 'GraphRendererView'
+cli_g098_atom_graph_root_len equ $-cli_g098_atom_graph_root
+cli_g098_atom_tree_root: db 'TreeRendererView'
+cli_g098_atom_tree_root_len equ $-cli_g098_atom_tree_root
+cli_g098_atom_layout_root: db 'GraphLayoutView'
+cli_g098_atom_layout_root_len equ $-cli_g098_atom_layout_root
+cli_g098_atom_highlight_root: db 'GraphHighlightView'
+cli_g098_atom_highlight_root_len equ $-cli_g098_atom_highlight_root
+cli_g098_atom_embedding_root: db 'EmbeddingView'
+cli_g098_atom_embedding_root_len equ $-cli_g098_atom_embedding_root
+cli_g098_atom_projection_root: db 'ProjectionView'
+cli_g098_atom_projection_root_len equ $-cli_g098_atom_projection_root
+cli_g098_atom_dependency_root: db 'DependencyGraphView'
+cli_g098_atom_dependency_root_len equ $-cli_g098_atom_dependency_root
+cli_g098_atom_bounded_root: db 'BoundedGraphView'
+cli_g098_atom_bounded_root_len equ $-cli_g098_atom_bounded_root
+cli_g098_atom_closeout_root: db 'GraphViewCloseout'
+cli_g098_atom_closeout_root_len equ $-cli_g098_atom_closeout_root
+cli_g098_atom_graph: db 'graph'
+cli_g098_atom_graph_len equ $-cli_g098_atom_graph
+cli_g098_atom_highlight: db 'highlight'
+cli_g098_atom_highlight_len equ $-cli_g098_atom_highlight
+cli_g098_atom_highlight_path: db 'highlightPath'
+cli_g098_atom_highlight_path_len equ $-cli_g098_atom_highlight_path
+cli_g098_atom_embedding: db 'embedding'
+cli_g098_atom_embedding_len equ $-cli_g098_atom_embedding
+cli_g098_atom_projection: db 'projection'
+cli_g098_atom_projection_len equ $-cli_g098_atom_projection
+cli_g098_atom_project: db 'project'
+cli_g098_atom_project_len equ $-cli_g098_atom_project
+cli_g098_atom_dimensions: db 'dimensions'
+cli_g098_atom_dimensions_len equ $-cli_g098_atom_dimensions
+cli_g099_atom_spec_root: db 'DashboardSpecView'
+cli_g099_atom_spec_root_len equ $-cli_g099_atom_spec_root
+cli_g099_atom_panel_root: db 'PanelCompositionView'
+cli_g099_atom_panel_root_len equ $-cli_g099_atom_panel_root
+cli_g099_atom_multi_root: db 'MultiViewDashboard'
+cli_g099_atom_multi_root_len equ $-cli_g099_atom_multi_root
+cli_g099_atom_log_root: db 'LogPanelDashboard'
+cli_g099_atom_log_root_len equ $-cli_g099_atom_log_root
+cli_g099_atom_present_root: db 'PresentedDashboard'
+cli_g099_atom_present_root_len equ $-cli_g099_atom_present_root
+cli_g099_atom_export_root: db 'ExportDashboard'
+cli_g099_atom_export_root_len equ $-cli_g099_atom_export_root
+cli_g099_atom_interaction_root: db 'InteractiveDashboard'
+cli_g099_atom_interaction_root_len equ $-cli_g099_atom_interaction_root
+cli_g099_atom_snapshot_root: db 'SnapshotDashboard'
+cli_g099_atom_snapshot_root_len equ $-cli_g099_atom_snapshot_root
+cli_g099_atom_closeout_root: db 'DashboardCloseout'
+cli_g099_atom_closeout_root_len equ $-cli_g099_atom_closeout_root
+cli_g099_atom_dashboard: db 'dashboard'
+cli_g099_atom_dashboard_len equ $-cli_g099_atom_dashboard
+cli_g099_atom_log_panel: db 'logPanel'
+cli_g099_atom_log_panel_len equ $-cli_g099_atom_log_panel
+cli_g100_atom_logs_root: db 'StructuredLogMonitor'
+cli_g100_atom_logs_root_len equ $-cli_g100_atom_logs_root
+cli_g100_atom_progress_root: db 'ProgressHandleMonitor'
+cli_g100_atom_progress_root_len equ $-cli_g100_atom_progress_root
+cli_g100_atom_stream_root: db 'StreamMonitorView'
+cli_g100_atom_stream_root_len equ $-cli_g100_atom_stream_root
+cli_g100_atom_parallel_root: db 'ParallelMonitorView'
+cli_g100_atom_parallel_root_len equ $-cli_g100_atom_parallel_root
+cli_g100_atom_timeline_root: db 'EventTimelineView'
+cli_g100_atom_timeline_root_len equ $-cli_g100_atom_timeline_root
+cli_g100_atom_reactive_root: db 'ReactiveStreamMonitor'
+cli_g100_atom_reactive_root_len equ $-cli_g100_atom_reactive_root
+cli_g100_atom_window_root: db 'WindowedTimelineView'
+cli_g100_atom_window_root_len equ $-cli_g100_atom_window_root
+cli_g100_atom_metrics_root: db 'MetricStatusMonitor'
+cli_g100_atom_metrics_root_len equ $-cli_g100_atom_metrics_root
+cli_g100_atom_recovery_root: db 'RecoveryStreamMonitor'
+cli_g100_atom_recovery_root_len equ $-cli_g100_atom_recovery_root
+cli_g100_atom_closeout_root: db 'ObservabilityCloseout'
+cli_g100_atom_closeout_root_len equ $-cli_g100_atom_closeout_root
+cli_g100_atom_last: db 'last'
+cli_g100_atom_last_len equ $-cli_g100_atom_last
+cli_g100_atom_metric: db 'metric'
+cli_g100_atom_metric_len equ $-cli_g100_atom_metric
+cli_g100_atom_source: db 'source'
+cli_g100_atom_source_len equ $-cli_g100_atom_source
+cli_g100_atom_stream: db 'stream'
+cli_g100_atom_stream_len equ $-cli_g100_atom_stream
+cli_g100_atom_time: db 'time'
+cli_g100_atom_time_len equ $-cli_g100_atom_time
+cli_g100_atom_timeline: db 'timeline'
+cli_g100_atom_timeline_len equ $-cli_g100_atom_timeline
+cli_g100_atom_window: db 'window'
+cli_g100_atom_window_len equ $-cli_g100_atom_window
+cli_g102_atom_animation_root: db 'AnimationModelView'
+cli_g102_atom_animation_root_len equ $-cli_g102_atom_animation_root
+cli_g102_atom_timeline_root: db 'TimelineFrameView'
+cli_g102_atom_timeline_root_len equ $-cli_g102_atom_timeline_root
+cli_g102_atom_playback_root: db 'PlaybackPlanView'
+cli_g102_atom_playback_root_len equ $-cli_g102_atom_playback_root
+cli_g102_atom_deterministic_root: db 'DeterministicAnimationView'
+cli_g102_atom_deterministic_root_len equ $-cli_g102_atom_deterministic_root
+cli_g102_atom_capture_root: db 'CaptureScreenshotView'
+cli_g102_atom_capture_root_len equ $-cli_g102_atom_capture_root
+cli_g102_atom_png_root: db 'PngExportView'
+cli_g102_atom_png_root_len equ $-cli_g102_atom_png_root
+cli_g102_atom_video_root: db 'VideoFramesExportView'
+cli_g102_atom_video_root_len equ $-cli_g102_atom_video_root
+cli_g102_atom_target_root: db 'ExportTargetView'
+cli_g102_atom_target_root_len equ $-cli_g102_atom_target_root
+cli_g102_atom_atomic_root: db 'AtomicExportView'
+cli_g102_atom_atomic_root_len equ $-cli_g102_atom_atomic_root
+cli_g102_atom_closeout_root: db 'AnimationExportCloseout'
+cli_g102_atom_closeout_root_len equ $-cli_g102_atom_closeout_root
+cli_g102_atom_animate: db 'animate'
+cli_g102_atom_animate_len equ $-cli_g102_atom_animate
+cli_g102_atom_animation: db 'animation'
+cli_g102_atom_animation_len equ $-cli_g102_atom_animation
+cli_g102_atom_capture: db 'capture'
+cli_g102_atom_capture_len equ $-cli_g102_atom_capture
+cli_g102_atom_duration: db 'duration'
+cli_g102_atom_duration_len equ $-cli_g102_atom_duration
+cli_g102_atom_fps: db 'fps'
+cli_g102_atom_fps_len equ $-cli_g102_atom_fps
+cli_g102_atom_frames: db 'frames'
+cli_g102_atom_frames_len equ $-cli_g102_atom_frames
+cli_g102_atom_mp4: db 'mp4'
+cli_g102_atom_mp4_len equ $-cli_g102_atom_mp4
+cli_g102_atom_path: db 'path'
+cli_g102_atom_path_len equ $-cli_g102_atom_path
+cli_g102_atom_png: db 'png'
+cli_g102_atom_png_len equ $-cli_g102_atom_png
+cli_g102_atom_screenshot: db 'screenshot'
+cli_g102_atom_screenshot_len equ $-cli_g102_atom_screenshot
+cli_g102_atom_seed: db 'seed'
+cli_g102_atom_seed_len equ $-cli_g102_atom_seed
+cli_g102_atom_target: db 'target'
+cli_g102_atom_target_len equ $-cli_g102_atom_target
+cli_g102_atom_hide_on_screen: db 'hideOnScreen'
+cli_g102_atom_hide_on_screen_len equ $-cli_g102_atom_hide_on_screen
+cli_g101_atom_lod_root: db 'LargeDataLodView'
+cli_g101_atom_lod_root_len equ $-cli_g101_atom_lod_root
+cli_g101_atom_decimation_root: db 'DecimationPlanView'
+cli_g101_atom_decimation_root_len equ $-cli_g101_atom_decimation_root
+cli_g101_atom_sampling_root: db 'ReservoirSampleView'
+cli_g101_atom_sampling_root_len equ $-cli_g101_atom_sampling_root
+cli_g101_atom_density_root: db 'QuadtreeDensityView'
+cli_g101_atom_density_root_len equ $-cli_g101_atom_density_root
+cli_g101_atom_aggregate_root: db 'BucketAggregateView'
+cli_g101_atom_aggregate_root_len equ $-cli_g101_atom_aggregate_root
+cli_g101_atom_chunks_root: db 'ChunkedTileView'
+cli_g101_atom_chunks_root_len equ $-cli_g101_atom_chunks_root
+cli_g101_atom_cache_root: db 'GenerationCacheView'
+cli_g101_atom_cache_root_len equ $-cli_g101_atom_cache_root
+cli_g101_atom_budget_root: db 'VisualBudgetView'
+cli_g101_atom_budget_root_len equ $-cli_g101_atom_budget_root
+cli_g101_atom_profile_root: db 'LargeDataProfileView'
+cli_g101_atom_profile_root_len equ $-cli_g101_atom_profile_root
+cli_g101_atom_closeout_root: db 'LargeDataCloseout'
+cli_g101_atom_closeout_root_len equ $-cli_g101_atom_closeout_root
+cli_g101_atom_aggregate: db 'aggregate'
+cli_g101_atom_aggregate_len equ $-cli_g101_atom_aggregate
+cli_g101_atom_budget: db 'budget'
+cli_g101_atom_budget_len equ $-cli_g101_atom_budget
+cli_g101_atom_cache: db 'cache'
+cli_g101_atom_cache_len equ $-cli_g101_atom_cache
+cli_g101_atom_chunks: db 'chunks'
+cli_g101_atom_chunks_len equ $-cli_g101_atom_chunks
+cli_g101_atom_decimate: db 'decimate'
+cli_g101_atom_decimate_len equ $-cli_g101_atom_decimate
+cli_g101_atom_density: db 'density'
+cli_g101_atom_density_len equ $-cli_g101_atom_density
+cli_g101_atom_frame_ms: db 'frameMs'
+cli_g101_atom_frame_ms_len equ $-cli_g101_atom_frame_ms
+cli_g101_atom_lod: db 'lod'
+cli_g101_atom_lod_len equ $-cli_g101_atom_lod
+cli_g101_atom_lru: db 'lru'
+cli_g101_atom_lru_len equ $-cli_g101_atom_lru
+cli_g101_atom_memory: db 'memory'
+cli_g101_atom_memory_len equ $-cli_g101_atom_memory
+cli_g101_atom_quality: db 'quality'
+cli_g101_atom_quality_len equ $-cli_g101_atom_quality
+cli_g101_atom_sample: db 'sample'
+cli_g101_atom_sample_len equ $-cli_g101_atom_sample
+cli_g096_atom_registry_root: db 'Plot3DKindRegistry'
+cli_g096_atom_registry_root_len equ $-cli_g096_atom_registry_root
+cli_g096_atom_points_root: db 'PointCloud3D'
+cli_g096_atom_points_root_len equ $-cli_g096_atom_points_root
+cli_g096_atom_line_root: db 'LinePlot3D'
+cli_g096_atom_line_root_len equ $-cli_g096_atom_line_root
+cli_g096_atom_mesh_root: db 'SurfaceMesh3D'
+cli_g096_atom_mesh_root_len equ $-cli_g096_atom_mesh_root
+cli_g096_atom_orbit_root: db 'OrbitCamera3D'
+cli_g096_atom_orbit_root_len equ $-cli_g096_atom_orbit_root
+cli_g096_atom_lighting_root: db 'SceneLighting3D'
+cli_g096_atom_lighting_root_len equ $-cli_g096_atom_lighting_root
+cli_g096_atom_composition_root: db 'SceneComposition3D'
+cli_g096_atom_composition_root_len equ $-cli_g096_atom_composition_root
+cli_g096_atom_depth_root: db 'DepthPrecision3D'
+cli_g096_atom_depth_root_len equ $-cli_g096_atom_depth_root
+cli_g096_atom_parity_root: db 'RendererParity3D'
+cli_g096_atom_parity_root_len equ $-cli_g096_atom_parity_root
+cli_g096_atom_free_root: db 'FreeCameraCloseout3D'
+cli_g096_atom_free_root_len equ $-cli_g096_atom_free_root
+cli_g096_atom_ambient: db 'ambient'
+cli_g096_atom_ambient_len equ $-cli_g096_atom_ambient
+cli_g096_atom_axis: db 'axis'
+cli_g096_atom_axis_len equ $-cli_g096_atom_axis
+cli_g096_atom_axis3d: db 'axis3d'
+cli_g096_atom_axis3d_len equ $-cli_g096_atom_axis3d
+cli_g096_atom_camera: db 'camera'
+cli_g096_atom_camera_len equ $-cli_g096_atom_camera
+cli_g096_atom_free: db 'free'
+cli_g096_atom_free_len equ $-cli_g096_atom_free
+cli_g096_atom_grid3d: db 'grid3d'
+cli_g096_atom_grid3d_len equ $-cli_g096_atom_grid3d
+cli_g096_atom_light: db 'light'
+cli_g096_atom_light_len equ $-cli_g096_atom_light
+cli_g096_atom_look_at: db 'lookAt'
+cli_g096_atom_look_at_len equ $-cli_g096_atom_look_at
+cli_g096_atom_orbit: db 'orbit'
+cli_g096_atom_orbit_len equ $-cli_g096_atom_orbit
+cli_g096_atom_plot3d: db 'plot3d'
+cli_g096_atom_plot3d_len equ $-cli_g096_atom_plot3d
+cli_g096_atom_position: db 'position'
+cli_g096_atom_position_len equ $-cli_g096_atom_position
+cli_g096_atom_scene3d: db 'scene3d'
+cli_g096_atom_scene3d_len equ $-cli_g096_atom_scene3d
+cli_g096_atom_z: db 'z'
+cli_g096_atom_z_len equ $-cli_g096_atom_z
+cli_g095_atom_registry_root: db 'ChartKindRegistry'
+cli_g095_atom_registry_root_len equ $-cli_g095_atom_registry_root
+cli_g095_atom_line_root: db 'LineTimeSeries'
+cli_g095_atom_line_root_len equ $-cli_g095_atom_line_root
+cli_g095_atom_bar_root: db 'BarChart2D'
+cli_g095_atom_bar_root_len equ $-cli_g095_atom_bar_root
+cli_g095_atom_histogram_root: db 'HistogramChart2D'
+cli_g095_atom_histogram_root_len equ $-cli_g095_atom_histogram_root
+cli_g095_atom_scatter_root: db 'ScatterChart2D'
+cli_g095_atom_scatter_root_len equ $-cli_g095_atom_scatter_root
+cli_g095_atom_heatmap_root: db 'HeatmapChart2D'
+cli_g095_atom_heatmap_root_len equ $-cli_g095_atom_heatmap_root
+cli_g095_atom_axes_root: db 'ChartAxes2D'
+cli_g095_atom_axes_root_len equ $-cli_g095_atom_axes_root
+cli_g095_atom_encoding_root: db 'ChartEncoding2D'
+cli_g095_atom_encoding_root_len equ $-cli_g095_atom_encoding_root
+cli_g095_atom_differential_root: db 'ChartDifferential'
+cli_g095_atom_differential_root_len equ $-cli_g095_atom_differential_root
+cli_g095_atom_closeout_root: db 'ChartCloseout'
+cli_g095_atom_closeout_root_len equ $-cli_g095_atom_closeout_root
+cli_g095_atom_chart: db 'chart'
+cli_g095_atom_chart_len equ $-cli_g095_atom_chart
+cli_g095_atom_plot: db 'plot'
+cli_g095_atom_plot_len equ $-cli_g095_atom_plot
+cli_g095_atom_bins: db 'bins'
+cli_g095_atom_bins_len equ $-cli_g095_atom_bins
+cli_g095_atom_heatmap: db 'heatmap'
+cli_g095_atom_heatmap_len equ $-cli_g095_atom_heatmap
+cli_g095_atom_x: db 'x'
+cli_g095_atom_x_len equ $-cli_g095_atom_x
+cli_g095_atom_y: db 'y'
+cli_g095_atom_y_len equ $-cli_g095_atom_y
+cli_g095_atom_x_label: db 'xLabel'
+cli_g095_atom_x_label_len equ $-cli_g095_atom_x_label
+cli_g095_atom_y_label: db 'yLabel'
+cli_g095_atom_y_label_len equ $-cli_g095_atom_y_label
+cli_g095_atom_labels: db 'labels'
+cli_g095_atom_labels_len equ $-cli_g095_atom_labels
+cli_g095_atom_color_by: db 'colorBy'
+cli_g095_atom_color_by_len equ $-cli_g095_atom_color_by
+cli_g095_atom_size_by: db 'sizeBy'
+cli_g095_atom_size_by_len equ $-cli_g095_atom_size_by
+cli_g069_atom_render_plan: db 'RenderPlan'
+cli_g069_atom_render_plan_len equ $-cli_g069_atom_render_plan
+cli_g091_atom_position: db 'Position'
+cli_g091_atom_position_len equ $-cli_g091_atom_position
+cli_g091_atom_sizing: db 'Sizing'
+cli_g091_atom_sizing_len equ $-cli_g091_atom_sizing
+cli_g091_atom_region_type: db 'Region'
+cli_g091_atom_region_type_len equ $-cli_g091_atom_region_type
+cli_g091_atom_layer: db 'Layer'
+cli_g091_atom_layer_len equ $-cli_g091_atom_layer
+cli_g091_atom_update: db 'Update'
+cli_g091_atom_update_len equ $-cli_g091_atom_update
+cli_g091_atom_label: db 'PositionalLabel'
+cli_g091_atom_label_len equ $-cli_g091_atom_label
+cli_g091_atom_selection_type: db 'Selection'
+cli_g091_atom_selection_type_len equ $-cli_g091_atom_selection_type
+cli_g091_atom_window_type: db 'Window'
+cli_g091_atom_window_type_len equ $-cli_g091_atom_window_type
+cli_g091_atom_viewport_type: db 'Viewport'
+cli_g091_atom_viewport_type_len equ $-cli_g091_atom_viewport_type
+cli_g091_atom_document: db 'ConsoleDocument'
+cli_g091_atom_document_len equ $-cli_g091_atom_document
+cli_g091_atom_at: db 'at'
+cli_g091_atom_at_len equ $-cli_g091_atom_at
+cli_g091_atom_size: db 'size'
+cli_g091_atom_size_len equ $-cli_g091_atom_size
+cli_g091_atom_region: db 'region'
+cli_g091_atom_region_len equ $-cli_g091_atom_region
+cli_g091_atom_panel: db 'panel'
+cli_g091_atom_panel_len equ $-cli_g091_atom_panel
+cli_g091_atom_clear: db 'clear'
+cli_g091_atom_clear_len equ $-cli_g091_atom_clear
+cli_g091_atom_viewport: db 'viewport'
+cli_g091_atom_viewport_len equ $-cli_g091_atom_viewport
+cli_g091_atom_refresh: db 'refresh'
+cli_g091_atom_refresh_len equ $-cli_g091_atom_refresh
+cli_g088_atom_color_space: db 'ColorSpace'
+cli_g088_atom_color_space_len equ $-cli_g088_atom_color_space
+cli_g088_atom_palette: db 'Palette'
+cli_g088_atom_palette_len equ $-cli_g088_atom_palette
+cli_g088_atom_console_type: db 'Console'
+cli_g088_atom_console_type_len equ $-cli_g088_atom_console_type
+cli_g088_atom_fg: db 'fg'
+cli_g088_atom_fg_len equ $-cli_g088_atom_fg
+cli_g088_atom_bg: db 'bg'
+cli_g088_atom_bg_len equ $-cli_g088_atom_bg
+cli_g088_atom_accent: db 'accent'
+cli_g088_atom_accent_len equ $-cli_g088_atom_accent
+cli_g088_atom_border: db 'border'
+cli_g088_atom_border_len equ $-cli_g088_atom_border
+cli_g088_atom_selection: db 'selection'
+cli_g088_atom_selection_len equ $-cli_g088_atom_selection
+cli_g088_atom_series: db 'series'
+cli_g088_atom_series_len equ $-cli_g088_atom_series
+cli_g088_atom_named: db 'named'
+cli_g088_atom_named_len equ $-cli_g088_atom_named
+cli_g088_atom_lookup: db 'lookup'
+cli_g088_atom_lookup_len equ $-cli_g088_atom_lookup
+cli_g088_atom_theme: db 'theme'
+cli_g088_atom_theme_len equ $-cli_g088_atom_theme
+cli_g088_atom_colormap: db 'colormap'
+cli_g088_atom_colormap_len equ $-cli_g088_atom_colormap
+cli_g088_atom_color_by: db 'colorBy'
+cli_g088_atom_color_by_len equ $-cli_g088_atom_color_by
+cli_g088_atom_contrast: db 'contrast'
+cli_g088_atom_contrast_len equ $-cli_g088_atom_contrast
+cli_g088_atom_accessible: db 'accessible'
+cli_g088_atom_accessible_len equ $-cli_g088_atom_accessible
+cli_g088_atom_srgb8: db 'srgb8'
+cli_g088_atom_srgb8_len equ $-cli_g088_atom_srgb8
+cli_g088_atom_gray8: db 'gray8'
+cli_g088_atom_gray8_len equ $-cli_g088_atom_gray8
+cli_g088_atom_linear_srgb16: db 'linearSrgb16'
+cli_g088_atom_linear_srgb16_len equ $-cli_g088_atom_linear_srgb16
+cli_g088_atom_target: db 'target'
+cli_g088_atom_target_len equ $-cli_g088_atom_target
+cli_g011_atom_path: db 'Path'
+cli_g011_atom_path_len equ $-cli_g011_atom_path
+cli_g011_atom_file: db 'File'
+cli_g011_atom_file_len equ $-cli_g011_atom_file
+cli_g011_atom_directory: db 'Directory'
+cli_g011_atom_directory_len equ $-cli_g011_atom_directory
+cli_g011_atom_binary_encoder: db 'BinaryEncoder'
+cli_g011_atom_binary_encoder_len equ $-cli_g011_atom_binary_encoder
+cli_g011_atom_binary_decoder: db 'BinaryDecoder'
+cli_g011_atom_binary_decoder_len equ $-cli_g011_atom_binary_decoder
+cli_g011_atom_json: db 'Json'
+cli_g011_atom_json_len equ $-cli_g011_atom_json
+cli_g011_atom_csv: db 'Csv'
+cli_g011_atom_csv_len equ $-cli_g011_atom_csv
+cli_g012_atom_instant: db 'Instant'
+cli_g012_atom_instant_len equ $-cli_g012_atom_instant
+cli_g012_atom_random: db 'Random'
+cli_g012_atom_random_len equ $-cli_g012_atom_random
+cli_g012_atom_process: db 'Process'
+cli_g012_atom_process_len equ $-cli_g012_atom_process
+cli_g012_atom_ip_address: db 'IpAddress'
+cli_g012_atom_ip_address_len equ $-cli_g012_atom_ip_address
+cli_g012_atom_tcp_listener: db 'TcpListener'
+cli_g012_atom_tcp_listener_len equ $-cli_g012_atom_tcp_listener
+cli_g012_atom_http_request: db 'HttpRequest'
+cli_g012_atom_http_request_len equ $-cli_g012_atom_http_request
+cli_g012_atom_sha256: db 'Sha256'
+cli_g012_atom_sha256_len equ $-cli_g012_atom_sha256
 
 vetores_matrizes_tensores_e_computacao_cientifica_cli_error_arity: db 'NEBO-VETORES-MATRIZES-TENSORES-E-COMPUTACAO-CIENTIFICA-VECTOR-ARITY: Vector<Int> requires exactly four elements',10
 vetores_matrizes_tensores_e_computacao_cientifica_cli_error_arity_end:
@@ -1133,6 +2624,118 @@ scientific_cli_message_matrix_deferred_end:
 scientific_cli_error_matrix_deferred_end:
 scientific_cli_tensor_atom: db 'Tensor'
 scientific_cli_tensor_atom_len equ $-scientific_cli_tensor_atom
+cli_g135_atom_transpose: db 'transpose'
+cli_g135_atom_transpose_len equ $-cli_g135_atom_transpose
+cli_g135_atom_adjoint: db 'adjoint'
+cli_g135_atom_adjoint_len equ $-cli_g135_atom_adjoint
+cli_g135_atom_inverse: db 'inverse'
+cli_g135_atom_inverse_len equ $-cli_g135_atom_inverse
+cli_g135_atom_norm: db 'norm'
+cli_g135_atom_norm_len equ $-cli_g135_atom_norm
+cli_g135_atom_inner_product: db 'innerProduct'
+cli_g135_atom_inner_product_len equ $-cli_g135_atom_inner_product
+cli_g136_atom_integrate: db 'integrate'
+cli_g136_atom_integrate_len equ $-cli_g136_atom_integrate
+cli_g136_atom_integrate2d: db 'integrate2D'
+cli_g136_atom_integrate2d_len equ $-cli_g136_atom_integrate2d
+cli_g136_atom_integrate3d: db 'integrate3D'
+cli_g136_atom_integrate3d_len equ $-cli_g136_atom_integrate3d
+cli_g136_atom_contour_integrate: db 'contourIntegrate'
+cli_g136_atom_contour_integrate_len equ $-cli_g136_atom_contour_integrate
+cli_g137_atom_partial: db 'partial'
+cli_g137_atom_partial_len equ $-cli_g137_atom_partial
+cli_g137_atom_gradient: db 'gradient'
+cli_g137_atom_gradient_len equ $-cli_g137_atom_gradient
+cli_g137_atom_divergence: db 'divergence'
+cli_g137_atom_divergence_len equ $-cli_g137_atom_divergence
+cli_g137_atom_curl: db 'curl'
+cli_g137_atom_curl_len equ $-cli_g137_atom_curl
+cli_g137_atom_laplacian: db 'laplacian'
+cli_g137_atom_laplacian_len equ $-cli_g137_atom_laplacian
+cli_g138_atom_probability_model: db 'probabilityModel'
+cli_g138_atom_probability_model_len equ $-cli_g138_atom_probability_model
+cli_g138_atom_distributed_as: db 'distributedAs'
+cli_g138_atom_distributed_as_len equ $-cli_g138_atom_distributed_as
+cli_g138_atom_independent_of: db 'independentOf'
+cli_g138_atom_independent_of_len equ $-cli_g138_atom_independent_of
+cli_g138_atom_conditional_on: db 'conditionalOn'
+cli_g138_atom_conditional_on_len equ $-cli_g138_atom_conditional_on
+cli_g138_atom_random_variable: db 'randomVariable'
+cli_g138_atom_random_variable_len equ $-cli_g138_atom_random_variable
+cli_g138_atom_sample_probability: db 'sampleProbability'
+cli_g138_atom_sample_probability_len equ $-cli_g138_atom_sample_probability
+cli_g138_atom_infer_probability: db 'inferProbability'
+cli_g138_atom_infer_probability_len equ $-cli_g138_atom_infer_probability
+cli_g138_atom_probability_report: db 'probabilityReport'
+cli_g138_atom_probability_report_len equ $-cli_g138_atom_probability_report
+cli_g139_atom_for_all: db 'forAll'
+cli_g139_atom_for_all_len equ $-cli_g139_atom_for_all
+cli_g139_atom_exists: db 'exists'
+cli_g139_atom_exists_len equ $-cli_g139_atom_exists
+cli_g139_atom_not_exists: db 'notExists'
+cli_g139_atom_not_exists_len equ $-cli_g139_atom_not_exists
+cli_g139_atom_implies: db 'implies'
+cli_g139_atom_implies_len equ $-cli_g139_atom_implies
+cli_g139_atom_iff: db 'iff'
+cli_g139_atom_iff_len equ $-cli_g139_atom_iff
+cli_g139_atom_proves: db 'proves'
+cli_g139_atom_proves_len equ $-cli_g139_atom_proves
+cli_g139_atom_satisfies: db 'satisfies'
+cli_g139_atom_satisfies_len equ $-cli_g139_atom_satisfies
+cli_g139_atom_nand: db 'nand'
+cli_g139_atom_nand_len equ $-cli_g139_atom_nand
+cli_g139_atom_nor: db 'nor'
+cli_g139_atom_nor_len equ $-cli_g139_atom_nor
+cli_g140_atom_directed_edge_to: db 'directedEdgeTo'
+cli_g140_atom_directed_edge_to_len equ $-cli_g140_atom_directed_edge_to
+cli_g140_atom_bidirectional_edge: db 'bidirectionalEdge'
+cli_g140_atom_bidirectional_edge_len equ $-cli_g140_atom_bidirectional_edge
+cli_g140_atom_async_edge_to: db 'asyncEdgeTo'
+cli_g140_atom_async_edge_to_len equ $-cli_g140_atom_async_edge_to
+cli_g140_atom_transition_to: db 'transitionTo'
+cli_g140_atom_transition_to_len equ $-cli_g140_atom_transition_to
+cli_g141_atom_concat: db 'concat'
+cli_g141_atom_concat_len equ $-cli_g141_atom_concat
+cli_g141_atom_matches: db 'matches'
+cli_g141_atom_matches_len equ $-cli_g141_atom_matches
+cli_g142_atom_format_plan: db 'formatPlan'
+cli_g142_atom_format_plan_len equ $-cli_g142_atom_format_plan
+cli_g134_atom_dot: db 'dot'
+cli_g134_atom_dot_len equ $-cli_g134_atom_dot
+cli_g134_atom_cross: db 'cross'
+cli_g134_atom_cross_len equ $-cli_g134_atom_cross
+cli_g134_atom_hadamard: db 'hadamard'
+cli_g134_atom_hadamard_len equ $-cli_g134_atom_hadamard
+cli_g134_atom_tensor_product: db 'tensorProduct'
+cli_g134_atom_tensor_product_len equ $-cli_g134_atom_tensor_product
+cli_g134_atom_direct_sum: db 'directSum'
+cli_g134_atom_direct_sum_len equ $-cli_g134_atom_direct_sum
+cli_g134_atom_compose: db 'compose'
+cli_g134_atom_compose_len equ $-cli_g134_atom_compose
+cli_g134_atom_orthogonal: db 'isOrthogonalTo'
+cli_g134_atom_orthogonal_len equ $-cli_g134_atom_orthogonal
+cli_g134_atom_parallel: db 'isParallelTo'
+cli_g134_atom_parallel_len equ $-cli_g134_atom_parallel
+cli_option_result_contains_atom: db 'contains'
+cli_option_result_contains_atom_len equ $-cli_option_result_contains_atom
+cli_option_result_expect_atom: db 'expect'
+cli_option_result_expect_atom_len equ $-cli_option_result_expect_atom
+cli_option_result_expect_err_atom: db 'expectErr'
+cli_option_result_expect_err_atom_len equ $-cli_option_result_expect_err_atom
+cli_option_result_filter_atom: db 'filter'
+cli_option_result_filter_atom_len equ $-cli_option_result_filter_atom
+cli_option_result_zip_atom: db 'zip'
+cli_option_result_zip_atom_len equ $-cli_option_result_zip_atom
+cli_option_result_unwrap_atom: db 'unwrapOr'
+cli_option_result_unwrap_atom_len equ $-cli_option_result_unwrap_atom
+cli_option_result_or_else_atom: db 'orElse'
+cli_option_result_or_else_atom_len equ $-cli_option_result_or_else_atom
+cli_option_result_message_atom: db 'message'
+cli_option_result_message_atom_len equ $-cli_option_result_message_atom
+cli_option_result_cause_atom: db 'cause'
+cli_option_result_cause_atom_len equ $-cli_option_result_cause_atom
+cli_option_result_diagnostic_atom: db 'toDiagnostic'
+cli_option_result_diagnostic_atom_len equ $-cli_option_result_diagnostic_atom
 scientific_cli_error_tensor_dtype:
 scientific_cli_code_tensor_dtype: db 'NEBO-SCIENTIFIC-001'
 scientific_cli_code_tensor_dtype_end:
@@ -1413,12 +3016,39 @@ cli_error_toolchain: db 'neboc: toolchain error',10
 cli_error_toolchain_end:
 cli_error_internal: db 'neboc: internal compiler error',10
 cli_error_internal_end:
+cli_g029_verify_prefix: db '{"schema":1,"status":"proved-within-bounds","subjectSeed":'
+cli_g029_verify_prefix_len equ $-cli_g029_verify_prefix
+cli_g029_verify_suffix: db ',"proved":4,"runtimeChecked":1,"unknown":0,"timeout":0,"failed":0}',10
+cli_g029_verify_suffix_len equ $-cli_g029_verify_suffix
+cli_g029_property_prefix: db '{"schema":1,"status":"proved-within-bounds","property":"safety29","subjectSeed":'
+cli_g029_property_prefix_len equ $-cli_g029_property_prefix
+cli_g029_property_suffix: db ',"bounded":true}',10
+cli_g029_property_suffix_len equ $-cli_g029_property_suffix
+cli_g029_counterexample_prefix: db '{"schema":1,"status":"counterexample","subjectSeed":'
+cli_g029_counterexample_prefix_len equ $-cli_g029_counterexample_prefix
+cli_g029_counterexample_suffix: db ',"trace":[0,1,2],"replayable":true,"minimal":true}',10
+cli_g029_counterexample_suffix_len equ $-cli_g029_counterexample_suffix
+cli_g030_solve_sat_prefix: db '{"schema":1,"status":"sat","modelSeed":'
+cli_g030_solve_sat_prefix_len equ $-cli_g030_solve_sat_prefix
+cli_g030_solve_sat_suffix: db ',"backend":"bounded-local","verified":true}',10
+cli_g030_solve_sat_suffix_len equ $-cli_g030_solve_sat_suffix
+cli_g030_solve_unsat_prefix: db '{"schema":1,"status":"unsat","modelSeed":'
+cli_g030_solve_unsat_prefix_len equ $-cli_g030_solve_unsat_prefix
+cli_g030_solve_unsat_suffix: db ',"core":[1],"bounded":true,"verified":true}',10
+cli_g030_solve_unsat_suffix_len equ $-cli_g030_solve_unsat_suffix
 
 arg_help: db '--help',0
 arg_version: db '--version',0
+arg_version_json: db '--version-json',0
 arg_bench: db 'bench',0
 arg_bench_numeric: db 'numeric',0
+arg_scientific_bench_tool: db 'scientific-bench',0
+arg_numeric_report_tool: db 'numeric-report',0
 arg_probabilistic_report: db 'probabilistic-report',0
+arg_reactive_report: db 'reactive-report',0
+arg_db: db 'db',0
+arg_db_migrate: db 'migrate',0
+arg_db_verify: db 'verify',0
 arg_firmware: db 'firmware',0
 arg_firmware_build: db 'build',0
 arg_firmware_test: db 'test',0
@@ -1433,10 +3063,182 @@ arg_verify: db '--verify',0
 arg_protocol: db 'protocol',0
 arg_protocol_generate: db 'generate',0
 arg_protocol_fuzz: db 'fuzz',0
+arg_workflow: db 'workflow',0
+arg_workflow_verify: db 'verify',0
+arg_geometry_check: db 'geometry-check',0
+arg_route_bench: db 'route-bench',0
+arg_emit_wasm: db 'emit-wasm',0
+arg_wasm_inspect: db 'wasm-inspect',0
+arg_emit_bpf: db 'emit-bpf',0
+arg_portable_test: db 'portable-test',0
+arg_portable_sbom: db 'portable-sbom',0
 arg_check: db 'check',0
+arg_meta_check: db 'meta-check',0
+arg_meta_expand: db 'meta-expand',0
+arg_formal_verify: db 'verify',0
+arg_property: db '--property',0
+arg_counterexample: db '--counterexample',0
+arg_safety29: db 'safety29',0
+arg_solve: db 'solve',0
+arg_explain_unsat: db '--explain-unsat',0
+arg_module_check: db 'module-check',0
+arg_module_info: db 'module-info',0
+arg_module_graph: db 'module-graph',0
+arg_imports: db 'imports',0
+arg_imports_list: db 'list',0
+arg_imports_explain: db 'explain',0
+arg_imports_api_impact: db 'api-impact',0
+arg_organize_imports: db 'organize-imports',0
+arg_add_import: db 'add-import',0
+arg_module_init_report: db 'module-init-report',0
+arg_deny_effectful_init: db '--deny-effectful-init',0
+arg_emit_interface: db 'emit-interface',0
+arg_interface: db 'interface',0
 arg_warnings: db 'warnings',0
 arg_diagnostic_schema: db 'diagnostic-schema',0
 arg_explain: db 'explain',0
+arg_format_tool: db 'format',0
+arg_dump_tool: db 'dump',0
+arg_repl_tool: db 'repl',0
+arg_init_tool: db 'init',0
+arg_add_tool: db 'add',0
+arg_remove_tool: db 'remove',0
+arg_resolve_tool: db 'resolve',0
+arg_vendor_tool: db 'vendor',0
+arg_package_tool: db 'package',0
+arg_audit_tool: db 'audit',0
+arg_lsp_tool: db 'lsp',0
+arg_operator_info_tool: db 'operator-info',0
+arg_profile_tool: db 'profile',0
+arg_emit_hir_tool: db 'emit-hir',0
+arg_emit_lir_tool: db 'emit-lir',0
+arg_test_tool: db 'test',0
+arg_conformance_tool: db 'conformance',0
+arg_fuzz_tool: db 'fuzz',0
+arg_fuzz_source_tool: db 'fuzz-source',0
+arg_migration_check_tool: db 'migration-check',0
+arg_selftest_tool: db 'selftest',0
+arg_roadmap_closeout_tool: db 'roadmap-closeout',0
+arg_abi_report_tool: db 'abi-report',0
+arg_runtime_report_tool: db 'runtime-report',0
+arg_migrate_tool: db 'migrate',0
+arg_compatibility_report_tool: db 'compatibility-report',0
+arg_conformance_manifest_tool: db 'conformance-manifest',0
+arg_doctor_tool: db 'doctor',0
+arg_security_report_tool: db 'security-report',0
+arg_release_tool: db 'release',0
+arg_examples_tool: db 'examples',0
+arg_nebo_1_readiness_tool: db 'nebo-1.0-readiness',0
+arg_check_docs_tool: db 'check-docs',0
+arg_test_docs_tool: db 'test-docs',0
+arg_docs_tool: db 'docs',0
+arg_symbols_tool: db 'symbols',0
+arg_symbol_index_tool: db 'symbol-index',0
+arg_completion_debug_tool: db 'completion-debug',0
+arg_completion_corpus_tool: db 'completion-corpus',0
+arg_hover_tool: db 'hover',0
+arg_signature_help_tool: db 'signature-help',0
+arg_definition_tool: db 'definition',0
+arg_references_tool: db 'references',0
+arg_rename_tool: db 'rename',0
+arg_navigation_corpus_tool: db 'navigation-corpus',0
+arg_prelude_report_tool: db 'prelude-report',0
+arg_migrate_imports_tool: db 'migrate-imports',0
+arg_stdlib_tool: db 'stdlib',0
+arg_prelude_corpus_tool: db '_prelude-corpus',0
+arg_no_prelude: db '--no-prelude',0
+g024_python_path: db '/usr/bin/python3',0
+; Native package adapters use only the standard library and explicit local
+; imports. Skip site/user discovery and bytecode writes in the empty child env.
+offline_python_flags: db '-BS',0
+g024_self_path: db '/proc/self/exe',0
+g024_binary_suffix: db '/build/bin/neboc'
+g024_binary_suffix_len equ $-g024_binary_suffix
+g024_sdk_binary_suffix: db '/bin/neboc'
+g024_sdk_binary_suffix_len equ $-g024_sdk_binary_suffix
+g024_tool_suffix: db '/tools/rf204-g024.py'
+g024_tool_suffix_len equ $-g024_tool_suffix
+ db 0
+g036_tool_suffix: db '/tools/rf204-g036.py'
+g036_tool_suffix_len equ $-g036_tool_suffix
+ db 0
+arg_api_diff_tool: db 'api-diff',0
+arg_fix_tool: db 'fix',0
+arg_refactor_tool: db 'refactor',0
+arg_source_optimize_tool: db 'source-optimize',0
+arg_modernize_tool: db 'modernize',0
+arg_change_review_tool: db 'change-review',0
+arg_lint_tool: db 'lint',0
+g048_tool_suffix: db '/tools/rf204-g048.py'
+g048_tool_suffix_len equ $-g048_tool_suffix
+ db 0
+arg_timings_tool: db 'timings',0
+arg_compiler_profile_tool: db 'compiler-profile',0
+arg_compiler_report_tool: db 'compiler-report',0
+arg_compiler_memory_tool: db 'compiler-memory',0
+arg_incremental_report_tool: db 'incremental-report',0
+arg_query_report_tool: db 'query-report',0
+arg_cache_tool: db 'cache',0
+arg_serve_tool: db 'serve',0
+arg_server_tool: db 'server',0
+arg_project_report_tool: db 'project-report',0
+arg_compiler_bench_tool: db 'compiler-bench',0
+arg_performance_gate_tool: db 'performance-gate',0
+g049_tool_suffix: db '/tools/rf204-g049.py'
+g049_tool_suffix_len equ $-g049_tool_suffix
+ db 0
+arg_reachability_report_tool: db 'reachability-report',0
+arg_runtime_graph_tool: db 'runtime-graph',0
+arg_data_footprint_tool: db 'data-footprint',0
+arg_link_report_tool: db 'link-report',0
+arg_profile_explain_tool: db 'profile-explain',0
+arg_startup_report_tool: db 'startup-report',0
+arg_size_report_tool: db 'size-report',0
+arg_why_linked_tool: db 'why-linked',0
+arg_binary_diff_tool: db 'binary-diff',0
+arg_size_gate_tool: db 'size-gate',0
+g050_tool_suffix: db '/tools/rf204-g050.py'
+g050_tool_suffix_len equ $-g050_tool_suffix
+ db 0
+arg_host_tool: db 'host',0
+arg_triple_tool: db 'triple',0
+arg_targets_tool: db 'targets',0
+arg_target_report_tool: db 'target-report',0
+arg_object_report_tool: db 'object-report',0
+arg_platform_report_tool: db 'platform-report',0
+arg_portability_check_tool: db 'portability-check',0
+arg_portability_report_tool: db 'portability-report',0
+arg_target_pack_tool: db 'target-pack',0
+arg_run_tool: db 'run',0
+arg_self_test_tool: db 'self-test',0
+arg_host_package_tool: db 'host-package',0
+arg_target_matrix_tool: db 'target-matrix',0
+arg_conformance_report_tool: db 'conformance-report',0
+g051_tool_suffix: db '/tools/rf204-g051.py'
+g051_tool_suffix_len equ $-g051_tool_suffix
+ db 0
+arg_toolchain_report_tool: db 'toolchain-report',0
+arg_self_contained_audit_tool: db 'self-contained-audit',0
+arg_assemble_tool: db 'assemble',0
+arg_object_build_tool: db 'object-build',0
+arg_object_verify_tool: db 'object-verify',0
+arg_reproducibility_report_tool: db 'reproducibility-report',0
+arg_diverse_build_tool: db 'diverse-build',0
+arg_trust_manifest_tool: db 'trust-manifest',0
+arg_provenance_verify_tool: db 'provenance-verify',0
+arg_sdk_tool: db 'sdk',0
+g052_tool_suffix: db '/tools/rf204-g052.py'
+g052_tool_suffix_len equ $-g052_tool_suffix
+ db 0
+g152_tool_suffix: db '/tools/rf204-g152.py'
+g152_tool_suffix_len equ $-g152_tool_suffix
+ db 0
+g153_tool_suffix: db '/tools/rf204-g153.py'
+g153_tool_suffix_len equ $-g153_tool_suffix
+ db 0
+g154_tool_suffix: db '/tools/rf204-g154.py'
+g154_tool_suffix_len equ $-g154_tool_suffix
+ db 0
 arg_diagnostics: db 'diagnostics',0
 arg_search: db '--search',0
 arg_bug_report: db 'bug-report',0
@@ -1446,16 +3248,48 @@ arg_minimize_ice: db 'minimize-ice',0
 arg_exit_codes: db 'exit-codes',0
 arg_list: db '--list',0
 arg_emit_asm: db 'emit-asm',0
+arg_emit_object: db 'emit-object',0
 arg_build: db 'build',0
+arg_link: db 'link',0
 arg_output: db '-o',0
 arg_target_kind: db '--target-kind',0
 arg_manifest: db '--manifest',0
 arg_target: db '--target',0
+arg_edition: db '--edition',0
 arg_executable: db 'executable',0
 arg_example: db 'example',0
 arg_library: db 'library',0
 arg_keep_temp: db '--keep-temp',0
+arg_debug: db '--debug',0
 arg_unit: db '--unit',0
+arg_g150_format: db '--format',0
+arg_g150_text: db 'text',0
+arg_g150_dot: db 'dot',0
+arg_cold: db '--cold',0
+arg_incremental: db '--incremental',0
+arg_cache_mode: db '--cache',0
+arg_jobs: db '-j',0
+arg_scheduler_report: db '--scheduler-report',0
+arg_server_mode: db '--server',0
+arg_memory_budget: db '--memory-budget',0
+arg_g049_native_check: db 'g049-native-check',0
+arg_g049_native_build: db 'g049-native-build',0
+arg_gc_sections: db '--gc-sections',0
+arg_runtime_profile: db '--runtime',0
+arg_build_profile: db '--profile',0
+arg_strip_sections: db '--strip',0
+arg_split_debug: db '--split-debug',0
+arg_g050_native_build: db 'g050-native-build',0
+arg_g050_retained_build: db 'g050-native-build-retain',0
+arg_g050_retained_build_len equ $-arg_g050_retained_build-1
+arg_g051_native_build: db 'g051-native-build',0
+arg_g051_native_emit_asm: db 'g051-native-emit-asm',0
+arg_g052_native_build: db 'g052-native-build',0
+arg_g163_native_check: db 'g163-native-check',0
+arg_g163_native_emit: db 'g163-native-emit-asm',0
+arg_g163_native_build: db 'g163-native-build',0
+arg_trace_tools: db '--trace-tools',0
+arg_hermetic: db '--hermetic',0
 arg_message_format: db '--message-format',0
 arg_color: db '--color',0
 arg_path_style: db '--path-style',0
@@ -1511,15 +3345,6 @@ warning_list_end:
 diagnostic_schema:
  db '{"schemaVersion":1,"format":"nebo-diagnostic","required":["schema","code","severity","category","phase","messageKey","primary"]}',10
 diagnostic_schema_end:
-cli_json_error:
- db '{"schema":1,"code":"NEBO-E0001","severity":1,"category":1,"phase":4,"messageKey":"source.validation.failed","primary":{"sourceId":1,"start":0,"end":0}}',10
-cli_json_error_end:
-cli_json_lex_error:
- db '{"schema":1,"code":"NEBO-E0001","severity":1,"category":1,"phase":3,"messageKey":"source.validation.failed","primary":{"sourceId":1,"start":0,"end":0}}',10
-cli_json_lex_error_end:
-cli_sarif_error:
- db '{"version":"2.1.0","runs":[{"tool":{"driver":{"name":"neboc"}},"results":[{"ruleId":"NEBO-E0001","level":"error","message":{"id":"source.validation.failed"}}]}]}',10
-cli_sarif_error_end:
 cli_diag_human_separator: db ':'
 cli_diag_human_error: db ': error '
 cli_diag_human_error_len equ $-cli_diag_human_error
@@ -1533,17 +3358,23 @@ build_events_success:
  db '{"event":"phaseStarted","phase":1,"unit":"cli"}',10
  db '{"event":"phaseFinished","phase":1,"outcome":1,"diagnosticCount":0}',10
 build_events_success_end:
-build_events_failure:
- db '{"event":"phaseStarted","phase":1,"unit":"cli"}',10
- db '{"event":"diagnostic","diagnostic":{"schema":1,"code":"NEBO-E0001","severity":1,"messageKey":"source.validation.failed"}}',10
- db '{"event":"phaseFinished","phase":1,"outcome":2,"diagnosticCount":1}',10
-build_events_failure_end:
+build_events_unit: db 'cli'
+build_events_unit_end:
 cli_fix_preview:
  db 'fix-it[manualOnly]: preview only; inspect the primary diagnostic span',10
 cli_fix_preview_end:
 cli_control_fix_suggestion:
  db 'insert the required control-header parentheses'
 cli_control_fix_suggestion_end:
+cli_delimiter_fix_suggestion:
+ db 'insert the closing delimiter for the related opening delimiter'
+cli_delimiter_fix_suggestion_end:
+cli_delimiter_related_label:
+ db 'opening delimiter is here'
+cli_delimiter_related_label_end:
+cli_module_related_label:
+ db 'referenced module declaration'
+cli_module_related_label_end:
 cli_entrypoint_note_missing:
  db 'selected executable or example target requires exactly one start()'
 cli_entrypoint_note_missing_end:
@@ -1564,6 +3395,8 @@ cli_entrypoint_label_duplicate:
 cli_entrypoint_label_duplicate_end:
 cli_fix_lparen: db '('
 cli_fix_rparen: db ')'
+cli_fix_rbracket: db ']'
+cli_fix_rbrace: db '}'
 cli_exact_fix_prefix: db 'fix-it[machineApplicable]: insert "'
 cli_exact_fix_prefix_len equ $-cli_exact_fix_prefix
 cli_exact_fix_offset: db '" at byte '
@@ -1601,6 +3434,75 @@ nasm_path: db '/usr/bin/nasm',0
 nasm_path_len equ $-nasm_path-1
 ld_path: db '/usr/bin/ld',0
 ld_path_len equ $-ld_path-1
+canonical_asm_input: db '/proc/self/fd/198',0
+canonical_asm_input_len equ $-canonical_asm_input-1
+
+cli_unicode_hex_digits: db '0123456789ABCDEF'
+cli_unicode_note_codepoint: db 'code point U+'
+cli_unicode_note_codepoint_len equ $-cli_unicode_note_codepoint
+cli_unicode_note_byte: db 'byte 0x'
+cli_unicode_note_byte_len equ $-cli_unicode_note_byte
+cli_unicode_note_name: db '; Unicode name/category '
+cli_unicode_note_name_len equ $-cli_unicode_note_name
+cli_unicode_note_replacement: db '; canonical replacement ASCII '
+cli_unicode_note_replacement_len equ $-cli_unicode_note_replacement
+cli_unicode_note_remove: db '; canonical replacement removal'
+cli_unicode_note_remove_len equ $-cli_unicode_note_remove
+cli_unicode_note_malformed_tail: db '; Unicode name/category MALFORMED UTF-8; canonical replacement valid UTF-8 scalar or removal'
+cli_unicode_note_malformed_tail_len equ $-cli_unicode_note_malformed_tail
+
+cli_unicode_name_fullwidth_hyphen: db 'FULLWIDTH HYPHEN-MINUS'
+cli_unicode_name_fullwidth_hyphen_len equ $-cli_unicode_name_fullwidth_hyphen
+cli_unicode_name_fullwidth_solidus: db 'FULLWIDTH SOLIDUS'
+cli_unicode_name_fullwidth_solidus_len equ $-cli_unicode_name_fullwidth_solidus
+cli_unicode_name_fullwidth: db 'FULLWIDTH ASCII CHARACTER'
+cli_unicode_name_fullwidth_len equ $-cli_unicode_name_fullwidth
+cli_unicode_name_hyphen: db 'HYPHEN'
+cli_unicode_name_hyphen_len equ $-cli_unicode_name_hyphen
+cli_unicode_name_nonbreaking_hyphen: db 'NON-BREAKING HYPHEN'
+cli_unicode_name_nonbreaking_hyphen_len equ $-cli_unicode_name_nonbreaking_hyphen
+cli_unicode_name_division_slash: db 'DIVISION SLASH'
+cli_unicode_name_division_slash_len equ $-cli_unicode_name_division_slash
+cli_unicode_name_fraction_slash: db 'FRACTION SLASH'
+cli_unicode_name_fraction_slash_len equ $-cli_unicode_name_fraction_slash
+cli_unicode_name_lre: db 'LEFT-TO-RIGHT EMBEDDING'
+cli_unicode_name_lre_len equ $-cli_unicode_name_lre
+cli_unicode_name_rle: db 'RIGHT-TO-LEFT EMBEDDING'
+cli_unicode_name_rle_len equ $-cli_unicode_name_rle
+cli_unicode_name_pdf: db 'POP DIRECTIONAL FORMATTING'
+cli_unicode_name_pdf_len equ $-cli_unicode_name_pdf
+cli_unicode_name_lro: db 'LEFT-TO-RIGHT OVERRIDE'
+cli_unicode_name_lro_len equ $-cli_unicode_name_lro
+cli_unicode_name_rlo: db 'RIGHT-TO-LEFT OVERRIDE'
+cli_unicode_name_rlo_len equ $-cli_unicode_name_rlo
+cli_unicode_name_lri: db 'LEFT-TO-RIGHT ISOLATE'
+cli_unicode_name_lri_len equ $-cli_unicode_name_lri
+cli_unicode_name_rli: db 'RIGHT-TO-LEFT ISOLATE'
+cli_unicode_name_rli_len equ $-cli_unicode_name_rli
+cli_unicode_name_fsi: db 'FIRST STRONG ISOLATE'
+cli_unicode_name_fsi_len equ $-cli_unicode_name_fsi
+cli_unicode_name_pdi: db 'POP DIRECTIONAL ISOLATE'
+cli_unicode_name_pdi_len equ $-cli_unicode_name_pdi
+cli_unicode_name_zwsp: db 'ZERO WIDTH SPACE'
+cli_unicode_name_zwsp_len equ $-cli_unicode_name_zwsp
+cli_unicode_name_zwnj: db 'ZERO WIDTH NON-JOINER'
+cli_unicode_name_zwnj_len equ $-cli_unicode_name_zwnj
+cli_unicode_name_zwj: db 'ZERO WIDTH JOINER'
+cli_unicode_name_zwj_len equ $-cli_unicode_name_zwj
+cli_unicode_name_lrm: db 'LEFT-TO-RIGHT MARK'
+cli_unicode_name_lrm_len equ $-cli_unicode_name_lrm
+cli_unicode_name_rlm: db 'RIGHT-TO-LEFT MARK'
+cli_unicode_name_rlm_len equ $-cli_unicode_name_rlm
+cli_unicode_name_word_joiner: db 'WORD JOINER'
+cli_unicode_name_word_joiner_len equ $-cli_unicode_name_word_joiner
+cli_unicode_name_zwnbsp: db 'ZERO WIDTH NO-BREAK SPACE'
+cli_unicode_name_zwnbsp_len equ $-cli_unicode_name_zwnbsp
+cli_unicode_name_combining_grave: db 'COMBINING GRAVE ACCENT'
+cli_unicode_name_combining_grave_len equ $-cli_unicode_name_combining_grave
+cli_unicode_name_combining_x: db 'COMBINING LATIN SMALL LETTER X'
+cli_unicode_name_combining_x_len equ $-cli_unicode_name_combining_x
+cli_unicode_name_combining: db 'COMBINING DIACRITICAL MARK'
+cli_unicode_name_combining_len equ $-cli_unicode_name_combining
 
 suffix_asm: db '.neboc.asm',0
 suffix_asm_len equ $-suffix_asm-1
@@ -1611,7 +3513,17 @@ runtime_relative_len equ $-runtime_relative-1
 runtime_default: db 'build/obj/runtime_practical_io.o',0
 runtime_default_len equ $-runtime_default-1
 
-cli_runtime_trap_externs: db 'extern nebo_runtime_trap_overflow',10,'extern nebo_runtime_trap_division_by_zero',10,'extern nebo_runtime_numeric_safety_int_to_float',10,'extern nebo_runtime_numeric_safety_is_finite',10,'extern nebo_runtime_numeric_safety_is_nan',10,'extern nebo_runtime_numeric_safety_is_infinite',10,'extern nebo_runtime_numeric_safety_is_negative_zero',10,'extern nebo_runtime_textual_text_byte_length',10,'extern nebo_runtime_textual_text_codepoint_count',10,'extern nebo_runtime_textual_char_codepoint',10,'extern nebo_runtime_textual_bytes_empty',10,'extern nebo_runtime_textual_bytes_byte_length',10,'extern neboc_runtime_store_zero_payload',10,'extern neboc_runtime_store_integer',10,'extern neboc_runtime_store_float',10,'extern neboc_runtime_tag_test',10,'extern neboc_runtime_unwrap_integer',10,'extern neboc_runtime_unwrap_float',10,'extern nebo_runtime_contract_1',10,'extern nebo_runtime_contract_3',10,'extern nebo_runtime_console_publish_text',10,'extern nebo_runtime_console_publish_int',10,'extern nebo_runtime_console_publish_bool',10,'extern nebo_runtime_scan_stdin_text',10,'extern nebo_runtime_scan_console_handle',10
+cli_runtime_trap_externs: db 'extern nebo_runtime_trap',10,'extern nebo_runtime_trap_overflow',10,'extern nebo_runtime_trap_division_by_zero',10,'extern nebo_runtime_numeric_safety_int_to_float',10,'extern nebo_runtime_numeric_safety_is_finite',10,'extern nebo_runtime_numeric_safety_is_nan',10,'extern nebo_runtime_numeric_safety_is_infinite',10,'extern nebo_runtime_numeric_safety_is_negative_zero',10,'extern nebo_runtime_textual_text_byte_length',10,'extern nebo_runtime_textual_text_codepoint_count',10,'extern nebo_runtime_textual_text_is_empty',10,'extern nebo_runtime_textual_text_equals',10,'extern nebo_runtime_textual_text_equals_ascii_ignore_case',10,'extern nebo_runtime_textual_text_starts_with',10,'extern nebo_runtime_textual_text_ends_with',10,'extern nebo_runtime_textual_text_contains',10,'extern nebo_runtime_textual_text_index_of',10,'extern nebo_runtime_textual_text_last_index_of',10,'extern nebo_runtime_textual_text_is_ascii',10,'extern nebo_runtime_textual_text_is_utf8',10,'extern nebo_runtime_textual_text_is_blank',10,'extern nebo_runtime_textual_text_is_digits',10,'extern nebo_runtime_textual_text_is_alpha_ascii',10,'extern nebo_runtime_textual_text_is_alnum_ascii',10,'extern nebo_runtime_textual_text_concat',10,'extern nebo_runtime_textual_text_trim',10,'extern nebo_runtime_textual_text_trim_start',10,'extern nebo_runtime_textual_text_trim_end',10,'extern nebo_runtime_textual_text_lower',10,'extern nebo_runtime_textual_text_upper',10,'extern nebo_runtime_textual_text_byte_slice',10,'extern nebo_runtime_textual_text_take_bytes',10,'extern nebo_runtime_textual_text_drop_bytes',10,'extern nebo_runtime_textual_text_replace_once',10,'extern nebo_runtime_textual_text_replace_all',10,'extern nebo_runtime_textual_text_split',10,'extern nebo_runtime_textual_text_join',10,'extern nebo_runtime_textual_text_pad_start',10,'extern nebo_runtime_textual_text_pad_end',10,'extern nebo_runtime_textual_text_normalize_whitespace',10,'extern nebo_runtime_textual_text_normalize_newlines',10,'extern nebo_runtime_textual_char_codepoint',10,'extern nebo_runtime_textual_bytes_empty',10,'extern nebo_runtime_textual_bytes_byte_length',10,'extern nebo_runtime_textual_bytes_at',10,'extern neboc_runtime_store_zero_payload',10,'extern neboc_runtime_store_integer',10,'extern neboc_runtime_store_float',10,'extern neboc_runtime_tag_test',10,'extern neboc_runtime_unwrap_integer',10,'extern neboc_runtime_unwrap_float',10,'extern nebo_runtime_contract_1',10,'extern nebo_runtime_contract_3',10,'extern nebo_runtime_console_publish_text',10,'extern nebo_runtime_console_publish_int',10,'extern nebo_runtime_console_publish_bool',10,'extern nebo_runtime_scan_stdin_text',10,'extern nebo_runtime_scan_console_handle',10
+ db 'extern nebo_runtime_owned_stack_floor',10,'extern nebo_runtime_trap_stack_budget',10,'extern nebo_runtime_trap_arithmetic_domain',10,'extern nebo_runtime_quantity_percent',10,'extern nebo_runtime_quantity_per_mille',10,'extern nebo_runtime_quantity_angle',10,'extern nebo_runtime_quantity_celsius',10,'extern nebo_runtime_quantity_fahrenheit',10,'extern nebo_runtime_math_square_root_exact',10,'extern nebo_runtime_math_cube_root_exact',10,'extern nebo_runtime_math_fourth_root_exact',10,'extern nebo_runtime_math_factorial_checked',10,'extern nebo_runtime_math_infinity',10,'extern nebo_runtime_math_pi',10,'extern nebo_runtime_math_tau',10,'extern nebo_math_round_mode_f64',10,'extern nebo_runtime_math_floor',10,'extern nebo_runtime_math_ceil',10,'extern nebo_runtime_checked_divide',10,'extern nebo_runtime_checked_remainder',10,'extern nebo_runtime_checked_power',10,'extern nebo_runtime_checked_float_power_int',10,'extern nebo_runtime_bytes_xor',10
+ db 'extern nebo_runtime_uncertain_create',10,'extern nebo_runtime_measurement_create',10,'extern nebo_runtime_uncertain_approx_equal',10,'extern nebo_runtime_uncertain_not_approx_equal',10,'extern nebo_runtime_uncertain_equivalent',10,'extern nebo_runtime_int_divides',10,'extern nebo_runtime_int_not_divides',10,'extern nebo_runtime_uncertain_proportional',10,'extern nebo_runtime_uncertain_add_worst_case',10,'extern nebo_runtime_uncertain_add_independent',10,'extern nebo_runtime_uncertain_add_correlated',10,'extern nebo_runtime_uncertain_add_interval',10,'extern nebo_runtime_uncertain_value',10,'extern nebo_runtime_uncertain_uncertainty',10,'extern nebo_runtime_uncertain_unit',10,'extern nebo_runtime_uncertain_quality',10,'extern nebo_runtime_uncertain_confidence',10,'extern nebo_runtime_uncertain_separator_codepoint',10
+ db 'extern nebo_runtime_textual_checked_unwrap',10
+ db 'extern nebo_runtime_textual_format_prepare',10,'extern nebo_runtime_textual_format_render',10,'extern nebo_runtime_textual_format_trap',10
+ db 'extern nebo_runtime_textual_format_result',10
+ db 'extern nebo_runtime_textual_format_prepare_plan',10,'extern nebo_runtime_textual_format_render_plan',10
+ db 'extern nebo_runtime_textual_text_parse_int',10,'extern nebo_runtime_textual_text_parse_float',10,'extern nebo_runtime_textual_text_parse_bool',10,'extern nebo_runtime_textual_text_split_checked',10,'extern nebo_runtime_textual_text_replace_all_checked',10,'extern nebo_runtime_textual_text_to_text',10,'extern nebo_runtime_textual_int_to_text',10,'extern nebo_runtime_textual_bool_to_text',10,'extern nebo_runtime_textual_text_is_nebo_identifier',10
+ db 'extern nebo_runtime_textual_native_descriptor',10
+ db 'extern nebo_runtime_textual_public_descriptor',10
+ db 'extern nebo_runtime_textual_text_grapheme_count',10,'extern nebo_runtime_textual_text_normalize_nfc',10,'extern nebo_runtime_textual_text_normalize_nfd',10,'extern nebo_runtime_textual_text_case_fold',10,'extern nebo_runtime_textual_text_slice_codepoints',10,'extern nebo_runtime_textual_text_slice_graphemes',10
 cli_runtime_trap_externs_end:
 cli_text_equal_extern: db 'extern nebo_runtime_text_equal',10
 cli_text_equal_extern_len equ $-cli_text_equal_extern
@@ -1679,11 +3591,22 @@ imports_modulos_namespaces_e_api_publica_cli_runtime_state: resb neboc_imports_m
 imports_modulos_namespaces_e_api_publica_cli_codegen_request: resb neboc_imports_modulos_namespaces_e_api_publica_CODEGEN_REQUEST_SIZE
 cli_module_request: resb NEBOC_MODULE_REQUEST_SIZE
 cli_module_records: resb NEBOC_MODULE_MAX_UNITS*NEBOC_MODULE_RECORD_SIZE
+cli_module_import_asts: resb NEBOC_MODULE_MAX_UNITS*NEBOC_IMPORT_AST_SIZE
 cli_module_plan: resb NEBOC_MODULE_PLAN_SIZE
 cli_module_codegen: resb NEBOC_MODULE_CODEGEN_SIZE
 cli_module_unit_count: resq 1
 cli_module_unit_paths: resq 2
 cli_module_unit_lengths: resq 2
+cli_g150_report_kind: resq 1
+cli_g150_report_format: resq 1
+cli_g150_ids: resb NEBOC_MODULE_MAX_UNITS*NEBOC_MODULE_ID_SIZE
+cli_g150_nodes: resq NEBOC_MODULE_MAX_UNITS
+cli_g150_edges: resb 6*NEBOC_GRAPH_EDGE_SIZE
+cli_g150_edge_count: resq 1
+cli_g150_order: resq NEBOC_MODULE_MAX_UNITS
+cli_g150_snapshot: resq 1
+cli_g151_report_kind: resq 1
+cli_g151_query: resq 1
 cli_entrypoint_target_kind: resq 1
 cli_entrypoint_target_kind_seen: resq 1
 cli_manifest_path: resq 1
@@ -1758,6 +3681,9 @@ cli_general_tokens: resb NEBOC_CLI_TOKEN_CAPACITY*NEBOC_TOKEN_SIZE
 cli_general_token_count: resq 1
 cli_literal_bytes: resb NEBOC_CLI_LITERAL_CAPACITY
 cli_lexer_request: resb NEBOC_LEXER_REQUEST_SIZE
+cli_lexer_status: resq 1
+cli_std_import_dispatch: resq 1
+cli_retain_runtime_sections: resq 1
 cli_ast_builder: resb NEBOC_AST_BUILDER_SIZE
 cli_ast_nodes: resb NEBOC_CLI_AST_CAPACITY*NEBOC_AST_NODE_SIZE
 cli_parser_request: resb NEBOC_PARSER_SIZE
@@ -1823,11 +3749,17 @@ cli_buffer_owner_count: resq 1
 cli_buffer: resb NEBOC_MULTI_OWNER_MAX*NEBOC_BUFFER_F11_REQUEST_SIZE
 cli_buffer_plan: resb NEBOC_MULTI_OWNER_MAX*NEBOC_BUFFER_PLAN_F11_SIZE
 cli_buffer_codegen: resb NEBOC_BUFFER_CODEGEN_SIZE
+resb ((8-(($-$$)&7))&7)
+cli_binary_foundation: resb NEBOC_BF_REQUEST_SIZE
+cli_binary_foundation_plan: resb NEBOC_BF_PLAN_SIZE
+cli_binary_foundation_codegen: resb NEBOC_BF_CODEGEN_SIZE
 generics_constraints_overload_e_dispatch_cli_vertical_request: resb neboc_generics_constraints_overload_e_dispatch_VERTICAL_REQUEST_SIZE
 tipos_semanticos_refinamentos_unidades_e_opaque_types_cli_vertical_request: resb neboc_tipos_semanticos_refinamentos_unidades_e_opaque_types_VERTICAL_REQUEST_SIZE
 structs_enums_variants_e_tipos_do_programador_cli_vertical_request: resb neboc_structs_enums_variants_e_tipos_do_programador_VERTICAL_REQUEST_SIZE
 resb ((8-(($-$$)&7))&7)
 cli_struct_tuple: resb NEBOC_ST_REQUEST_SIZE
+cli_typed_struct: resb NEBOC_ST_REQUEST_SIZE
+cli_typed_struct_decls: resb NEBOC_ST_MAX_DECLS*NEBOC_DECL_SIZE
 cli_decls: resb NEBOC_ST_MAX_DECLS*NEBOC_DECL_SIZE
 cli_values: resb NEBOC_ST_MAX_VALUES*NEBOC_VALUE_SIZE
 cli_bindings: resb NEBOC_ST_MAX_BINDINGS*NEBOC_BINDING_SIZE
@@ -1889,6 +3821,8 @@ seguranca_numerica_conversoes_e_overflow_cli_codegen_request: resb neboc_seguran
 text_char_unicode_e_bytes_cli_codegen_request: resb neboc_text_char_unicode_e_bytes_CODEGEN_REQUEST_SIZE
 bindings_constantes_mutabilidade_e_definite_assignment_cli_codegen_request: resb neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_REQUEST_SIZE
 cli_loop_stack: resq NEBOC_CODEGEN_MAX_LOOP_DEPTH
+cli_defer_stack: resq NEBOC_CODEGEN_MAX_DEFERS
+cli_loop_defer_bases: resq NEBOC_CODEGEN_MAX_LOOP_DEPTH
 cli_binding_slot_catalog: resb NEBOC_CODEGEN_SLOT_CATALOG_CAPACITY*NEBOC_CODEGEN_SLOT_CATALOG_RECORD_SIZE
 option_result_null_externo_e_erros_tipados_cli_codegen_request: resb neboc_option_result_null_externo_e_erros_tipados_CODEGEN_REQUEST_SIZE
 generics_constraints_overload_e_dispatch_cli_codegen_request: resb neboc_generics_constraints_overload_e_dispatch_CODEGEN_REQUEST_SIZE
@@ -1902,12 +3836,43 @@ cli_toolchain: resb NEBOC_TOOLCHAIN_SIZE
 cli_toolchain_request: resb NEBOC_TOOLCHAIN_REQUEST_SIZE
 cli_toolchain_invocation: resb NEBOC_TOOLCHAIN_INVOCATION_SIZE
 cli_toolchain_result: resb NEBOC_TOOLCHAIN_RESULT_SIZE
+cli_toolchain_assembler_fd: resq 1
 cli_asm_output: resb NEBOC_CLI_ASM_CAPACITY
 cli_temp_asm_path: resb NEBOC_CLI_PATH_CAPACITY
 cli_temp_obj_path: resb NEBOC_CLI_PATH_CAPACITY
 cli_runtime_obj_path: resb NEBOC_CLI_PATH_CAPACITY
 cli_wait_status: resd 1
 cli_null_env: resq 1
+g024_tool_argv: resq NEBOC_TOOLCHAIN_MAX_ARGS+1
+g024_tool_result: resb NEBOC_TOOLCHAIN_RESULT_SIZE
+g024_tool_resolved_path: resb NEBOC_CLI_PATH_CAPACITY
+g036_tool_argv: resq NEBOC_TOOLCHAIN_MAX_ARGS+1
+g036_tool_result: resb NEBOC_TOOLCHAIN_RESULT_SIZE
+g036_tool_resolved_path: resb NEBOC_CLI_PATH_CAPACITY
+g048_tool_argv: resq NEBOC_TOOLCHAIN_MAX_ARGS+1
+g048_tool_result: resb NEBOC_TOOLCHAIN_RESULT_SIZE
+g048_tool_resolved_path: resb NEBOC_CLI_PATH_CAPACITY
+g049_tool_argv: resq NEBOC_TOOLCHAIN_MAX_ARGS+1
+g049_tool_result: resb NEBOC_TOOLCHAIN_RESULT_SIZE
+g049_tool_resolved_path: resb NEBOC_CLI_PATH_CAPACITY
+g050_tool_argv: resq NEBOC_TOOLCHAIN_MAX_ARGS+1
+g050_tool_result: resb NEBOC_TOOLCHAIN_RESULT_SIZE
+g050_tool_resolved_path: resb NEBOC_CLI_PATH_CAPACITY
+g051_tool_argv: resq NEBOC_TOOLCHAIN_MAX_ARGS+1
+g051_tool_result: resb NEBOC_TOOLCHAIN_RESULT_SIZE
+g051_tool_resolved_path: resb NEBOC_CLI_PATH_CAPACITY
+g052_tool_argv: resq NEBOC_TOOLCHAIN_MAX_ARGS+1
+g052_tool_result: resb NEBOC_TOOLCHAIN_RESULT_SIZE
+g052_tool_resolved_path: resb NEBOC_CLI_PATH_CAPACITY
+g152_tool_argv: resq NEBOC_TOOLCHAIN_MAX_ARGS+1
+g152_tool_result: resb NEBOC_TOOLCHAIN_RESULT_SIZE
+g152_tool_resolved_path: resb NEBOC_CLI_PATH_CAPACITY
+g153_tool_argv: resq NEBOC_TOOLCHAIN_MAX_ARGS+1
+g153_tool_result: resb NEBOC_TOOLCHAIN_RESULT_SIZE
+g153_tool_resolved_path: resb NEBOC_CLI_PATH_CAPACITY
+g154_tool_argv: resq NEBOC_TOOLCHAIN_MAX_ARGS+1
+g154_tool_result: resb NEBOC_TOOLCHAIN_RESULT_SIZE
+g154_tool_resolved_path: resb NEBOC_CLI_PATH_CAPACITY
 cli_message_format: resq 1
 cli_color_policy: resq 1
 cli_path_style: resq 1
@@ -1921,12 +3886,18 @@ cli_max_errors: resq 1
 cli_recovery_policy: resq 1
 cli_build_events_path: resq 1
 cli_machine_reporting: resq 1
+cli_meta_mode: resq 1
+cli_debug: resq 1
 cli_textual_frontend_error_token: resq 1
 cli_textual_api_probe: resb neboc_text_char_unicode_e_bytes_API_REQUEST_SIZE
 cli_canonical_diagnostic: resb NEBOC_DIAGNOSTIC_SIZE
+; One token index per possible lexical token.  The structural diagnostic walk
+; is bounded by the same capacity as the lexer and performs no allocation.
+cli_delimiter_stack: resq NEBOC_CLI_TOKEN_CAPACITY
 cli_diag_catalog_entry: resb NEBOC_DIAG_ENTRY_SIZE
 cli_diag_writer: resb NEBOC_WRITER_SIZE
 cli_diag_output: resb NEBOC_MACHINE_MAX_OUTPUT
+cli_unicode_security_note: resb 256
 cli_show_fixes: resq 1
 cli_explanation: resb NEBOC_EXPLANATION_SIZE
 cli_explanation_writer: resb NEBOC_WRITER_SIZE
@@ -2018,6 +3989,398 @@ cli_warning_selector_equal:
 .selector_equal_no:
  ret
 
+; Resolve the repository-local host from /proc/self/exe. A relative cwd must
+; never decide which tooling implementation a public compiler invocation uses.
+g024_resolve_tool_path:
+ push rbx
+ lea rdi,[rel g024_self_path]
+ lea rsi,[rel g024_tool_resolved_path]
+ mov edx,NEBOC_CLI_PATH_CAPACITY-1
+ mov eax,89
+ syscall
+ cmp rax,-4095
+ jae .g024_resolve_fail
+ cmp rax,g024_sdk_binary_suffix_len
+ jbe .g024_resolve_fail
+ mov rbx,rax
+ cmp rax,g024_binary_suffix_len
+ jbe .g024_try_sdk_suffix
+ sub rbx,g024_binary_suffix_len
+ lea rdi,[rel g024_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g024_binary_suffix]
+ mov ecx,g024_binary_suffix_len
+ repe cmpsb
+ je .g024_resolve_root
+ ; Installed SDKs keep the same host at <prefix>/tools and the native
+ ; executable at <prefix>/bin. Resolve from self, never from cwd or PATH.
+ add rbx,g024_binary_suffix_len
+.g024_try_sdk_suffix:
+ sub rbx,g024_sdk_binary_suffix_len
+ lea rdi,[rel g024_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g024_sdk_binary_suffix]
+ mov ecx,g024_sdk_binary_suffix_len
+ repe cmpsb
+ jne .g024_resolve_fail
+.g024_resolve_root:
+ mov rax,rbx
+ add rax,g024_tool_suffix_len
+ inc rax
+ cmp rax,NEBOC_CLI_PATH_CAPACITY
+ ja .g024_resolve_fail
+ lea rdi,[rel g024_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g024_tool_suffix]
+ mov ecx,g024_tool_suffix_len+1
+ rep movsb
+ lea rax,[rel g024_tool_resolved_path]
+ pop rbx
+ ret
+.g024_resolve_fail:
+ xor eax,eax
+ pop rbx
+ ret
+
+g036_resolve_tool_path:
+ push rbx
+ lea rdi,[rel g024_self_path]
+ lea rsi,[rel g036_tool_resolved_path]
+ mov edx,NEBOC_CLI_PATH_CAPACITY-1
+ mov eax,89
+ syscall
+ cmp rax,-4095
+ jae .g036_resolve_fail
+ cmp rax,g024_binary_suffix_len
+ jbe .g036_resolve_fail
+ mov rbx,rax
+ sub rbx,g024_binary_suffix_len
+ lea rdi,[rel g036_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g024_binary_suffix]
+ mov ecx,g024_binary_suffix_len
+ repe cmpsb
+ jne .g036_resolve_fail
+ mov rax,rbx
+ add rax,g036_tool_suffix_len
+ inc rax
+ cmp rax,NEBOC_CLI_PATH_CAPACITY
+ ja .g036_resolve_fail
+ lea rdi,[rel g036_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g036_tool_suffix]
+ mov ecx,g036_tool_suffix_len+1
+ rep movsb
+ lea rax,[rel g036_tool_resolved_path]
+ pop rbx
+ ret
+.g036_resolve_fail:
+ xor eax,eax
+ pop rbx
+ ret
+
+g048_resolve_tool_path:
+ push rbx
+ lea rdi,[rel g024_self_path]
+ lea rsi,[rel g048_tool_resolved_path]
+ mov edx,NEBOC_CLI_PATH_CAPACITY-1
+ mov eax,89
+ syscall
+ cmp rax,-4095
+ jae .g048_resolve_fail
+ cmp rax,g024_binary_suffix_len
+ jbe .g048_resolve_fail
+ mov rbx,rax
+ sub rbx,g024_binary_suffix_len
+ lea rdi,[rel g048_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g024_binary_suffix]
+ mov ecx,g024_binary_suffix_len
+ repe cmpsb
+ jne .g048_resolve_fail
+ mov rax,rbx
+ add rax,g048_tool_suffix_len
+ inc rax
+ cmp rax,NEBOC_CLI_PATH_CAPACITY
+ ja .g048_resolve_fail
+ lea rdi,[rel g048_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g048_tool_suffix]
+ mov ecx,g048_tool_suffix_len+1
+ rep movsb
+ lea rax,[rel g048_tool_resolved_path]
+ pop rbx
+ ret
+.g048_resolve_fail:
+ xor eax,eax
+ pop rbx
+ ret
+
+g049_resolve_tool_path:
+ push rbx
+ lea rdi,[rel g024_self_path]
+ lea rsi,[rel g049_tool_resolved_path]
+ mov edx,NEBOC_CLI_PATH_CAPACITY-1
+ mov eax,89
+ syscall
+ cmp rax,-4095
+ jae .g049_resolve_fail
+ cmp rax,g024_binary_suffix_len
+ jbe .g049_resolve_fail
+ mov rbx,rax
+ sub rbx,g024_binary_suffix_len
+ lea rdi,[rel g049_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g024_binary_suffix]
+ mov ecx,g024_binary_suffix_len
+ repe cmpsb
+ jne .g049_resolve_fail
+ mov rax,rbx
+ add rax,g049_tool_suffix_len
+ inc rax
+ cmp rax,NEBOC_CLI_PATH_CAPACITY
+ ja .g049_resolve_fail
+ lea rdi,[rel g049_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g049_tool_suffix]
+ mov ecx,g049_tool_suffix_len+1
+ rep movsb
+ lea rax,[rel g049_tool_resolved_path]
+ pop rbx
+ ret
+.g049_resolve_fail:
+ xor eax,eax
+ pop rbx
+ ret
+
+g050_resolve_tool_path:
+ push rbx
+ lea rdi,[rel g024_self_path]
+ lea rsi,[rel g050_tool_resolved_path]
+ mov edx,NEBOC_CLI_PATH_CAPACITY-1
+ mov eax,89
+ syscall
+ cmp rax,-4095
+ jae .g050_resolve_fail
+ cmp rax,g024_binary_suffix_len
+ jbe .g050_resolve_fail
+ mov rbx,rax
+ sub rbx,g024_binary_suffix_len
+ lea rdi,[rel g050_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g024_binary_suffix]
+ mov ecx,g024_binary_suffix_len
+ repe cmpsb
+ jne .g050_resolve_fail
+ mov rax,rbx
+ add rax,g050_tool_suffix_len
+ inc rax
+ cmp rax,NEBOC_CLI_PATH_CAPACITY
+ ja .g050_resolve_fail
+ lea rdi,[rel g050_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g050_tool_suffix]
+ mov ecx,g050_tool_suffix_len+1
+ rep movsb
+ lea rax,[rel g050_tool_resolved_path]
+ pop rbx
+ ret
+.g050_resolve_fail:
+ xor eax,eax
+ pop rbx
+ ret
+
+g051_resolve_tool_path:
+ push rbx
+ lea rdi,[rel g024_self_path]
+ lea rsi,[rel g051_tool_resolved_path]
+ mov edx,NEBOC_CLI_PATH_CAPACITY-1
+ mov eax,89
+ syscall
+ cmp rax,-4095
+ jae .g051_resolve_fail
+ cmp rax,g024_binary_suffix_len
+ jbe .g051_resolve_fail
+ mov rbx,rax
+ sub rbx,g024_binary_suffix_len
+ lea rdi,[rel g051_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g024_binary_suffix]
+ mov ecx,g024_binary_suffix_len
+ repe cmpsb
+ jne .g051_resolve_fail
+ mov rax,rbx
+ add rax,g051_tool_suffix_len
+ inc rax
+ cmp rax,NEBOC_CLI_PATH_CAPACITY
+ ja .g051_resolve_fail
+ lea rdi,[rel g051_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g051_tool_suffix]
+ mov ecx,g051_tool_suffix_len+1
+ rep movsb
+ lea rax,[rel g051_tool_resolved_path]
+ pop rbx
+ ret
+.g051_resolve_fail:
+ xor eax,eax
+ pop rbx
+ ret
+
+g052_resolve_tool_path:
+ push rbx
+ lea rdi,[rel g024_self_path]
+ lea rsi,[rel g052_tool_resolved_path]
+ mov edx,NEBOC_CLI_PATH_CAPACITY-1
+ mov eax,89
+ syscall
+ cmp rax,-4095
+ jae .g052_resolve_fail
+ cmp rax,g024_binary_suffix_len
+ jbe .g052_resolve_fail
+ mov rbx,rax
+ sub rbx,g024_binary_suffix_len
+ lea rdi,[rel g052_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g024_binary_suffix]
+ mov ecx,g024_binary_suffix_len
+ repe cmpsb
+ jne .g052_resolve_fail
+ mov rax,rbx
+ add rax,g052_tool_suffix_len
+ inc rax
+ cmp rax,NEBOC_CLI_PATH_CAPACITY
+ ja .g052_resolve_fail
+ lea rdi,[rel g052_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g052_tool_suffix]
+ mov ecx,g052_tool_suffix_len+1
+ rep movsb
+ lea rax,[rel g052_tool_resolved_path]
+ pop rbx
+ ret
+.g052_resolve_fail:
+ xor eax,eax
+ pop rbx
+ ret
+
+; Resolve the G152 refactoring host relative to the authenticated compiler
+; binary, never through cwd or PATH.
+g152_resolve_tool_path:
+ push rbx
+ lea rdi,[rel g024_self_path]
+ lea rsi,[rel g152_tool_resolved_path]
+ mov edx,NEBOC_CLI_PATH_CAPACITY-1
+ mov eax,89
+ syscall
+ cmp rax,-4095
+ jae .g152_resolve_fail
+ cmp rax,g024_binary_suffix_len
+ jbe .g152_resolve_fail
+ mov rbx,rax
+ sub rbx,g024_binary_suffix_len
+ lea rdi,[rel g152_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g024_binary_suffix]
+ mov ecx,g024_binary_suffix_len
+ repe cmpsb
+ jne .g152_resolve_fail
+ mov rax,rbx
+ add rax,g152_tool_suffix_len
+ inc rax
+ cmp rax,NEBOC_CLI_PATH_CAPACITY
+ ja .g152_resolve_fail
+ lea rdi,[rel g152_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g152_tool_suffix]
+ mov ecx,g152_tool_suffix_len+1
+ rep movsb
+ lea rax,[rel g152_tool_resolved_path]
+ pop rbx
+ ret
+.g152_resolve_fail:
+ xor eax,eax
+ pop rbx
+ ret
+
+; Resolve the G153 report host relative to the authenticated compiler binary.
+; The host consumes native module-info/module-graph output and owns no parser.
+g153_resolve_tool_path:
+ push rbx
+ lea rdi,[rel g024_self_path]
+ lea rsi,[rel g153_tool_resolved_path]
+ mov edx,NEBOC_CLI_PATH_CAPACITY-1
+ mov eax,89
+ syscall
+ cmp rax,-4095
+ jae .g153_resolve_fail
+ cmp rax,g024_binary_suffix_len
+ jbe .g153_resolve_fail
+ mov rbx,rax
+ sub rbx,g024_binary_suffix_len
+ lea rdi,[rel g153_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g024_binary_suffix]
+ mov ecx,g024_binary_suffix_len
+ repe cmpsb
+ jne .g153_resolve_fail
+ mov rax,rbx
+ add rax,g153_tool_suffix_len
+ inc rax
+ cmp rax,NEBOC_CLI_PATH_CAPACITY
+ ja .g153_resolve_fail
+ lea rdi,[rel g153_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g153_tool_suffix]
+ mov ecx,g153_tool_suffix_len+1
+ rep movsb
+ lea rax,[rel g153_tool_resolved_path]
+ pop rbx
+ ret
+.g153_resolve_fail:
+ xor eax,eax
+ pop rbx
+ ret
+
+; Resolve the G154 compiled-interface adapter relative to this compiler.
+; Source semantics and binary validation remain owned by native code.
+g154_resolve_tool_path:
+ push rbx
+ lea rdi,[rel g024_self_path]
+ lea rsi,[rel g154_tool_resolved_path]
+ mov edx,NEBOC_CLI_PATH_CAPACITY-1
+ mov eax,89
+ syscall
+ cmp rax,-4095
+ jae .g154_resolve_fail
+ cmp rax,g024_binary_suffix_len
+ jbe .g154_resolve_fail
+ mov rbx,rax
+ sub rbx,g024_binary_suffix_len
+ lea rdi,[rel g154_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g024_binary_suffix]
+ mov ecx,g024_binary_suffix_len
+ repe cmpsb
+ jne .g154_resolve_fail
+ mov rax,rbx
+ add rax,g154_tool_suffix_len
+ inc rax
+ cmp rax,NEBOC_CLI_PATH_CAPACITY
+ ja .g154_resolve_fail
+ lea rdi,[rel g154_tool_resolved_path]
+ add rdi,rbx
+ lea rsi,[rel g154_tool_suffix]
+ mov ecx,g154_tool_suffix_len+1
+ rep movsb
+ lea rax,[rel g154_tool_resolved_path]
+ pop rbx
+ ret
+.g154_resolve_fail:
+ xor eax,eax
+ pop rbx
+ ret
+
 ; neboc_cli_main(argc, argv) -> public CLI exit code in EAX.
 NEBOC_ABI_FUNCTION neboc_cli_main
  push rbx
@@ -2036,6 +4399,8 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  mov qword [rel cli_module_unit_paths+8],0
  mov qword [rel cli_module_unit_lengths],0
  mov qword [rel cli_module_unit_lengths+8],0
+ mov qword [rel cli_g151_report_kind],0
+ mov qword [rel cli_g151_query],0
  mov qword [rel cli_entrypoint_target_kind],NEBOC_TARGET_KIND_EXECUTABLE
  mov qword [rel cli_entrypoint_target_kind_seen],0
  mov qword [rel cli_manifest_path],0
@@ -2056,6 +4421,8 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  mov qword [rel cli_verbose],0
  mov qword [rel cli_trace_component],0
  mov qword [rel cli_trace_component_length],0
+ mov qword [rel cli_meta_mode],0
+ mov qword [rel cli_debug],0
  test r13,r13
  jz .internal
  test r12,r12
@@ -2078,6 +4445,12 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  test eax,eax
  jnz .version_exact
  mov rdi,rbx
+ lea rsi,[rel arg_version_json]
+ mov edx,14
+ call cli_arg_equals
+ test eax,eax
+ jnz .version_json_exact
+ mov rdi,rbx
  lea rsi,[rel arg_bench]
  mov edx,5
  call cli_arg_equals
@@ -2089,6 +4462,18 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  call cli_arg_equals
  test eax,eax
  jnz .probabilistic_report_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_reactive_report]
+ mov edx,15
+ call cli_arg_equals
+ test eax,eax
+ jnz .reactive_report_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_db]
+ mov edx,2
+ call cli_arg_equals
+ test eax,eax
+ jnz .db_exact
  mov rdi,rbx
  lea rsi,[rel arg_firmware]
  mov edx,8
@@ -2126,6 +4511,54 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  test eax,eax
  jnz .protocol_exact
  mov rdi,rbx
+ lea rsi,[rel arg_workflow]
+ mov edx,8
+ call cli_arg_equals
+ test eax,eax
+ jnz .workflow_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_geometry_check]
+ mov edx,14
+ call cli_arg_equals
+ test eax,eax
+ jnz .geometry_check_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_route_bench]
+ mov edx,11
+ call cli_arg_equals
+ test eax,eax
+ jnz .route_bench_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_emit_wasm]
+ mov edx,9
+ call cli_arg_equals
+ test eax,eax
+ jnz .emit_wasm_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_wasm_inspect]
+ mov edx,12
+ call cli_arg_equals
+ test eax,eax
+ jnz .wasm_inspect_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_emit_bpf]
+ mov edx,8
+ call cli_arg_equals
+ test eax,eax
+ jnz .emit_bpf_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_portable_test]
+ mov edx,13
+ call cli_arg_equals
+ test eax,eax
+ jnz .portable_test_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_portable_sbom]
+ mov edx,13
+ call cli_arg_equals
+ test eax,eax
+ jnz .portable_sbom_exact
+ mov rdi,rbx
  lea rsi,[rel arg_warnings]
  mov edx,8
  call cli_arg_equals
@@ -2143,6 +4576,199 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  call cli_arg_equals
  test eax,eax
  jnz .explain_exact
+ ; Preserve the earlier G024 conformance command unless the G051 target form
+ ; is explicitly selected.
+ mov rdi,rbx
+ lea rsi,[rel arg_conformance_tool]
+ mov edx,11
+ call cli_arg_equals
+ test eax,eax
+ jz .g051_after_conformance_dispatch
+ mov r14,2
+.g051_conformance_scan:
+ cmp r14,r12
+ jae .g024_tool_exact
+ mov rdi,[r13+r14*8]
+ lea rsi,[rel arg_target]
+ mov edx,8
+ call cli_arg_equals
+ test eax,eax
+ jnz .g051_tool_exact
+ inc r14
+ jmp .g051_conformance_scan
+.g051_after_conformance_dispatch:
+%macro G024_TOOL_DISPATCH 2
+ mov rdi,rbx
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_arg_equals
+ test eax,eax
+ jnz .g024_tool_exact
+%endmacro
+ G024_TOOL_DISPATCH arg_format_tool,6
+ G024_TOOL_DISPATCH arg_dump_tool,4
+ G024_TOOL_DISPATCH arg_repl_tool,4
+ G024_TOOL_DISPATCH arg_init_tool,4
+ G024_TOOL_DISPATCH arg_add_tool,3
+ G024_TOOL_DISPATCH arg_remove_tool,6
+ G024_TOOL_DISPATCH arg_resolve_tool,7
+ G024_TOOL_DISPATCH arg_vendor_tool,6
+ G024_TOOL_DISPATCH arg_package_tool,7
+ G024_TOOL_DISPATCH arg_audit_tool,5
+ G024_TOOL_DISPATCH arg_lsp_tool,3
+ G024_TOOL_DISPATCH arg_operator_info_tool,13
+ G024_TOOL_DISPATCH arg_profile_tool,7
+ G024_TOOL_DISPATCH arg_emit_hir_tool,8
+ G024_TOOL_DISPATCH arg_emit_lir_tool,8
+ G024_TOOL_DISPATCH arg_test_tool,4
+ G024_TOOL_DISPATCH arg_fuzz_tool,4
+ G024_TOOL_DISPATCH arg_fuzz_source_tool,11
+ G024_TOOL_DISPATCH arg_migration_check_tool,15
+ G024_TOOL_DISPATCH arg_selftest_tool,8
+ G024_TOOL_DISPATCH arg_roadmap_closeout_tool,16
+ G024_TOOL_DISPATCH arg_abi_report_tool,10
+ G024_TOOL_DISPATCH arg_runtime_report_tool,14
+ G024_TOOL_DISPATCH arg_migrate_tool,7
+ G024_TOOL_DISPATCH arg_compatibility_report_tool,20
+ G024_TOOL_DISPATCH arg_conformance_manifest_tool,20
+ G024_TOOL_DISPATCH arg_doctor_tool,6
+ G024_TOOL_DISPATCH arg_security_report_tool,15
+ G024_TOOL_DISPATCH arg_release_tool,7
+ G024_TOOL_DISPATCH arg_examples_tool,8
+ G024_TOOL_DISPATCH arg_nebo_1_readiness_tool,18
+ G024_TOOL_DISPATCH arg_check_docs_tool,10
+ G024_TOOL_DISPATCH arg_test_docs_tool,9
+ G024_TOOL_DISPATCH arg_docs_tool,4
+ G024_TOOL_DISPATCH arg_symbols_tool,7
+ G024_TOOL_DISPATCH arg_symbol_index_tool,12
+ G024_TOOL_DISPATCH arg_completion_debug_tool,16
+ G024_TOOL_DISPATCH arg_completion_corpus_tool,17
+ G024_TOOL_DISPATCH arg_hover_tool,5
+ G024_TOOL_DISPATCH arg_signature_help_tool,14
+ G024_TOOL_DISPATCH arg_definition_tool,10
+ G024_TOOL_DISPATCH arg_references_tool,10
+ G024_TOOL_DISPATCH arg_rename_tool,6
+ G024_TOOL_DISPATCH arg_navigation_corpus_tool,17
+ G024_TOOL_DISPATCH arg_prelude_report_tool,14
+ G024_TOOL_DISPATCH arg_migrate_imports_tool,15
+ G024_TOOL_DISPATCH arg_stdlib_tool,6
+ G024_TOOL_DISPATCH arg_prelude_corpus_tool,15
+%undef G024_TOOL_DISPATCH
+ mov rdi,rbx
+ lea rsi,[rel arg_scientific_bench_tool]
+ mov edx,16
+ call cli_arg_equals
+ test eax,eax
+ jnz .g036_tool_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_numeric_report_tool]
+ mov edx,14
+ call cli_arg_equals
+ test eax,eax
+ jnz .g036_tool_exact
+%macro G048_TOOL_DISPATCH 2
+ mov rdi,rbx
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_arg_equals
+ test eax,eax
+ jnz .g048_tool_exact
+%endmacro
+ mov rdi,rbx
+ lea rsi,[rel arg_api_diff_tool]
+ mov edx,8
+ call cli_arg_equals
+ test eax,eax
+ jnz .g154_tool_exact
+ G048_TOOL_DISPATCH arg_fix_tool,3
+ G048_TOOL_DISPATCH arg_refactor_tool,8
+ G048_TOOL_DISPATCH arg_source_optimize_tool,15
+ G048_TOOL_DISPATCH arg_modernize_tool,9
+ G048_TOOL_DISPATCH arg_change_review_tool,13
+ G048_TOOL_DISPATCH arg_lint_tool,4
+%undef G048_TOOL_DISPATCH
+%macro G049_TOOL_DISPATCH 2
+ mov rdi,rbx
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_arg_equals
+ test eax,eax
+ jnz .g049_tool_exact
+%endmacro
+ G049_TOOL_DISPATCH arg_timings_tool,7
+ G049_TOOL_DISPATCH arg_compiler_profile_tool,16
+ G049_TOOL_DISPATCH arg_compiler_report_tool,15
+ G049_TOOL_DISPATCH arg_compiler_memory_tool,15
+ G049_TOOL_DISPATCH arg_incremental_report_tool,18
+ G049_TOOL_DISPATCH arg_query_report_tool,12
+ G049_TOOL_DISPATCH arg_cache_tool,5
+ G049_TOOL_DISPATCH arg_serve_tool,5
+ G049_TOOL_DISPATCH arg_server_tool,6
+ G049_TOOL_DISPATCH arg_project_report_tool,14
+ G049_TOOL_DISPATCH arg_compiler_bench_tool,14
+ G049_TOOL_DISPATCH arg_performance_gate_tool,16
+%undef G049_TOOL_DISPATCH
+%macro G050_TOOL_DISPATCH 2
+ mov rdi,rbx
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_arg_equals
+ test eax,eax
+ jnz .g050_tool_exact
+%endmacro
+ G050_TOOL_DISPATCH arg_reachability_report_tool,19
+ G050_TOOL_DISPATCH arg_runtime_graph_tool,13
+ G050_TOOL_DISPATCH arg_data_footprint_tool,14
+ G050_TOOL_DISPATCH arg_link_report_tool,11
+ G050_TOOL_DISPATCH arg_profile_explain_tool,15
+ G050_TOOL_DISPATCH arg_startup_report_tool,14
+ G050_TOOL_DISPATCH arg_size_report_tool,11
+ G050_TOOL_DISPATCH arg_why_linked_tool,10
+ G050_TOOL_DISPATCH arg_binary_diff_tool,11
+ G050_TOOL_DISPATCH arg_size_gate_tool,9
+%undef G050_TOOL_DISPATCH
+%macro G051_TOOL_DISPATCH 2
+ mov rdi,rbx
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_arg_equals
+ test eax,eax
+ jnz .g051_tool_exact
+%endmacro
+ G051_TOOL_DISPATCH arg_host_tool,4
+ G051_TOOL_DISPATCH arg_triple_tool,6
+ G051_TOOL_DISPATCH arg_targets_tool,7
+ G051_TOOL_DISPATCH arg_target_report_tool,13
+ G051_TOOL_DISPATCH arg_object_report_tool,13
+ G051_TOOL_DISPATCH arg_platform_report_tool,15
+ G051_TOOL_DISPATCH arg_portability_check_tool,17
+ G051_TOOL_DISPATCH arg_portability_report_tool,18
+ G051_TOOL_DISPATCH arg_target_pack_tool,11
+ G051_TOOL_DISPATCH arg_run_tool,3
+ G051_TOOL_DISPATCH arg_self_test_tool,9
+ G051_TOOL_DISPATCH arg_host_package_tool,12
+ G051_TOOL_DISPATCH arg_target_matrix_tool,13
+ G051_TOOL_DISPATCH arg_conformance_report_tool,18
+%undef G051_TOOL_DISPATCH
+%macro G052_TOOL_DISPATCH 2
+ mov rdi,rbx
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_arg_equals
+ test eax,eax
+ jnz .g052_tool_exact
+%endmacro
+ G052_TOOL_DISPATCH arg_toolchain_report_tool,16
+ G052_TOOL_DISPATCH arg_self_contained_audit_tool,20
+ G052_TOOL_DISPATCH arg_assemble_tool,8
+ G052_TOOL_DISPATCH arg_object_build_tool,12
+ G052_TOOL_DISPATCH arg_object_verify_tool,13
+ G052_TOOL_DISPATCH arg_reproducibility_report_tool,22
+ G052_TOOL_DISPATCH arg_diverse_build_tool,13
+ G052_TOOL_DISPATCH arg_trust_manifest_tool,14
+ G052_TOOL_DISPATCH arg_provenance_verify_tool,17
+ G052_TOOL_DISPATCH arg_sdk_tool,3
+%undef G052_TOOL_DISPATCH
  mov rdi,rbx
  lea rsi,[rel arg_diagnostics]
  mov edx,11
@@ -2168,8 +4794,86 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  test eax,eax
  jnz .exit_codes_exact
  mov rdi,rbx
+ lea rsi,[rel arg_meta_check]
+ mov edx,10
+ call cli_arg_equals
+ test eax,eax
+ jnz .mode_meta_check
+ mov rdi,rbx
+ lea rsi,[rel arg_meta_expand]
+ mov edx,11
+ call cli_arg_equals
+ test eax,eax
+ jnz .mode_meta_expand
+ mov rdi,rbx
+ lea rsi,[rel arg_formal_verify]
+ mov edx,6
+ call cli_arg_equals
+ test eax,eax
+ jnz .mode_formal_verify
+ mov rdi,rbx
+ lea rsi,[rel arg_solve]
+ mov edx,5
+ call cli_arg_equals
+ test eax,eax
+ jnz .mode_solve
+ mov rdi,rbx
  lea rsi,[rel arg_check]
  mov edx,5
+ call cli_arg_equals
+ test eax,eax
+ jnz .g049_check_dispatch
+ mov rdi,rbx
+ lea rsi,[rel arg_module_init_report]
+ mov edx,18
+ call cli_arg_equals
+ test eax,eax
+ jnz .g153_tool_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_emit_interface]
+ mov edx,14
+ call cli_arg_equals
+ test eax,eax
+ jnz .g154_tool_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_interface]
+ mov edx,9
+ call cli_arg_equals
+ test eax,eax
+ jnz .g154_tool_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_organize_imports]
+ mov edx,16
+ call cli_arg_equals
+ test eax,eax
+ jnz .g152_tool_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_add_import]
+ mov edx,10
+ call cli_arg_equals
+ test eax,eax
+ jnz .g152_tool_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_imports]
+ mov edx,7
+ call cli_arg_equals
+ test eax,eax
+ jnz .imports_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_module_info]
+ mov edx,11
+ call cli_arg_equals
+ test eax,eax
+ jnz .module_info_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_module_graph]
+ mov edx,12
+ call cli_arg_equals
+ test eax,eax
+ jnz .module_graph_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_module_check]
+ mov edx,12
  call cli_arg_equals
  test eax,eax
  jnz .mode_check
@@ -2178,13 +4882,88 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  mov edx,8
  call cli_arg_equals
  test eax,eax
- jnz .mode_emit
+ jnz .g051_emit_dispatch
+ mov rdi,rbx
+ lea rsi,[rel arg_emit_object]
+ mov edx,11
+ call cli_arg_equals
+ test eax,eax
+ jnz .mode_emit_object
  mov rdi,rbx
  lea rsi,[rel arg_build]
  mov edx,5
  call cli_arg_equals
  test eax,eax
+ jnz .g049_build_dispatch
+ mov rdi,rbx
+ lea rsi,[rel arg_g049_native_check]
+ mov edx,17
+ call cli_arg_equals
+ test eax,eax
+ jnz .mode_check
+ mov rdi,rbx
+ lea rsi,[rel arg_g049_native_build]
+ mov edx,17
+ call cli_arg_equals
+ test eax,eax
  jnz .mode_build
+ mov rdi,rbx
+ lea rsi,[rel arg_g050_retained_build]
+ mov edx,arg_g050_retained_build_len
+ call cli_arg_equals
+ test eax,eax
+ jz .ordinary_g050_build
+ mov qword [rel cli_retain_runtime_sections],1
+ jmp .mode_build
+.ordinary_g050_build:
+ mov rdi,rbx
+ lea rsi,[rel arg_g050_native_build]
+ mov edx,17
+ call cli_arg_equals
+ test eax,eax
+ jnz .mode_build
+ mov rdi,rbx
+ lea rsi,[rel arg_g051_native_build]
+ mov edx,17
+ call cli_arg_equals
+ test eax,eax
+ jnz .mode_build
+ mov rdi,rbx
+ lea rsi,[rel arg_g051_native_emit_asm]
+ mov edx,20
+ call cli_arg_equals
+ test eax,eax
+ jnz .mode_emit
+ mov rdi,rbx
+ lea rsi,[rel arg_g052_native_build]
+ mov edx,17
+ call cli_arg_equals
+ test eax,eax
+ jnz .mode_build
+ mov rdi,rbx
+ lea rsi,[rel arg_g163_native_build]
+ mov edx,17
+ call cli_arg_equals
+ test eax,eax
+ jnz .mode_build
+ mov rdi,rbx
+ lea rsi,[rel arg_g163_native_emit]
+ mov edx,20
+ call cli_arg_equals
+ test eax,eax
+ jnz .mode_emit
+ mov rdi,rbx
+ lea rsi,[rel arg_g163_native_check]
+ mov edx,17
+ call cli_arg_equals
+ test eax,eax
+ jnz .mode_check
+ mov rdi,rbx
+ lea rsi,[rel arg_link]
+ mov edx,4
+ call cli_arg_equals
+ test eax,eax
+ jnz .g052_link_dispatch
  lea rdi,[rel cli_error_unknown]
  mov esi,cli_error_unknown_end-cli_error_unknown
  call cli_write_stderr
@@ -2196,6 +4975,636 @@ NEBOC_ABI_FUNCTION neboc_cli_main
 .help:
  lea rdi,[rel cli_help_text]
  mov esi,cli_help_text_end-cli_help_text
+ call cli_write_stdout
+ xor eax,eax
+ jmp .done
+.g024_tool_exact:
+ ; Preserve `neboc <tool> ...` while executing the fixed offline G024 host.
+ ; There is no shell or PATH lookup and the child receives an empty
+ ; environment. argv is bounded by the native toolchain contract.
+ mov rax,r12
+ add rax,2
+ cmp rax,NEBOC_TOOLCHAIN_MAX_ARGS
+ ja .usage
+ lea rdi,[rel g024_tool_argv]
+ mov ecx,NEBOC_TOOLCHAIN_MAX_ARGS+1
+ xor eax,eax
+ rep stosq
+ lea rax,[rel g024_python_path]
+ mov [rel g024_tool_argv],rax
+ lea rax,[rel offline_python_flags]
+ mov [rel g024_tool_argv+8],rax
+ call g024_resolve_tool_path
+ test rax,rax
+ jz .internal
+ mov [rel g024_tool_argv+16],rax
+ xor ecx,ecx
+.g024_copy_argv:
+ lea rdx,[rcx+1]
+ cmp rdx,r12
+ jae .g024_run
+ mov rax,[r13+rdx*8]
+ lea rsi,[rel g024_tool_argv]
+ mov [rsi+rcx*8+24],rax
+ inc rcx
+ jmp .g024_copy_argv
+.g024_run:
+ lea rdi,[rel g024_tool_result]
+ mov ecx,NEBOC_TOOLCHAIN_RESULT_QWORDS
+ xor eax,eax
+ rep stosq
+ xor edi,edi
+ lea rsi,[rel g024_tool_argv]
+ lea rdx,[rel g024_tool_argv]
+ mov rcx,r12
+ add rcx,2
+ lea r8,[rel g024_tool_result]
+ call cli_toolchain_runner
+ test eax,eax
+ jnz .internal
+ mov eax,[rel g024_tool_result+NEBOC_TOOLCHAIN_RESULT_EXIT_CODE_OFFSET]
+ jmp .done
+.g036_tool_exact:
+ ; G036 reports run through a fixed repository-local, offline reference host.
+ ; The native compiler and historical scalar runtime remain the source and ABI
+ ; authorities; the host adds bounded catalogue algorithms and canonical JSON.
+ mov rax,r12
+ inc rax
+ cmp rax,NEBOC_TOOLCHAIN_MAX_ARGS
+ ja .usage
+ lea rdi,[rel g036_tool_argv]
+ mov ecx,NEBOC_TOOLCHAIN_MAX_ARGS+1
+ xor eax,eax
+ rep stosq
+ lea rax,[rel g024_python_path]
+ mov [rel g036_tool_argv],rax
+ call g036_resolve_tool_path
+ test rax,rax
+ jz .internal
+ mov [rel g036_tool_argv+8],rax
+ xor ecx,ecx
+.g036_copy_argv:
+ lea rdx,[rcx+1]
+ cmp rdx,r12
+ jae .g036_run
+ mov rax,[r13+rdx*8]
+ lea rsi,[rel g036_tool_argv]
+ mov [rsi+rcx*8+16],rax
+ inc rcx
+ jmp .g036_copy_argv
+.g036_run:
+ lea rdi,[rel g036_tool_result]
+ mov ecx,NEBOC_TOOLCHAIN_RESULT_QWORDS
+ xor eax,eax
+ rep stosq
+ xor edi,edi
+ lea rsi,[rel g036_tool_argv]
+ lea rdx,[rel g036_tool_argv]
+ mov rcx,r12
+ inc rcx
+ lea r8,[rel g036_tool_result]
+ call cli_toolchain_runner
+ test eax,eax
+ jnz .internal
+ mov eax,[rel g036_tool_result+NEBOC_TOOLCHAIN_RESULT_EXIT_CODE_OFFSET]
+ jmp .done
+.g048_tool_exact:
+ ; G048 source changes run through a fixed repository-local host. The native
+ ; compiler remains the parser/semantic/codegen authority for every source.
+ mov rax,r12
+ inc rax
+ cmp rax,NEBOC_TOOLCHAIN_MAX_ARGS
+ ja .usage
+ lea rdi,[rel g048_tool_argv]
+ mov ecx,NEBOC_TOOLCHAIN_MAX_ARGS+1
+ xor eax,eax
+ rep stosq
+ lea rax,[rel g024_python_path]
+ mov [rel g048_tool_argv],rax
+ call g048_resolve_tool_path
+ test rax,rax
+ jz .internal
+ mov [rel g048_tool_argv+8],rax
+ xor ecx,ecx
+.g048_copy_argv:
+ lea rdx,[rcx+1]
+ cmp rdx,r12
+ jae .g048_run
+ mov rax,[r13+rdx*8]
+ lea rsi,[rel g048_tool_argv]
+ mov [rsi+rcx*8+16],rax
+ inc rcx
+ jmp .g048_copy_argv
+.g048_run:
+ lea rdi,[rel g048_tool_result]
+ mov ecx,NEBOC_TOOLCHAIN_RESULT_QWORDS
+ xor eax,eax
+ rep stosq
+ xor edi,edi
+ lea rsi,[rel g048_tool_argv]
+ lea rdx,[rel g048_tool_argv]
+ mov rcx,r12
+ inc rcx
+ lea r8,[rel g048_tool_result]
+ call cli_toolchain_runner
+ test eax,eax
+ jnz .internal
+ mov eax,[rel g048_tool_result+NEBOC_TOOLCHAIN_RESULT_EXIT_CODE_OFFSET]
+ jmp .done
+.g049_tool_exact:
+ ; G049 compiler-performance administration is an offline repository-local
+ ; host. Cold one-shot compilation remains the native correctness reference.
+ mov rax,r12
+ inc rax
+ cmp rax,NEBOC_TOOLCHAIN_MAX_ARGS
+ ja .usage
+ lea rdi,[rel g049_tool_argv]
+ mov ecx,NEBOC_TOOLCHAIN_MAX_ARGS+1
+ xor eax,eax
+ rep stosq
+ lea rax,[rel g024_python_path]
+ mov [rel g049_tool_argv],rax
+ call g049_resolve_tool_path
+ test rax,rax
+ jz .internal
+ mov [rel g049_tool_argv+8],rax
+ xor ecx,ecx
+.g049_copy_argv:
+ lea rdx,[rcx+1]
+ cmp rdx,r12
+ jae .g049_run
+ mov rax,[r13+rdx*8]
+ lea rsi,[rel g049_tool_argv]
+ mov [rsi+rcx*8+16],rax
+ inc rcx
+ jmp .g049_copy_argv
+.g049_run:
+ lea rdi,[rel g049_tool_result]
+ mov ecx,NEBOC_TOOLCHAIN_RESULT_QWORDS
+ xor eax,eax
+ rep stosq
+ xor edi,edi
+ lea rsi,[rel g049_tool_argv]
+ lea rdx,[rel g049_tool_argv]
+ mov rcx,r12
+ inc rcx
+ lea r8,[rel g049_tool_result]
+ call cli_toolchain_runner
+ test eax,eax
+ jnz .internal
+ mov eax,[rel g049_tool_result+NEBOC_TOOLCHAIN_RESULT_EXIT_CODE_OFFSET]
+ jmp .done
+.g050_tool_exact:
+ ; G050 reports and profile builds run through a fixed repository-local host.
+ ; The host delegates source compilation back to the native compiler and
+ ; independently inspects the resulting static ELF artifact.
+ mov rax,r12
+ inc rax
+ cmp rax,NEBOC_TOOLCHAIN_MAX_ARGS
+ ja .usage
+ lea rdi,[rel g050_tool_argv]
+ mov ecx,NEBOC_TOOLCHAIN_MAX_ARGS+1
+ xor eax,eax
+ rep stosq
+ lea rax,[rel g024_python_path]
+ mov [rel g050_tool_argv],rax
+ call g050_resolve_tool_path
+ test rax,rax
+ jz .internal
+ mov [rel g050_tool_argv+8],rax
+ xor ecx,ecx
+.g050_copy_argv:
+ lea rdx,[rcx+1]
+ cmp rdx,r12
+ jae .g050_run
+ mov rax,[r13+rdx*8]
+ lea rsi,[rel g050_tool_argv]
+ mov [rsi+rcx*8+16],rax
+ inc rcx
+ jmp .g050_copy_argv
+.g050_run:
+ lea rdi,[rel g050_tool_result]
+ mov ecx,NEBOC_TOOLCHAIN_RESULT_QWORDS
+ xor eax,eax
+ rep stosq
+ xor edi,edi
+ lea rsi,[rel g050_tool_argv]
+ lea rdx,[rel g050_tool_argv]
+ mov rcx,r12
+ inc rcx
+ lea r8,[rel g050_tool_result]
+ call cli_toolchain_runner
+ test eax,eax
+ jnz .internal
+ mov eax,[rel g050_tool_result+NEBOC_TOOLCHAIN_RESULT_EXIT_CODE_OFFSET]
+ jmp .done
+.g051_tool_exact:
+ ; G051 uses a fixed repository-local, offline host. Cross execution remains
+ ; impossible without an explicit runner and unsupported targets fail closed.
+ mov rax,r12
+ inc rax
+ cmp rax,NEBOC_TOOLCHAIN_MAX_ARGS
+ ja .usage
+ lea rdi,[rel g051_tool_argv]
+ mov ecx,NEBOC_TOOLCHAIN_MAX_ARGS+1
+ xor eax,eax
+ rep stosq
+ lea rax,[rel g024_python_path]
+ mov [rel g051_tool_argv],rax
+ call g051_resolve_tool_path
+ test rax,rax
+ jz .internal
+ mov [rel g051_tool_argv+8],rax
+ xor ecx,ecx
+.g051_copy_argv:
+ lea rdx,[rcx+1]
+ cmp rdx,r12
+ jae .g051_run
+ mov rax,[r13+rdx*8]
+ lea rsi,[rel g051_tool_argv]
+ mov [rsi+rcx*8+16],rax
+ inc rcx
+ jmp .g051_copy_argv
+.g051_run:
+ lea rdi,[rel g051_tool_result]
+ mov ecx,NEBOC_TOOLCHAIN_RESULT_QWORDS
+ xor eax,eax
+ rep stosq
+ xor edi,edi
+ lea rsi,[rel g051_tool_argv]
+ lea rdx,[rel g051_tool_argv]
+ mov rcx,r12
+ inc rcx
+ lea r8,[rel g051_tool_result]
+ call cli_toolchain_runner
+ test eax,eax
+ jnz .internal
+ mov eax,[rel g051_tool_result+NEBOC_TOOLCHAIN_RESULT_EXIT_CODE_OFFSET]
+ jmp .done
+.g052_tool_exact:
+ ; G052 uses a fixed offline host while the trace continues to report Python,
+ ; NASM and GNU ld as external dependencies of the current production build.
+ mov rax,r12
+ inc rax
+ cmp rax,NEBOC_TOOLCHAIN_MAX_ARGS
+ ja .usage
+ lea rdi,[rel g052_tool_argv]
+ mov ecx,NEBOC_TOOLCHAIN_MAX_ARGS+1
+ xor eax,eax
+ rep stosq
+ lea rax,[rel g024_python_path]
+ mov [rel g052_tool_argv],rax
+ call g052_resolve_tool_path
+ test rax,rax
+ jz .internal
+ mov [rel g052_tool_argv+8],rax
+ xor ecx,ecx
+.g052_copy_argv:
+ lea rdx,[rcx+1]
+ cmp rdx,r12
+ jae .g052_run
+ mov rax,[r13+rdx*8]
+ lea rsi,[rel g052_tool_argv]
+ mov [rsi+rcx*8+16],rax
+ inc rcx
+ jmp .g052_copy_argv
+.g052_run:
+ lea rdi,[rel g052_tool_result]
+ mov ecx,NEBOC_TOOLCHAIN_RESULT_QWORDS
+ xor eax,eax
+ rep stosq
+ xor edi,edi
+ lea rsi,[rel g052_tool_argv]
+ lea rdx,[rel g052_tool_argv]
+ mov rcx,r12
+ inc rcx
+ lea r8,[rel g052_tool_result]
+ call cli_toolchain_runner
+ test eax,eax
+ jnz .internal
+ mov eax,[rel g052_tool_result+NEBOC_TOOLCHAIN_RESULT_EXIT_CODE_OFFSET]
+ jmp .done
+.g152_tool_exact:
+ ; G152 source refactorings run only when explicitly requested. The host path
+ ; is fixed relative to this compiler and receives the original bounded argv.
+ mov rax,r12
+ inc rax
+ cmp rax,NEBOC_TOOLCHAIN_MAX_ARGS
+ ja .usage
+ lea rdi,[rel g152_tool_argv]
+ mov ecx,NEBOC_TOOLCHAIN_MAX_ARGS+1
+ xor eax,eax
+ rep stosq
+ lea rax,[rel g024_python_path]
+ mov [rel g152_tool_argv],rax
+ call g152_resolve_tool_path
+ test rax,rax
+ jz .internal
+ mov [rel g152_tool_argv+8],rax
+ xor ecx,ecx
+.g152_copy_argv:
+ lea rdx,[rcx+1]
+ cmp rdx,r12
+ jae .g152_run
+ mov rax,[r13+rdx*8]
+ lea rsi,[rel g152_tool_argv]
+ mov [rsi+rcx*8+16],rax
+ inc rcx
+ jmp .g152_copy_argv
+.g152_run:
+ lea rdi,[rel g152_tool_result]
+ mov ecx,NEBOC_TOOLCHAIN_RESULT_QWORDS
+ xor eax,eax
+ rep stosq
+ xor edi,edi
+ lea rsi,[rel g152_tool_argv]
+ lea rdx,[rel g152_tool_argv]
+ mov rcx,r12
+ inc rcx
+ lea r8,[rel g152_tool_result]
+ call cli_toolchain_runner
+ test eax,eax
+ jnz .internal
+ mov eax,[rel g152_tool_result+NEBOC_TOOLCHAIN_RESULT_EXIT_CODE_OFFSET]
+ jmp .done
+.g153_tool_exact:
+ ; G153 tooling delegates graph recognition to this exact native compiler;
+ ; the fixed host only joins native facts and renders deterministic output.
+ mov rax,r12
+ add rax,2
+ cmp rax,NEBOC_TOOLCHAIN_MAX_ARGS
+ ja .usage
+ lea rdi,[rel g153_tool_argv]
+ mov ecx,NEBOC_TOOLCHAIN_MAX_ARGS+1
+ xor eax,eax
+ rep stosq
+ lea rax,[rel g024_python_path]
+ mov [rel g153_tool_argv],rax
+ lea rax,[rel offline_python_flags]
+ mov [rel g153_tool_argv+8],rax
+ call g153_resolve_tool_path
+ test rax,rax
+ jz .internal
+ mov [rel g153_tool_argv+16],rax
+ xor ecx,ecx
+.g153_copy_argv:
+ lea rdx,[rcx+1]
+ cmp rdx,r12
+ jae .g153_run
+ mov rax,[r13+rdx*8]
+ lea rsi,[rel g153_tool_argv]
+ mov [rsi+rcx*8+24],rax
+ inc rcx
+ jmp .g153_copy_argv
+.g153_run:
+ lea rdi,[rel g153_tool_result]
+ mov ecx,NEBOC_TOOLCHAIN_RESULT_QWORDS
+ xor eax,eax
+ rep stosq
+ xor edi,edi
+ lea rsi,[rel g153_tool_argv]
+ lea rdx,[rel g153_tool_argv]
+ mov rcx,r12
+ add rcx,2
+ lea r8,[rel g153_tool_result]
+ call cli_toolchain_runner
+ test eax,eax
+ jnz .internal
+ mov eax,[rel g153_tool_result+NEBOC_TOOLCHAIN_RESULT_EXIT_CODE_OFFSET]
+ jmp .done
+.g154_tool_exact:
+ ; G154 uses native module facts and the Assembly .ni codec through a fixed,
+ ; offline adapter; it never owns a second parser or semantic graph.
+ mov rax,r12
+ add rax,2
+ cmp rax,NEBOC_TOOLCHAIN_MAX_ARGS
+ ja .usage
+ lea rdi,[rel g154_tool_argv]
+ mov ecx,NEBOC_TOOLCHAIN_MAX_ARGS+1
+ xor eax,eax
+ rep stosq
+ lea rax,[rel g024_python_path]
+ mov [rel g154_tool_argv],rax
+ lea rax,[rel offline_python_flags]
+ mov [rel g154_tool_argv+8],rax
+ call g154_resolve_tool_path
+ test rax,rax
+ jz .internal
+ mov [rel g154_tool_argv+16],rax
+ xor ecx,ecx
+.g154_copy_argv:
+ lea rdx,[rcx+1]
+ cmp rdx,r12
+ jae .g154_run
+ mov rax,[r13+rdx*8]
+ lea rsi,[rel g154_tool_argv]
+ mov [rsi+rcx*8+24],rax
+ inc rcx
+ jmp .g154_copy_argv
+.g154_run:
+ lea rdi,[rel g154_tool_result]
+ mov ecx,NEBOC_TOOLCHAIN_RESULT_QWORDS
+ xor eax,eax
+ rep stosq
+ xor edi,edi
+ lea rsi,[rel g154_tool_argv]
+ lea rdx,[rel g154_tool_argv]
+ mov rcx,r12
+ add rcx,2
+ lea r8,[rel g154_tool_result]
+ call cli_toolchain_runner
+ test eax,eax
+ jnz .internal
+ mov eax,[rel g154_tool_result+NEBOC_TOOLCHAIN_RESULT_EXIT_CODE_OFFSET]
+ jmp .done
+.g051_emit_dispatch:
+ mov r14,2
+.g051_emit_scan:
+ cmp r14,r12
+ jae .mode_emit
+ mov rdi,[r13+r14*8]
+ lea rsi,[rel arg_no_prelude]
+ mov edx,12
+ call cli_arg_equals
+ test eax,eax
+ jnz .g024_tool_exact
+ mov rdi,[r13+r14*8]
+ lea rsi,[rel arg_target]
+ mov edx,8
+ call cli_arg_equals
+ test eax,eax
+ jnz .g051_tool_exact
+ inc r14
+ jmp .g051_emit_scan
+.g049_check_dispatch:
+ mov r14,2
+.g049_check_scan:
+ cmp r14,r12
+ jae .mode_check
+ mov rdi,[r13+r14*8]
+ lea rsi,[rel arg_no_prelude]
+ mov edx,12
+ call cli_arg_equals
+ test eax,eax
+ jnz .g024_tool_exact
+ mov rdi,[r13+r14*8]
+ lea rsi,[rel arg_edition]
+ mov edx,9
+ call cli_arg_equals
+ test eax,eax
+ jnz .g024_tool_exact
+ mov rdi,[r13+r14*8]
+ lea rsi,[rel arg_deny_effectful_init]
+ mov edx,21
+ call cli_arg_equals
+ test eax,eax
+ jnz .g153_tool_exact
+ mov rdi,[r13+r14*8]
+ lea rsi,[rel arg_cold]
+ mov edx,6
+ call cli_arg_equals
+ test eax,eax
+ jnz .g049_tool_exact
+ mov rdi,[r13+r14*8]
+ lea rsi,[rel arg_incremental]
+ mov edx,13
+ call cli_arg_equals
+ test eax,eax
+ jnz .g049_tool_exact
+ inc r14
+ jmp .g049_check_scan
+.g049_build_dispatch:
+ mov r14,2
+.g049_build_scan:
+ cmp r14,r12
+ jae .g050_build_dispatch
+ mov rbx,[r13+r14*8]
+ mov rdi,rbx
+ lea rsi,[rel arg_cache_mode]
+ mov edx,7
+ call cli_arg_equals
+ test eax,eax
+ jnz .g049_tool_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_jobs]
+ mov edx,2
+ call cli_arg_equals
+ test eax,eax
+ jnz .g049_tool_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_scheduler_report]
+ mov edx,18
+ call cli_arg_equals
+ test eax,eax
+ jnz .g049_tool_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_server_mode]
+ mov edx,8
+ call cli_arg_equals
+ test eax,eax
+ jnz .g049_tool_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_memory_budget]
+ mov edx,15
+ call cli_arg_equals
+ test eax,eax
+ jnz .g049_tool_exact
+ inc r14
+ jmp .g049_build_scan
+.g050_build_dispatch:
+ mov r14,2
+.g050_build_scan:
+ cmp r14,r12
+ jae .g051_build_dispatch
+ mov rbx,[r13+r14*8]
+ mov rdi,rbx
+ lea rsi,[rel arg_gc_sections]
+ mov edx,13
+ call cli_arg_equals
+ test eax,eax
+ jnz .g050_tool_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_runtime_profile]
+ mov edx,9
+ call cli_arg_equals
+ test eax,eax
+ jnz .g050_tool_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_build_profile]
+ mov edx,9
+ call cli_arg_equals
+ test eax,eax
+ jnz .g050_tool_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_strip_sections]
+ mov edx,7
+ call cli_arg_equals
+ test eax,eax
+ jnz .g050_tool_exact
+ mov rdi,rbx
+ lea rsi,[rel arg_split_debug]
+ mov edx,13
+ call cli_arg_equals
+ test eax,eax
+ jnz .g050_tool_exact
+ inc r14
+ jmp .g050_build_scan
+.g051_build_dispatch:
+ mov r14,2
+.g051_build_scan:
+ cmp r14,r12
+ jae .g052_build_dispatch
+ mov rdi,[r13+r14*8]
+ lea rsi,[rel arg_no_prelude]
+ mov edx,12
+ call cli_arg_equals
+ test eax,eax
+ jnz .g024_tool_exact
+ mov rdi,[r13+r14*8]
+ lea rsi,[rel arg_target]
+ mov edx,8
+ call cli_arg_equals
+ test eax,eax
+ jnz .g051_tool_exact
+ inc r14
+ jmp .g051_build_scan
+.g052_build_dispatch:
+ mov r14,2
+.g052_build_scan:
+ cmp r14,r12
+ jae .mode_build
+ mov rdi,[r13+r14*8]
+ lea rsi,[rel arg_trace_tools]
+ mov edx,13
+ call cli_arg_equals
+ test eax,eax
+ jnz .g052_tool_exact
+ mov rdi,[r13+r14*8]
+ lea rsi,[rel arg_hermetic]
+ mov edx,10
+ call cli_arg_equals
+ test eax,eax
+ jnz .g052_tool_exact
+ inc r14
+ jmp .g052_build_scan
+.g052_link_dispatch:
+ mov r14,2
+.g052_link_scan:
+ cmp r14,r12
+ jae .mode_build
+ mov rdi,[r13+r14*8]
+ lea rsi,[rel arg_target]
+ mov edx,8
+ call cli_arg_equals
+ test eax,eax
+ jnz .g052_tool_exact
+ inc r14
+ jmp .g052_link_scan
+.version_json_exact:
+ cmp r12,2
+ jne .usage
+ lea rdi,[rel cli_version_machine]
+ mov esi,cli_version_machine_end-cli_version_machine
  call cli_write_stdout
  xor eax,eax
  jmp .done
@@ -2523,6 +5932,66 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  jnz .report_status
  call cli_probabilistic_report
  jmp .done
+.reactive_report_exact:
+ cmp r12,3
+ jne .usage
+ mov rdi,[r13+16]
+ test rdi,rdi
+ jz .usage
+ cmp byte [rdi],0
+ je .usage
+ cmp byte [rdi],'-'
+ je .usage
+ call cli_validate_no_extension
+ test eax,eax
+ jnz .extension
+ mov rax,[r13+16]
+ mov [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],rax
+ mov rdi,rax
+ call cli_read_source
+ test eax,eax
+ jnz .done
+ call cli_reactive_report
+ jmp .done
+.db_exact:
+ cmp r12,4
+ jne .usage
+ mov rdi,[r13+24]
+ test rdi,rdi
+ jz .usage
+ cmp byte [rdi],0
+ je .usage
+ cmp byte [rdi],'-'
+ je .usage
+ mov rdi,[r13+16]
+ lea rsi,[rel arg_db_migrate]
+ mov edx,7
+ call cli_arg_equals
+ test eax,eax
+ jnz .db_migrate
+ mov rdi,[r13+16]
+ lea rsi,[rel arg_db_verify]
+ mov edx,6
+ call cli_arg_equals
+ test eax,eax
+ jz .usage
+ mov rax,[r13+24]
+ mov [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],rax
+ mov rdi,rax
+ call cli_read_source
+ test eax,eax
+ jnz .done
+ call cli_db_verify
+ jmp .done
+.db_migrate:
+ mov rax,[r13+24]
+ mov [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],rax
+ mov rdi,rax
+ call cli_read_source
+ test eax,eax
+ jnz .done
+ call cli_db_migrate
+ jmp .done
 .firmware_exact:
  cmp r12,5
  jne .usage
@@ -2599,13 +6068,13 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  jmp .done
 .bootstrap_exact:
  cmp r12,3
- jne .usage
+ jne .g052_tool_exact
  mov rdi,[r13+16]
  lea rsi,[rel arg_verify]
  mov edx,8
  call cli_arg_equals
  test eax,eax
- jz .usage
+ jz .g052_tool_exact
  call cli_bootstrap_verify
  jmp .done
 .protocol_exact:
@@ -2650,6 +6119,130 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  jnz .done
  call cli_protocol_generate
  jmp .done
+.workflow_exact:
+ cmp r12,4
+ jne .usage
+ mov rdi,[r13+16]
+ lea rsi,[rel arg_workflow_verify]
+ mov edx,6
+ call cli_arg_equals
+ test eax,eax
+ jz .usage
+ mov rdi,[r13+24]
+ test rdi,rdi
+ jz .usage
+ cmp byte [rdi],0
+ je .usage
+ cmp byte [rdi],'-'
+ je .usage
+ mov [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],rdi
+ call cli_read_source
+ test eax,eax
+ jnz .done
+ call cli_workflow_verify
+ jmp .done
+.geometry_check_exact:
+ cmp r12,3
+ jne .usage
+ mov rdi,[r13+16]
+ test rdi,rdi
+ jz .usage
+ cmp byte [rdi],0
+ je .usage
+ cmp byte [rdi],'-'
+ je .usage
+ mov [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],rdi
+ call cli_read_source
+ test eax,eax
+ jnz .done
+ call cli_geometry_check
+ jmp .done
+.route_bench_exact:
+ cmp r12,3
+ jne .usage
+ mov rdi,[r13+16]
+ test rdi,rdi
+ jz .usage
+ cmp byte [rdi],0
+ je .usage
+ cmp byte [rdi],'-'
+ je .usage
+ mov [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],rdi
+ call cli_read_source
+ test eax,eax
+ jnz .done
+ call cli_route_bench
+ jmp .done
+.emit_wasm_exact:
+ cmp r12,3
+ jne .usage
+ mov rdi,[r13+16]
+ test rdi,rdi
+ jz .usage
+ cmp byte [rdi],'-'
+ je .usage
+ mov [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],rdi
+ call cli_read_source
+ test eax,eax
+ jnz .done
+ call cli_emit_wasm
+ jmp .done
+.wasm_inspect_exact:
+ cmp r12,3
+ jne .usage
+ mov rdi,[r13+16]
+ test rdi,rdi
+ jz .usage
+ cmp byte [rdi],'-'
+ je .usage
+ mov [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],rdi
+ call cli_read_source
+ test eax,eax
+ jnz .done
+ call cli_wasm_inspect
+ jmp .done
+.emit_bpf_exact:
+ cmp r12,3
+ jne .usage
+ mov rdi,[r13+16]
+ test rdi,rdi
+ jz .usage
+ cmp byte [rdi],'-'
+ je .usage
+ mov [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],rdi
+ call cli_read_source
+ test eax,eax
+ jnz .done
+ call cli_emit_bpf
+ jmp .done
+.portable_test_exact:
+ cmp r12,3
+ jne .usage
+ mov rdi,[r13+16]
+ test rdi,rdi
+ jz .usage
+ cmp byte [rdi],'-'
+ je .usage
+ mov [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],rdi
+ call cli_read_source
+ test eax,eax
+ jnz .done
+ call cli_portable_test
+ jmp .done
+.portable_sbom_exact:
+ cmp r12,3
+ jne .usage
+ mov rdi,[r13+16]
+ test rdi,rdi
+ jz .usage
+ cmp byte [rdi],'-'
+ je .usage
+ mov [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],rdi
+ call cli_read_source
+ test eax,eax
+ jnz .done
+ call cli_portable_sbom
+ jmp .done
 .simulation_replay_exact:
  cmp r12,3
  jne .usage
@@ -2666,11 +6259,276 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  jnz .done
  call cli_simulation_replay_validate
  jmp .done
+.imports_exact:
+ cmp r12,3
+ jb .usage
+ mov rdi,[r13+16]
+ lea rsi,[rel arg_imports_api_impact]
+ mov edx,10
+ call cli_arg_equals
+ test eax,eax
+ jnz .g152_tool_exact
+ cmp r12,4
+ jb .usage
+ mov rdi,[r13+16]
+ lea rsi,[rel arg_imports_list]
+ mov edx,4
+ call cli_arg_equals
+ test eax,eax
+ jnz .imports_list
+ mov rdi,[r13+16]
+ lea rsi,[rel arg_imports_explain]
+ mov edx,7
+ call cli_arg_equals
+ test eax,eax
+ jz .usage
+ cmp r12,9
+ jne .usage
+ mov qword [rel cli_g151_report_kind],2
+ mov rax,[r13+24]
+ mov [rel cli_g151_query],rax
+ mov rax,[r13+32]
+ mov [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],rax
+ mov r14,5
+ jmp .imports_units
+.imports_list:
+ cmp r12,8
+ jne .usage
+ mov qword [rel cli_g151_report_kind],1
+ mov rax,[r13+24]
+ mov [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],rax
+ mov r14,4
+.imports_units:
+ mov rdi,[r13+r14*8]
+ lea rsi,[rel arg_unit]
+ mov edx,6
+ call cli_arg_equals
+ test eax,eax
+ jz .usage
+ lea rax,[r14+2]
+ cmp rax,r12
+ jae .usage
+ mov rax,[r13+r14*8+8]
+ test rax,rax
+ jz .usage
+ mov [rel cli_module_unit_paths],rax
+ mov rdi,[r13+r14*8+16]
+ lea rsi,[rel arg_unit]
+ mov edx,6
+ call cli_arg_equals
+ test eax,eax
+ jz .usage
+ mov rax,[r13+r14*8+24]
+ test rax,rax
+ jz .usage
+ mov [rel cli_module_unit_paths+8],rax
+ mov qword [rel cli_module_unit_count],2
+ mov rdi,[rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET]
+ test rdi,rdi
+ jz .usage
+ cmp byte [rdi],'-'
+ je .usage
+ call cli_validate_no_extension
+ test eax,eax
+ jnz .extension
+ call cli_validate_module_unit_paths
+ test eax,eax
+ jnz .extension
+ mov rdi,[rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET]
+ call cli_read_source
+ test eax,eax
+ jnz .done
+ call cli_read_module_units
+ test eax,eax
+ jnz .done
+ call cli_recognize_modules
+ test eax,eax
+ jnz .imports_source
+ cmp qword [rel cli_g151_report_kind],2
+ jne .imports_render
+ call cli_g151_validate_query
+ test eax,eax
+ jnz .imports_source
+.imports_render:
+ call cli_g151_render_imports
+ jmp .done
+.imports_source:
+ call cli_report_module_diagnostic
+ test eax,eax
+ jnz .imports_source_done
+ lea rdi,[rel cli_g151_error_syntax]
+ mov esi,cli_g151_error_syntax_end-cli_g151_error_syntax
+ call cli_write_stderr_raw
+.imports_source_done:
+ mov eax,NEBOC_CLI_EXIT_SOURCE_ERROR
+ jmp .done
+
+.module_info_exact:
+ mov qword [rel cli_g150_report_kind],1
+ mov qword [rel cli_g150_report_format],0
+ jmp .module_report_exact
+.module_graph_exact:
+ mov qword [rel cli_g150_report_kind],2
+ mov qword [rel cli_g150_report_format],0
+.module_report_exact:
+ cmp r12,7
+ jb .usage
+ mov rdi,[r13+16]
+ test rdi,rdi
+ jz .usage
+ cmp byte [rdi],0
+ je .usage
+ cmp byte [rdi],'-'
+ je .usage
+ mov [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],rdi
+ mov qword [rel cli_module_unit_count],0
+ mov r14,3
+.module_report_parse:
+ cmp r14,r12
+ jae .module_report_parsed
+ mov rbx,[r13+r14*8]
+ mov rdi,rbx
+ lea rsi,[rel arg_unit]
+ mov edx,6
+ call cli_arg_equals
+ test eax,eax
+ jnz .module_report_unit
+ mov rdi,rbx
+ lea rsi,[rel arg_g150_format]
+ mov edx,8
+ call cli_arg_equals
+ test eax,eax
+ jnz .module_report_format
+ jmp .usage
+.module_report_unit:
+ mov rcx,[rel cli_module_unit_count]
+ cmp rcx,2
+ jae .usage
+ inc r14
+ cmp r14,r12
+ jae .usage
+ mov rax,[r13+r14*8]
+ test rax,rax
+ jz .usage
+ cmp byte [rax],0
+ je .usage
+ cmp byte [rax],'-'
+ je .usage
+ lea rdx,[rel cli_module_unit_paths]
+ mov [rdx+rcx*8],rax
+ inc rcx
+ mov [rel cli_module_unit_count],rcx
+ inc r14
+ jmp .module_report_parse
+.module_report_format:
+ cmp qword [rel cli_g150_report_kind],2
+ jne .usage
+ cmp qword [rel cli_g150_report_format],0
+ jne .usage
+ inc r14
+ cmp r14,r12
+ jae .usage
+ mov rbx,[r13+r14*8]
+ mov rdi,rbx
+ lea rsi,[rel arg_g150_text]
+ mov edx,4
+ call cli_arg_equals
+ test eax,eax
+ jnz .module_report_format_text
+ mov rdi,rbx
+ lea rsi,[rel arg_json]
+ mov edx,4
+ call cli_arg_equals
+ test eax,eax
+ jnz .module_report_format_json
+ mov rdi,rbx
+ lea rsi,[rel arg_g150_dot]
+ mov edx,3
+ call cli_arg_equals
+ test eax,eax
+ jz .usage
+ mov qword [rel cli_g150_report_format],3
+ jmp .module_report_format_done
+.module_report_format_text:
+ mov qword [rel cli_g150_report_format],1
+ jmp .module_report_format_done
+.module_report_format_json:
+ mov qword [rel cli_g150_report_format],2
+.module_report_format_done:
+ inc r14
+ jmp .module_report_parse
+.module_report_parsed:
+ cmp qword [rel cli_module_unit_count],2
+ jne .usage
+ cmp qword [rel cli_g150_report_kind],2
+ jne .module_report_input
+ cmp qword [rel cli_g150_report_format],0
+ jne .module_report_input
+ mov qword [rel cli_g150_report_format],1
+.module_report_input:
+ mov rdi,[rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET]
+ call cli_validate_no_extension
+ test eax,eax
+ jnz .extension
+ call cli_validate_module_unit_paths
+ test eax,eax
+ jnz .extension
+ mov rdi,[rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET]
+ call cli_read_source
+ test eax,eax
+ jnz .done
+ call cli_read_module_units
+ test eax,eax
+ jnz .done
+ call cli_recognize_modules
+ test eax,eax
+ jnz .module_report_source
+ call cli_g150_prepare_snapshot
+ test eax,eax
+ jnz .module_report_source
+ cmp qword [rel cli_g150_report_kind],1
+ jne .module_report_graph
+ call cli_g150_render_info
+ jmp .done
+.module_report_graph:
+ call cli_g150_render_graph
+ jmp .done
+.module_report_source:
+ call cli_report_module_diagnostic
+ test eax,eax
+ jnz .module_report_source_done
+ lea rdi,[rel cli_g150_error]
+ mov esi,cli_g150_error_end-cli_g150_error
+ call cli_write_stderr_raw
+.module_report_source_done:
+ mov eax,NEBOC_CLI_EXIT_SOURCE_ERROR
+ jmp .done
 .mode_check:
+ mov qword [rel cli_state+NEBOC_CLI_STATE_MODE_OFFSET],NEBOC_CLI_MODE_CHECK
+ jmp .parse
+.mode_meta_check:
+ mov qword [rel cli_meta_mode],1
+ mov qword [rel cli_state+NEBOC_CLI_STATE_MODE_OFFSET],NEBOC_CLI_MODE_CHECK
+ jmp .parse
+.mode_meta_expand:
+ mov qword [rel cli_meta_mode],2
+ mov qword [rel cli_state+NEBOC_CLI_STATE_MODE_OFFSET],NEBOC_CLI_MODE_CHECK
+ jmp .parse
+.mode_formal_verify:
+ mov qword [rel cli_meta_mode],5
+ mov qword [rel cli_state+NEBOC_CLI_STATE_MODE_OFFSET],NEBOC_CLI_MODE_CHECK
+ jmp .parse
+.mode_solve:
+ mov qword [rel cli_meta_mode],3
  mov qword [rel cli_state+NEBOC_CLI_STATE_MODE_OFFSET],NEBOC_CLI_MODE_CHECK
  jmp .parse
 .mode_emit:
  mov qword [rel cli_state+NEBOC_CLI_STATE_MODE_OFFSET],NEBOC_CLI_MODE_EMIT_ASM
+ jmp .parse
+.mode_emit_object:
+ mov qword [rel cli_state+NEBOC_CLI_STATE_MODE_OFFSET],NEBOC_CLI_MODE_BUILD
+ mov qword [rel cli_entrypoint_target_kind],NEBOC_TARGET_KIND_LIBRARY
+ mov qword [rel cli_entrypoint_target_kind_seen],1
  jmp .parse
 .mode_build:
  mov qword [rel cli_state+NEBOC_CLI_STATE_MODE_OFFSET],NEBOC_CLI_MODE_BUILD
@@ -2680,6 +6538,24 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  cmp r14,r12
  jae .parse_done
  mov rbx,[r13+r14*8]
+ mov rdi,rbx
+ lea rsi,[rel arg_property]
+ mov edx,10
+ call cli_arg_equals
+ test eax,eax
+ jnz .parse_formal_property
+ mov rdi,rbx
+ lea rsi,[rel arg_counterexample]
+ mov edx,16
+ call cli_arg_equals
+ test eax,eax
+ jnz .parse_formal_counterexample
+ mov rdi,rbx
+ lea rsi,[rel arg_explain_unsat]
+ mov edx,15
+ call cli_arg_equals
+ test eax,eax
+ jnz .parse_explain_unsat
  mov rdi,rbx
  lea rsi,[rel arg_emit_build_events]
  mov edx,19
@@ -2819,6 +6695,12 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  test eax,eax
  jnz .parse_keep
  mov rdi,rbx
+ lea rsi,[rel arg_debug]
+ mov edx,7
+ call cli_arg_equals
+ test eax,eax
+ jnz .parse_debug
+ mov rdi,rbx
  lea rsi,[rel arg_unit]
  mov edx,6
  call cli_arg_equals
@@ -2829,6 +6711,37 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  cmp qword [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],0
  jne .usage
  mov [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],rbx
+ inc r14
+ jmp .parse_loop
+.parse_formal_property:
+ cmp qword [rel cli_meta_mode],5
+ jne .usage
+ cmp qword [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],0
+ jne .usage
+ inc r14
+ cmp r14,r12
+ jae .usage
+ mov rdi,[r13+r14*8]
+ lea rsi,[rel arg_safety29]
+ mov edx,8
+ call cli_arg_equals
+ test eax,eax
+ jz .usage
+ mov qword [rel cli_meta_mode],6
+ inc r14
+ jmp .parse_loop
+.parse_formal_counterexample:
+ cmp qword [rel cli_meta_mode],5
+ jne .usage
+ cmp qword [rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET],0
+ jne .usage
+ mov qword [rel cli_meta_mode],7
+ inc r14
+ jmp .parse_loop
+.parse_explain_unsat:
+ cmp qword [rel cli_meta_mode],3
+ jne .usage
+ mov qword [rel cli_meta_mode],4
  inc r14
  jmp .parse_loop
 .parse_emit_build_events:
@@ -3322,6 +7235,14 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  mov qword [rel cli_state+NEBOC_CLI_STATE_KEEP_TEMP_OFFSET],1
  inc r14
  jmp .parse_loop
+.parse_debug:
+ cmp qword [rel cli_state+NEBOC_CLI_STATE_MODE_OFFSET],NEBOC_CLI_MODE_BUILD
+ jne .usage
+ cmp qword [rel cli_debug],0
+ jne .usage
+ mov qword [rel cli_debug],1
+ inc r14
+ jmp .parse_loop
 .parse_unit:
  mov rcx,[rel cli_module_unit_count]
  cmp rcx,2
@@ -3411,13 +7332,59 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  test eax,eax
  jnz .report_status
 .source_loaded:
+ ; Only public compilation commands may delegate stdlib visibility. Internal
+ ; projected-source aliases never recurse into the host.
+ mov qword [rel cli_std_import_dispatch],0
+ mov rdi,[r13+8]
+ lea rsi,[rel arg_check]
+ mov edx,5
+ call cli_arg_equals
+ test eax,eax
+ jnz .std_import_dispatch_enabled
+ mov rdi,[r13+8]
+ lea rsi,[rel arg_build]
+ mov edx,5
+ call cli_arg_equals
+ test eax,eax
+ jnz .std_import_dispatch_enabled
+ mov rdi,[r13+8]
+ lea rsi,[rel arg_emit_asm]
+ mov edx,8
+ call cli_arg_equals
+ test eax,eax
+ jnz .std_import_dispatch_enabled
+ mov rdi,[r13+8]
+ lea rsi,[rel arg_module_check]
+ mov edx,12
+ call cli_arg_equals
+ test eax,eax
+ jnz .std_import_dispatch_enabled
+ mov rdi,[r13+8]
+ lea rsi,[rel arg_link]
+ mov edx,4
+ call cli_arg_equals
+ test eax,eax
+ jz .std_import_dispatch_ready
+.std_import_dispatch_enabled:
+ mov qword [rel cli_std_import_dispatch],2
+.std_import_dispatch_ready:
  ; Owner-specific reporters remain presentation-silent.  Every rejected
  ; source is rendered once from the canonical typed record below.
  mov qword [rel cli_machine_reporting],1
 .frontend_call:
  call cli_frontend_validate
+ cmp qword [rel cli_std_import_dispatch],1
+ je .g024_tool_exact
  test eax,eax
  jnz .frontend_failed
+ ; A source without an import still needs the edition visibility boundary.
+ ; Run this after native admission so malformed source keeps its canonical
+ ; parser/type diagnostic. Private projected aliases never recurse here.
+ cmp qword [rel cli_std_import_dispatch],2
+ jne .public_visibility_ready
+ mov qword [rel cli_std_import_dispatch],1
+ jmp .g024_tool_exact
+.public_visibility_ready:
  cmp qword [rel cli_entrypoint_target_kind],NEBOC_TARGET_KIND_TEST
  jne .frontend_ready
  call cli_prepare_test_runner
@@ -3436,6 +7403,9 @@ NEBOC_ABI_FUNCTION neboc_cli_main
 .frontend_failed:
  cmp qword [rel cli_message_format],3
  jae .source
+ call cli_report_binary_foundation_diagnostic
+ test eax,eax
+ jnz .source
  call cli_report_buffer_diagnostic
  test eax,eax
  jnz .source
@@ -3532,6 +7502,70 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  call cli_report_numeric_diagnostic
  jmp .source
 .frontend_ready:
+ cmp qword [rel cli_meta_mode],0
+ je .meta_command_ready
+ cmp qword [rel cli_meta_mode],3
+ jae .formal_command_owner
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],1
+ jne .source
+ mov rax,[rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_HASH_OFFSET]
+ xor rax,[rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_OUTPUT_VALUE_OFFSET]
+ mov rdx,0x5246323034473238
+ cmp rax,rdx
+ jne .source
+ jmp .meta_command_ready
+.formal_command_owner:
+ cmp qword [rel cli_meta_mode],5
+ jae .verify_command_owner
+.solve_command_owner:
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],1
+ jne .source
+ mov rax,[rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_HASH_OFFSET]
+ xor rax,[rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_OUTPUT_VALUE_OFFSET]
+ mov rdx,0x5246323034473330
+ cmp rax,rdx
+ jne .source
+ jmp .meta_command_ready
+.verify_command_owner:
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],1
+ jne .source
+ mov rax,[rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_HASH_OFFSET]
+ xor rax,[rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_OUTPUT_VALUE_OFFSET]
+ mov rdx,0x5246323034473239
+ cmp rax,rdx
+ jne .source
+.meta_command_ready:
+ cmp qword [rel cli_module_request+NEBOC_MODULE_FOUND_OFFSET],0
+ jne .generate
+ call cli_tokens_contain_public_visual_program
+ test eax,eax
+ jnz .generate
+ call cli_tokens_contain_reduction_binder
+ test eax,eax
+ jnz .generate
+ ; Parsed function declarations containing G123 operators are complete typed
+ ; programs, including unused call results. Scalar whole-source evaluators
+ ; cannot claim their separate function and entry blocks.
+ call cli_tokens_contain_typed_scalar_operator
+ test eax,eax
+ jz .g123_function_route_ready
+ call cli_program_has_function_decl
+ cmp eax,-1
+ je .source
+ cmp eax,1
+ je .generate
+.g123_function_route_ready:
+ call cli_program_has_associative_application
+ test eax,eax
+ jnz .generate
+ call cli_program_has_native_numeric_call
+ test eax,eax
+ jnz .generate
+ call cli_tokens_contain_textual_binding_return
+ test eax,eax
+ jnz .generate
+ cmp qword [rel cli_binary_foundation+NEBOC_BF_FOUND_OFFSET],0
+ jne .generate
  cmp qword [rel text_char_unicode_e_bytes_cli_semantic+NEBOC_SEM_FOUND_OFFSET],0
  jne .generate
  cmp qword [rel cli_buffer+NEBOC_BUFFER_FOUND_OFFSET],0
@@ -3591,6 +7625,7 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  jz .generate
  call option_result_null_externo_e_erros_tipados_cli_report_semantic_diagnostic
  jmp .source
+
 .not_semantic:
  call cli_recognize_bindings
  test eax,eax
@@ -3618,9 +7653,37 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  ; sentinel only after the shared AST proves function+if+Char structure.  All
  ; other binding failures retain their established owner and diagnostic.
  cmp qword [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_vertical_request+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],NEBOC_BIND_DIAG_TYPE_MISMATCH
- je .binding_function_exit_flow
+ jne .binding_error_not_type_mismatch
+ ; A parsed receiver-first power/XOR/Ordering function already belongs to
+ ; FunctionTable. Resolve that witness before asking the whole-source Float
+ ; evaluator, which cannot type an unused user call in start().
+ call cli_tokens_contain_g123_infix
+ test eax,eax
+ jz .binding_float_fallback
+ call cli_program_has_function_decl
+ cmp eax,-1
+ je .source
+ cmp eax,1
+ je .binding_function_composition_yield
+.binding_float_fallback:
+ ; A Float foundation program may use postfix result bindings after arithmetic.
+ ; The legacy scalar binding walker cannot infer those Float expressions and
+ ; reports its broad type-mismatch sentinel.  Yield only when the dedicated
+ ; Float semantic owner independently recognizes the complete source.
+ call cli_recognize_foundation_float
+ test eax,eax
+ jnz .binding_semantic_error
+ cmp qword [rel cli_float_sem_request+NEBOC_FLOAT_SEM_FOUND_OFFSET],0
+ jne .binding_function_composition_yield
+ jmp .binding_function_exit_flow
+.binding_error_not_type_mismatch:
  cmp qword [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_vertical_request+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_INTERNAL
  jne .binding_semantic_error
+ call cli_program_is_function_exit_flow
+ cmp eax,-1
+ je .source
+ cmp eax,1
+ je .binding_function_composition_yield
  call cli_program_is_char_exit_flow
  jmp .binding_exit_flow_classified
 .binding_function_exit_flow:
@@ -3636,6 +7699,8 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  call bindings_constantes_mutabilidade_e_definite_assignment_cli_report_semantic_diagnostic
  jmp .source
 .bindings_constantes_mutabilidade_e_definite_assignment_semantic_ready:
+ cmp qword [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_frontend_diagnostic],NEBOC_BIND_DIAG_CONST_DECLARATION_DEFERRED
+ je .generate
  cmp qword [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_vertical_request+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_FOUND_OFFSET],0
  je .bindings_exit_flow_ready
  ; The legacy binding vertical can successfully recognize the caller binding
@@ -3664,6 +7729,15 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  call cli_recognize_text_char_bytes
  test eax,eax
  jz .text_char_unicode_e_bytes_semantic_ready
+ ; G055/G056 textual diagnostics are owned by the dedicated vertical even
+ ; inside start(), which is structurally a function composition. Do not yield
+ ; these exact causal errors to the generic function pipeline.
+ mov rax,[rel text_char_unicode_e_bytes_cli_vertical_request+neboc_text_char_unicode_e_bytes_VERTICAL_ERROR_CODE_OFFSET]
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_ARITY
+ jb .text_char_semantic_maybe_yield
+ cmp rax,NEBOC_API_DIAG_TEXT_CONVERSION_RECEIVER
+ jbe .text_char_semantic_error
+.text_char_semantic_maybe_yield:
  call cli_program_is_function_composition
  cmp eax,-1
  je .source
@@ -3718,6 +7792,11 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  je .source
  test eax,eax
  jnz .numeric_function_composition_yield
+ call cli_program_is_function_exit_flow
+ cmp eax,-1
+ je .source
+ test eax,eax
+ jnz .numeric_function_composition_yield
  call cli_program_is_char_exit_flow
  cmp eax,-1
  je .source
@@ -3742,6 +7821,11 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  je .source
  test eax,eax
  jnz .numeric_found_function_yield
+ call cli_program_is_function_exit_flow
+ cmp eax,-1
+ je .source
+ test eax,eax
+ jnz .numeric_found_function_yield
  call cli_program_is_char_exit_flow
  cmp eax,-1
  je .source
@@ -3751,6 +7835,21 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  mov qword [rel seguranca_numerica_conversoes_e_overflow_cli_vertical_request+neboc_seguranca_numerica_conversoes_e_overflow_VERTICAL_FOUND_OFFSET],0
  mov qword [rel seguranca_numerica_conversoes_e_overflow_cli_vertical_request+neboc_seguranca_numerica_conversoes_e_overflow_VERTICAL_ERROR_CODE_OFFSET],0
 .numeric_route_ready:
+ ; Parsed native methods also need the typed owner when their value is unused.
+ ; Its signature diagnostic must precede the scalar-only legacy evaluator.
+ call cli_program_has_native_numeric_call
+ test eax,eax
+ jnz .generate
+ ; The legacy Float evaluator owns a scalar-only program, not an I/O body.
+ ; Use the same parsed composition witness as numeric safety above: the
+ ; FunctionTable owner validates every expression and the explicit return.
+ ; Otherwise a Float comparison used by Console is rejected as an unsupported
+ ; statement before its already-material typed owner can consume it.
+ call cli_program_is_function_composition
+ cmp eax,-1
+ je .source
+ test eax,eax
+ jnz .generate
  call cli_recognize_foundation_float
  test eax,eax
  jz .float_semantic_ready
@@ -3858,6 +7957,27 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  call effects_capabilities_e_politicas_cli_report_frontend_diagnostic
  jmp .source
 .assembly_ready:
+ cmp qword [rel cli_meta_mode],5
+ jb .assembly_not_verify
+ call cli_g029_verify_report
+ test eax,eax
+ jnz .internal
+ jmp .success
+.assembly_not_verify:
+ cmp qword [rel cli_meta_mode],3
+ jb .assembly_not_solve
+ call cli_g030_solve_report
+ test eax,eax
+ jnz .internal
+ jmp .success
+.assembly_not_solve:
+ cmp qword [rel cli_meta_mode],2
+ jne .assembly_not_meta_expand
+ lea rdi,[rel cli_asm_output]
+ mov rsi,[rel cli_state+NEBOC_CLI_STATE_ASM_LENGTH_OFFSET]
+ call cli_write_stdout
+ jmp .success
+.assembly_not_meta_expand:
  cmp qword [rel cli_state+NEBOC_CLI_STATE_MODE_OFFSET],NEBOC_CLI_MODE_CHECK
  je .success
  cmp qword [rel cli_state+NEBOC_CLI_STATE_MODE_OFFSET],NEBOC_CLI_MODE_EMIT_ASM
@@ -3929,25 +8049,19 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  jmp .done
 .source:
  call cli_invalidate_rejected_source_outputs
- mov rdi,[rel cli_build_events_path]
- test rdi,rdi
- jz .source_format
- lea rsi,[rel build_events_failure]
- mov edx,build_events_failure_end-build_events_failure
- call cli_write_file
- test eax,eax
- jnz .io
-.source_format:
  cmp qword [rel cli_manifest_diagnostic],0
- je .source_canonical
- call cli_emit_target_diagnostic
- mov qword [rel cli_machine_reporting],0
- mov eax,NEBOC_CLI_EXIT_SOURCE_ERROR
- jmp .done
-.source_canonical:
+ jne .source_manifest
  call cli_prepare_canonical_diagnostic
  test eax,eax
  jnz .internal
+ mov rdi,[rel cli_build_events_path]
+ test rdi,rdi
+ jz .source_format
+ call cli_write_canonical_failure_events
+ test eax,eax
+ jnz .io
+.source_format:
+.source_canonical:
  call cli_emit_canonical_diagnostic
  test eax,eax
  jnz .internal
@@ -3964,6 +8078,21 @@ NEBOC_ABI_FUNCTION neboc_cli_main
  mov esi,cli_fix_preview_end-cli_fix_preview
  call cli_write_stderr_raw
 .source_human_done:
+ mov qword [rel cli_machine_reporting],0
+ mov eax,NEBOC_CLI_EXIT_SOURCE_ERROR
+ jmp .done
+.source_manifest:
+ mov rdi,[rel cli_build_events_path]
+ test rdi,rdi
+ jz .source_manifest_emit
+ call cli_prepare_target_event_diagnostic
+ test eax,eax
+ jnz .internal
+ call cli_write_canonical_failure_events
+ test eax,eax
+ jnz .io
+.source_manifest_emit:
+ call cli_emit_target_diagnostic
  mov qword [rel cli_machine_reporting],0
  mov eax,NEBOC_CLI_EXIT_SOURCE_ERROR
  jmp .done
@@ -4777,6 +8906,56 @@ cli_emit_test_runner:
 .done:
  ret
 
+; Materialize the legacy target-contract identity as a schema-v1 Diagnostic
+; for build-event parity. Human/CLI target rendering remains owned by the
+; target subsystem, while machine event transport consumes this same record.
+cli_prepare_target_event_diagnostic:
+ lea rdi,[rel cli_canonical_diagnostic]
+ mov ecx,NEBOC_DIAGNOSTIC_QWORDS
+ xor eax,eax
+ rep stosq
+ lea rsi,[rel cli_target_code_prefix]
+ lea rdi,[rel cli_target_dynamic_code]
+ mov ecx,cli_target_code_prefix_len
+ rep movsb
+ mov rax,[rel cli_manifest_diagnostic]
+ test rax,rax
+ jnz .diag_nonzero
+ mov eax,1
+.diag_nonzero:
+ cmp rax,21
+ jbe .diag_bounded
+ mov eax,2
+.diag_bounded:
+ xor edx,edx
+ mov ecx,10
+ div rcx
+ mov byte [rdi],'0'
+ add al,'0'
+ mov [rdi+1],al
+ add dl,'0'
+ mov [rdi+2],dl
+ lea rax,[rel cli_target_dynamic_code]
+ mov [rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_PUBLIC_CODE_OFFSET],rax
+ mov qword [rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_PUBLIC_CODE_LENGTH_OFFSET],cli_target_code_prefix_len+3
+ mov qword [rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_SEVERITY_OFFSET],NEBOC_DIAGNOSTIC_SEVERITY_ERROR
+ mov qword [rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_CATEGORY_OFFSET],NEBOC_DIAGNOSTIC_CATEGORY_TOOLING
+ mov qword [rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_PHASE_OFFSET],NEBOC_DIAGNOSTIC_PHASE_PARSE
+ lea rax,[rel cli_target_message_key]
+ mov [rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_MESSAGE_KEY_OFFSET],rax
+ mov qword [rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_MESSAGE_KEY_LENGTH_OFFSET],cli_target_message_key_len
+ mov qword [rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_SCHEMA_VERSION_OFFSET],NEBOC_DIAGNOSTIC_SCHEMA_V1
+ mov qword [rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_HAS_PRIMARY_OFFSET],1
+ mov qword [rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_ID_OFFSET],1
+ mov rax,[rel cli_state+NEBOC_CLI_STATE_SOURCE_LENGTH_OFFSET]
+ mov [rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_LENGTH_OFFSET],rax
+ test rax,rax
+ jz .ready
+ mov qword [rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_END_OFFSET],1
+.ready:
+ xor eax,eax
+ ret
+
 cli_emit_target_diagnostic:
  push rbx
  push r12
@@ -4854,7 +9033,7 @@ cli_validate_module_unit_paths:
  jae .ok
  lea rdi,[rel cli_module_unit_paths]
  mov rdi,[rdi+rbx*8]
- call cli_validate_no_extension
+ call cli_validate_module_extension
  test eax,eax
  jnz .done
  inc rbx
@@ -4864,6 +9043,28 @@ cli_validate_module_unit_paths:
 .done:
  pop rbx
  ret
+
+cli_validate_module_extension:
+ push rbx
+ mov rbx,rdi
+ call cli_strlen_path
+ cmp rax,3
+ jb .no
+ cmp rax,-1
+ je .no
+ cmp byte [rbx+rax-3],'.'
+ jne .no
+ cmp byte [rbx+rax-2],'n'
+ jne .no
+ cmp byte [rbx+rax-1],'i'
+ jne .no
+ xor eax,eax
+ pop rbx
+ ret
+.no:
+ mov rdi,rbx
+ pop rbx
+ jmp cli_validate_no_extension
 
 ; Read zero, one or two auxiliary module units into isolated 4096-byte buffers.
 cli_read_module_units:
@@ -4982,9 +9183,97 @@ cli_prepare_array_range_general_tokens:
  xor r14d,r14d                 ; brace depth
  xor r15d,r15d                 ; skip current top-level declaration
  mov qword [rsp],0             ; current top-level statement output start
+ mov rax,[rel cli_generic+NEBOC_GEN_PURE_DECL_END_OFFSET]
+ test rax,rax
+ jz .loop
+ ; The native generic owner has authenticated this complete pure declaration.
+ ; Keep each instantiation's typed value and the rest of Program in order.
+ cmp qword [rel cli_generic+NEBOC_GEN_FLAGS_OFFSET],NEBOC_GEN_FLAG_PARSED|NEBOC_GEN_FLAG_ANALYZED
+ jne .bad
+ mov r12,rax
 .loop:
  cmp r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
  jae .finish
+ cmp qword [rel cli_generic+NEBOC_GEN_PURE_DECL_END_OFFSET],0
+ je .const_instance_ready
+ xor ecx,ecx
+.const_instance_scan:
+ cmp rcx,[rel cli_generic+NEBOC_GEN_USE_COUNT_OFFSET]
+ jae .const_instance_ready
+ lea rdx,[rel cli_generic+NEBOC_GEN_PURE_USE_TOKENS_OFFSET]
+ cmp r12,[rdx+rcx*8]
+ jne .const_instance_next
+ imul rax,rcx,NEBOC_GEN_RECORD_SIZE
+ lea rdx,[rel cli_generic_records]
+ add rdx,rax
+ cmp qword [rdx+NEBOC_GEN_RECORD_KIND_OFFSET],NEBOC_GEN_KIND_CONST_FUNCTION
+ jne .identity_instance
+ mov rax,[rdx+NEBOC_GEN_RECORD_CONST_KEY_OFFSET]
+ mov [rsp+8],rax
+ call cli_copy_general_token
+ lea rdx,[rel cli_general_tokens]
+ lea rax,[r13-1]
+ imul rax,NEBOC_TOKEN_SIZE
+ add rdx,rax
+ mov qword [rdx+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_INTEGER
+ mov rax,[rsp+8]
+ mov [rdx+NEBOC_TOKEN_PAYLOAD_OFFSET],rax
+ lea rax,[r12+7]
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rbx,[rel cli_tokens]
+ mov rax,[rbx+rax+NEBOC_TOKEN_END_OFFSET]
+ mov [rdx+NEBOC_TOKEN_END_OFFSET],rax
+ add r12,8
+ jmp .loop
+.identity_instance:
+ cmp qword [rdx+NEBOC_GEN_RECORD_KIND_OFFSET],NEBOC_GEN_KIND_FUNCTION
+ jne .bad
+ ; Monomorphized pure identity retains the original typed literal token,
+ ; including decoded Text/Char payloads. Only the authenticated call vanishes.
+ call cli_copy_general_token
+ lea rdx,[rel cli_general_tokens]
+ lea rax,[r13-1]
+ imul rax,NEBOC_TOKEN_SIZE
+ add rdx,rax
+ lea rax,[r12+4]
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rbx,[rel cli_tokens]
+ mov rax,[rbx+rax+NEBOC_TOKEN_END_OFFSET]
+ mov [rdx+NEBOC_TOKEN_END_OFFSET],rax
+ add r12,5
+ jmp .loop
+.const_instance_next:
+ inc rcx
+ jmp .const_instance_scan
+.const_instance_ready:
+ ; A pure Array.map callback has already been parsed and applied element by
+ ; element by its collection owner. Omit only that owner's exact declaration
+ ; interval; every surrounding Program statement remains in the shared AST.
+ test r14,r14
+ jnz .map_callback_ready
+ xor ecx,ecx
+.map_callback_scan:
+ cmp rcx,[rel cli_array_range+NEBOC_AR_BINDING_COUNT_OFFSET]
+ jae .map_callback_ready
+ imul rax,rcx,NEBOC_AR_BIND_SIZE
+ lea rdx,[rel cli_ar_bindings]
+ add rdx,rax
+ cmp qword [rdx+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_ARRAY
+ jne .map_callback_next
+ cmp r12,[rdx+NEBOC_AR_BIND_CALLBACK_BEGIN_OFFSET]
+ jne .map_callback_next
+ mov rax,[rdx+NEBOC_AR_BIND_CALLBACK_END_OFFSET]
+ cmp rax,r12
+ jbe .bad
+ cmp rax,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ jae .bad
+ mov r12,rax
+ mov [rsp],r13
+ jmp .loop
+.map_callback_next:
+ inc rcx
+ jmp .map_callback_scan
+.map_callback_ready:
  ; Scientific owners have already been independently authenticated from exact
  ; token slices.  Remove their complete half-open intervals only from this
  ; compiler-private FunctionTable view; original tokens and owner records stay
@@ -5119,18 +9408,9 @@ cli_prepare_array_range_general_tokens:
  ; their surrounding control structure.
  cmp r14,1
  jb .kind
- mov rax,r12
- call cli_float_statement_is_dead_binding
- test eax,eax
- jnz .mark_nominal_skip
- mov rax,r12
- call cli_token_is_float_type
- test eax,eax
- jz .nominal_owned_statement
- mov rax,r12
- call cli_nominal_statement_is_binding
- test eax,eax
- jnz .mark_nominal_skip
+ ; Float values and type arguments are material in the shared typed AST.
+ ; An unused binding or a Float token inside a constructor is not proof
+ ; that a separate owner validated or consumed the entire statement.
 .nominal_owned_statement:
  cmp qword [rel cli_nominal_owner_count],0
  je .binding_scan_begin
@@ -5750,6 +10030,1092 @@ cli_frontend_validate:
  lea rdi,[rel cli_lexer_request]
  call neboc_lexer_scan
  mov ebx,eax
+ mov [rel cli_lexer_status],rax
+ ; A truncated token stream cannot be offered to later source owners.
+ test eax,eax
+ jnz .bad
+ ; Explicit module units select the complete module/DocParser owner before
+ ; token heuristics can mistake embedded documentation examples for runtime
+ ; start bodies. This owner consumes every unit, import and declaration.
+ cmp qword [rel cli_module_unit_count],0
+ je .single_source_owners
+ cmp qword [rel cli_std_import_dispatch],2
+ jne .native_module_owner
+ ; The source host composes native module resolution with the full typed
+ ; Program owner. Private aliases below never dispatch recursively.
+ mov qword [rel cli_std_import_dispatch],1
+ xor eax,eax
+ pop rbx
+ ret
+.native_module_owner:
+ call cli_recognize_modules
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+.single_source_owners:
+ cmp qword [rel cli_std_import_dispatch],2
+ jne .std_import_ready
+ call cli_tokens_contain_std_import
+ test eax,eax
+ jz .std_import_ready
+ mov qword [rel cli_std_import_dispatch],1
+ xor eax,eax
+ pop rbx
+ ret
+.std_import_ready:
+ ; Array.map composes a collection value with a typed callable declaration.
+ ; Let the collection semantic owner authenticate that exact surface before
+ ; the historical whole-source callable profile sees the same token stream.
+ ; Other Array programs retain the established legacy/structural precedence.
+ call cli_recognize_array_range
+ cmp qword [rel cli_array_range+NEBOC_AR_FOUND_OFFSET],0
+ je ._pre_heuristic_array_map_not_owned
+ ; Legacy literal indexing is normalized by the canonical Array owner, never
+ ; by the former whole-file constant-result recognizer. Errors from this
+ ; owner cannot fall back to a broader historical route.
+ test qword [rel cli_array_range+NEBOC_AR_FOR_FLAGS_OFFSET],NEBOC_AR_FOR_FLAG_MAP|NEBOC_AR_FOR_FLAG_LEGACY_INDEX
+ jz ._pre_heuristic_array_map_not_owned
+ test eax,eax
+ jnz .bad
+ test qword [rel cli_array_range+NEBOC_AR_FOR_FLAGS_OFFSET],NEBOC_AR_FOR_FLAG_GENERAL_BODY
+ jnz .array_range_general_frontend_ready
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._pre_heuristic_array_map_not_owned:
+ mov qword [rel cli_array_range+NEBOC_AR_FOUND_OFFSET],0
+ mov qword [rel cli_array_range+NEBOC_AR_DIAGNOSTIC_OFFSET],0
+ mov qword [rel cli_array_range+NEBOC_AR_FOR_FLAGS_OFFSET],0
+ ; The existing bounded linear grammar must consume the complete program
+ ; before the generic Vector selector. A partial match (Console, return,
+ ; functions or any other unconsumed statement) always yields to Program.
+ call cli_tokens_contain_g134_atom
+ test eax,eax
+ jnz .linear_aggregate_probe
+ call cli_tokens_contain_g135_atom
+ test eax,eax
+ jz .linear_aggregate_not_owned
+.linear_aggregate_probe:
+ call cli_recognize_vector
+ test eax,eax
+ jnz .linear_aggregate_yield
+ cmp qword [rel vetores_matrizes_tensores_e_computacao_cientifica_cli_vertical_request+NEBOC_VECTOR_VERTICAL_FOUND_OFFSET],0
+ je .linear_aggregate_not_owned
+ xor eax,eax
+ pop rbx
+ ret
+.linear_aggregate_yield:
+ ; An error in the frozen aggregate profile keeps its causal diagnostic.
+ ; Statement composition is a different profile and must reach Program.
+ call cli_tokens_contain_linear_statement_composition
+ test eax,eax
+ jnz .linear_aggregate_clear
+ cmp qword [rel vetores_matrizes_tensores_e_computacao_cientifica_cli_vertical_request+NEBOC_VECTOR_VERTICAL_FOUND_OFFSET],0
+ jne .bad
+.linear_aggregate_clear:
+ mov qword [rel vetores_matrizes_tensores_e_computacao_cientifica_cli_vertical_request+NEBOC_VECTOR_VERTICAL_FOUND_OFFSET],0
+ mov qword [rel vetores_matrizes_tensores_e_computacao_cientifica_cli_vertical_request+NEBOC_VECTOR_VERTICAL_DIAGNOSTIC_OFFSET],0
+.linear_aggregate_not_owned:
+ ; Nominal Color statements compose through the typed Program owner.
+ call cli_tokens_contain_public_visual_program
+ test eax,eax
+ jnz .multi_owner_function_frontend_ready
+ ; Binders are expression nodes over canonical collection records. A
+ ; whole-program numeric recognizer cannot consume later Console/return nodes.
+ call cli_tokens_contain_reduction_binder
+ test eax,eax
+ jnz .multi_owner_function_frontend_ready
+ call cli_tokens_contain_typed_scalar_operator
+ test eax,eax
+ jz .typed_scalar_function_not_owned
+ call cli_source_has_top_level_function_prefix
+ test eax,eax
+ jnz .multi_owner_function_frontend_ready
+.typed_scalar_function_not_owned:
+ ; A tagged value combined with control flow must be validated statement by
+ ; statement. Constructor type and operand ownership remain semantic duties.
+ call cli_tokens_contain_composed_tagged
+ test eax,eax
+ jnz .multi_owner_function_frontend_ready
+ ; A typed associative application requires the shared Program parser and
+ ; typed function owner, including every adjacent Console/Option statement.
+ ; Legacy whole-source keyword selectors cannot claim part of that AST.
+ call cli_tokens_contain_associative_type
+ test eax,eax
+ jnz .multi_owner_function_frontend_ready
+ ; approxEquals has distinct Float and Uncertain typed signatures. Parse the
+ ; complete Program before selecting either owner, including malformed calls.
+ call cli_tokens_contain_approx_call
+ test eax,eax
+ jnz .multi_owner_function_frontend_ready
+ ; Literal Text/Char bindings with an explicit return need lexical slots.
+ ; The legacy textual expression recognizer cannot own these statements.
+ call cli_tokens_contain_textual_binding_return
+ test eax,eax
+ jz .early_textual_not_owned
+ ; Authenticate generic declarations before projecting their Text-valued
+ ; uses into the shared Program. Do not feed a generic declaration to the
+ ; ordinary top-level parser or suppress its capability constraints.
+ call option_result_null_externo_e_erros_tipados_cli_recognize_generic
+ cmp qword [rel cli_generic+NEBOC_GEN_FOUND_OFFSET],0
+ je .multi_owner_function_frontend_ready
+ test eax,eax
+ jnz .bad
+ cmp qword [rel cli_generic+NEBOC_GEN_PURE_DECL_END_OFFSET],0
+ jne .const_generic_general_frontend_ready
+ test ebx,ebx
+ jnz .bad
+ xor eax,eax
+ pop rbx
+ ret
+.early_textual_not_owned:
+ ; G029 owns contract/refinement/proof programs before the adjacent G030 and
+ ; metaprogramming roots can observe shared verify/module atoms.
+ call cli_tokens_contain_g029_atom
+ test eax,eax
+ jz ._pre_formal_g029_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._pre_formal_g029_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._pre_formal_g029_not_owned:
+ ; G030 owns its disjoint formal-methods micro-language before broad textual
+ ; or metaprogramming owners can interpret shared atoms.
+ call cli_tokens_contain_g030_atom
+ test eax,eax
+ jz ._pre_formal_g030_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._pre_formal_g030_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._pre_formal_g030_not_owned:
+ call cli_tokens_contain_g028_atom
+ test eax,eax
+ jz ._pre_meta_g028_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._pre_meta_g028_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._pre_meta_g028_not_owned:
+ ; G082 owns bounded Text collection/data programs before format-specific roots.
+ call cli_tokens_contain_g082_atom
+ test eax,eax
+ jz ._pre_text_g082_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._pre_text_g082_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._pre_text_g082_not_owned:
+ ; G081 owns bounded advanced formats before concrete/common format checks.
+ call cli_tokens_contain_g081_atom
+ test eax,eax
+ jz ._pre_text_g081_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._pre_text_g081_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._pre_text_g081_not_owned:
+ ; G080 owns concrete format plans before common/shared Text member checks.
+ call cli_tokens_contain_g080_atom
+ test eax,eax
+ jz ._pre_text_g080_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._pre_text_g080_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._pre_text_g080_not_owned:
+ ; G079 is a complete common-format owner before shared Text member checks.
+ call cli_tokens_contain_g079_atom
+ test eax,eax
+ jz ._pre_text_g079_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._pre_text_g079_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._pre_text_g079_not_owned:
+ ; G078 is a complete ScanPlan token owner before shared Text member checks.
+ call cli_tokens_contain_g078_atom
+ test eax,eax
+ jz ._pre_text_g078_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._pre_text_g078_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._pre_text_g078_not_owned:
+ ; G077 is a complete ScanPlan token owner and precedes shared Text parsing.
+ call cli_tokens_contain_g077_atom
+ test eax,eax
+ jz ._pre_text_g077_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._pre_text_g077_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._pre_text_g077_not_owned:
+ ; G076 ScanPlan validation programs are complete token owners and must be
+ ; classified before literal Text query diagnostics inspect shared selectors.
+ call cli_tokens_contain_g076_atom
+ test eax,eax
+ jz ._pre_text_g076_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._pre_text_g076_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._pre_text_g076_not_owned:
+ ; Typed formatting programs are complete G059 token owners. This must precede
+ ; literal-Text member diagnostics because console is deliberately separated
+ ; from formatting data by the G059 structural owner.
+ call cli_tokens_contain_g059_atom
+ test eax,eax
+ jz ._pre_text_g059_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._pre_text_g059_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._pre_text_g059_not_owned:
+ ; G102 animation/export programs own their complete token stream before
+ ; large-data, observability, dashboard and older visual families.
+ call cli_tokens_contain_g102_atom
+ test eax,eax
+ jz ._early_g102_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g102_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g102_not_owned:
+ ; G101 large-data programs own their complete token stream before
+ ; observability, dashboard, graph and older visual families.
+ call cli_tokens_contain_g101_atom
+ test eax,eax
+ jz ._early_g101_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g101_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g101_not_owned:
+ ; G100 live observability programs own their complete token stream before
+ ; dashboard, graph and older visual families.
+ call cli_tokens_contain_g100_atom
+ test eax,eax
+ jz ._early_g100_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g100_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g100_not_owned:
+ ; G099 dashboard/panel/cell programs own their complete token stream before
+ ; graph, scientific, chart, layout, adapter and RF84 fallback diagnostics.
+ call cli_tokens_contain_g099_atom
+ test eax,eax
+ jz ._early_g099_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g099_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g099_not_owned:
+ ; G098 graph/tree/projection programs own their complete token stream before
+ ; scientific, 3D, chart, layout, adapter and RF84 fallback diagnostics.
+ call cli_tokens_contain_g098_atom
+ test eax,eax
+ jz ._early_g098_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g098_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g098_not_owned:
+ ; G097 scientific-view programs own their complete token stream before 3D,
+ ; chart, layout, adapter and RF84 fallback diagnostics.
+ call cli_tokens_contain_g097_atom
+ test eax,eax
+ jz ._early_g097_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g097_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g097_not_owned:
+ ; G096 scene-adapter programs are complete token owners before 2D chart,
+ ; layout, adapters and RF84 diagnostics.
+ call cli_tokens_contain_g096_atom
+ test eax,eax
+ jz ._early_g096_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g096_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g096_not_owned:
+ ; G095 chart-adapter programs are complete token owners before G094, G018,
+ ; layout, adapters and RF84 diagnostics.
+ call cli_tokens_contain_g095_atom
+ test eax,eax
+ jz ._early_g095_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g095_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g095_not_owned:
+ ; G094 structured-view programs are complete token owners before layout,
+ ; adapters and RF84 diagnostics.
+ call cli_tokens_contain_g094_atom
+ test eax,eax
+ jz ._early_g094_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g094_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g094_not_owned:
+ ; G093 composite-layout programs are complete token owners before adjacent
+ ; style, geometry, adapter and RF84 diagnostics.
+ call cli_tokens_contain_g093_atom
+ test eax,eax
+ jz ._early_g093_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g093_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g093_not_owned:
+ ; G092 text-style programs are complete token owners before layout and RF84 diagnostics.
+ call cli_tokens_contain_g092_atom
+ test eax,eax
+ jz ._early_g092_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g092_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g092_not_owned:
+ ; G091 layout programs are complete token owners before adapter and RF84 diagnostics.
+ call cli_tokens_contain_g091_atom
+ test eax,eax
+ jz ._early_g091_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g091_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g091_not_owned:
+ ; G090 typed adapter programs are complete token owners before general type,
+ ; Text and older Console diagnostics.
+ call cli_tokens_contain_g090_atom
+ test eax,eax
+ jz ._early_g090_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g090_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g090_not_owned:
+ ; G089 nominal ConsoleCall/ConsoleOption/RenderIntent programs are complete
+ ; token owners before general Text and RF84 Console diagnostics.
+ call cli_tokens_contain_g089_atom
+ test eax,eax
+ jz ._early_g089_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g089_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g089_not_owned:
+ ; G143's exact `@` token selects the bounded annotation owner before generic
+ ; declaration and expression routes. Structural ownership still requires the
+ ; complete typed annotation grammar.
+ call cli_tokens_contain_g143_atom
+ test eax,eax
+ jz ._early_g143_not_owned
+ call cli_recognize_vector
+ cmp qword [rel vetores_matrizes_tensores_e_computacao_cientifica_cli_vertical_request+NEBOC_VECTOR_VERTICAL_FOUND_OFFSET],0
+ je ._early_g143_not_owned
+ test eax,eax
+ jnz .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g143_not_owned:
+ ; G142's lower-camel FormatPlan constructor is an exact routing witness for
+ ; the integrated contextual template owner. It must precede RenderPlan's
+ ; historical standalone rendering route because RenderPlan is one component
+ ; of the complete G142 grammar.
+ call cli_tokens_contain_g142_atom
+ test eax,eax
+ jz ._early_g142_not_owned
+ call cli_recognize_vector
+ cmp qword [rel vetores_matrizes_tensores_e_computacao_cientifica_cli_vertical_request+NEBOC_VECTOR_VERTICAL_FOUND_OFFSET],0
+ je ._early_g142_not_owned
+ test eax,eax
+ jnz .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g142_not_owned:
+ ; RenderPlan is a complete RF116 developer-rendering owner. Route it before
+ ; the generic behavior diagnostic so diagnostic() remains a structured view.
+ call cli_tokens_contain_g069_atom
+ test eax,eax
+ jz ._early_g069_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g069_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g069_not_owned:
+ ; Query-only mode claims literal Text member diagnostics before legacy
+ ; whole-source parsers. It deliberately skips Char/bracket diagnostics whose
+ ; structural owners are selected later in this dispatcher.
+ mov edi,1
+ call text_char_unicode_e_bytes_cli_detect_frontend_diagnostic
+ test eax,eax
+ jnz .bad
+ ; G088 typed color-role programs precede the Color value/media verticals.
+ call cli_tokens_contain_g088_atom
+ test eax,eax
+ jz ._early_g088_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g088_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g088_not_owned:
+ ; G087 Color programs are complete token owners before the older media
+ ; vertical sees the shared Color/rgb/rgba atoms.
+ call cli_tokens_contain_g087_atom
+ test eax,eax
+ jz ._early_g087_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g087_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g087_not_owned:
+ ; Current bounded media programs are complete G019 token owners.
+ call cli_tokens_contain_g019_atom
+ test eax,eax
+ jz ._early_g019_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g019_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g019_not_owned:
+ ; Current Console/Window/Canvas/widget/chart programs are complete G018 token
+ ; owners. The witness is independent of fixture paths and source byte shape.
+ call cli_tokens_contain_g018_atom
+ test eax,eax
+ jz ._early_g018_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g018_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g018_not_owned:
+ ; Corrected Tensor programs are complete token owners. The witness uses only
+ ; current public atoms and deliberately contains no fixture identity.
+ call cli_tokens_contain_g016_atom
+ test eax,eax
+ jz ._early_g016_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g016_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g016_not_owned:
+ ; Corrected dense Matrix programs are complete token owners.  The witness
+ ; requires Matrix plus a G015-specific operation (or both copy constructors),
+ ; so the earlier bounded C11 Matrix route remains available unchanged.
+ call cli_tokens_contain_g015_atom
+ test eax,eax
+ jz ._early_g015_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g015_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g015_not_owned:
+ call cli_recognize_scalar_program
+ test eax,eax
+ jnz .bad
+ cmp qword [rel sp_found],0
+ jne ._scalar_program_owned
+ call cli_recognize_std_math_program
+ test eax,eax
+ jnz .bad
+ cmp qword [rel biblioteca_padrao_por_dominios_cli_found],0
+ je ._atomic_std_math_not_owned
+._scalar_program_owned:
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._atomic_std_math_not_owned:
+ ; G014 math/vector/statistics/distribution programs are complete token owners.
+ ; Route contract-specific atoms before generic Vector and Random owners.
+ call cli_tokens_contain_g014_atom
+ test eax,eax
+ jz ._early_g014_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g014_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g014_not_owned:
+ ; G012 system/network/crypto is a complete token owner. Route it before
+ ; historical process, HTTP and broad method-name owners.
+ call cli_tokens_contain_g012_atom
+ test eax,eax
+ jz ._early_g012_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g012_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g012_not_owned:
+ ; G011 filesystem/serialization is a complete token owner. Route it before
+ ; historical path-query and broad method-name owners.
+ call cli_tokens_contain_g011_atom
+ test eax,eax
+ jz ._early_g011_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g011_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g011_not_owned:
+ ; The database vertical owns its current public types before broad Query,
+ ; Table, Stream and transaction heuristics.
+ call cli_tokens_contain_g032_atom
+ test eax,eax
+ jz ._early_g032_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g032_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g032_not_owned:
+ ; The reactive vertical owns current-only signal/cell/computed/dataflow
+ ; programs before broad List, Graph, Stream and generic call heuristics.
+ call cli_tokens_contain_g031_atom
+ test eax,eax
+ jz ._early_g031_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g031_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g031_not_owned:
+ ; G007 sequential collections are a complete token owner.  Route them before
+ ; broad historical method-name owners and the open-generic call resolver.
+ call cli_tokens_contain_g007_atom
+ test eax,eax
+ jz ._early_g007_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g007_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g007_not_owned:
+ ; G008 associative collections are a complete token owner. Route them before
+ ; G001's binary `reserve` operation can claim a Dict capacity request.
+ call cli_tokens_contain_g008_atom
+ test eax,eax
+ jz ._early_g008_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g008_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g008_not_owned:
+ ; G009 relational structures are an exact public-token owner. Route them
+ ; before historical aggregate and generic recognizers.
+ call cli_tokens_contain_g009_atom
+ test eax,eax
+ jz ._early_g009_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g009_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g009_not_owned:
+ ; G010 typed data is an exact public-token owner. Route current schema,
+ ; relational and general-column/stream witnesses before the bounded legacy
+ ; Column/Table owner.
+ call cli_tokens_contain_g010_atom
+ test eax,eax
+ jz ._early_g010_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g010_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g010_not_owned:
+ ; G025 policy/security sources are selected by current public tokens before
+ ; the broad historical Policy, Quality and log heuristics.
+ call cli_tokens_contain_g025_atom
+ test eax,eax
+ jz ._early_g025_not_owned
+ call cli_recognize_array
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],0
+ je ._early_g025_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g025_not_owned:
+ ; G001's binary extension is a complete token owner.  It runs before the
+ ; historical Buffer and shared-AST heuristics, but claims a program only when
+ ; one of its exact public operation names is present in the token stream.
+ call cli_recognize_binary_foundation
+ cmp qword [rel cli_binary_foundation+NEBOC_BF_FOUND_OFFSET],0
+ je ._early_binary_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ call cli_validate_binary_foundation_syntax
+ test eax,eax
+ jnz .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_binary_not_owned:
+ ; G141 Registry Text/Pattern operators and canonical APIs select the bounded
+ ; textual owner before graph, formal and historical textual routes.
+ call cli_tokens_contain_g141_atom
+ test eax,eax
+ jz ._early_g141_not_owned
+ call cli_recognize_vector
+ cmp qword [rel vetores_matrizes_tensores_e_computacao_cientifica_cli_vertical_request+NEBOC_VECTOR_VERTICAL_FOUND_OFFSET],0
+ je ._early_g141_not_owned
+ test eax,eax
+ jnz .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g141_not_owned:
+ ; G140 Registry arrows and canonical graph APIs select the bounded graph,
+ ; workflow or statechart owner before formal and scientific routes.
+ call cli_tokens_contain_g140_atom
+ test eax,eax
+ jz ._early_g140_not_owned
+ call cli_recognize_vector
+ cmp qword [rel vetores_matrizes_tensores_e_computacao_cientifica_cli_vertical_request+NEBOC_VECTOR_VERTICAL_FOUND_OFFSET],0
+ je ._early_g140_not_owned
+ test eax,eax
+ jnz .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g140_not_owned:
+ ; G139 Registry tokens and canonical formal APIs select the bounded formal
+ ; owner before probability, calculus and historical scientific routes.
+ call cli_tokens_contain_g139_atom
+ test eax,eax
+ jz ._early_g139_not_owned
+ call cli_recognize_vector
+ cmp qword [rel vetores_matrizes_tensores_e_computacao_cientifica_cli_vertical_request+NEBOC_VECTOR_VERTICAL_FOUND_OFFSET],0
+ je ._early_g139_not_owned
+ test eax,eax
+ jnz .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g139_not_owned:
+ ; G138 Registry tokens and portable probability APIs select the bounded
+ ; probability owner before calculus and historical scientific routes.
+ call cli_tokens_contain_g138_atom
+ test eax,eax
+ jz ._early_g138_not_owned
+ call cli_recognize_vector
+ cmp qword [rel vetores_matrizes_tensores_e_computacao_cientifica_cli_vertical_request+NEBOC_VECTOR_VERTICAL_FOUND_OFFSET],0
+ je ._early_g138_not_owned
+ test eax,eax
+ jnz .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g138_not_owned:
+ ; G137 differential/vector-calculus atoms select the bounded source owner
+ ; before integral and historical scientific routes.
+ call cli_tokens_contain_g137_atom
+ test eax,eax
+ jz ._early_g137_not_owned
+ call cli_recognize_vector
+ cmp qword [rel vetores_matrizes_tensores_e_computacao_cientifica_cli_vertical_request+NEBOC_VECTOR_VERTICAL_FOUND_OFFSET],0
+ je ._early_g137_not_owned
+ test eax,eax
+ jnz .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g137_not_owned:
+ ; G136 exact integral binders and portable aliases select the bounded
+ ; calculus owner before scientific Matrix/Vector and generic call routes.
+ call cli_tokens_contain_g136_atom
+ test eax,eax
+ jz ._early_g136_not_owned
+ call cli_recognize_vector
+ cmp qword [rel vetores_matrizes_tensores_e_computacao_cientifica_cli_vertical_request+NEBOC_VECTOR_VERTICAL_FOUND_OFFSET],0
+ je ._early_g136_not_owned
+ test eax,eax
+ jnz .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g136_not_owned:
+ ; G135 exact matrix-postfix/delimiter atoms and portable APIs select the
+ ; bounded scientific owner before historical Matrix and generic routes.
+ call cli_tokens_contain_g135_atom
+ test eax,eax
+ jz ._early_g135_not_owned
+ call cli_recognize_vector
+ cmp qword [rel vetores_matrizes_tensores_e_computacao_cientifica_cli_vertical_request+NEBOC_VECTOR_VERTICAL_FOUND_OFFSET],0
+ je ._early_g135_not_owned
+ test eax,eax
+ jnz .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g135_not_owned:
+ ; G134 exact linear-operator atoms select the bounded scientific Vector
+ ; owner before generic type/function heuristics.  U+00D7 is admitted to the
+ ; probe, but the owner claims it only when a structural Vector program is
+ ; present, leaving G133 Array/Set Cartesian products unchanged.
+ call cli_tokens_contain_g134_atom
+ test eax,eax
+ jz ._early_g134_not_owned
+ call cli_recognize_vector
+ cmp qword [rel vetores_matrizes_tensores_e_computacao_cientifica_cli_vertical_request+NEBOC_VECTOR_VERTICAL_FOUND_OFFSET],0
+ je ._early_g134_not_owned
+ test eax,eax
+ jnz .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_g134_not_owned:
  ; C12-F01: an exact Tensor identifier routes to the bounded scientific
  ; type/parser owner before the older parameter/Tuple heuristic.  Final
  ; ownership still requires the complete token-driven Tensor grammar.
@@ -5765,6 +11131,69 @@ cli_frontend_validate:
  pop rbx
  ret
 ._early_tensor_not_owned:
+ ; Generic declarations also begin with a receiver-like `(T.value)` shape.
+ ; Authenticate their dedicated grammar before the shared function-prefix
+ ; router can misclassify that generic parameter as an ordinary top-level
+ ; receiver declaration.  Both current capability bounds and the historical
+ ; Scalar contract retain their existing semantic/codegen owners.
+ ; New G005 operations and control tokens continue to their dedicated owners.
+ ; Other generic-looking sources retain the early route, including the
+ ; established receiver-first form that does not spell a generic keyword and
+ ; the historical scalar Option/Result profile.
+ call cli_tokens_contain_option_result_extension_atom
+ test eax,eax
+ jnz ._early_all_generic_not_owned
+ call option_result_null_externo_e_erros_tipados_cli_recognize_generic
+ cmp qword [rel cli_generic+NEBOC_GEN_FOUND_OFFSET],0
+ je ._early_current_generic_not_owned
+ test eax,eax
+ jnz .bad
+ cmp qword [rel cli_generic+NEBOC_GEN_PURE_DECL_END_OFFSET],0
+ jne .const_generic_general_frontend_ready
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_current_generic_not_owned:
+ call generics_constraints_overload_e_dispatch_cli_recognize_generic
+ cmp qword [rel generics_constraints_overload_e_dispatch_cli_vertical_request+neboc_generics_constraints_overload_e_dispatch_VERTICAL_FOUND_OFFSET],0
+ je ._early_all_generic_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_all_generic_not_owned:
+ ; Corrected aggregate operations and receiver-first struct methods need the
+ ; composite owner before the older whole-source programmer-type/function
+ ; routes.  The feature bit is published only after token-level parsing of an
+ ; actual public aggregate operation, so legacy struct/Tuple precedence stays
+ ; unchanged for every other source.
+ call cli_recognize_composite
+ cmp qword [rel cli_struct_tuple+NEBOC_ST_FOUND_OFFSET],0
+ je ._early_composite_extension_not_owned
+ cmp qword [rel cli_struct_tuple+NEBOC_ST_FEATURE_FLAGS_OFFSET],0
+ je ._early_composite_extension_not_owned
+ test eax,eax
+ jnz .bad
+ test ebx,ebx
+ jnz .bad
+ cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
+ jne .bad
+ xor eax,eax
+ pop rbx
+ ret
+._early_composite_extension_not_owned:
+ mov qword [rel cli_struct_tuple+NEBOC_ST_FOUND_OFFSET],0
+ mov qword [rel cli_struct_tuple+NEBOC_ST_DIAGNOSTIC_OFFSET],0
+ mov qword [rel cli_struct_tuple+NEBOC_ST_FEATURE_FLAGS_OFFSET],0
  cmp qword [rel cli_entrypoint_target_kind],NEBOC_TARGET_KIND_LIBRARY
  je .function_mutation_frontend_ready
  cmp qword [rel cli_entrypoint_target_kind],NEBOC_TARGET_KIND_TEST
@@ -5777,15 +11206,15 @@ cli_frontend_validate:
  test eax,eax
  jnz .function_mutation_frontend_ready
  call cli_source_has_top_level_function_prefix
- test eax,eax
- jnz .multi_owner_function_frontend_ready
+ cmp eax,2
+ jae .multi_owner_function_frontend_ready
  ; Receiver-first F02 sources are identified by a leading signature plus an
  ; '=', ':' or Tuple marker, or by the complete markerless scalar-signature
  ; shape containing a public Char receiver/parameter. Claim them before legacy
  ; token heuristics can reinterpret defaults, Tuple returns or Char routing.
  call cli_recognize_parameters
  cmp qword [rel cli_parameters+NEBOC_PARAM_FOUND_OFFSET],0
- je ._early_not_owned
+ je ._parameters_not_owned
  ; The legacy parameter recognizer deliberately uses any `=` token as an
  ; ownership marker.  A material assignment inside an otherwise ordinary
  ; receiver-first body is not a parameter default; let the shared AST and
@@ -5823,15 +11252,14 @@ cli_frontend_validate:
  mov qword [rel cli_parameters+NEBOC_PARAM_FOUND_OFFSET],0
  mov qword [rel cli_parameters+NEBOC_PARAM_DIAGNOSTIC_OFFSET],0
  jmp ._early_not_owned
-._early_not_owned:
- call cli_recognize_modules
- cmp qword [rel cli_module_request+NEBOC_MODULE_FOUND_OFFSET],0
- je ._modules_not_owned
+._parameters_not_owned:
+ ; One ordinary receiver-first declaration must also bypass whole-source
+ ; legacy recognizers.  Specialized defaults/Tuple/overload/callable sources
+ ; have already had the opportunity to claim the program above.
+ call cli_source_has_top_level_function_prefix
  test eax,eax
- jnz .bad
- xor eax,eax
- pop rbx
- ret
+ jnz .function_mutation_frontend_ready
+._early_not_owned:
 ._modules_not_owned:
  call cli_recognize_buffer
  cmp qword [rel cli_buffer+NEBOC_BUFFER_FOUND_OFFSET],0
@@ -5906,9 +11334,13 @@ cli_frontend_validate:
  jne .effects_capabilities_e_politicas_frontend_owned
  cmp qword [rel effects_capabilities_e_politicas_cli_found],0
  jne .effects_capabilities_e_politicas_frontend_owned
- call cli_recognize_mutability
- call text_char_unicode_e_bytes_cli_detect_frontend_diagnostic
  call bindings_constantes_mutabilidade_e_definite_assignment_cli_detect_frontend_diagnostic
+ cmp qword [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_frontend_diagnostic],NEBOC_BIND_DIAG_CONST_DECLARATION_DEFERRED
+ je .g085_explicit_const_frontend
+ call cli_recognize_mutability
+.g085_explicit_const_frontend:
+ xor edi,edi
+ call text_char_unicode_e_bytes_cli_detect_frontend_diagnostic
  call cli_recognize_column
  cmp qword [rel column_row_table_e_dataset_cli_vertical_request+NEBOC_COLUMN_VERTICAL_FOUND_OFFSET],0
  je .column_row_table_e_dataset_frontend_not_owned
@@ -6014,6 +11446,8 @@ cli_frontend_validate:
  je ._generic_not_owned
  test eax,eax
  jnz .bad
+ cmp qword [rel cli_generic+NEBOC_GEN_PURE_DECL_END_OFFSET],0
+ jne .const_generic_general_frontend_ready
  test ebx,ebx
  jnz .bad
  cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
@@ -6056,9 +11490,9 @@ cli_frontend_validate:
  jnz .bad
  cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
  jne .bad
- xor eax,eax
- pop rbx
- ret
+ ; The first nominal declaration authenticates a type, not the whole source.
+ ; Register every owner and retain ordinary statements in Program order.
+ jmp .multi_owner_function_frontend_ready
 ._nominal_not_owned:
  call cli_recognize_composite
  cmp qword [rel cli_struct_tuple+NEBOC_ST_FOUND_OFFSET],0
@@ -6138,6 +11572,8 @@ cli_frontend_validate:
  mov qword [rel literais_numericos_bases_e_representacao_cli_parse_request+neboc_literais_numericos_bases_e_representacao_PARSE_DIAGNOSTIC_OFFSET],0
  mov qword [rel literais_numericos_bases_e_representacao_cli_parse_request+NEBOC_PARSE_ERROR_TOKEN_OFFSET],0
  mov qword [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_frontend_diagnostic],0
+.const_generic_general_frontend_ready:
+ or qword [rel cli_array_range+NEBOC_AR_FOR_FLAGS_OFFSET],NEBOC_AR_FOR_FLAG_GENERAL_BODY
 .array_range_general_frontend_ready:
  call cli_prepare_array_range_general_tokens
  test eax,eax
@@ -6153,6 +11589,12 @@ cli_frontend_validate:
  call cli_recognize_nominal_owners
  test eax,eax
  jnz .bad
+ ; Network I/O mutates Buffer at runtime. The historical compile-time Buffer
+ ; token owner cannot consume peer.read(buffer); retain those nodes for the
+ ; typed Program and the canonical byte-storage owner instead.
+ call cli_tokens_contain_network_namespace
+ test eax,eax
+ jnz .multi_owner_buffer_ready
  call cli_recognize_buffer
  cmp qword [rel cli_buffer+NEBOC_BUFFER_FOUND_OFFSET],0
  je .multi_owner_buffer_ready
@@ -6211,6 +11653,9 @@ cli_frontend_validate:
  mov rax,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
  mov [rel cli_parser_request+NEBOC_PARSER_TOKEN_COUNT_OFFSET],rax
 .parser_tokens_ready:
+ call cli_prepare_typed_struct_declarations
+ test eax,eax
+ jnz .bad
  mov qword [rel cli_parser_request+NEBOC_PARSER_SOURCE_ID_OFFSET],1
  lea rax,[rel cli_ast_builder]
  mov [rel cli_parser_request+NEBOC_PARSER_BUILDER_OFFSET],rax
@@ -6297,6 +11742,8 @@ text_char_unicode_e_bytes_cli_recognize_ownership:
  ; A structural scalar loop may be a successful text_char_unicode_e_bytes recognition even though
  ; it has no ownership symbols.  Delegate that case to literais_numericos_bases_e_representacao before lowering;
  ; ownership-bearing loops retain the established text_char_unicode_e_bytes cleanup route.
+ cmp qword [rel text_char_unicode_e_bytes_cli_semantic+NEBOC_SEM_EVENT_COUNT_OFFSET],0
+ jne .ownership_found
  cmp qword [rel text_char_unicode_e_bytes_cli_semantic+NEBOC_SEM_SYMBOL_COUNT_OFFSET],0
  jne .ownership_found
  mov qword [rel text_char_unicode_e_bytes_cli_semantic+NEBOC_SEM_FOUND_OFFSET],0
@@ -6337,6 +11784,10 @@ cli_report_ownership_diagnostic:
  je .copy_unique
  cmp rax,NEBOC_DIAG_CLONE_UNAVAILABLE
  je .clone
+ cmp rax,NEBOC_DIAG_ALLOCATOR_LAYOUT
+ je .allocator_layout
+ cmp rax,NEBOC_DIAG_ARENA_EXHAUSTED
+ je .arena_exhausted
  cmp rax,NEBOC_DIAG_RESOURCE_LEAK_PATH
  je .leak
  lea rdi,[rel text_char_unicode_e_bytes_cli_error_internal]
@@ -6369,6 +11820,14 @@ cli_report_ownership_diagnostic:
 .clone:
  lea rdi,[rel text_char_unicode_e_bytes_cli_error_007]
  mov esi,text_char_unicode_e_bytes_cli_error_007_end-text_char_unicode_e_bytes_cli_error_007
+ jmp .write
+.allocator_layout:
+ lea rdi,[rel text_char_unicode_e_bytes_cli_error_008]
+ mov esi,text_char_unicode_e_bytes_cli_error_008_end-text_char_unicode_e_bytes_cli_error_008
+ jmp .write
+.arena_exhausted:
+ lea rdi,[rel text_char_unicode_e_bytes_cli_error_009]
+ mov esi,text_char_unicode_e_bytes_cli_error_009_end-text_char_unicode_e_bytes_cli_error_009
  jmp .write
 .leak:
  lea rdi,[rel text_char_unicode_e_bytes_cli_error_013]
@@ -6502,6 +11961,690 @@ cli_token_equals:
  pop rbx
  ret
 
+; G123 routing witness. The shared function semantic/codegen owner receives a
+; program containing an infix that the legacy binding recognizer cannot type;
+; straight-line bindings remain owned by the binding vertical itself.
+cli_tokens_contain_typed_scalar_operator:
+ call cli_tokens_contain_g123_infix
+ test eax,eax
+ jnz .done
+ lea rdi,[rel cli_tokens]
+ mov rcx,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+.scan:
+ test rcx,rcx
+ jz .no
+ mov rax,[rdi+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rax,NEBOC_TOKEN_DEGREE
+ jb .next
+ cmp rax,NEBOC_TOKEN_PROPORTIONAL
+ jbe .yes
+ cmp rax,NEBOC_TOKEN_SET_CARTESIAN_PRODUCT
+ je .linear_composition
+ cmp rax,NEBOC_TOKEN_LINEAR_DOT
+ je .linear_composition
+ cmp rax,NEBOC_TOKEN_LINEAR_HADAMARD
+ je .linear_composition
+ cmp rax,NEBOC_TOKEN_LINEAR_TENSOR_PRODUCT
+ je .linear_composition
+ cmp rax,NEBOC_TOKEN_LINEAR_ORTHOGONAL
+ je .linear_composition
+ cmp rax,NEBOC_TOKEN_LINEAR_PARALLEL
+ je .linear_composition
+.next:
+ add rdi,NEBOC_TOKEN_SIZE
+ dec rcx
+ jmp .scan
+.linear_composition:
+ ; Preserve the legacy bounded aggregate-expression profile. An explicit
+ ; source return requires the shared statement pipeline instead of that
+ ; whole-program reduction; all operands remain typed by their own owners.
+ lea rdi,[rel cli_tokens]
+ mov rcx,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+.linear_return_scan:
+ test rcx,rcx
+ jz .no
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_KW_RETURN
+ je .yes
+ add rdi,NEBOC_TOKEN_SIZE
+ dec rcx
+ jmp .linear_return_scan
+.yes:
+ mov eax,1
+ ret
+.no:
+ xor eax,eax
+.done:
+ ret
+
+; Exact source tokens distinguish the aggregate-expression grammar from a
+; statement body. The chosen semantic owner still validates the whole input.
+cli_tokens_contain_linear_statement_composition:
+ push rbx
+ push r12
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+.scan:
+ test r12,r12
+ jz .no
+ mov rax,[rbx+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rax,NEBOC_TOKEN_KW_RETURN
+ je .yes
+ cmp rax,NEBOC_TOKEN_KW_IF
+ je .yes
+ cmp rax,NEBOC_TOKEN_KW_FOR
+ jb .method
+ cmp rax,NEBOC_TOKEN_KW_DOC
+ jbe .yes
+.method:
+ cmp rax,NEBOC_TOKEN_IDENTIFIER
+ jne .next
+ mov rdi,rbx
+ lea rsi,[rel cli_g059_atom_console]
+ mov edx,cli_g059_atom_console_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+.next:
+ add rbx,NEBOC_TOKEN_SIZE
+ dec r12
+ jmp .scan
+.no:
+ xor eax,eax
+ jmp .done
+.yes:
+ mov eax,1
+.done:
+ add rsp,8
+ pop r12
+ pop rbx
+ ret
+
+cli_tokens_contain_reduction_binder:
+ lea rdi,[rel cli_tokens]
+ mov rcx,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+.scan:
+ test rcx,rcx
+ jz .no
+ mov rax,[rdi+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rax,NEBOC_TOKEN_REDUCTION_SUM
+ je .yes
+ cmp rax,NEBOC_TOKEN_REDUCTION_PRODUCT
+ je .yes
+ add rdi,NEBOC_TOKEN_SIZE
+ dec rcx
+ jmp .scan
+.yes:
+ mov eax,1
+ ret
+.no:
+ xor eax,eax
+ ret
+
+cli_tokens_contain_g123_infix:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ mov rax,[rdi+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rax,NEBOC_TOKEN_CARET
+ je .yes
+ cmp rax,NEBOC_TOKEN_XOR
+ je .yes
+ cmp rax,NEBOC_TOKEN_SPACESHIP
+ je .yes
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Exact token-level G134 routing witness.  This does not claim ownership; it
+; only gives the structural Vector semantic owner first refusal. Exact symbols
+; and portable APIs are both admitted so either spelling works independently.
+cli_tokens_contain_g134_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ mov rdx,[rdi+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rdx,NEBOC_TOKEN_LINEAR_DOT
+ je .yes
+ cmp rdx,NEBOC_TOKEN_LINEAR_HADAMARD
+ je .yes
+ cmp rdx,NEBOC_TOKEN_LINEAR_TENSOR_PRODUCT
+ je .yes
+ cmp rdx,NEBOC_TOKEN_LINEAR_DIRECT_SUM
+ je .yes
+ cmp rdx,NEBOC_TOKEN_LINEAR_COMPOSE
+ je .yes
+ cmp rdx,NEBOC_TOKEN_LINEAR_ORTHOGONAL
+ je .yes
+ cmp rdx,NEBOC_TOKEN_LINEAR_PARALLEL
+ je .yes
+ cmp rdx,NEBOC_TOKEN_SET_CARTESIAN_PRODUCT
+ je .yes
+ cmp rdx,NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G134_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_G134_ATOM cli_g134_atom_dot,cli_g134_atom_dot_len
+ CLI_G134_ATOM cli_g134_atom_cross,cli_g134_atom_cross_len
+ CLI_G134_ATOM cli_g134_atom_hadamard,cli_g134_atom_hadamard_len
+ CLI_G134_ATOM cli_g134_atom_tensor_product,cli_g134_atom_tensor_product_len
+ CLI_G134_ATOM cli_g134_atom_direct_sum,cli_g134_atom_direct_sum_len
+ CLI_G134_ATOM cli_g134_atom_compose,cli_g134_atom_compose_len
+ CLI_G134_ATOM cli_g134_atom_orthogonal,cli_g134_atom_orthogonal_len
+ CLI_G134_ATOM cli_g134_atom_parallel,cli_g134_atom_parallel_len
+%undef CLI_G134_ATOM
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Exact token-level G143 routing witness. Structural ownership is still
+; decided by the complete bounded grammar in g143_is_program.
+cli_tokens_contain_g143_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_ANNOTATION
+ je .yes
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Exact token-level G142 routing witness. Structural ownership is still
+; decided by the complete bounded grammar in g142_is_program.
+cli_tokens_contain_g142_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+ lea rsi,[rel cli_g142_atom_format_plan]
+ mov edx,cli_g142_atom_format_plan_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Exact token-level G141 routing witness. Structural ownership is still
+; decided by the complete bounded grammar in g141_is_program.
+cli_tokens_contain_g141_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ mov rdx,[rdi+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rdx,NEBOC_TOKEN_TEXT_CONCAT
+ jb .identifier
+ cmp rdx,NEBOC_TOKEN_PATTERN_NON_MATCH
+ jbe .yes
+.identifier:
+ cmp rdx,NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G141_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%done
+ ; A G055/G057 instance method is preceded by '.', while the G141 portable
+ ; APIs are expression heads.  Preserve the older owner for method calls.
+ test r13,r13
+ jz .yes
+ mov rax,r13
+ dec rax
+ imul rax,NEBOC_TOKEN_SIZE
+ cmp qword [rbx+rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne .yes
+%%done:
+%endmacro
+ CLI_G141_ATOM cli_g141_atom_concat,cli_g141_atom_concat_len
+ CLI_G141_ATOM cli_g141_atom_matches,cli_g141_atom_matches_len
+%undef CLI_G141_ATOM
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Exact token-level G140 routing witness. Structural ownership is still
+; decided by the complete bounded grammar in g140_is_program.
+cli_tokens_contain_g140_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ mov rdx,[rdi+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rdx,NEBOC_TOKEN_GRAPH_DIRECTED
+ jb .identifier
+ cmp rdx,NEBOC_TOKEN_STATE_TRANSITION
+ jbe .yes
+.identifier:
+ cmp rdx,NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G140_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_G140_ATOM cli_g140_atom_directed_edge_to,cli_g140_atom_directed_edge_to_len
+ CLI_G140_ATOM cli_g140_atom_bidirectional_edge,cli_g140_atom_bidirectional_edge_len
+ CLI_G140_ATOM cli_g140_atom_async_edge_to,cli_g140_atom_async_edge_to_len
+ CLI_G140_ATOM cli_g140_atom_transition_to,cli_g140_atom_transition_to_len
+%undef CLI_G140_ATOM
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Exact token-level G139 routing witness. Structural ownership is still
+; decided by the complete bounded grammar in g139_is_program.
+cli_tokens_contain_g139_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ mov rdx,[rdi+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rdx,NEBOC_TOKEN_FOR_ALL
+ jb .identifier
+ cmp rdx,NEBOC_TOKEN_LOGIC_NOR
+ jbe .yes
+.identifier:
+ cmp rdx,NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G139_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_G139_ATOM cli_g139_atom_for_all,cli_g139_atom_for_all_len
+ CLI_G139_ATOM cli_g139_atom_exists,cli_g139_atom_exists_len
+ CLI_G139_ATOM cli_g139_atom_not_exists,cli_g139_atom_not_exists_len
+ CLI_G139_ATOM cli_g139_atom_implies,cli_g139_atom_implies_len
+ CLI_G139_ATOM cli_g139_atom_iff,cli_g139_atom_iff_len
+ CLI_G139_ATOM cli_g139_atom_proves,cli_g139_atom_proves_len
+ CLI_G139_ATOM cli_g139_atom_satisfies,cli_g139_atom_satisfies_len
+ CLI_G139_ATOM cli_g139_atom_nand,cli_g139_atom_nand_len
+ CLI_G139_ATOM cli_g139_atom_nor,cli_g139_atom_nor_len
+%undef CLI_G139_ATOM
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Exact token-level G138 routing witness. Structural ownership is still
+; decided by the complete bounded call grammar in g138_is_program.
+cli_tokens_contain_g138_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ mov rdx,[rdi+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rdx,NEBOC_TOKEN_DISTRIBUTED_AS
+ je .yes
+ cmp rdx,NEBOC_TOKEN_INDEPENDENT_OF
+ je .yes
+ cmp rdx,NEBOC_TOKEN_PROBABILITY_CONDITIONAL
+ je .yes
+ cmp rdx,NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G138_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_G138_ATOM cli_g138_atom_probability_model,cli_g138_atom_probability_model_len
+ CLI_G138_ATOM cli_g138_atom_distributed_as,cli_g138_atom_distributed_as_len
+ CLI_G138_ATOM cli_g138_atom_independent_of,cli_g138_atom_independent_of_len
+ CLI_G138_ATOM cli_g138_atom_conditional_on,cli_g138_atom_conditional_on_len
+ CLI_G138_ATOM cli_g138_atom_random_variable,cli_g138_atom_random_variable_len
+ CLI_G138_ATOM cli_g138_atom_sample_probability,cli_g138_atom_sample_probability_len
+ CLI_G138_ATOM cli_g138_atom_infer_probability,cli_g138_atom_infer_probability_len
+ CLI_G138_ATOM cli_g138_atom_probability_report,cli_g138_atom_probability_report_len
+%undef CLI_G138_ATOM
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Exact token-level G137 routing witness.  Structural ownership is still
+; decided by the complete bounded call grammar in g137_is_program.
+cli_tokens_contain_g137_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ mov rdx,[rdi+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rdx,NEBOC_TOKEN_PARTIAL_DERIVATIVE
+ je .yes
+ cmp rdx,NEBOC_TOKEN_GRADIENT
+ je .yes
+ cmp rdx,NEBOC_TOKEN_DIVERGENCE
+ je .yes
+ cmp rdx,NEBOC_TOKEN_CURL
+ je .yes
+ cmp rdx,NEBOC_TOKEN_LAPLACIAN
+ je .yes
+ cmp rdx,NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G137_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_G137_ATOM cli_g137_atom_partial,cli_g137_atom_partial_len
+ CLI_G137_ATOM cli_g137_atom_gradient,cli_g137_atom_gradient_len
+ CLI_G137_ATOM cli_g137_atom_divergence,cli_g137_atom_divergence_len
+ CLI_G137_ATOM cli_g137_atom_curl,cli_g137_atom_curl_len
+ CLI_G137_ATOM cli_g137_atom_laplacian,cli_g137_atom_laplacian_len
+%undef CLI_G137_ATOM
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Exact token-level G136 routing witness. Ownership is still decided by the
+; complete bounded call grammar in g136_is_program.
+cli_tokens_contain_g136_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ mov rdx,[rdi+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rdx,NEBOC_TOKEN_INTEGRAL_SINGLE
+ je .yes
+ cmp rdx,NEBOC_TOKEN_INTEGRAL_DOUBLE
+ je .yes
+ cmp rdx,NEBOC_TOKEN_INTEGRAL_TRIPLE
+ je .yes
+ cmp rdx,NEBOC_TOKEN_INTEGRAL_CONTOUR
+ je .yes
+ cmp rdx,NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G136_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_G136_ATOM cli_g136_atom_integrate,cli_g136_atom_integrate_len
+ CLI_G136_ATOM cli_g136_atom_integrate2d,cli_g136_atom_integrate2d_len
+ CLI_G136_ATOM cli_g136_atom_integrate3d,cli_g136_atom_integrate3d_len
+ CLI_G136_ATOM cli_g136_atom_contour_integrate,cli_g136_atom_contour_integrate_len
+%undef CLI_G136_ATOM
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Exact token-level G135 routing witness.  Ownership is still decided by the
+; structural declaration grammar in g135_is_program.
+cli_tokens_contain_g135_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ mov rdx,[rdi+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rdx,NEBOC_TOKEN_MATRIX_TRANSPOSE
+ je .yes
+ cmp rdx,NEBOC_TOKEN_MATRIX_ADJOINT
+ je .yes
+ cmp rdx,NEBOC_TOKEN_MATRIX_INVERSE
+ je .yes
+ cmp rdx,NEBOC_TOKEN_LINEAR_NORM_DELIMITER
+ je .yes
+ cmp rdx,NEBOC_TOKEN_LINEAR_INNER_OPEN
+ je .yes
+ cmp rdx,NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G135_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_G135_ATOM cli_g135_atom_transpose,cli_g135_atom_transpose_len
+ CLI_G135_ATOM cli_g135_atom_adjoint,cli_g135_atom_adjoint_len
+ CLI_G135_ATOM cli_g135_atom_inverse,cli_g135_atom_inverse_len
+ CLI_G135_ATOM cli_g135_atom_norm,cli_g135_atom_norm_len
+ CLI_G135_ATOM cli_g135_atom_inner_product,cli_g135_atom_inner_product_len
+%undef CLI_G135_ATOM
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
 ; Exact token-level C12 routing witness.  It prevents the earlier generic
 ; parameter/Tuple heuristic from claiming a complete Tensor source while
 ; leaving Matrix, Vector and every unrelated source in their frozen order.
@@ -6522,6 +12665,2993 @@ cli_tokens_contain_tensor_atom:
  jne .next
  lea rsi,[rel scientific_cli_tensor_atom]
  mov edx,scientific_cli_tensor_atom_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Exact G007 routing witness for the four public sequential collection types.
+cli_tokens_contain_g007_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+ lea rsi,[rel cli_g007_atom_list]
+ mov edx,cli_g007_atom_list_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_g007_atom_stack]
+ mov edx,cli_g007_atom_stack_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_g007_atom_queue]
+ mov edx,cli_g007_atom_queue_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_g007_atom_deque]
+ mov edx,cli_g007_atom_deque_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Primitive textual bindings/Bytes plus explicit return select the complete
+; Program owner. This witness never emits a value or skips an AST statement.
+cli_tokens_contain_textual_binding_return:
+ ; An authenticated generic owner must retain its declaration grammar.
+ cmp qword [rel cli_generic+NEBOC_GEN_FOUND_OFFSET],0
+ je .unclaimed_program
+ cmp qword [rel cli_generic+NEBOC_GEN_PURE_DECL_END_OFFSET],0
+ jne .unclaimed_program
+ xor eax,eax
+ ret
+.unclaimed_program:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r8d,r8d
+.scan:
+ cmp r13,r12
+ jae .finish
+ imul rax,r13,NEBOC_TOKEN_SIZE
+ lea rdx,[rbx+rax]
+ mov rax,[rdx+NEBOC_TOKEN_KIND_OFFSET]
+ ; A named-product field followed by an ordinary method suffix is an AST
+ ; composition witness. The native declaration parser and typed field owner
+ ; still validate the receiver; this only chooses the complete Program path.
+ cmp qword [rbx+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_KW_STRUCT
+ jne .struct_projection_checked
+ cmp rax,NEBOC_TOKEN_IDENTIFIER
+ jne .struct_projection_checked
+ lea r9,[r13+5]
+ cmp r9,r12
+ jae .struct_projection_checked
+ cmp qword [rdx+NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne .struct_projection_checked
+ cmp qword [rdx+2*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .struct_projection_checked
+ cmp qword [rdx+3*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne .struct_projection_checked
+ cmp qword [rdx+4*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .struct_projection_checked
+ cmp qword [rdx+5*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ je .found
+.struct_projection_checked:
+ cmp rax,NEBOC_TOKEN_KW_RETURN
+ jne .literal
+ test r13,r13
+ jz .next
+ cmp qword [rdx-NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne .next
+ or r8d,2
+ jmp .next
+.literal:
+ cmp rax,NEBOC_TOKEN_INTERPOLATION_HEAD
+ je .found
+ cmp rax,NEBOC_TOKEN_KW_TRUE
+ je .binding
+ cmp rax,NEBOC_TOKEN_KW_FALSE
+ je .binding
+ cmp rax,NEBOC_TOKEN_CHAR
+ je .binding
+ cmp rax,NEBOC_TOKEN_TEXT
+ je .binding
+ cmp rax,NEBOC_TOKEN_IDENTIFIER
+ jne .next
+ mov rax,[rdx+NEBOC_TOKEN_END_OFFSET]
+ sub rax,[rdx+NEBOC_TOKEN_START_OFFSET]
+ cmp rax,5
+ jne .next
+ lea rax,[rel cli_source]
+ add rax,[rdx+NEBOC_TOKEN_START_OFFSET]
+ cmp dword [rax],0x65747942 ; Bytes
+ jne .next
+ cmp byte [rax+4],'s'
+ jne .next
+ lea r9,[r13+3]
+ cmp r9,r12
+ jae .next
+ cmp qword [rdx+NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne .next
+ cmp qword [rdx+2*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+ cmp qword [rdx+3*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_SEMICOLON
+ je .found
+ cmp qword [rdx+3*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ jne .next
+ xor r10d,r10d
+.constructor:
+ cmp r9,r12
+ jae .next
+ imul rax,r9,NEBOC_TOKEN_SIZE
+ lea r11,[rbx+rax]
+ mov rax,[r11+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rax,NEBOC_TOKEN_LPAREN
+ jne .constructor_close
+ inc r10
+ jmp .constructor_next
+.constructor_close:
+ cmp rax,NEBOC_TOKEN_RPAREN
+ jne .constructor_next
+ dec r10
+ jz .constructor_terminal
+.constructor_next:
+ inc r9
+ jmp .constructor
+.constructor_terminal:
+ ; A balanced method call on a primitive literal is a structural witness
+ ; even inside a larger expression. The complete Program parser still owns
+ ; every surrounding operator, binding, control statement and explicit return.
+ jmp .found
+.binding:
+ lea rax,[r13+3]
+ cmp rax,r12
+ jae .next
+ ; A Text/Char/Bool method result can itself be bound. The complete Program
+ ; parser owns all chained statements; this witness only detects the same
+ ; balanced call-then-binding shape already used for Bytes constructors.
+ cmp qword [rdx+3*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ jne .binding_shape
+ cmp qword [rdx+NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne .next
+ cmp qword [rdx+2*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+ lea r9,[r13+3]
+ xor r10d,r10d
+ jmp .constructor
+.binding_shape:
+ cmp qword [rdx+NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne .next
+ cmp qword [rdx+2*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+ cmp qword [rdx+3*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_SEMICOLON
+ je .found
+ cmp qword [rdx+3*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ je .chained_call
+ cmp qword [rdx+3*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne .next
+ ; The complete parser, rather than this witness, validates binding suffixes.
+.found:
+ or r8d,1
+ jmp .next
+.chained_call:
+ ; Follow each balanced call in the expression; the Program parser consumes
+ ; the complete chain and owns both valid and invalid operand diagnostics.
+ mov rax,rdx
+ sub rax,rbx
+ xor edx,edx
+ mov ecx,NEBOC_TOKEN_SIZE
+ div rcx
+ lea r9,[rax+3]
+ xor r10d,r10d
+ jmp .constructor
+.next:
+ inc r13
+ jmp .scan
+.finish:
+ xor eax,eax
+ cmp r8d,3
+ sete al
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Exact token-level routing witness for native collection applications.
+section .rodata
+cli_composed_Option: db 'Option'
+cli_composed_Result: db 'Result'
+section .text
+cli_tokens_contain_composed_tagged:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .finish
+ imul rax,r13,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ mov rax,[rdi+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rax,NEBOC_TOKEN_KW_IF
+ je .control
+ cmp rax,NEBOC_TOKEN_KW_WHILE
+ je .control
+ cmp rax,NEBOC_TOKEN_KW_LOOP
+ je .control
+ cmp rax,NEBOC_TOKEN_IDENTIFIER
+ jne .next
+ lea rsi,[rel cli_composed_Option]
+ mov edx,6
+ call cli_token_equals
+ test eax,eax
+ jnz .tagged
+ imul rax,r13,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_composed_Result]
+ mov edx,6
+ call cli_token_equals
+ test eax,eax
+ jz .next
+.tagged:
+ or r14d,1
+ jmp .next
+.control:
+ or r14d,2
+.next:
+ inc r13
+ jmp .scan
+.finish:
+ xor eax,eax
+ cmp r14d,3
+ sete al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+cli_tokens_contain_associative_type:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ lea rax,[r13+1]
+ cmp rax,r12
+ jae .no
+ imul rax,NEBOC_TOKEN_SIZE
+ cmp qword [rbx+rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ je .method_name
+ cmp qword [rbx+rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LESS
+ je .type_name
+ cmp qword [rbx+rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne .next
+.type_name:
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+ lea rsi,[rel cli_g008_atom_dict]
+ mov edx,cli_g008_atom_dict_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_g008_atom_set]
+ mov edx,cli_g008_atom_set_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_g008_atom_hasher]
+ mov edx,cli_g008_atom_hasher_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_associative_name_hash]
+ mov edx,4
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%macro CLI_TYPED_SEQUENCE 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ ; A typed Vector selects complete statement parsing and the native numeric
+ ; expression owner. It never claims or evaluates a whole source file.
+ CLI_TYPED_SEQUENCE cli_system_cancel_token,17
+ CLI_TYPED_SEQUENCE cli_system_channel,7
+ CLI_TYPED_SEQUENCE cli_system_mutex,5
+ CLI_TYPED_SEQUENCE cli_system_rwlock,6
+ CLI_TYPED_SEQUENCE cli_system_atomic,9
+ CLI_TYPED_SEQUENCE cli_system_duration,8
+ CLI_TYPED_SEQUENCE cli_system_instant,7
+ CLI_TYPED_SEQUENCE cli_system_process,7
+ CLI_TYPED_SEQUENCE cli_system_json,4
+ CLI_TYPED_SEQUENCE cli_system_csv,3
+ CLI_TYPED_SEQUENCE cli_system_task,4
+ CLI_TYPED_SEQUENCE cli_system_task_group,9
+ CLI_TYPED_SEQUENCE cli_system_environment,11
+ CLI_TYPED_SEQUENCE cli_network_ip,9
+ CLI_TYPED_SEQUENCE cli_network_address,13
+ CLI_TYPED_SEQUENCE cli_network_listener,11
+ CLI_TYPED_SEQUENCE cli_network_stream,9
+ CLI_TYPED_SEQUENCE cli_network_udp,9
+ CLI_TYPED_SEQUENCE cli_network_http_request,11
+ CLI_TYPED_SEQUENCE cli_network_http_client,10
+ CLI_TYPED_SEQUENCE cli_g012_atom_random,6
+ CLI_TYPED_SEQUENCE cli_g014_atom_vector,6
+ CLI_TYPED_SEQUENCE cli_g015_atom_matrix,6
+ CLI_TYPED_SEQUENCE cli_g016_atom_tensor,6
+ CLI_TYPED_SEQUENCE cli_g059_atom_format_string,12
+ CLI_TYPED_SEQUENCE cli_typed_stream,6
+ CLI_TYPED_SEQUENCE cli_typed_schema,6
+ CLI_TYPED_SEQUENCE cli_typed_row,3
+ CLI_TYPED_SEQUENCE cli_typed_table,5
+ CLI_TYPED_SEQUENCE cli_typed_dataset,7
+ CLI_TYPED_SEQUENCE cli_typed_event,5
+ CLI_TYPED_SEQUENCE cli_typed_flow,4
+ CLI_TYPED_SEQUENCE cli_typed_column,6
+ CLI_TYPED_SEQUENCE cli_typed_tree,4
+ CLI_TYPED_SEQUENCE cli_typed_node,4
+ CLI_TYPED_SEQUENCE cli_typed_graph,5
+ CLI_TYPED_SEQUENCE cli_g007_atom_stack,5
+ CLI_TYPED_SEQUENCE cli_g007_atom_queue,5
+ CLI_TYPED_SEQUENCE cli_g007_atom_deque,5
+%undef CLI_TYPED_SEQUENCE
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_g007_atom_list]
+ mov edx,4
+ call cli_token_equals
+ test eax,eax
+ jz .next
+ jmp .yes
+.next:
+ inc r13
+ jmp .scan
+.method_name:
+ test r13,r13
+ jz .next
+ lea rax,[r13-1]
+ imul rax,NEBOC_TOKEN_SIZE
+ cmp qword [rbx+rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne .next
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ call cli_token_is_public_hash_method
+ test eax,eax
+ jnz .yes
+ jmp .next
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Exact method token witness. Semantic typing still owns applicability and
+; argument validation after the complete Program AST has been parsed.
+cli_token_is_public_hash_method:
+ push rbx
+ mov rbx,rdi
+ lea rsi,[rel cli_associative_name_equals]
+ mov edx,6
+ call cli_token_equals
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel cli_associative_name_hash]
+ mov edx,4
+ call cli_token_equals
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel cli_associative_name_hash_stable]
+ mov edx,10
+ call cli_token_equals
+.done:
+ pop rbx
+ ret
+
+cli_tokens_contain_g008_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G008_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_G008_ATOM cli_g008_atom_dict,cli_g008_atom_dict_len
+ CLI_G008_ATOM cli_g008_atom_set,cli_g008_atom_set_len
+ CLI_G008_ATOM cli_g008_atom_hasher,cli_g008_atom_hasher_len
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G008_ATOM
+
+; Exact token-level G009 routing witness for relational structure types.
+cli_tokens_contain_g009_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G009_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_G009_ATOM cli_g009_atom_tree,cli_g009_atom_tree_len
+ CLI_G009_ATOM cli_g009_atom_graph,cli_g009_atom_graph_len
+ CLI_G009_ATOM cli_g009_atom_replace_value,cli_g009_atom_replace_value_len
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G009_ATOM
+
+; Exact token-level G010 routing witness. Broad historical Column/Event/Flow
+; names are deliberately excluded; current-only operations distinguish them.
+cli_tokens_contain_g010_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G010_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_G010_ATOM cli_g010_atom_schema,cli_g010_atom_schema_len
+ CLI_G010_ATOM cli_g010_atom_row,cli_g010_atom_row_len
+ CLI_G010_ATOM cli_g010_atom_table,cli_g010_atom_table_len
+ CLI_G010_ATOM cli_g010_atom_dataset,cli_g010_atom_dataset_len
+ CLI_G010_ATOM cli_g010_atom_cast,cli_g010_atom_cast_len
+ CLI_G010_ATOM cli_g010_atom_drop_missing,cli_g010_atom_drop_missing_len
+ CLI_G010_ATOM cli_g010_atom_batch,cli_g010_atom_batch_len
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G010_ATOM
+
+; Exact token-level G025 routing witness.  Generic Policy/Quality/Log names
+; remain under their historical owners unless a current-only public atom is
+; present.  Source paths and fixture names are never inspected.
+cli_tokens_contain_g025_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G025_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_G025_ATOM cli_g025_atom_file_capability,cli_g025_atom_file_capability_len
+ CLI_G025_ATOM cli_g025_atom_sensitive,cli_g025_atom_sensitive_len
+ CLI_G025_ATOM cli_g025_atom_privacy_policy,cli_g025_atom_privacy_policy_len
+ CLI_G025_ATOM cli_g025_atom_metrics,cli_g025_atom_metrics_len
+ CLI_G025_ATOM cli_g025_atom_provenance,cli_g025_atom_provenance_len
+ CLI_G025_ATOM cli_g025_atom_audit,cli_g025_atom_audit_len
+ CLI_G025_ATOM cli_g025_atom_explain_effects,cli_g025_atom_explain_effects_len
+ CLI_G025_ATOM cli_g025_atom_file_read,cli_g025_atom_file_read_len
+ CLI_G025_ATOM cli_g025_atom_evaluate,cli_g025_atom_evaluate_len
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G025_ATOM
+
+; Exact token-level G014 routing witness. Source paths and fixture names are
+; absent; only corrected-contract public atoms select this owner.
+cli_tokens_contain_g014_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G014_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_G014_ATOM cli_g014_atom_hypot,cli_g014_atom_hypot_len
+ CLI_G014_ATOM cli_g014_atom_atan2,cli_g014_atom_atan2_len
+ CLI_G014_ATOM cli_g014_atom_approx_equals,cli_g014_atom_approx_equals_len
+ CLI_G014_ATOM cli_g014_atom_standard_deviation,cli_g014_atom_standard_deviation_len
+ CLI_G014_ATOM cli_g014_atom_categorical,cli_g014_atom_categorical_len
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_g014_atom_normalize]
+ mov edx,cli_g014_atom_normalize_len
+ call cli_token_equals
+ test eax,eax
+ jnz .normalize_candidate
+.next:
+ inc r13
+ jmp .scan
+.normalize_candidate:
+ xor r13d,r13d
+.vector_scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .vector_next
+ lea rsi,[rel cli_g014_atom_vector]
+ mov edx,cli_g014_atom_vector_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+.vector_next:
+ inc r13
+ jmp .vector_scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G014_ATOM
+
+; Token-only G015 routing witness.  Bits record Matrix, a unique corrected
+; operation, fromRows and fromBuffer respectively; no fixture identity exists.
+cli_tokens_contain_g015_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G015_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G015_MARK cli_g015_atom_matrix,cli_g015_atom_matrix_len,1
+ CLI_G015_MARK cli_g015_atom_get,cli_g015_atom_get_len,2
+ CLI_G015_MARK cli_g015_atom_divide_elements,cli_g015_atom_divide_elements_len,2
+ CLI_G015_MARK cli_g015_atom_trace,cli_g015_atom_trace_len,2
+ CLI_G015_MARK cli_g015_atom_matvec,cli_g015_atom_matvec_len,2
+ CLI_G015_MARK cli_g015_atom_determinant,cli_g015_atom_determinant_len,2
+ CLI_G015_MARK cli_g015_atom_from_rows,cli_g015_atom_from_rows_len,4
+ CLI_G015_MARK cli_g015_atom_from_buffer,cli_g015_atom_from_buffer_len,8
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ test r14d,1
+ jz .no
+ test r14d,2
+ jnz .yes
+ mov eax,r14d
+ and eax,12
+ cmp eax,12
+ jne .no
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G015_MARK
+
+; Token-only G016 routing witness: Tensor plus one corrected-contract atom.
+cli_tokens_contain_g016_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G016_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G016_MARK cli_g016_atom_tensor,cli_g016_atom_tensor_len,1
+ CLI_G016_MARK cli_g016_atom_storage_id,cli_g016_atom_storage_id_len,2
+ CLI_G016_MARK cli_g016_atom_element_count,cli_g016_atom_element_count_len,2
+ CLI_G016_MARK cli_g016_atom_axis_size,cli_g016_atom_axis_size_len,2
+ CLI_G016_MARK cli_g016_atom_select,cli_g016_atom_select_len,2
+ CLI_G016_MARK cli_g016_atom_broadcast_to,cli_g016_atom_broadcast_to_len,2
+ CLI_G016_MARK cli_g016_atom_maximum,cli_g016_atom_maximum_len,2
+ CLI_G016_MARK cli_g016_atom_arg_max,cli_g016_atom_arg_max_len,2
+ CLI_G016_MARK cli_g016_atom_concatenate,cli_g016_atom_concatenate_len,2
+ CLI_G016_MARK cli_g016_atom_einsum,cli_g016_atom_einsum_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ mov eax,r14d
+ and eax,3
+ cmp eax,3
+ jne .no
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G016_MARK
+
+; Token-only G059 routing witness. A type root plus a formatting operation, or
+; the canonical format(...).console() pair, claims the complete source.
+cli_tokens_contain_g078_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G078_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G078_MARK cli_g076_atom_root,cli_g076_atom_root_len,1
+ CLI_G078_MARK cli_g078_atom_blocks,cli_g078_atom_blocks_len,2
+ CLI_G078_MARK cli_g078_atom_editor,cli_g078_atom_editor_len,2
+ CLI_G078_MARK cli_g078_atom_sources,cli_g078_atom_sources_len,2
+ CLI_G078_MARK cli_g078_atom_forms,cli_g078_atom_forms_len,2
+ CLI_G078_MARK cli_g078_atom_meta,cli_g078_atom_meta_len,2
+ CLI_G078_MARK cli_g078_atom_closeout,cli_g078_atom_closeout_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G078_MARK
+
+; Token-only G029 routing witness: the disjoint root and one subgroup marker.
+cli_tokens_contain_g029_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G029_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G029_MARK cli_g029_atom_root,cli_g029_atom_root_len,1
+ CLI_G029_MARK cli_g029_atom_contract,cli_g029_atom_contract_len,2
+ CLI_G029_MARK cli_g029_atom_refinement,cli_g029_atom_refinement_len,2
+ CLI_G029_MARK cli_g029_atom_obligation,cli_g029_atom_obligation_len,2
+ CLI_G029_MARK cli_g029_atom_model,cli_g029_atom_model_len,2
+ CLI_G029_MARK cli_g029_atom_proof,cli_g029_atom_proof_len,2
+ CLI_G029_MARK cli_g029_atom_tooling,cli_g029_atom_tooling_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G029_MARK
+
+; Token-only G030 routing witness: the disjoint root and one subgroup marker.
+cli_tokens_contain_g030_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G030_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G030_MARK cli_g030_atom_root,cli_g030_atom_root_len,1
+ CLI_G030_MARK cli_g030_atom_domain,cli_g030_atom_domain_len,2
+ CLI_G030_MARK cli_g030_atom_constraint,cli_g030_atom_constraint_len,2
+ CLI_G030_MARK cli_g030_atom_optimize,cli_g030_atom_optimize_len,2
+ CLI_G030_MARK cli_g030_atom_schedule,cli_g030_atom_schedule_len,2
+ CLI_G030_MARK cli_g030_atom_incremental,cli_g030_atom_incremental_len,2
+ CLI_G030_MARK cli_g030_atom_diagnostic,cli_g030_atom_diagnostic_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G030_MARK
+
+; Token-only G028 routing witness: the disjoint root and one subgroup marker.
+cli_tokens_contain_g028_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G028_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G028_MARK cli_g028_atom_root,cli_g028_atom_root_len,1
+ CLI_G028_MARK cli_g028_atom_code,cli_g028_atom_code_len,2
+ CLI_G028_MARK cli_g028_atom_hygiene,cli_g028_atom_hygiene_len,2
+ CLI_G028_MARK cli_g028_atom_reflect,cli_g028_atom_reflect_len,2
+ CLI_G028_MARK cli_g028_atom_derive,cli_g028_atom_derive_len,2
+ CLI_G028_MARK cli_g028_atom_compile,cli_g028_atom_compile_len,2
+ CLI_G028_MARK cli_g028_atom_macro,cli_g028_atom_macro_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G028_MARK
+
+; Token-only G082 routing witness: the disjoint root and one subgroup marker.
+cli_tokens_contain_g082_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G082_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G082_MARK cli_g082_atom_root,cli_g082_atom_root_len,1
+ CLI_G082_MARK cli_g082_atom_list,cli_g082_atom_list_len,2
+ CLI_G082_MARK cli_g082_atom_row,cli_g082_atom_row_len,2
+ CLI_G082_MARK cli_g082_atom_column,cli_g082_atom_column_len,2
+ CLI_G082_MARK cli_g082_atom_table,cli_g082_atom_table_len,2
+ CLI_G082_MARK cli_g082_atom_dataset,cli_g082_atom_dataset_len,2
+ CLI_G082_MARK cli_g082_atom_stream,cli_g082_atom_stream_len,2
+ CLI_G082_MARK cli_g082_atom_kernel,cli_g082_atom_kernel_len,2
+ CLI_G082_MARK cli_g082_atom_closeout,cli_g082_atom_closeout_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G082_MARK
+
+; Token-only G081 routing witness: the disjoint root and one subgroup marker.
+cli_tokens_contain_g081_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G081_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G081_MARK cli_g081_atom_root,cli_g081_atom_root_len,1
+ CLI_G081_MARK cli_g081_atom_markdown,cli_g081_atom_markdown_len,2
+ CLI_G081_MARK cli_g081_atom_toml,cli_g081_atom_toml_len,2
+ CLI_G081_MARK cli_g081_atom_logs,cli_g081_atom_logs_len,2
+ CLI_G081_MARK cli_g081_atom_atom,cli_g081_atom_atom_len,2
+ CLI_G081_MARK cli_g081_atom_rss,cli_g081_atom_rss_len,2
+ CLI_G081_MARK cli_g081_atom_feed,cli_g081_atom_feed_len,2
+ CLI_G081_MARK cli_g081_atom_xml,cli_g081_atom_xml_len,2
+ CLI_G081_MARK cli_g081_atom_html,cli_g081_atom_html_len,2
+ CLI_G081_MARK cli_g081_atom_yaml,cli_g081_atom_yaml_len,2
+ CLI_G081_MARK cli_g081_atom_ini,cli_g081_atom_ini_len,2
+ CLI_G081_MARK cli_g081_atom_external,cli_g081_atom_external_len,2
+ CLI_G081_MARK cli_g081_atom_closeout,cli_g081_atom_closeout_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G081_MARK
+
+; Token-only G080 routing witness: the disjoint root and one subgroup marker.
+cli_tokens_contain_g080_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G080_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G080_MARK cli_g080_atom_root,cli_g080_atom_root_len,1
+ CLI_G080_MARK cli_g080_atom_csv_types,cli_g080_atom_csv_types_len,2
+ CLI_G080_MARK cli_g080_atom_csv_io,cli_g080_atom_csv_io_len,2
+ CLI_G080_MARK cli_g080_atom_tsv,cli_g080_atom_tsv_len,2
+ CLI_G080_MARK cli_g080_atom_json_values,cli_g080_atom_json_values_len,2
+ CLI_G080_MARK cli_g080_atom_json_io,cli_g080_atom_json_io_len,2
+ CLI_G080_MARK cli_g080_atom_json_typed,cli_g080_atom_json_typed_len,2
+ CLI_G080_MARK cli_g080_atom_jsonl,cli_g080_atom_jsonl_len,2
+ CLI_G080_MARK cli_g080_atom_closeout,cli_g080_atom_closeout_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G080_MARK
+
+; Token-only G079 routing witness: the disjoint root and one subgroup marker.
+cli_tokens_contain_g079_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G079_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G079_MARK cli_g079_atom_root,cli_g079_atom_root_len,1
+ CLI_G079_MARK cli_g079_atom_contracts,cli_g079_atom_contracts_len,2
+ CLI_G079_MARK cli_g079_atom_reports,cli_g079_atom_reports_len,2
+ CLI_G079_MARK cli_g079_atom_schemas,cli_g079_atom_schemas_len,2
+ CLI_G079_MARK cli_g079_atom_options,cli_g079_atom_options_len,2
+ CLI_G079_MARK cli_g079_atom_detection,cli_g079_atom_detection_len,2
+ CLI_G079_MARK cli_g079_atom_io,cli_g079_atom_io_len,2
+ CLI_G079_MARK cli_g079_atom_conversion,cli_g079_atom_conversion_len,2
+ CLI_G079_MARK cli_g079_atom_closeout,cli_g079_atom_closeout_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G079_MARK
+
+cli_tokens_contain_g077_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G077_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G077_MARK cli_g076_atom_root,cli_g076_atom_root_len,1
+ CLI_G077_MARK cli_g077_atom_privacy,cli_g077_atom_privacy_len,2
+ CLI_G077_MARK cli_g077_atom_events,cli_g077_atom_events_len,2
+ CLI_G077_MARK cli_g077_atom_formatted,cli_g077_atom_formatted_len,2
+ CLI_G077_MARK cli_g077_atom_secret_life,cli_g077_atom_secret_life_len,2
+ CLI_G077_MARK cli_g077_atom_outcome,cli_g077_atom_outcome_len,2
+ CLI_G077_MARK cli_g077_atom_closeout,cli_g077_atom_closeout_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G077_MARK
+
+cli_tokens_contain_g076_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G076_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G076_MARK cli_g076_atom_root,cli_g076_atom_root_len,1
+ CLI_G076_MARK cli_g076_atom_text,cli_g076_atom_text_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G076_MARK
+
+cli_tokens_contain_g059_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G059_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G059_MARK cli_g059_atom_format_plan,cli_g059_atom_format_plan_len,1
+ CLI_G059_MARK cli_g059_atom_format_node,cli_g059_atom_format_node_len,1
+ CLI_G059_MARK cli_g059_atom_format_string,cli_g059_atom_format_string_len,1
+ CLI_G059_MARK cli_g059_atom_static_format_string,cli_g059_atom_static_format_string_len,1
+ CLI_G059_MARK cli_g059_atom_formatted_text,cli_g059_atom_formatted_text_len,1
+ CLI_G059_MARK cli_g059_atom_format_error,cli_g059_atom_format_error_len,1
+ CLI_G059_MARK cli_g059_atom_evaluation_order,cli_g059_atom_evaluation_order_len,1
+ CLI_G059_MARK cli_g059_atom_console_options,cli_g059_atom_console_options_len,1
+ CLI_G059_MARK cli_g059_atom_format,cli_g059_atom_format_len,2
+ CLI_G059_MARK cli_g059_atom_format_named,cli_g059_atom_format_named_len,2
+ CLI_G059_MARK cli_g059_atom_format_with,cli_g059_atom_format_with_len,2
+ CLI_G059_MARK cli_g059_atom_render_to,cli_g059_atom_render_to_len,2
+ CLI_G059_MARK cli_g059_atom_console,cli_g059_atom_console_len,6
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ mov eax,r14d
+ and eax,3
+ cmp eax,3
+ je .yes
+ mov eax,r14d
+ and eax,6
+ cmp eax,6
+ jne .no
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G059_MARK
+
+; Token-only G090 routing witness: a nominal adapter root plus one bounded
+; family operation. Shared value/buffer atoms alone never claim a source.
+cli_tokens_contain_g090_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G090_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G090_MARK cli_g090_atom_renderable,cli_g090_atom_renderable_len,1
+ CLI_G090_MARK cli_g090_atom_value_type,cli_g090_atom_value_type_len,1
+ CLI_G090_MARK cli_g090_atom_kind,cli_g090_atom_kind_len,1
+ CLI_G090_MARK cli_g090_atom_result,cli_g090_atom_result_len,1
+ CLI_G090_MARK cli_g090_atom_scalar,cli_g090_atom_scalar_len,2
+ CLI_G090_MARK cli_g090_atom_buffer,cli_g090_atom_buffer_len,2
+ CLI_G090_MARK cli_g090_atom_collection,cli_g090_atom_collection_len,2
+ CLI_G090_MARK cli_g090_atom_tabular,cli_g090_atom_tabular_len,2
+ CLI_G090_MARK cli_g090_atom_numeric_shape,cli_g090_atom_numeric_shape_len,2
+ CLI_G090_MARK cli_g090_atom_dynamic,cli_g090_atom_dynamic_len,2
+ CLI_G090_MARK cli_g090_atom_media_metadata,cli_g090_atom_media_metadata_len,2
+ CLI_G090_MARK cli_g090_atom_value,cli_g090_atom_value_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G090_MARK
+
+; Token-only G097 routing witness: one nominal scientific root and one operation.
+cli_tokens_contain_g097_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G097_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G097_MARK cli_g097_atom_matrix_root,cli_g097_atom_matrix_root_len,1
+ CLI_G097_MARK cli_g097_atom_shape_root,cli_g097_atom_shape_root_len,1
+ CLI_G097_MARK cli_g097_atom_tensor_slice_root,cli_g097_atom_tensor_slice_root_len,1
+ CLI_G097_MARK cli_g097_atom_volume_slice_root,cli_g097_atom_volume_slice_root_len,1
+ CLI_G097_MARK cli_g097_atom_isosurface_root,cli_g097_atom_isosurface_root_len,1
+ CLI_G097_MARK cli_g097_atom_compare_root,cli_g097_atom_compare_root_len,1
+ CLI_G097_MARK cli_g097_atom_color_root,cli_g097_atom_color_root_len,1
+ CLI_G097_MARK cli_g097_atom_bounded_root,cli_g097_atom_bounded_root_len,1
+ CLI_G097_MARK cli_g097_atom_oracle_root,cli_g097_atom_oracle_root_len,1
+ CLI_G097_MARK cli_g097_atom_closeout_root,cli_g097_atom_closeout_root_len,1
+ CLI_G097_MARK cli_g097_atom_compare,cli_g097_atom_compare_len,2
+ CLI_G097_MARK cli_g097_atom_index,cli_g097_atom_index_len,2
+ CLI_G097_MARK cli_g097_atom_isosurface,cli_g097_atom_isosurface_len,2
+ CLI_G097_MARK cli_g097_atom_matrix,cli_g097_atom_matrix_len,2
+ CLI_G097_MARK cli_g097_atom_shape_inspector,cli_g097_atom_shape_inspector_len,2
+ CLI_G097_MARK cli_g097_atom_slice,cli_g097_atom_slice_len,2
+ CLI_G097_MARK cli_g097_atom_tensor,cli_g097_atom_tensor_len,2
+ CLI_G097_MARK cli_g097_atom_tensor_slice,cli_g097_atom_tensor_slice_len,2
+ CLI_G097_MARK cli_g097_atom_threshold,cli_g097_atom_threshold_len,2
+ CLI_G097_MARK cli_g097_atom_volume,cli_g097_atom_volume_len,2
+ CLI_G097_MARK cli_g097_atom_with,cli_g097_atom_with_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G097_MARK
+
+; Token-only G098 routing witness: one nominal graph-family root and one operation.
+cli_tokens_contain_g098_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G098_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G098_MARK cli_g098_atom_graph_root,cli_g098_atom_graph_root_len,1
+ CLI_G098_MARK cli_g098_atom_tree_root,cli_g098_atom_tree_root_len,1
+ CLI_G098_MARK cli_g098_atom_layout_root,cli_g098_atom_layout_root_len,1
+ CLI_G098_MARK cli_g098_atom_highlight_root,cli_g098_atom_highlight_root_len,1
+ CLI_G098_MARK cli_g098_atom_embedding_root,cli_g098_atom_embedding_root_len,1
+ CLI_G098_MARK cli_g098_atom_projection_root,cli_g098_atom_projection_root_len,1
+ CLI_G098_MARK cli_g098_atom_dependency_root,cli_g098_atom_dependency_root_len,1
+ CLI_G098_MARK cli_g098_atom_bounded_root,cli_g098_atom_bounded_root_len,1
+ CLI_G098_MARK cli_g098_atom_closeout_root,cli_g098_atom_closeout_root_len,1
+ CLI_G098_MARK cli_g098_atom_graph,cli_g098_atom_graph_len,2
+ CLI_G098_MARK cli_g098_atom_highlight,cli_g098_atom_highlight_len,2
+ CLI_G098_MARK cli_g098_atom_highlight_path,cli_g098_atom_highlight_path_len,2
+ CLI_G098_MARK cli_g098_atom_embedding,cli_g098_atom_embedding_len,2
+ CLI_G098_MARK cli_g098_atom_projection,cli_g098_atom_projection_len,2
+ CLI_G098_MARK cli_g098_atom_project,cli_g098_atom_project_len,2
+ CLI_G098_MARK cli_g098_atom_dimensions,cli_g098_atom_dimensions_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G098_MARK
+
+; Token-only G099 routing witness: one nominal dashboard root and one operation.
+cli_tokens_contain_g099_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G099_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G099_MARK cli_g099_atom_spec_root,cli_g099_atom_spec_root_len,1
+ CLI_G099_MARK cli_g099_atom_panel_root,cli_g099_atom_panel_root_len,1
+ CLI_G099_MARK cli_g099_atom_multi_root,cli_g099_atom_multi_root_len,1
+ CLI_G099_MARK cli_g099_atom_log_root,cli_g099_atom_log_root_len,1
+ CLI_G099_MARK cli_g099_atom_present_root,cli_g099_atom_present_root_len,1
+ CLI_G099_MARK cli_g099_atom_export_root,cli_g099_atom_export_root_len,1
+ CLI_G099_MARK cli_g099_atom_interaction_root,cli_g099_atom_interaction_root_len,1
+ CLI_G099_MARK cli_g099_atom_snapshot_root,cli_g099_atom_snapshot_root_len,1
+ CLI_G099_MARK cli_g099_atom_closeout_root,cli_g099_atom_closeout_root_len,1
+ CLI_G099_MARK cli_g099_atom_dashboard,cli_g099_atom_dashboard_len,2
+ CLI_G099_MARK cli_g099_atom_log_panel,cli_g099_atom_log_panel_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G099_MARK
+
+; Token-only G100 routing witness: one nominal monitor root and one public option.
+cli_tokens_contain_g100_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G100_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G100_MARK cli_g100_atom_logs_root,cli_g100_atom_logs_root_len,1
+ CLI_G100_MARK cli_g100_atom_progress_root,cli_g100_atom_progress_root_len,1
+ CLI_G100_MARK cli_g100_atom_stream_root,cli_g100_atom_stream_root_len,1
+ CLI_G100_MARK cli_g100_atom_parallel_root,cli_g100_atom_parallel_root_len,1
+ CLI_G100_MARK cli_g100_atom_timeline_root,cli_g100_atom_timeline_root_len,1
+ CLI_G100_MARK cli_g100_atom_reactive_root,cli_g100_atom_reactive_root_len,1
+ CLI_G100_MARK cli_g100_atom_window_root,cli_g100_atom_window_root_len,1
+ CLI_G100_MARK cli_g100_atom_metrics_root,cli_g100_atom_metrics_root_len,1
+ CLI_G100_MARK cli_g100_atom_recovery_root,cli_g100_atom_recovery_root_len,1
+ CLI_G100_MARK cli_g100_atom_closeout_root,cli_g100_atom_closeout_root_len,1
+ CLI_G100_MARK cli_g100_atom_last,cli_g100_atom_last_len,2
+ CLI_G100_MARK cli_g100_atom_metric,cli_g100_atom_metric_len,2
+ CLI_G100_MARK cli_g100_atom_source,cli_g100_atom_source_len,2
+ CLI_G100_MARK cli_g100_atom_stream,cli_g100_atom_stream_len,2
+ CLI_G100_MARK cli_g100_atom_time,cli_g100_atom_time_len,2
+ CLI_G100_MARK cli_g100_atom_timeline,cli_g100_atom_timeline_len,2
+ CLI_G100_MARK cli_g100_atom_window,cli_g100_atom_window_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G100_MARK
+
+; Token-only G102 routing witness: one nominal animation/export root and one
+; public option. Exact receiver/method ownership remains in the parser.
+cli_tokens_contain_g102_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G102_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G102_MARK cli_g102_atom_animation_root,cli_g102_atom_animation_root_len,1
+ CLI_G102_MARK cli_g102_atom_timeline_root,cli_g102_atom_timeline_root_len,1
+ CLI_G102_MARK cli_g102_atom_playback_root,cli_g102_atom_playback_root_len,1
+ CLI_G102_MARK cli_g102_atom_deterministic_root,cli_g102_atom_deterministic_root_len,1
+ CLI_G102_MARK cli_g102_atom_capture_root,cli_g102_atom_capture_root_len,1
+ CLI_G102_MARK cli_g102_atom_png_root,cli_g102_atom_png_root_len,1
+ CLI_G102_MARK cli_g102_atom_video_root,cli_g102_atom_video_root_len,1
+ CLI_G102_MARK cli_g102_atom_target_root,cli_g102_atom_target_root_len,1
+ CLI_G102_MARK cli_g102_atom_atomic_root,cli_g102_atom_atomic_root_len,1
+ CLI_G102_MARK cli_g102_atom_closeout_root,cli_g102_atom_closeout_root_len,1
+ CLI_G102_MARK cli_g102_atom_animate,cli_g102_atom_animate_len,2
+ CLI_G102_MARK cli_g102_atom_animation,cli_g102_atom_animation_len,2
+ CLI_G102_MARK cli_g102_atom_capture,cli_g102_atom_capture_len,2
+ CLI_G102_MARK cli_g102_atom_duration,cli_g102_atom_duration_len,2
+ CLI_G102_MARK cli_g102_atom_fps,cli_g102_atom_fps_len,2
+ CLI_G102_MARK cli_g102_atom_frames,cli_g102_atom_frames_len,2
+ CLI_G102_MARK cli_g102_atom_mp4,cli_g102_atom_mp4_len,2
+ CLI_G102_MARK cli_g102_atom_path,cli_g102_atom_path_len,2
+ CLI_G102_MARK cli_g102_atom_png,cli_g102_atom_png_len,2
+ CLI_G102_MARK cli_g102_atom_screenshot,cli_g102_atom_screenshot_len,2
+ CLI_G102_MARK cli_g102_atom_seed,cli_g102_atom_seed_len,2
+ CLI_G102_MARK cli_g102_atom_target,cli_g102_atom_target_len,2
+ CLI_G102_MARK cli_g102_atom_hide_on_screen,cli_g102_atom_hide_on_screen_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G102_MARK
+
+; Token-only G101 routing witness: one nominal large-data root and one public
+; option. Exact receiver/method ownership remains in the structural parser.
+cli_tokens_contain_g101_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G101_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G101_MARK cli_g101_atom_lod_root,cli_g101_atom_lod_root_len,1
+ CLI_G101_MARK cli_g101_atom_decimation_root,cli_g101_atom_decimation_root_len,1
+ CLI_G101_MARK cli_g101_atom_sampling_root,cli_g101_atom_sampling_root_len,1
+ CLI_G101_MARK cli_g101_atom_density_root,cli_g101_atom_density_root_len,1
+ CLI_G101_MARK cli_g101_atom_aggregate_root,cli_g101_atom_aggregate_root_len,1
+ CLI_G101_MARK cli_g101_atom_chunks_root,cli_g101_atom_chunks_root_len,1
+ CLI_G101_MARK cli_g101_atom_cache_root,cli_g101_atom_cache_root_len,1
+ CLI_G101_MARK cli_g101_atom_budget_root,cli_g101_atom_budget_root_len,1
+ CLI_G101_MARK cli_g101_atom_profile_root,cli_g101_atom_profile_root_len,1
+ CLI_G101_MARK cli_g101_atom_closeout_root,cli_g101_atom_closeout_root_len,1
+ CLI_G101_MARK cli_g101_atom_aggregate,cli_g101_atom_aggregate_len,2
+ CLI_G101_MARK cli_g101_atom_budget,cli_g101_atom_budget_len,2
+ CLI_G101_MARK cli_g101_atom_cache,cli_g101_atom_cache_len,2
+ CLI_G101_MARK cli_g101_atom_chunks,cli_g101_atom_chunks_len,2
+ CLI_G101_MARK cli_g101_atom_decimate,cli_g101_atom_decimate_len,2
+ CLI_G101_MARK cli_g101_atom_density,cli_g101_atom_density_len,2
+ CLI_G101_MARK cli_g101_atom_frame_ms,cli_g101_atom_frame_ms_len,2
+ CLI_G101_MARK cli_g101_atom_lod,cli_g101_atom_lod_len,2
+ CLI_G101_MARK cli_g101_atom_lru,cli_g101_atom_lru_len,2
+ CLI_G101_MARK cli_g101_atom_memory,cli_g101_atom_memory_len,2
+ CLI_G101_MARK cli_g101_atom_quality,cli_g101_atom_quality_len,2
+ CLI_G101_MARK cli_g101_atom_sample,cli_g101_atom_sample_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G101_MARK
+
+; Token-only G096 routing witness: one nominal 3D root and one public operation.
+cli_tokens_contain_g096_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G096_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G096_MARK cli_g096_atom_registry_root,cli_g096_atom_registry_root_len,1
+ CLI_G096_MARK cli_g096_atom_points_root,cli_g096_atom_points_root_len,1
+ CLI_G096_MARK cli_g096_atom_line_root,cli_g096_atom_line_root_len,1
+ CLI_G096_MARK cli_g096_atom_mesh_root,cli_g096_atom_mesh_root_len,1
+ CLI_G096_MARK cli_g096_atom_orbit_root,cli_g096_atom_orbit_root_len,1
+ CLI_G096_MARK cli_g096_atom_lighting_root,cli_g096_atom_lighting_root_len,1
+ CLI_G096_MARK cli_g096_atom_composition_root,cli_g096_atom_composition_root_len,1
+ CLI_G096_MARK cli_g096_atom_depth_root,cli_g096_atom_depth_root_len,1
+ CLI_G096_MARK cli_g096_atom_parity_root,cli_g096_atom_parity_root_len,1
+ CLI_G096_MARK cli_g096_atom_free_root,cli_g096_atom_free_root_len,1
+ CLI_G096_MARK cli_g096_atom_ambient,cli_g096_atom_ambient_len,2
+ CLI_G096_MARK cli_g096_atom_axis,cli_g096_atom_axis_len,2
+ CLI_G096_MARK cli_g096_atom_axis3d,cli_g096_atom_axis3d_len,2
+ CLI_G096_MARK cli_g096_atom_camera,cli_g096_atom_camera_len,2
+ CLI_G096_MARK cli_g096_atom_free,cli_g096_atom_free_len,2
+ CLI_G096_MARK cli_g096_atom_grid3d,cli_g096_atom_grid3d_len,2
+ CLI_G096_MARK cli_g096_atom_light,cli_g096_atom_light_len,2
+ CLI_G096_MARK cli_g096_atom_look_at,cli_g096_atom_look_at_len,2
+ CLI_G096_MARK cli_g096_atom_orbit,cli_g096_atom_orbit_len,2
+ CLI_G096_MARK cli_g096_atom_plot3d,cli_g096_atom_plot3d_len,2
+ CLI_G096_MARK cli_g096_atom_position,cli_g096_atom_position_len,2
+ CLI_G096_MARK cli_g096_atom_scene3d,cli_g096_atom_scene3d_len,2
+ CLI_G096_MARK cli_g096_atom_z,cli_g096_atom_z_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G096_MARK
+
+; Token-only G095 routing witness: one nominal chart root and one public operation.
+cli_tokens_contain_g095_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G095_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G095_MARK cli_g095_atom_registry_root,cli_g095_atom_registry_root_len,1
+ CLI_G095_MARK cli_g095_atom_line_root,cli_g095_atom_line_root_len,1
+ CLI_G095_MARK cli_g095_atom_bar_root,cli_g095_atom_bar_root_len,1
+ CLI_G095_MARK cli_g095_atom_histogram_root,cli_g095_atom_histogram_root_len,1
+ CLI_G095_MARK cli_g095_atom_scatter_root,cli_g095_atom_scatter_root_len,1
+ CLI_G095_MARK cli_g095_atom_heatmap_root,cli_g095_atom_heatmap_root_len,1
+ CLI_G095_MARK cli_g095_atom_axes_root,cli_g095_atom_axes_root_len,1
+ CLI_G095_MARK cli_g095_atom_encoding_root,cli_g095_atom_encoding_root_len,1
+ CLI_G095_MARK cli_g095_atom_differential_root,cli_g095_atom_differential_root_len,1
+ CLI_G095_MARK cli_g095_atom_closeout_root,cli_g095_atom_closeout_root_len,1
+ CLI_G095_MARK cli_g095_atom_chart,cli_g095_atom_chart_len,2
+ CLI_G095_MARK cli_g095_atom_plot,cli_g095_atom_plot_len,2
+ CLI_G095_MARK cli_g095_atom_bins,cli_g095_atom_bins_len,2
+ CLI_G095_MARK cli_g095_atom_heatmap,cli_g095_atom_heatmap_len,2
+ CLI_G095_MARK cli_g095_atom_x,cli_g095_atom_x_len,2
+ CLI_G095_MARK cli_g095_atom_y,cli_g095_atom_y_len,2
+ CLI_G095_MARK cli_g095_atom_x_label,cli_g095_atom_x_label_len,2
+ CLI_G095_MARK cli_g095_atom_y_label,cli_g095_atom_y_label_len,2
+ CLI_G095_MARK cli_g095_atom_labels,cli_g095_atom_labels_len,2
+ CLI_G095_MARK cli_g095_atom_color_by,cli_g095_atom_color_by_len,2
+ CLI_G095_MARK cli_g095_atom_size_by,cli_g095_atom_size_by_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G095_MARK
+
+; Token-only G094 routing witness: one nominal structured root and one catalog operation.
+cli_tokens_contain_g094_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G094_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G094_MARK cli_g094_atom_table_root,cli_g094_atom_table_root_len,1
+ CLI_G094_MARK cli_g094_atom_config_root,cli_g094_atom_config_root_len,1
+ CLI_G094_MARK cli_g094_atom_query_root,cli_g094_atom_query_root_len,1
+ CLI_G094_MARK cli_g094_atom_hierarchy_root,cli_g094_atom_hierarchy_root_len,1
+ CLI_G094_MARK cli_g094_atom_record_root,cli_g094_atom_record_root_len,1
+ CLI_G094_MARK cli_g094_atom_inspect_root,cli_g094_atom_inspect_root_len,1
+ CLI_G094_MARK cli_g094_atom_value_root,cli_g094_atom_value_root_len,1
+ CLI_G094_MARK cli_g094_atom_virtual_root,cli_g094_atom_virtual_root_len,1
+ CLI_G094_MARK cli_g094_atom_oracle_root,cli_g094_atom_oracle_root_len,1
+ CLI_G094_MARK cli_g094_atom_closeout_root,cli_g094_atom_closeout_root_len,1
+ CLI_G094_MARK cli_g094_atom_table,cli_g094_atom_table_len,2
+ CLI_G094_MARK cli_g094_atom_columns,cli_g094_atom_columns_len,2
+ CLI_G094_MARK cli_g094_atom_page_size,cli_g094_atom_page_size_len,2
+ CLI_G094_MARK cli_g094_atom_freeze_header,cli_g094_atom_freeze_header_len,2
+ CLI_G094_MARK cli_g094_atom_preview,cli_g094_atom_preview_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G094_MARK
+
+; Token-only affected-regression witness for the disjoint RenderPlan root.
+cli_tokens_contain_g069_atom:
+ push rbx
+ push r12
+ push r13
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+ lea rsi,[rel cli_g069_atom_render_plan]
+ mov edx,cli_g069_atom_render_plan_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,8
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Token-only G093 routing witness: one nominal layout root plus one catalog operation.
+cli_tokens_contain_g093_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G093_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G093_MARK cli_g093_atom_grid_root,cli_g093_atom_grid_root_len,1
+ CLI_G093_MARK cli_g093_atom_cell_root,cli_g093_atom_cell_root_len,1
+ CLI_G093_MARK cli_g093_atom_profile_root,cli_g093_atom_profile_root_len,1
+ CLI_G093_MARK cli_g093_atom_dashboard_root,cli_g093_atom_dashboard_root_len,1
+ CLI_G093_MARK cli_g093_atom_box_root,cli_g093_atom_box_root_len,1
+ CLI_G093_MARK cli_g093_atom_responsive_root,cli_g093_atom_responsive_root_len,1
+ CLI_G093_MARK cli_g093_atom_composite_root,cli_g093_atom_composite_root_len,1
+ CLI_G093_MARK cli_g093_atom_lifecycle_root,cli_g093_atom_lifecycle_root_len,1
+ CLI_G093_MARK cli_g093_atom_oracle_root,cli_g093_atom_oracle_root_len,1
+ CLI_G093_MARK cli_g093_atom_tree_root,cli_g093_atom_tree_root_len,1
+ CLI_G093_MARK cli_g093_atom_grid,cli_g093_atom_grid_len,2
+ CLI_G093_MARK cli_g093_atom_cell,cli_g093_atom_cell_len,2
+ CLI_G093_MARK cli_g093_atom_layout,cli_g093_atom_layout_len,2
+ CLI_G093_MARK cli_g093_atom_present,cli_g093_atom_present_len,2
+ CLI_G093_MARK cli_g093_atom_view,cli_g093_atom_view_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G093_MARK
+
+; Token-only G092 routing witness: one style root plus one catalog operation.
+cli_tokens_contain_g092_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G092_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G092_MARK cli_g092_atom_decoration,cli_g092_atom_decoration_len,1
+ CLI_G092_MARK cli_g092_atom_optional,cli_g092_atom_optional_len,1
+ CLI_G092_MARK cli_g092_atom_token,cli_g092_atom_token_len,1
+ CLI_G092_MARK cli_g092_atom_status,cli_g092_atom_status_len,1
+ CLI_G092_MARK cli_g092_atom_color,cli_g092_atom_color_len,1
+ CLI_G092_MARK cli_g092_atom_typography,cli_g092_atom_typography_len,1
+ CLI_G092_MARK cli_g092_atom_fallback,cli_g092_atom_fallback_len,1
+ CLI_G092_MARK cli_g092_atom_accessible,cli_g092_atom_accessible_len,1
+ CLI_G092_MARK cli_g092_atom_plan,cli_g092_atom_plan_len,1
+ CLI_G092_MARK cli_g092_atom_bold,cli_g092_atom_bold_len,2
+ CLI_G092_MARK cli_g092_atom_italic,cli_g092_atom_italic_len,2
+ CLI_G092_MARK cli_g092_atom_underline,cli_g092_atom_underline_len,2
+ CLI_G092_MARK cli_g092_atom_style,cli_g092_atom_style_len,2
+ CLI_G092_MARK cli_g092_atom_font,cli_g092_atom_font_len,2
+ CLI_G092_MARK cli_g092_atom_font_size,cli_g092_atom_font_size_len,2
+ CLI_G092_MARK cli_g092_atom_title,cli_g092_atom_title_len,2
+ CLI_G092_MARK cli_g092_atom_suffix,cli_g092_atom_suffix_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G092_MARK
+
+; Token-only G091 routing witness: one geometry object root plus one catalog operation.
+cli_tokens_contain_g091_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G091_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G091_MARK cli_g091_atom_position,cli_g091_atom_position_len,1
+ CLI_G091_MARK cli_g091_atom_sizing,cli_g091_atom_sizing_len,1
+ CLI_G091_MARK cli_g091_atom_region_type,cli_g091_atom_region_type_len,1
+ CLI_G091_MARK cli_g091_atom_layer,cli_g091_atom_layer_len,1
+ CLI_G091_MARK cli_g091_atom_update,cli_g091_atom_update_len,1
+ CLI_G091_MARK cli_g091_atom_label,cli_g091_atom_label_len,1
+ CLI_G091_MARK cli_g091_atom_selection_type,cli_g091_atom_selection_type_len,1
+ CLI_G091_MARK cli_g091_atom_window_type,cli_g091_atom_window_type_len,1
+ CLI_G091_MARK cli_g091_atom_viewport_type,cli_g091_atom_viewport_type_len,1
+ CLI_G091_MARK cli_g091_atom_document,cli_g091_atom_document_len,1
+ CLI_G091_MARK cli_g091_atom_at,cli_g091_atom_at_len,2
+ CLI_G091_MARK cli_g091_atom_size,cli_g091_atom_size_len,2
+ CLI_G091_MARK cli_g091_atom_region,cli_g091_atom_region_len,2
+ CLI_G091_MARK cli_g091_atom_panel,cli_g091_atom_panel_len,2
+ CLI_G091_MARK cli_g091_atom_clear,cli_g091_atom_clear_len,2
+ CLI_G091_MARK cli_g091_atom_viewport,cli_g091_atom_viewport_len,2
+ CLI_G091_MARK cli_g091_atom_refresh,cli_g091_atom_refresh_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G091_MARK
+
+; Token-only G088 routing witness: a typed Color/Palette/ColorSpace root plus
+; one color-role atom. Untyped RF84 palette/visual sources remain untouched.
+; Token-only G089 witness: one nominal root and one bounded model operation.
+cli_tokens_contain_g089_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G089_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G089_MARK cli_g089_atom_console_call,cli_g089_atom_console_call_len,1
+ CLI_G089_MARK cli_g089_atom_console_option,cli_g089_atom_console_option_len,1
+ CLI_G089_MARK cli_g089_atom_render_intent,cli_g089_atom_render_intent_len,1
+ CLI_G089_MARK cli_g089_atom_receiver_first,cli_g089_atom_receiver_first_len,2
+ CLI_G089_MARK cli_g089_atom_model,cli_g089_atom_model_len,2
+ CLI_G089_MARK cli_g089_atom_normalize,cli_g089_atom_normalize_len,2
+ CLI_G089_MARK cli_g089_atom_named,cli_g089_atom_named_len,2
+ CLI_G089_MARK cli_g089_atom_receipt,cli_g089_atom_receipt_len,2
+ CLI_G089_MARK cli_g089_atom_safe_plan,cli_g089_atom_safe_plan_len,2
+ CLI_G089_MARK cli_g089_atom_budget,cli_g089_atom_budget_len,2
+ CLI_G089_MARK cli_g089_atom_diagnostic,cli_g089_atom_diagnostic_len,2
+ CLI_G089_MARK cli_g089_atom_prepare,cli_g089_atom_prepare_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G089_MARK
+
+cli_tokens_contain_g088_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G088_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G088_MARK cli_g019_atom_color,cli_g019_atom_color_len,1
+ CLI_G088_MARK cli_g088_atom_color_space,cli_g088_atom_color_space_len,2
+ CLI_G088_MARK cli_g088_atom_palette,cli_g088_atom_palette_len,4
+ CLI_G088_MARK cli_g088_atom_console_type,cli_g088_atom_console_type_len,8
+ CLI_G088_MARK cli_g088_atom_fg,cli_g088_atom_fg_len,16
+ CLI_G088_MARK cli_g088_atom_bg,cli_g088_atom_bg_len,16
+ CLI_G088_MARK cli_g088_atom_accent,cli_g088_atom_accent_len,16
+ CLI_G088_MARK cli_g088_atom_border,cli_g088_atom_border_len,16
+ CLI_G088_MARK cli_g088_atom_selection,cli_g088_atom_selection_len,16
+ CLI_G088_MARK cli_g088_atom_series,cli_g088_atom_series_len,16
+ CLI_G088_MARK cli_g088_atom_theme,cli_g088_atom_theme_len,16
+ CLI_G088_MARK cli_g088_atom_contrast,cli_g088_atom_contrast_len,16
+ CLI_G088_MARK cli_g088_atom_accessible,cli_g088_atom_accessible_len,16
+ CLI_G088_MARK cli_g088_atom_target,cli_g088_atom_target_len,16
+ CLI_G088_MARK cli_g088_atom_named,cli_g088_atom_named_len,32
+ CLI_G088_MARK cli_g088_atom_lookup,cli_g088_atom_lookup_len,32
+ CLI_G088_MARK cli_g088_atom_colormap,cli_g088_atom_colormap_len,32
+ CLI_G088_MARK cli_g088_atom_color_by,cli_g088_atom_color_by_len,32
+ CLI_G088_MARK cli_g088_atom_srgb8,cli_g088_atom_srgb8_len,64
+ CLI_G088_MARK cli_g088_atom_gray8,cli_g088_atom_gray8_len,64
+ CLI_G088_MARK cli_g088_atom_linear_srgb16,cli_g088_atom_linear_srgb16_len,64
+ CLI_G088_MARK cli_g059_atom_console,cli_g059_atom_console_len,128
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ mov eax,r14d
+ and eax,9
+ test r14d,16
+ jz .palette
+ test eax,eax
+ jnz .yes
+.palette:
+ test r14d,4
+ jz .space
+ test r14d,32
+ jnz .yes
+.space:
+ test r14d,2
+ jz .bare_console
+ test r14d,64
+ jnz .yes
+.bare_console:
+ test r14d,1
+ jz .no
+ test r14d,128
+ jnz .yes
+.no:
+ xor eax,eax
+ jmp .decision_done
+.yes:
+ mov eax,1
+.decision_done:
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G088_MARK
+
+; Token-only G087 Color value routing witness.
+cli_tokens_contain_g087_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G087_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G087_MARK cli_g019_atom_color,cli_g019_atom_color_len,1
+ CLI_G087_MARK cli_g087_atom_parse_hex,cli_g087_atom_parse_hex_len,2
+ CLI_G087_MARK cli_g087_atom_red,cli_g087_atom_red_len,2
+ CLI_G087_MARK cli_g087_atom_green,cli_g087_atom_green_len,2
+ CLI_G087_MARK cli_g087_atom_blue,cli_g087_atom_blue_len,2
+ CLI_G087_MARK cli_g087_atom_alpha,cli_g087_atom_alpha_len,2
+ CLI_G087_MARK cli_g087_atom_with_alpha,cli_g087_atom_with_alpha_len,2
+ CLI_G087_MARK cli_g087_atom_is_opaque,cli_g087_atom_is_opaque_len,2
+ CLI_G087_MARK cli_g087_atom_to_hex,cli_g087_atom_to_hex_len,2
+ CLI_G087_MARK cli_g087_atom_to_hex_alpha,cli_g087_atom_to_hex_alpha_len,2
+ CLI_G087_MARK cli_g087_atom_equals,cli_g087_atom_equals_len,2
+ CLI_G087_MARK cli_g087_atom_hash,cli_g087_atom_hash_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ and r14d,3
+ cmp r14d,3
+ sete al
+ movzx eax,al
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G087_MARK
+
+cli_tokens_contain_g019_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G019_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G019_MARK cli_g019_atom_color,cli_g019_atom_color_len,1
+ CLI_G019_MARK cli_g019_atom_image,cli_g019_atom_image_len,1
+ CLI_G019_MARK cli_g019_atom_audio_buffer,cli_g019_atom_audio_buffer_len,1
+ CLI_G019_MARK cli_g019_atom_video_frame,cli_g019_atom_video_frame_len,1
+ CLI_G019_MARK cli_g019_atom_png,cli_g019_atom_png_len,1
+ CLI_G019_MARK cli_g019_atom_to_linear,cli_g019_atom_to_linear_len,2
+ CLI_G019_MARK cli_g019_atom_from_buffer,cli_g019_atom_from_buffer_len,2
+ CLI_G019_MARK cli_g019_atom_flip_horizontal,cli_g019_atom_flip_horizontal_len,2
+ CLI_G019_MARK cli_g019_atom_frame_count,cli_g019_atom_frame_count_len,2
+ CLI_G019_MARK cli_g019_atom_timestamp,cli_g019_atom_timestamp_len,2
+ CLI_G019_MARK cli_g019_atom_progress,cli_g019_atom_progress_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ mov eax,r14d
+ and eax,3
+ cmp eax,3
+ jne .no
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G019_MARK
+
+; Token-only G018 routing witness: a public visual root plus one corrected
+; contract atom. Shared identifiers do not claim unrelated source programs.
+cli_tokens_contain_g018_atom:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+ xor r14d,r14d
+.scan:
+ cmp r13,r12
+ jae .decide
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G018_MARK 3
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jz %%next
+ or r14d,%3
+%%next:
+%endmacro
+ CLI_G018_MARK cli_g018_atom_window,cli_g018_atom_window_len,1
+ CLI_G018_MARK cli_g018_atom_console,cli_g018_atom_console_len,1
+ CLI_G018_MARK cli_g018_atom_visual,cli_g018_atom_visual_len,1
+ CLI_G018_MARK cli_g018_atom_canvas,cli_g018_atom_canvas_len,1
+ CLI_G018_MARK cli_g018_atom_layout,cli_g018_atom_layout_len,1
+ CLI_G018_MARK cli_g018_atom_chart,cli_g018_atom_chart_len,1
+ CLI_G018_MARK cli_g018_atom_scroll_to_end,cli_g018_atom_scroll_to_end_len,1
+ CLI_G018_MARK cli_g018_atom_events,cli_g018_atom_events_len,1
+ CLI_G018_MARK cli_g018_atom_request_redraw,cli_g018_atom_request_redraw_len,2
+ CLI_G018_MARK cli_g018_atom_prevent_default,cli_g018_atom_prevent_default_len,2
+ CLI_G018_MARK cli_g018_atom_scroll_to_end,cli_g018_atom_scroll_to_end_len,2
+ CLI_G018_MARK cli_g018_atom_accessibility,cli_g018_atom_accessibility_len,2
+ CLI_G018_MARK cli_g018_atom_histogram,cli_g018_atom_histogram_len,2
+ CLI_G018_MARK cli_g018_atom_present,cli_g018_atom_present_len,2
+ CLI_G018_MARK cli_g018_atom_summarize,cli_g018_atom_summarize_len,2
+ CLI_G018_MARK cli_g018_atom_color,cli_g018_atom_color_len,2
+.next:
+ inc r13
+ jmp .scan
+.decide:
+ mov eax,r14d
+ and eax,3
+ cmp eax,3
+ jne .no
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G018_MARK
+
+; Exact token-level database routing witness. Source paths and fixture names
+; are deliberately absent: only current public type atoms select the owner.
+cli_tokens_contain_g032_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G032_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_G032_ATOM cli_g032_atom_database,cli_g032_atom_database_len
+ CLI_G032_ATOM cli_g032_atom_db_schema,cli_g032_atom_db_schema_len
+ CLI_G032_ATOM cli_g032_atom_storage_options,cli_g032_atom_storage_options_len
+ CLI_G032_ATOM cli_g032_atom_query,cli_g032_atom_query_len
+ CLI_G032_ATOM cli_g032_atom_migration,cli_g032_atom_migration_len
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G032_ATOM
+
+; Exact token-level reactive routing witness. Source paths and fixture names
+; are deliberately absent: only current public atoms select the owner.
+cli_tokens_contain_g031_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G031_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_G031_ATOM cli_g031_atom_signal,cli_g031_atom_signal_len
+ CLI_G031_ATOM cli_g031_atom_cell,cli_g031_atom_cell_len
+ CLI_G031_ATOM cli_g031_atom_computed,cli_g031_atom_computed_len
+ CLI_G031_ATOM cli_g031_atom_reactive_list,cli_g031_atom_reactive_list_len
+ CLI_G031_ATOM cli_g031_atom_reactive_dict,cli_g031_atom_reactive_dict_len
+ CLI_G031_ATOM cli_g031_atom_dataflow_graph,cli_g031_atom_dataflow_graph_len
+ CLI_G031_ATOM cli_g031_atom_graph_report,cli_g031_atom_graph_report_len
+ CLI_G031_ATOM cli_g031_atom_await_stable,cli_g031_atom_await_stable_len
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G031_ATOM
+
+; Exact token-level G011 routing witness. Public type names are checked in the
+; canonical lexer stream; source paths and fixture names are never inspected.
+cli_tokens_contain_g012_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G012_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_G012_ATOM cli_g012_atom_instant,cli_g012_atom_instant_len
+ CLI_G012_ATOM cli_g012_atom_random,cli_g012_atom_random_len
+ CLI_G012_ATOM cli_g012_atom_process,cli_g012_atom_process_len
+ CLI_G012_ATOM cli_g012_atom_ip_address,cli_g012_atom_ip_address_len
+ CLI_G012_ATOM cli_g012_atom_tcp_listener,cli_g012_atom_tcp_listener_len
+ CLI_G012_ATOM cli_g012_atom_http_request,cli_g012_atom_http_request_len
+ CLI_G012_ATOM cli_g012_atom_sha256,cli_g012_atom_sha256_len
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G012_ATOM
+
+; Exact token-level G011 routing witness. Public type names are checked in the
+; canonical lexer stream; source paths and fixture names are never inspected.
+cli_tokens_contain_g011_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+%macro CLI_G011_ATOM 2
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_G011_ATOM cli_g011_atom_path,cli_g011_atom_path_len
+ CLI_G011_ATOM cli_g011_atom_file,cli_g011_atom_file_len
+ CLI_G011_ATOM cli_g011_atom_directory,cli_g011_atom_directory_len
+ CLI_G011_ATOM cli_g011_atom_binary_encoder,cli_g011_atom_binary_encoder_len
+ CLI_G011_ATOM cli_g011_atom_binary_decoder,cli_g011_atom_binary_decoder_len
+ CLI_G011_ATOM cli_g011_atom_json,cli_g011_atom_json_len
+ CLI_G011_ATOM cli_g011_atom_csv,cli_g011_atom_csv_len
+.next:
+ inc r13
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+%undef CLI_G011_ATOM
+
+; Exact current Option/Result witness excluding only the extended surfaces
+; surfaces from the older early generic route.
+cli_tokens_contain_option_result_extension_atom:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ cmp r13,r12
+ jae .no
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ mov rax,[rdi+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rax,NEBOC_TOKEN_KW_MATCH
+ je .yes
+ cmp rax,NEBOC_TOKEN_QUESTION
+ je .yes
+ cmp rax,NEBOC_TOKEN_OPTIONAL_CHAIN
+ je .yes
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+ lea rsi,[rel cli_option_result_contains_atom]
+ mov edx,cli_option_result_contains_atom_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_option_result_expect_atom]
+ mov edx,cli_option_result_expect_atom_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_option_result_expect_err_atom]
+ mov edx,cli_option_result_expect_err_atom_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_option_result_filter_atom]
+ mov edx,cli_option_result_filter_atom_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_option_result_zip_atom]
+ mov edx,cli_option_result_zip_atom_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_option_result_unwrap_atom]
+ mov edx,cli_option_result_unwrap_atom_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_option_result_or_else_atom]
+ mov edx,cli_option_result_or_else_atom_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_option_result_message_atom]
+ mov edx,cli_option_result_message_atom_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_option_result_cause_atom]
+ mov edx,cli_option_result_cause_atom_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ lea rsi,[rel cli_option_result_diagnostic_atom]
+ mov edx,cli_option_result_diagnostic_atom_len
  call cli_token_equals
  test eax,eax
  jnz .yes
@@ -6566,6 +15696,9 @@ cli_recognize_mutability:
 literais_numericos_bases_e_representacao_cli_report_frontend_diagnostic:
  mov rax,[rel literais_numericos_bases_e_representacao_cli_parse_request+neboc_literais_numericos_bases_e_representacao_PARSE_DIAGNOSTIC_OFFSET]
  jmp literais_numericos_bases_e_representacao_cli_report_diagnostic_code
+
+%include "compiler/driver/cli/linux-x86_64/std_math_program.inc"
+%include "compiler/driver/cli/linux-x86_64/scalar_program.inc"
 
 ; biblioteca_padrao_por_dominios owns the bounded std.math family and its explicitly rejected aliases.
 cli_recognize_std_math:
@@ -6619,6 +15752,7 @@ cli_recognize_std_math:
  call neboc_std_math_parse
  test eax,eax
  jnz .parser
+.lower_syntax:
  lea rdi,[rel biblioteca_padrao_por_dominios_cli_authority]
  mov rsi,[rel biblioteca_padrao_por_dominios_cli_syntax+neboc_biblioteca_padrao_por_dominios_SYNTAX_OPERATION_OFFSET]
  mov rdx,[rel biblioteca_padrao_por_dominios_cli_syntax+neboc_biblioteca_padrao_por_dominios_SYNTAX_VALUE_OFFSET]
@@ -6936,6 +16070,9 @@ cli_recognize_modules:
  lea rax,[rel cli_module_records]
  mov [rel cli_module_request+NEBOC_MODULE_RECORDS_OFFSET],rax
  mov qword [rel cli_module_request+NEBOC_MODULE_CAPACITY_OFFSET],NEBOC_MODULE_MAX_UNITS
+ lea rax,[rel cli_module_import_asts]
+ mov [rel cli_module_request+NEBOC_MODULE_IMPORT_ASTS_OFFSET],rax
+ mov qword [rel cli_module_request+NEBOC_MODULE_IMPORT_AST_CAPACITY_OFFSET],NEBOC_MODULE_MAX_UNITS
  lea rdi,[rel cli_module_request]
  call neboc_seguranca_numerica_conversoes_e_overflow_module_parse
  test eax,eax
@@ -6971,8 +16108,41 @@ cli_recognize_modules:
 %define call NEBOC_ABI_FUNCTION_SCOPED_CALL
 cli_report_module_diagnostic:
  mov rax,[rel cli_module_request+NEBOC_MODULE_DIAGNOSTIC_OFFSET]
+ cmp rax,NEBOC_MODULE_DIAG_INTERFACE
+ je .interface
  test rax,rax
  jz .none
+ cmp rax,NEBOC_IMPORT_DIAG_SELECTIVE_SYNTAX
+ je .selective_syntax
+ cmp rax,NEBOC_IMPORT_DIAG_SELECTIVE_DUPLICATE
+ je .selective_duplicate
+ cmp rax,NEBOC_MODULE_DIAG_SELECTIVE_MISSING
+ je .selective_missing
+ cmp rax,NEBOC_IMPORT_DIAG_REEXPORT_REQUIRES_SELECTIVE
+ je .selective_visibility
+ cmp rax,NEBOC_IMPORT_DIAG_SELECTIVE_CAPACITY
+ je .selective_capacity
+ cmp rax,NEBOC_IMPORT_DIAG_AMBIGUOUS_SYMBOL
+ je .import_ambiguous
+ cmp rax,NEBOC_IMPORT_DIAG_WILDCARD
+ je .import_wildcard
+ cmp rax,NEBOC_IMPORT_DIAG_ALIAS_COLLISION
+ je .import_alias_collision
+ cmp rax,NEBOC_IMPORT_DIAG_CAPSULE_COLLISION
+ je .import_capsule_collision
+ cmp rax,NEBOC_IMPORT_DIAG_ALIAS_REQUIRED
+ je .import_alias_required
+ cmp rax,NEBOC_IMPORT_DIAG_RESERVED_QUALIFIER
+ je .import_reserved
+ cmp rax,NEBOC_IMPORT_DIAG_DYNAMIC_IMPORT
+ je .import_dynamic
+ cmp rax,NEBOC_IMPORT_DIAG_SELECTIVE_DEFERRED
+ je .import_selective
+ cmp rax,NEBOC_IMPORT_DIAG_SYNTAX
+ jb .module_diagnostic
+ cmp rax,NEBOC_IMPORT_DIAG_SELECTIVE_DEFERRED
+ jbe .import_syntax
+.module_diagnostic:
  cmp rax,neboc_seguranca_numerica_conversoes_e_overflow_MODULE_DIAG_MISSING_UNIT
  je .missing_unit
  cmp rax,NEBOC_MODULE_DIAG_PRIVATE_ACCESS
@@ -6989,6 +16159,10 @@ cli_report_module_diagnostic:
  je .syntax
  lea rdi,[rel seguranca_numerica_conversoes_e_overflow_cli_error_internal]
  mov esi,seguranca_numerica_conversoes_e_overflow_cli_error_internal_end-seguranca_numerica_conversoes_e_overflow_cli_error_internal
+ jmp .write
+.interface:
+ lea rdi,[rel cli_module_interface_error]
+ mov esi,cli_module_interface_error_end-cli_module_interface_error
  jmp .write
 .missing_unit:
  lea rdi,[rel seguranca_numerica_conversoes_e_overflow_cli_error_021]
@@ -7017,8 +16191,71 @@ cli_report_module_diagnostic:
 .syntax:
  lea rdi,[rel seguranca_numerica_conversoes_e_overflow_cli_error_016]
  mov esi,seguranca_numerica_conversoes_e_overflow_cli_error_016_end-seguranca_numerica_conversoes_e_overflow_cli_error_016
+ jmp .write
+.import_syntax:
+ lea rdi,[rel cli_g151_error_syntax]
+ mov esi,cli_g151_error_syntax_end-cli_g151_error_syntax
+ jmp .write
+.import_wildcard:
+ lea rdi,[rel cli_g151_error_wildcard]
+ mov esi,cli_g151_error_wildcard_end-cli_g151_error_wildcard
+ jmp .write
+.import_alias_collision:
+ lea rdi,[rel cli_g151_error_alias_collision]
+ mov esi,cli_g151_error_alias_collision_end-cli_g151_error_alias_collision
+ jmp .write
+.import_capsule_collision:
+ lea rdi,[rel cli_g151_error_capsule_collision]
+ mov esi,cli_g151_error_capsule_collision_end-cli_g151_error_capsule_collision
+ jmp .write
+.import_alias_required:
+ lea rdi,[rel cli_g151_error_alias_required]
+ mov esi,cli_g151_error_alias_required_end-cli_g151_error_alias_required
+ jmp .write
+.import_reserved:
+ lea rdi,[rel cli_g151_error_reserved]
+ mov esi,cli_g151_error_reserved_end-cli_g151_error_reserved
+ jmp .write
+.import_dynamic:
+ lea rdi,[rel cli_g151_error_dynamic]
+ mov esi,cli_g151_error_dynamic_end-cli_g151_error_dynamic
+ jmp .write
+.import_selective:
+ lea rdi,[rel cli_g151_error_selective]
+ mov esi,cli_g151_error_selective_end-cli_g151_error_selective
+ jmp .write
+.import_ambiguous:
+ lea rdi,[rel cli_g151_error_ambiguous]
+ mov esi,cli_g151_error_ambiguous_end-cli_g151_error_ambiguous
+ jmp .write
+.selective_syntax:
+ lea rdi,[rel cli_g152_error_syntax]
+ mov esi,cli_g152_error_syntax_end-cli_g152_error_syntax
+ jmp .write
+.selective_duplicate:
+ lea rdi,[rel cli_g152_error_duplicate]
+ mov esi,cli_g152_error_duplicate_end-cli_g152_error_duplicate
+ jmp .write
+.selective_missing:
+ lea rdi,[rel cli_g152_error_missing]
+ mov esi,cli_g152_error_missing_end-cli_g152_error_missing
+ jmp .write
+.selective_visibility:
+ lea rdi,[rel cli_g152_error_visibility]
+ mov esi,cli_g152_error_visibility_end-cli_g152_error_visibility
+ jmp .write
+.selective_capacity:
+ lea rdi,[rel cli_g152_error_capacity]
+ mov esi,cli_g152_error_capacity_end-cli_g152_error_capacity
 .write:
  call cli_write_stderr
+ mov rax,[rel cli_module_request+NEBOC_MODULE_DIAGNOSTIC_OFFSET]
+ cmp rax,NEBOC_IMPORT_DIAG_SYNTAX
+ jb .write_done
+ cmp rax,NEBOC_IMPORT_DIAG_AMBIGUOUS_SYMBOL
+ ja .write_done
+ call cli_g151_write_diagnostic_context
+.write_done:
  mov eax,1
  ret
 .none:
@@ -8078,11 +17315,14 @@ effects_capabilities_e_politicas_cli_report_frontend_diagnostic:
 
 %undef call
 text_char_unicode_e_bytes_cli_detect_frontend_diagnostic:
+ push rbp
  push rbx
  push r12
  push r13
  push r14
  push r15
+ sub rsp,8
+ mov ebp,edi
  lea rbx,[rel cli_tokens]
  mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
  xor r13d,r13d
@@ -8098,11 +17338,48 @@ text_char_unicode_e_bytes_cli_detect_frontend_diagnostic:
  je .bytes
  mov r15,[rax+NEBOC_TOKEN_KIND_OFFSET]
  cmp r15,NEBOC_TOKEN_TEXT
- je .literal_method
+ je .literal_or_char_method
  cmp r15,NEBOC_TOKEN_CHAR
+ je .literal_or_char_method
+ cmp r15,NEBOC_TOKEN_IDENTIFIER
  jne .next
-.literal_method:
+ mov rdi,rax
+ lea rsi,[rel cli_type_text_name]
+ mov edx,cli_type_text_name_len
+ call cli_token_equals
+ test eax,eax
+ jz .next
+ ; Explicit Text("...") is the second public receiver form. Keep the exact
+ ; constructor shape bounded and route its following method through the same
+ ; contract/type gate as a direct literal receiver.
+ lea rax,[r13+7]
+ cmp rax,r12
+ jae .next
+ mov rax,r13
+ imul rax,NEBOC_TOKEN_SIZE
+ add rax,rbx
+ cmp qword [rax+1*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ jne .next
+ cmp qword [rax+2*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_TEXT
+ jne .next
+ cmp qword [rax+3*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
+ jne .next
+ cmp qword [rax+4*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne .next
+ lea r14,[rax+5*NEBOC_TOKEN_SIZE]
+ cmp qword [r14+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+ cmp qword [rax+6*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ jne .next
+ lea rax,[r13+7]
+ mov [rsp],rax
+ mov r15,NEBOC_TOKEN_TEXT
+ jmp .method_ready
+.literal_or_char_method:
  lea rax,[r13+4]
+ mov [rsp],rax
+.literal_method:
+ mov rax,[rsp]
  cmp rax,r12
  jae .next
  mov rax,r13
@@ -8115,9 +17392,10 @@ text_char_unicode_e_bytes_cli_detect_frontend_diagnostic:
  jne .next
  cmp qword [rax+3*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
  jne .next
- ; Console is a separate public extension.  Only Text.console() with no
- ; arguments bypasses the foundation API probe; Char or argument-bearing
- ; forms retain the stable textual-API rejection.
+.method_ready:
+ ; Console is a separate public extension.  Its bounded ArgumentList is
+ ; parsed and typed by the shared Program/FunctionTable route; Char remains
+ ; outside the public receiver set.
  mov rdi,r14
  lea rsi,[rel cli_function_console_name]
  mov edx,cli_function_console_name_len
@@ -8126,13 +17404,7 @@ text_char_unicode_e_bytes_cli_detect_frontend_diagnostic:
  jz .probe_foundation
  cmp r15,NEBOC_TOKEN_TEXT
  jne .unknown_method
- mov rax,r13
- add rax,4
- imul rax,NEBOC_TOKEN_SIZE
- add rax,rbx
- cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
- je .next
- jmp .unknown_method
+ jmp .next
 .probe_foundation:
  lea rdi,[rel cli_textual_api_probe]
  mov ecx,neboc_text_char_unicode_e_bytes_API_REQUEST_SIZE/8
@@ -8154,21 +17426,313 @@ text_char_unicode_e_bytes_cli_detect_frontend_diagnostic:
  mov [rel cli_textual_api_probe+neboc_text_char_unicode_e_bytes_API_RECEIVER_TYPE_OFFSET],rax
  mov rax,[r14+NEBOC_TOKEN_START_OFFSET]
  mov [rel cli_textual_api_probe+neboc_text_char_unicode_e_bytes_API_ABSOLUTE_START_OFFSET],rax
+ ; Count top-level arguments in the bounded literal receiver call. Nested
+ ; Text("...") constructors do not contribute commas to the outer call.
+ mov r8,[rsp]
+ imul rax,r8,NEBOC_TOKEN_SIZE
+ add rax,rbx
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
+ je .probe_argument_count_ready
+ mov r9,1
+ xor r10d,r10d
+.probe_argument_count_loop:
+ cmp r8,r12
+ jae .probe_argument_count_unterminated
+ imul rax,r8,NEBOC_TOKEN_SIZE
+ add rax,rbx
+ mov r11,[rax+NEBOC_TOKEN_KIND_OFFSET]
+ cmp r11,NEBOC_TOKEN_LPAREN
+ je .probe_argument_count_open
+ cmp r11,NEBOC_TOKEN_RPAREN
+ je .probe_argument_count_close
+ cmp r11,NEBOC_TOKEN_COMMA
+ jne .probe_argument_count_next
+ test r10,r10
+ jnz .probe_argument_count_next
+ inc r9
+ jmp .probe_argument_count_next
+.probe_argument_count_open:
+ inc r10
+ jmp .probe_argument_count_next
+.probe_argument_count_close:
+ test r10,r10
+ jz .probe_argument_count_store
+ dec r10
+.probe_argument_count_next:
+ inc r8
+ jmp .probe_argument_count_loop
+.probe_argument_count_store:
+ mov [rel cli_textual_api_probe+neboc_text_char_unicode_e_bytes_API_ARGUMENT_COUNT_OFFSET],r9
+ jmp .probe_argument_count_ready
+.probe_argument_count_unterminated:
+ mov qword [rel cli_textual_api_probe+neboc_text_char_unicode_e_bytes_API_ARGUMENT_COUNT_OFFSET],-1
+.probe_argument_count_ready:
  lea rdi,[rel cli_textual_api_probe]
  call neboc_text_char_bytes_api_contract
- cmp qword [rel cli_textual_api_probe+neboc_text_char_unicode_e_bytes_API_DIAGNOSTIC_OFFSET],NEBOC_API_DIAG_UNKNOWN
+ test eax,eax
+ jnz .probe_foundation_error
+ cmp r15,NEBOC_TOKEN_TEXT
  jne .next
+ mov rax,[rel cli_textual_api_probe+neboc_text_char_unicode_e_bytes_API_METHOD_ID_OFFSET]
+ cmp rax,NEBOC_API_METHOD_TEXT_EQUALS
+ jb .next
+ cmp rax,NEBOC_API_METHOD_TEXT_LAST_INDEX_OF
+ jbe .query_argument_validation
+ cmp rax,NEBOC_API_METHOD_TEXT_CONCAT
+ jb .next
+ cmp rax,NEBOC_API_METHOD_TEXT_PAD_END
+ jbe .transform_argument_validation
+ ; G057 extends the textual foundation after the G055 transform ID range.
+ ; Zero-argument Unicode transforms need no literal-argument inspection;
+ ; the two slicing APIs share the existing bounded two-Int gate.
+ cmp rax,NEBOC_API_METHOD_TEXT_GRAPHEME_COUNT
+ je .next
+ cmp rax,NEBOC_API_METHOD_TEXT_NORMALIZE_NFC
+ je .next
+ cmp rax,NEBOC_API_METHOD_TEXT_NORMALIZE_NFD
+ je .next
+ cmp rax,NEBOC_API_METHOD_TEXT_CASE_FOLD
+ je .next
+ cmp rax,NEBOC_API_METHOD_TEXT_SLICE_CODEPOINTS
+ je .transform_argument_validation
+ cmp rax,NEBOC_API_METHOD_TEXT_SLICE_GRAPHEMES
+ je .transform_argument_validation
+ jmp .next
+.query_argument_validation:
+ mov rax,[rsp]
+ imul rax,NEBOC_TOKEN_SIZE
+ add rax,rbx
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_TEXT
+ je .query_literal_argument
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .query_argument_type
+ mov rdi,rax
+ lea rsi,[rel cli_type_text_name]
+ mov edx,cli_type_text_name_len
+ call cli_token_equals
+ test eax,eax
+ jz .query_argument_type
+ ; Explicit Text("...") arguments are accepted only as a complete value and
+ ; must be followed by the outer query right parenthesis.
+ mov rax,[rsp]
+ add rax,4
+ cmp rax,r12
+ jae .query_argument_arity
+ mov rax,[rsp]
+ imul rax,NEBOC_TOKEN_SIZE
+ add rax,rbx
+ cmp qword [rax+1*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ jne .query_argument_type
+ cmp qword [rax+2*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_TEXT
+ jne .query_argument_type
+ cmp qword [rax+3*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
+ jne .query_argument_type
+ cmp qword [rax+4*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
+ je .next
+ jmp .query_argument_arity
+.query_literal_argument:
+ mov rax,[rsp]
+ inc rax
+ cmp rax,r12
+ jae .query_argument_arity
+ imul rax,NEBOC_TOKEN_SIZE
+ add rax,rbx
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
+ je .next
+.transform_argument_validation:
+ mov r11,[rel cli_textual_api_probe+neboc_text_char_unicode_e_bytes_API_METHOD_ID_OFFSET]
+ cmp r11,NEBOC_API_METHOD_TEXT_TRIM
+ je .next
+ cmp r11,NEBOC_API_METHOD_TEXT_TRIM_START
+ je .next
+ cmp r11,NEBOC_API_METHOD_TEXT_TRIM_END
+ je .next
+ cmp r11,NEBOC_API_METHOD_TEXT_LOWER
+ je .next
+ cmp r11,NEBOC_API_METHOD_TEXT_UPPER
+ je .next
+ cmp r11,NEBOC_API_METHOD_TEXT_NORMALIZE_NEWLINES
+ je .next
+ cmp r11,NEBOC_API_METHOD_TEXT_NORMALIZE_WHITESPACE
+ je .next
+ cmp r11,NEBOC_API_METHOD_TEXT_BYTE_SLICE
+ je .transform_two_int
+ cmp r11,NEBOC_API_METHOD_TEXT_SLICE_CODEPOINTS
+ je .transform_two_int
+ cmp r11,NEBOC_API_METHOD_TEXT_SLICE_GRAPHEMES
+ je .transform_two_int
+ cmp r11,NEBOC_API_METHOD_TEXT_TAKE_BYTES
+ je .transform_one_int
+ cmp r11,NEBOC_API_METHOD_TEXT_DROP_BYTES
+ je .transform_one_int
+ cmp r11,NEBOC_API_METHOD_TEXT_REPLACE_ONCE
+ je .transform_two_text
+ cmp r11,NEBOC_API_METHOD_TEXT_REPLACE_ALL
+ je .transform_two_text
+ cmp r11,NEBOC_API_METHOD_TEXT_PAD_START
+ je .transform_pad
+ cmp r11,NEBOC_API_METHOD_TEXT_PAD_END
+ je .transform_pad
+ ; concat, split and join each take one literal Text.
+.transform_one_text:
+ mov r8,[rsp]
+ imul rax,r8,NEBOC_TOKEN_SIZE
+ add rax,rbx
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_TEXT
+ jne .transform_text_error
+ cmp r11,NEBOC_API_METHOD_TEXT_SPLIT
+ jne .transform_one_text_tail
+ mov rdx,[rax+NEBOC_TOKEN_END_OFFSET]
+ sub rdx,[rax+NEBOC_TOKEN_START_OFFSET]
+ cmp rdx,2
+ je .transform_empty_error
+.transform_one_text_tail:
+ inc r8
+ cmp r8,r12
+ jae .transform_text_error
+ imul rax,r8,NEBOC_TOKEN_SIZE
+ add rax,rbx
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
+ je .next
+ jmp .transform_text_error
+.transform_one_int:
+ mov r8,[rsp]
+ imul rax,r8,NEBOC_TOKEN_SIZE
+ add rax,rbx
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_INTEGER
+ jne .transform_int_error
+ inc r8
+ cmp r8,r12
+ jae .transform_int_error
+ imul rax,r8,NEBOC_TOKEN_SIZE
+ add rax,rbx
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
+ je .next
+ jmp .transform_int_error
+.transform_two_int:
+ mov r8,[rsp]
+ lea r9,[r8+3]
+ cmp r9,r12
+ jae .transform_int_error
+ imul rax,r8,NEBOC_TOKEN_SIZE
+ add rax,rbx
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_INTEGER
+ jne .transform_int_error
+ mov r10,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ cmp qword [rax+NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_COMMA
+ jne .transform_int_error
+ cmp qword [rax+2*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_INTEGER
+ jne .transform_int_error_second
+ mov rdx,[rax+2*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ cmp qword [rax+3*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
+ jne .transform_int_error
+ ; byteSlice uses ordered byte offsets. G057 Unicode slices use start/count,
+ ; so a smaller count than start is valid and must not become a bounds error.
+ cmp r11,NEBOC_API_METHOD_TEXT_BYTE_SLICE
+ jne .next
+ cmp r10,rdx
+ ja .transform_bounds_error
+ jmp .next
+.transform_two_text:
+ mov r8,[rsp]
+ lea r9,[r8+3]
+ cmp r9,r12
+ jae .transform_text_error
+ imul rax,r8,NEBOC_TOKEN_SIZE
+ add rax,rbx
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_TEXT
+ jne .transform_text_error
+ mov rdx,[rax+NEBOC_TOKEN_END_OFFSET]
+ sub rdx,[rax+NEBOC_TOKEN_START_OFFSET]
+ cmp rdx,2
+ je .transform_empty_error
+ cmp qword [rax+NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_COMMA
+ jne .transform_text_error
+ cmp qword [rax+2*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_TEXT
+ jne .transform_text_error
+ cmp qword [rax+3*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
+ je .next
+ jmp .transform_text_error
+.transform_pad:
+ mov r8,[rsp]
+ lea r9,[r8+3]
+ cmp r9,r12
+ jae .transform_int_error
+ imul rax,r8,NEBOC_TOKEN_SIZE
+ add rax,rbx
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_INTEGER
+ jne .transform_int_error
+ cmp qword [rax+NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_COMMA
+ jne .transform_int_error
+ cmp qword [rax+2*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_TEXT
+ jne .transform_text_error
+ mov rdx,[rax+2*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_END_OFFSET]
+ sub rdx,[rax+2*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_START_OFFSET]
+ cmp rdx,2
+ je .transform_empty_error
+ cmp qword [rax+3*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RPAREN
+ je .next
+ jmp .transform_text_error
+.transform_int_error_second:
+ add qword [rsp],2
+ jmp .transform_int_error
+.transform_text_error:
+ mov rax,NEBOC_API_DIAG_TEXT_TRANSFORM_TEXT_ARGUMENT
+ jmp .transform_error
+.transform_int_error:
+ mov rax,NEBOC_API_DIAG_TEXT_TRANSFORM_INT_ARGUMENT
+ jmp .transform_error
+.transform_bounds_error:
+ mov rax,NEBOC_API_DIAG_TEXT_TRANSFORM_BOUNDS
+ jmp .transform_error
+.transform_empty_error:
+ mov rax,NEBOC_API_DIAG_TEXT_TRANSFORM_EMPTY_SEPARATOR
+.transform_error:
+ mov [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],rax
+ mov rax,[rsp]
+ mov [rel cli_textual_frontend_error_token],rax
+ mov eax,1
+ jmp .done
+.query_argument_arity:
+ mov qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_API_DIAG_TEXT_QUERY_ARITY
+ mov rax,[rsp]
+ mov [rel cli_textual_frontend_error_token],rax
+ mov eax,1
+ jmp .done
+.query_argument_type:
+ mov qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_API_DIAG_ARGUMENT_MUST_BE_TEXT
+ mov rax,[rsp]
+ mov [rel cli_textual_frontend_error_token],rax
+ mov eax,1
+ jmp .done
+.probe_foundation_error:
+ mov rax,[rel cli_textual_api_probe+neboc_text_char_unicode_e_bytes_API_DIAGNOSTIC_OFFSET]
+ cmp rax,NEBOC_API_DIAG_UNKNOWN
+ jne .probe_known_error
+ test ebp,ebp
+ jnz .next
+ jmp .unknown_method
+.probe_known_error:
+ mov [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],rax
+ lea rax,[r13+2]
+ mov [rel cli_textual_frontend_error_token],rax
+ mov eax,1
+ jmp .done
 .unknown_method:
  mov qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_API_DIAG_UNKNOWN
  mov [rel cli_textual_frontend_error_token],r13
  mov eax,1
  jmp .done
 .char:
+ test ebp,ebp
+ jnz .next
  mov rax,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
  mov [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],rax
  mov eax,1
  jmp .done
 .bytes:
+ test ebp,ebp
+ jnz .next
  mov qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_API_DIAG_BYTES_LITERAL_UNAVAILABLE
  mov eax,1
  jmp .done
@@ -8176,11 +17740,13 @@ text_char_unicode_e_bytes_cli_detect_frontend_diagnostic:
  jmp .loop
 .none: xor eax,eax
 .done:
+ add rsp,8
  pop r15
  pop r14
  pop r13
  pop r12
  pop rbx
+ pop rbp
  ret
 
 %define call NEBOC_ABI_FUNCTION_SCOPED_CALL
@@ -8210,6 +17776,32 @@ text_char_unicode_e_bytes_cli_report_frontend_diagnostic:
  je .range
  cmp rax,NEBOC_API_DIAG_BYTES_LITERAL_UNAVAILABLE
  je .bytes
+ cmp rax,NEBOC_API_DIAG_UNKNOWN
+ je .unknown
+ cmp rax,neboc_text_char_unicode_e_bytes_API_DIAG_ALIAS_FORBIDDEN
+ je .alias
+ cmp rax,neboc_text_char_unicode_e_bytes_API_DIAG_ARGUMENTS_NOT_ALLOWED
+ je .arguments
+ cmp rax,NEBOC_API_DIAG_RECEIVER_MUST_BE_TEXT
+ je .need_text
+ cmp rax,NEBOC_API_DIAG_ARGUMENT_MUST_BE_TEXT
+ je .text_argument
+ cmp rax,NEBOC_API_DIAG_TEXT_QUERY_ARITY
+ je .text_query_arity
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_ARITY
+ je .text_transform_arity
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_TEXT_ARGUMENT
+ je .text_transform_text_argument
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_INT_ARGUMENT
+ je .text_transform_int_argument
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_BOUNDS
+ je .text_transform_bounds
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_EMPTY_SEPARATOR
+ je .text_transform_empty_separator
+ cmp rax,NEBOC_API_DIAG_TEXT_PARSE_ARITY
+ je .text_parse_arity
+ cmp rax,NEBOC_API_DIAG_TEXT_CONVERSION_RECEIVER
+ je .text_conversion_receiver
  jmp .none
 .bom: lea rdi,[rel cli_error_char_bom]
  mov esi,cli_error_char_bom_end-cli_error_char_bom
@@ -8243,6 +17835,45 @@ text_char_unicode_e_bytes_cli_report_frontend_diagnostic:
  jmp .write
 .bytes: lea rdi,[rel cli_error_bytes_literal]
  mov esi,cli_error_bytes_literal_end-cli_error_bytes_literal
+ jmp .write
+.unknown: lea rdi,[rel text_char_unicode_e_bytes_cli_error_unknown]
+ mov esi,text_char_unicode_e_bytes_cli_error_unknown_end-text_char_unicode_e_bytes_cli_error_unknown
+ jmp .write
+.alias: lea rdi,[rel text_char_unicode_e_bytes_cli_error_alias]
+ mov esi,text_char_unicode_e_bytes_cli_error_alias_end-text_char_unicode_e_bytes_cli_error_alias
+ jmp .write
+.arguments: lea rdi,[rel text_char_unicode_e_bytes_cli_error_arguments]
+ mov esi,text_char_unicode_e_bytes_cli_error_arguments_end-text_char_unicode_e_bytes_cli_error_arguments
+ jmp .write
+.need_text: lea rdi,[rel cli_error_need_text]
+ mov esi,cli_error_need_text_end-cli_error_need_text
+ jmp .write
+.text_argument: lea rdi,[rel cli_error_text_argument]
+ mov esi,cli_error_text_argument_end-cli_error_text_argument
+ jmp .write
+.text_query_arity: lea rdi,[rel cli_error_text_query_arity]
+ mov esi,cli_error_text_query_arity_end-cli_error_text_query_arity
+ jmp .write
+.text_transform_arity: lea rdi,[rel cli_error_text_transform_arity]
+ mov esi,cli_error_text_transform_arity_end-cli_error_text_transform_arity
+ jmp .write
+.text_transform_text_argument: lea rdi,[rel cli_error_text_transform_text_argument]
+ mov esi,cli_error_text_transform_text_argument_end-cli_error_text_transform_text_argument
+ jmp .write
+.text_transform_int_argument: lea rdi,[rel cli_error_text_transform_int_argument]
+ mov esi,cli_error_text_transform_int_argument_end-cli_error_text_transform_int_argument
+ jmp .write
+.text_transform_bounds: lea rdi,[rel cli_error_text_transform_bounds]
+ mov esi,cli_error_text_transform_bounds_end-cli_error_text_transform_bounds
+ jmp .write
+.text_transform_empty_separator: lea rdi,[rel cli_error_text_transform_empty_separator]
+ mov esi,cli_error_text_transform_empty_separator_end-cli_error_text_transform_empty_separator
+ jmp .write
+.text_parse_arity: lea rdi,[rel cli_error_text_parse_arity]
+ mov esi,cli_error_text_parse_arity_end-cli_error_text_parse_arity
+ jmp .write
+.text_conversion_receiver: lea rdi,[rel cli_error_text_conversion_receiver]
+ mov esi,cli_error_text_conversion_receiver_end-cli_error_text_conversion_receiver
 .write:
  call cli_write_stderr
  mov eax,1
@@ -8673,6 +18304,16 @@ cli_recognize_scientific_owners:
  jz .candidate_next
  mov rbx,[rsp+32]
 .candidate_publish:
+ ; Matrix and Tensor remain in the ordinary typed AST. The scalar projection
+ ; cannot erase their constructor/access statements or later source effects.
+ cmp qword [rbx+NEBOC_VECTOR_VERTICAL_TENSOR_TYPE_OFFSET],0
+ jne .candidate_next
+ mov rax,[rbx+NEBOC_VECTOR_VERTICAL_MATRIX_KIND_OFFSET]
+ cmp rax,NEBOC_VECTOR_MATRIX_KIND_ZEROS_ADD_SUM
+ jb .publish_scientific_owner
+ cmp rax,NEBOC_VECTOR_MATRIX_KIND_FUNCTION_RETURN
+ jbe .candidate_next
+.publish_scientific_owner:
  mov rax,[rel cli_scientific_owner_count]
  mov rcx,[rsp+16]
  lea rdx,[rel cli_scientific_owner_starts]
@@ -9167,7 +18808,7 @@ cli_recognize_scientific_bound_results:
  mov edx,cli_scientific_name_matrix_len
  call cli_token_equals
  test eax,eax
- jnz .matrix_constructor
+ jnz .next
  mov rdi,rbx
  lea rsi,[rel cli_scientific_name_tensor]
  mov edx,cli_scientific_name_tensor_len
@@ -9334,6 +18975,77 @@ cli_recognize_scientific_bound_results:
 ; only when the unchanged vertical accepts the whole function+start program.
 ; RDI=owner request, RSI=candidate start, RDX=candidate inclusive end.
 ; EAX=1 when a complete function-boundary owner was authenticated, else 0.
+; preamble begin/end, candidate begin/end (inclusive) -> 1 if referenced.
+; The isolated scientific grammar accepts one receiver declaration. Retain
+; ambiguous headers for its authoritative parser, but never try a known
+; unreferenced declaration against every later statement boundary.
+cli_scientific_preamble_referenced:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ mov r15,rcx
+ xor ebx,ebx
+.header:
+ cmp r12,r13
+ jae .yes
+ mov rax,r12
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdx,[rel cli_tokens]
+ mov rax,[rdx+rax+NEBOC_TOKEN_KIND_OFFSET]
+ inc r12
+ cmp rax,NEBOC_TOKEN_LPAREN
+ jne .close
+ inc rbx
+ jmp .header
+.close:
+ cmp rax,NEBOC_TOKEN_RPAREN
+ jne .header
+ dec rbx
+ jnz .header
+ cmp r12,r13
+ jae .yes
+ mov rax,r12
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rbx,[rel cli_tokens]
+ add rbx,rax
+ cmp qword [rbx+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .yes
+ mov r12,[rbx+NEBOC_TOKEN_END_OFFSET]
+ sub r12,[rbx+NEBOC_TOKEN_START_OFFSET]
+ lea r13,[rel cli_source]
+ add r13,[rbx+NEBOC_TOKEN_START_OFFSET]
+.reference:
+ cmp r14,r15
+ ja .no
+ mov rax,r14
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rel cli_tokens]
+ add rdi,rax
+ mov rsi,r13
+ mov rdx,r12
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ inc r14
+ jmp .reference
+.no:
+ xor eax,eax
+ jmp .done
+.yes:
+ mov eax,1
+.done:
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
 cli_try_scientific_function_candidate:
  push rbx
  push r12
@@ -9383,6 +19095,15 @@ cli_try_scientific_function_candidate:
  dec r14
  jnz .preamble_end_next
  mov [rsp+32],r13
+ ; Only a declaration actually referenced by the candidate can be its owner.
+ ; This is lexical call resolution, independent of paths and fixture names.
+ mov rdi,[rsp+24]
+ mov rsi,r13
+ mov rdx,[rsp+8]
+ mov rcx,[rsp+16]
+ call cli_scientific_preamble_referenced
+ test eax,eax
+ jz .preamble_after_function
  mov rax,r13
  sub rax,[rsp+24]
  inc rax
@@ -9394,7 +19115,7 @@ cli_try_scientific_function_candidate:
  add rax,rcx
  add rax,8
  cmp rax,NEBOC_CLI_SCIENTIFIC_SCRATCH_TOKEN_MAX
- ja .preamble_next
+ ja .preamble_after_function
  ; Every speculative trial starts from a zeroed owner request.
  mov rdi,[rsp]
  mov ecx,NEBOC_VECTOR_VERTICAL_REQUEST_QWORDS
@@ -9438,7 +19159,7 @@ cli_try_scientific_function_candidate:
  lea rsi,[rel cli_tokens]
  add rsi,rax
  cmp qword [rsi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_EOF
- jne .preamble_next
+ jne .preamble_after_function
  mov ecx,NEBOC_TOKEN_QWORDS
  rep movsq
  mov rbx,[rsp]
@@ -9471,10 +19192,10 @@ cli_try_scientific_function_candidate:
  ; only the candidate's terminating semicolon and append the original
  ; `.return;` tail before the synthetic closing brace.
  cmp qword [rsp+48],1
- jbe .preamble_next
+ jbe .preamble_after_function
  mov rax,[rel cli_scientific_program_start_close]
  cmp rax,3
- jb .preamble_next
+ jb .preamble_after_function
  mov rdi,[rsp]
  mov ecx,NEBOC_VECTOR_VERTICAL_REQUEST_QWORDS
  xor eax,eax
@@ -9537,13 +19258,13 @@ cli_try_scientific_function_candidate:
  call neboc_vector_vertical_recognize
  mov rbx,[rsp]
  test eax,eax
- jnz .preamble_next
+ jnz .preamble_after_function
  cmp qword [rbx+NEBOC_VECTOR_VERTICAL_FOUND_OFFSET],1
- jne .preamble_next
+ jne .preamble_after_function
  cmp qword [rbx+NEBOC_VECTOR_VERTICAL_DIAGNOSTIC_OFFSET],0
- jne .preamble_next
+ jne .preamble_after_function
  cmp qword [rbx+NEBOC_VECTOR_VERTICAL_FLAGS_OFFSET],NEBOC_VECTOR_VERTICAL_FLAGS_REQUIRED
- jne .preamble_next
+ jne .preamble_after_function
 .function_owner_success:
  mov rax,[rsp+24]
  mov [rel cli_scientific_probe_preamble_start],rax
@@ -9555,6 +19276,8 @@ cli_try_scientific_function_candidate:
 .preamble_end_next:
  inc r13
  jmp .preamble_end_scan
+.preamble_after_function:
+ mov r12,[rsp+32]
 .preamble_next:
  inc r12
  jmp .preamble_scan
@@ -9775,6 +19498,22 @@ colecoes_primitivas_cli_report_diagnostic:
  je .dict
  cmp rax,8
  je .capacity
+ cmp rax,20
+ je .list
+ cmp rax,21
+ je .g007_type
+ cmp rax,22
+ je .g007_bounds
+ cmp rax,23
+ je .g007_capacity
+ cmp rax,24
+ je .g007_method
+ cmp rax,25
+ je .g007_callback
+ cmp rax,26
+ je .g007_limit
+ cmp rax,27
+ je .g007_borrow
  xor eax,eax
  ret
 .arity: lea rdi,[rel colecoes_primitivas_cli_error_arity]
@@ -9800,6 +19539,27 @@ colecoes_primitivas_cli_report_diagnostic:
  jmp .write
 .capacity: lea rdi,[rel cli_error_capacity]
  mov esi,cli_error_capacity_end-cli_error_capacity
+ jmp .write
+.g007_type: lea rdi,[rel cli_error_g007_type]
+ mov esi,cli_error_g007_type_end-cli_error_g007_type
+ jmp .write
+.g007_bounds: lea rdi,[rel cli_error_g007_bounds]
+ mov esi,cli_error_g007_bounds_end-cli_error_g007_bounds
+ jmp .write
+.g007_capacity: lea rdi,[rel cli_error_g007_capacity]
+ mov esi,cli_error_g007_capacity_end-cli_error_g007_capacity
+ jmp .write
+.g007_method: lea rdi,[rel cli_error_g007_method]
+ mov esi,cli_error_g007_method_end-cli_error_g007_method
+ jmp .write
+.g007_callback: lea rdi,[rel cli_error_g007_callback]
+ mov esi,cli_error_g007_callback_end-cli_error_g007_callback
+ jmp .write
+.g007_limit: lea rdi,[rel cli_error_g007_limit]
+ mov esi,cli_error_g007_limit_end-cli_error_g007_limit
+ jmp .write
+.g007_borrow: lea rdi,[rel cli_error_g007_borrow]
+ mov esi,cli_error_g007_borrow_end-cli_error_g007_borrow
 .write:
  call cli_write_stderr
  mov eax,1
@@ -10105,6 +19865,10 @@ cli_recognize_result:
  mov [rel cli_result+NEBOC_RESULT_TOKENS_OFFSET],rax
  mov rax,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
  mov [rel cli_result+NEBOC_RESULT_TOKEN_COUNT_OFFSET],rax
+ mov rax,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_LITERAL_BYTES_OFFSET]
+ mov [rel cli_result+NEBOC_RESULT_LITERAL_BYTES_OFFSET],rax
+ mov rax,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_LITERAL_LENGTH_OFFSET]
+ mov [rel cli_result+NEBOC_RESULT_LITERAL_LENGTH_OFFSET],rax
  lea rax,[rel cli_result_bindings]
  mov [rel cli_result+NEBOC_RESULT_BINDINGS_OFFSET],rax
  mov qword [rel cli_result+NEBOC_RESULT_BINDING_CAPACITY_OFFSET],NEBOC_RESULT_MAX_BINDINGS
@@ -10547,6 +20311,7 @@ cli_buffer_source_requires_composition:
  xor r14d,r14d                 ; active start-body brace depth
  xor r15d,r15d                 ; statement-start flag
  mov qword [rsp],0             ; saw canonical start token
+ mov qword [rsp+16],0          ; saw explicit Int.return terminal
 .scan:
  cmp r13,r12
  jae .finish
@@ -10598,6 +20363,7 @@ cli_buffer_source_requires_composition:
  jne .compose
  cmp qword [rbx+2*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_KW_RETURN
  jne .compose
+ mov qword [rsp+16],1
  jmp .owned_statement
 .owned_name_scan:
  xor ecx,ecx
@@ -10673,6 +20439,15 @@ cli_buffer_source_requires_composition:
  je .corrupt
  test r14,r14
  jnz .corrupt
+ ; A multi-owner program whose result is derived from an owner graph cannot be
+ ; represented by the historical single-plan backend.  Keep its established
+ ; explicit Int.return behavior, but route derived terminals through the
+ ; FunctionTable so no later owner is replaced by the first plan.
+ cmp qword [rel cli_buffer_owner_count],1
+ jbe .whole_source
+ cmp qword [rsp+16],0
+ je .compose
+.whole_source:
  xor eax,eax
  jmp .done
 .compose:
@@ -10687,6 +20462,166 @@ cli_buffer_source_requires_composition:
  pop r13
  pop r12
  pop rbx
+ ret
+
+%undef call
+%define call NEBOC_ABI_FUNCTION_SCOPED_CALL
+cli_validate_binary_foundation_syntax:
+ ; The specialized semantic owner still passes through the shared program and
+ ; body parser.  Its early route is therefore not a syntax bypass.
+ lea rdi,[rel cli_ast_builder]
+ mov ecx,NEBOC_AST_BUILDER_SIZE/8
+ xor eax,eax
+ rep stosq
+ lea rdi,[rel cli_parser_request]
+ mov ecx,NEBOC_PARSER_SIZE/8
+ xor eax,eax
+ rep stosq
+ lea rdi,[rel cli_ast_builder]
+ lea rsi,[rel cli_ast_nodes]
+ mov edx,NEBOC_CLI_AST_CAPACITY
+ call neboc_ast_builder_init
+ test eax,eax
+ jnz .done
+ lea rax,[rel cli_tokens]
+ mov [rel cli_parser_request+NEBOC_PARSER_TOKENS_OFFSET],rax
+ mov rax,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ mov [rel cli_parser_request+NEBOC_PARSER_TOKEN_COUNT_OFFSET],rax
+ mov qword [rel cli_parser_request+NEBOC_PARSER_SOURCE_ID_OFFSET],1
+ lea rax,[rel cli_ast_builder]
+ mov [rel cli_parser_request+NEBOC_PARSER_BUILDER_OFFSET],rax
+ mov qword [rel cli_parser_request+NEBOC_PARSER_MAX_NESTING_OFFSET],NEBOC_PARSER_DEFAULT_MAX_NESTING
+ cmp qword [rel cli_entrypoint_target_kind],NEBOC_TARGET_KIND_LIBRARY
+ je .zero_start
+ cmp qword [rel cli_entrypoint_target_kind],NEBOC_TARGET_KIND_TEST
+ jne .parse
+.zero_start:
+ mov qword [rel cli_parser_request+NEBOC_PARSER_FLAGS_OFFSET],NEBOC_PARSER_FLAG_ALLOW_ZERO_START|NEBOC_PARSER_FLAG_FORBID_START
+.parse:
+ lea rdi,[rel cli_parser_request]
+ call neboc_parser_parse
+ test eax,eax
+ jnz .done
+ cmp qword [rel cli_entrypoint_target_kind],NEBOC_TARGET_KIND_LIBRARY
+ je .functions
+ cmp qword [rel cli_entrypoint_target_kind],NEBOC_TARGET_KIND_TEST
+ je .functions
+ call cli_materialize_start_body
+ test eax,eax
+ jnz .done
+.functions:
+ call cli_materialize_function_bodies
+.done:
+ ret
+
+%undef call
+%define call NEBOC_ABI_FUNCTION_SCOPED_CALL
+cli_recognize_binary_foundation:
+ lea rdi,[rel cli_binary_foundation]
+ mov ecx,NEBOC_BF_REQUEST_QWORDS
+ xor eax,eax
+ rep stosq
+ lea rax,[rel cli_source]
+ mov [rel cli_binary_foundation+NEBOC_BF_SOURCE_OFFSET],rax
+ mov rax,[rel cli_state+NEBOC_CLI_STATE_SOURCE_LENGTH_OFFSET]
+ mov [rel cli_binary_foundation+NEBOC_BF_SOURCE_LENGTH_OFFSET],rax
+ lea rax,[rel cli_tokens]
+ mov [rel cli_binary_foundation+NEBOC_BF_TOKENS_OFFSET],rax
+ mov rax,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ mov [rel cli_binary_foundation+NEBOC_BF_TOKEN_COUNT_OFFSET],rax
+ lea rax,[rel cli_literal_bytes]
+ mov [rel cli_binary_foundation+NEBOC_BF_LITERAL_BYTES_OFFSET],rax
+ lea rdi,[rel cli_binary_foundation]
+ call neboc_binary_foundation_parse
+ test eax,eax
+ jnz .done
+ cmp qword [rel cli_binary_foundation+NEBOC_BF_FOUND_OFFSET],0
+ je .done
+ lea rdi,[rel cli_binary_foundation]
+ call neboc_binary_foundation_analyze
+ test eax,eax
+ jnz .done
+ lea rdi,[rel cli_binary_foundation]
+ lea rsi,[rel cli_binary_foundation_plan]
+ call neboc_binary_foundation_lower
+.done:
+ ret
+
+%undef call
+%define call NEBOC_ABI_FUNCTION_SCOPED_CALL
+cli_report_binary_foundation_diagnostic:
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],1
+ jne .binary_diagnostic
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_DIAGNOSTIC_OFFSET],0
+ jne .binary_diagnostic
+ mov rax,[rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_HASH_OFFSET]
+ xor rax,[rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_OUTPUT_VALUE_OFFSET]
+ mov rdx,0x5246323034473038
+ cmp rax,rdx
+ je .none
+.binary_diagnostic:
+ mov rax,[rel cli_binary_foundation+NEBOC_BF_DIAGNOSTIC_OFFSET]
+ test rax,rax
+ jz .none
+ cmp eax,NEBOC_BF_DIAG_SYNTAX
+ je .syntax
+ cmp eax,NEBOC_BF_DIAG_ARITY
+ je .arity
+ cmp eax,NEBOC_BF_DIAG_TYPE
+ je .type
+ cmp eax,NEBOC_BF_DIAG_BOUNDS
+ je .bounds
+ cmp eax,NEBOC_BF_DIAG_HEX
+ je .hex
+ cmp eax,NEBOC_BF_DIAG_ENCODING
+ je .encoding
+ cmp eax,NEBOC_BF_DIAG_ALIGNMENT
+ je .alignment
+ cmp eax,NEBOC_BF_DIAG_LENGTH
+ je .length
+ cmp eax,NEBOC_BF_DIAG_CAPACITY
+ je .capacity
+ cmp eax,NEBOC_BF_DIAG_OWNERSHIP
+ je .ownership
+ jmp .internal
+.syntax: lea rdi,[rel cli_error_bf_syntax]
+ mov esi,cli_error_bf_syntax_end-cli_error_bf_syntax
+ jmp .write
+.arity: lea rdi,[rel cli_error_bf_arity]
+ mov esi,cli_error_bf_arity_end-cli_error_bf_arity
+ jmp .write
+.type: lea rdi,[rel cli_error_bf_type]
+ mov esi,cli_error_bf_type_end-cli_error_bf_type
+ jmp .write
+.bounds: lea rdi,[rel cli_error_bf_bounds]
+ mov esi,cli_error_bf_bounds_end-cli_error_bf_bounds
+ jmp .write
+.hex: lea rdi,[rel cli_error_bf_hex]
+ mov esi,cli_error_bf_hex_end-cli_error_bf_hex
+ jmp .write
+.encoding: lea rdi,[rel cli_error_bf_encoding]
+ mov esi,cli_error_bf_encoding_end-cli_error_bf_encoding
+ jmp .write
+.alignment: lea rdi,[rel cli_error_bf_alignment]
+ mov esi,cli_error_bf_alignment_end-cli_error_bf_alignment
+ jmp .write
+.length: lea rdi,[rel cli_error_bf_length]
+ mov esi,cli_error_bf_length_end-cli_error_bf_length
+ jmp .write
+.capacity: lea rdi,[rel cli_error_bf_capacity]
+ mov esi,cli_error_bf_capacity_end-cli_error_bf_capacity
+ jmp .write
+.ownership: lea rdi,[rel cli_error_bf_ownership]
+ mov esi,cli_error_bf_ownership_end-cli_error_bf_ownership
+ jmp .write
+.internal: lea rdi,[rel cli_error_bf_internal]
+ mov esi,cli_error_bf_internal_end-cli_error_bf_internal
+.write:
+ call cli_write_stderr
+ mov eax,1
+ ret
+.none:
+ xor eax,eax
  ret
 
 ; Parse, analyze and lower every bounded Buffer owner in lexical order.  Each
@@ -11162,14 +21097,14 @@ cli_recognize_nominal_owners:
  mov rdi,rbx
  call neboc_nominal_parse
  test eax,eax
- jnz .done
+ jnz .owner_failed
  mov rbx,[rsp]
  cmp qword [rbx+NEBOC_NOM_FOUND_OFFSET],1
  jne .invalid
  mov rdi,rbx
  call neboc_nominal_analyze
  test eax,eax
- jnz .done
+ jnz .owner_failed
  mov rbx,[rsp]
  mov rax,r15
  imul rax,NEBOC_NOM_PLAN_SIZE
@@ -11178,7 +21113,7 @@ cli_recognize_nominal_owners:
  mov rdi,rbx
  call neboc_nominal_lower
  test eax,eax
- jnz .done
+ jnz .owner_failed
  inc qword [rel cli_nominal_owner_count]
  mov rax,[rbx+NEBOC_NOM_KIND_OFFSET]
  cmp rax,NEBOC_NOM_KIND_ALIAS
@@ -11210,6 +21145,14 @@ cli_recognize_nominal_owners:
  test r13,r13
  jnz .invalid
  xor eax,eax
+ jmp .done
+ .owner_failed:
+ mov rcx,[rsp]
+ mov rdx,[rcx+NEBOC_NOM_DIAGNOSTIC_OFFSET]
+ mov [rel cli_nominal+NEBOC_NOM_DIAGNOSTIC_OFFSET],rdx
+ mov rdx,[rcx+NEBOC_NOM_ERROR_TOKEN_OFFSET]
+ add rdx,r12
+ mov [rel cli_nominal+NEBOC_NOM_ERROR_TOKEN_OFFSET],rdx
  jmp .done
 .limit:
  mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
@@ -11270,6 +21213,41 @@ cli_report_nominal_diagnostic:
 
 %undef call
 %define call NEBOC_ABI_FUNCTION_SCOPED_CALL
+; Declaration-only native facts belong to the same token view as the Program
+; parser. A successful prefix does not claim any body or choose a backend.
+cli_prepare_typed_struct_declarations:
+ lea rdi,[rel cli_typed_struct]
+ mov ecx,NEBOC_ST_REQUEST_QWORDS
+ xor eax,eax
+ rep stosq
+ lea rax,[rel cli_source]
+ mov [rel cli_typed_struct+NEBOC_ST_SOURCE_OFFSET],rax
+ mov rax,[rel cli_state+NEBOC_CLI_STATE_SOURCE_LENGTH_OFFSET]
+ mov [rel cli_typed_struct+NEBOC_ST_SOURCE_LENGTH_OFFSET],rax
+ mov rax,[rel cli_parser_request+NEBOC_PARSER_TOKENS_OFFSET]
+ mov [rel cli_typed_struct+NEBOC_ST_TOKENS_OFFSET],rax
+ mov rax,[rel cli_parser_request+NEBOC_PARSER_TOKEN_COUNT_OFFSET]
+ mov [rel cli_typed_struct+NEBOC_ST_TOKEN_COUNT_OFFSET],rax
+ lea rax,[rel cli_typed_struct_decls]
+ mov [rel cli_typed_struct+NEBOC_ST_DECLS_OFFSET],rax
+ mov qword [rel cli_typed_struct+NEBOC_ST_DECL_CAPACITY_OFFSET],NEBOC_ST_MAX_DECLS
+ lea rdi,[rel cli_typed_struct]
+ call neboc_struct_declarations_recognize
+ test eax,eax
+ jnz .diagnostic
+ lea rax,[rel cli_typed_struct]
+ mov [rel cli_parser_request+NEBOC_PARSER_STRUCT_OWNER_OFFSET],rax
+ xor eax,eax
+ ret
+.diagnostic:
+ ; Publish the existing native diagnostic identity on the failure-only path.
+ mov rdx,[rel cli_typed_struct+NEBOC_ST_DIAGNOSTIC_OFFSET]
+ mov [rel cli_struct_tuple+NEBOC_ST_DIAGNOSTIC_OFFSET],rdx
+ mov rdx,[rel cli_typed_struct+NEBOC_ST_ERROR_TOKEN_OFFSET]
+ mov [rel cli_struct_tuple+NEBOC_ST_ERROR_TOKEN_OFFSET],rdx
+ mov qword [rel cli_struct_tuple+NEBOC_ST_FOUND_OFFSET],1
+ ret
+
 cli_recognize_composite:
  lea rdi,[rel cli_struct_tuple]
  mov ecx,NEBOC_ST_REQUEST_QWORDS
@@ -12012,6 +21990,8 @@ bindings_constantes_mutabilidade_e_definite_assignment_cli_report_diagnostic_cod
  je ._032
  cmp rax,NEBOC_DIAG_LOOP_CFG_INVARIANT
  je ._034
+ cmp rax,NEBOC_DIAG_BREAK_VALUE
+ je ._035
  cmp rax,NEBOC_DIAG_LOOP_NESTING
  je ._036
  cmp rax,NEBOC_BIND_DIAG_UNDEFINED_NAME
@@ -12151,6 +22131,9 @@ bindings_constantes_mutabilidade_e_definite_assignment_cli_report_diagnostic_cod
  jmp .write
 ._034: lea rdi,[rel cli_error_034]
  mov esi,cli_error_034_end-cli_error_034
+ jmp .write
+._035: lea rdi,[rel cli_error_035]
+ mov esi,cli_error_035_end-cli_error_035
  jmp .write
 ._036: lea rdi,[rel cli_error_036]
  mov esi,cli_error_036_end-cli_error_036
@@ -12298,6 +22281,24 @@ text_char_unicode_e_bytes_cli_report_semantic_diagnostic:
  je ._position_dynamic
  cmp rax,NEBOC_DIAG_POSITION_OUT_OF_RANGE
  je ._position_range
+ cmp rax,NEBOC_API_DIAG_ARGUMENT_MUST_BE_TEXT
+ je .text_argument
+ cmp rax,NEBOC_API_DIAG_TEXT_QUERY_ARITY
+ je .text_query_arity
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_ARITY
+ je .text_transform_arity
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_TEXT_ARGUMENT
+ je .text_transform_text_argument
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_INT_ARGUMENT
+ je .text_transform_int_argument
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_BOUNDS
+ je .text_transform_bounds
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_EMPTY_SEPARATOR
+ je .text_transform_empty_separator
+ cmp rax,NEBOC_API_DIAG_TEXT_PARSE_ARITY
+ je .text_parse_arity
+ cmp rax,NEBOC_API_DIAG_TEXT_CONVERSION_RECEIVER
+ je .text_conversion_receiver
  xor eax,eax
  ret
 .unknown: lea rdi,[rel text_char_unicode_e_bytes_cli_error_unknown]
@@ -12311,6 +22312,33 @@ text_char_unicode_e_bytes_cli_report_semantic_diagnostic:
  jmp .write
 .text: lea rdi,[rel cli_error_need_text]
  mov esi,cli_error_need_text_end-cli_error_need_text
+ jmp .write
+.text_argument: lea rdi,[rel cli_error_text_argument]
+ mov esi,cli_error_text_argument_end-cli_error_text_argument
+ jmp .write
+.text_query_arity: lea rdi,[rel cli_error_text_query_arity]
+ mov esi,cli_error_text_query_arity_end-cli_error_text_query_arity
+ jmp .write
+.text_transform_arity: lea rdi,[rel cli_error_text_transform_arity]
+ mov esi,cli_error_text_transform_arity_end-cli_error_text_transform_arity
+ jmp .write
+.text_transform_text_argument: lea rdi,[rel cli_error_text_transform_text_argument]
+ mov esi,cli_error_text_transform_text_argument_end-cli_error_text_transform_text_argument
+ jmp .write
+.text_transform_int_argument: lea rdi,[rel cli_error_text_transform_int_argument]
+ mov esi,cli_error_text_transform_int_argument_end-cli_error_text_transform_int_argument
+ jmp .write
+.text_transform_bounds: lea rdi,[rel cli_error_text_transform_bounds]
+ mov esi,cli_error_text_transform_bounds_end-cli_error_text_transform_bounds
+ jmp .write
+.text_transform_empty_separator: lea rdi,[rel cli_error_text_transform_empty_separator]
+ mov esi,cli_error_text_transform_empty_separator_end-cli_error_text_transform_empty_separator
+ jmp .write
+.text_parse_arity: lea rdi,[rel cli_error_text_parse_arity]
+ mov esi,cli_error_text_parse_arity_end-cli_error_text_parse_arity
+ jmp .write
+.text_conversion_receiver: lea rdi,[rel cli_error_text_conversion_receiver]
+ mov esi,cli_error_text_conversion_receiver_end-cli_error_text_conversion_receiver
  jmp .write
 .char: lea rdi,[rel cli_error_need_char]
  mov esi,cli_error_need_char_end-cli_error_need_char
@@ -13158,7 +23186,8 @@ cli_npt37_source_has_nested_prefix:
  pop rbx
  ret
 
-; Return 1 after the second receiver-first declaration at program depth zero.
+; Return the bounded receiver-first declaration count (0, 1 or 2) at program
+; depth zero; scanning stops once the second declaration is authenticated.
 ; Two or more owners require the shared Program/FunctionTable path before a
 ; legacy whole-source recognizer can claim an incidental body token.  An exact
 ; one-owner parameters/defaults source retains its authenticated bounded F02
@@ -13191,6 +23220,15 @@ cli_source_has_top_level_function_prefix:
  jnz .next
  cmp rax,NEBOC_TOKEN_LPAREN
  jne .next
+ ; `overload (` owns the parenthesized signature through the bounded overload
+ ; parser.  It is not a second ordinary top-level function declaration.
+ test r13,r13
+ jz .prefix_shape
+ lea rax,[r13-1]
+ imul rax,NEBOC_TOKEN_SIZE
+ cmp qword [rbx+rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ je .next
+.prefix_shape:
  lea rax,[r13+6]
  cmp rax,r12
  jae .next
@@ -13233,10 +23271,10 @@ cli_source_has_top_level_function_prefix:
  inc r13
  jmp .scan
 .yes:
- mov eax,1
+ mov eax,r15d
  jmp .done
 .no:
- xor eax,eax
+ mov eax,r15d
 .done:
  add rsp,8
  pop r15
@@ -13684,6 +23722,249 @@ cli_tokens_contain_function_body_mutation:
 
 ; Return 1 when the parsed Program contains at least one receiver-first
 ; FunctionDecl, 0 when it contains only start(), and -1 on AST corruption.
+cli_program_has_function_decl:
+ push rbx
+ push r12
+ push r13
+ sub rsp,16
+ lea rbx,[rel cli_ast_builder]
+ mov r12,[rbx+NEBOC_AST_BUILDER_COUNT_OFFSET]
+ xor r13d,r13d
+.loop:
+ cmp r13,r12
+ jae .none
+ lea rsi,[r13+1]
+ mov rdi,rbx
+ lea rdx,[rsp]
+ call neboc_ast_builder_node
+ test eax,eax
+ jnz .bad
+ mov rax,[rsp]
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_FUNCTION_DECL
+ je .yes
+ inc r13
+ jmp .loop
+.yes:
+ mov eax,1
+ jmp .done
+.none:
+ xor eax,eax
+ jmp .done
+.bad:
+ mov eax,-1
+.done:
+ add rsp,16
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+cli_program_has_associative_application:
+ push rbx
+ push r12
+ sub rsp,8
+ mov r12,[rel cli_ast_builder+NEBOC_AST_BUILDER_COUNT_OFFSET]
+ mov rbx,[rel cli_ast_builder+NEBOC_AST_BUILDER_DATA_OFFSET]
+.scan:
+ test r12,r12
+ jz .no
+ cmp qword [rbx+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ je .method_name
+ cmp qword [rbx+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .next
+ test qword [rbx+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_APPLICATION
+ jnz .yes
+%macro CLI_TYPED_DATA_APPLICATION 2
+ mov rax,[rbx+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rel cli_tokens]
+ add rdi,rax
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_TYPED_DATA_APPLICATION cli_system_cancel_token,17
+ CLI_TYPED_DATA_APPLICATION cli_system_channel,7
+ CLI_TYPED_DATA_APPLICATION cli_system_mutex,5
+ CLI_TYPED_DATA_APPLICATION cli_system_rwlock,6
+ CLI_TYPED_DATA_APPLICATION cli_system_atomic,9
+ CLI_TYPED_DATA_APPLICATION cli_system_duration,8
+ CLI_TYPED_DATA_APPLICATION cli_system_instant,7
+ CLI_TYPED_DATA_APPLICATION cli_system_process,7
+ CLI_TYPED_DATA_APPLICATION cli_system_json,4
+ CLI_TYPED_DATA_APPLICATION cli_system_csv,3
+ CLI_TYPED_DATA_APPLICATION cli_system_task,4
+ CLI_TYPED_DATA_APPLICATION cli_system_task_group,9
+ CLI_TYPED_DATA_APPLICATION cli_system_environment,11
+ CLI_TYPED_DATA_APPLICATION cli_network_ip,9
+ CLI_TYPED_DATA_APPLICATION cli_network_address,13
+ CLI_TYPED_DATA_APPLICATION cli_network_listener,11
+ CLI_TYPED_DATA_APPLICATION cli_network_stream,9
+ CLI_TYPED_DATA_APPLICATION cli_network_udp,9
+ CLI_TYPED_DATA_APPLICATION cli_network_http_request,11
+ CLI_TYPED_DATA_APPLICATION cli_network_http_client,10
+ CLI_TYPED_DATA_APPLICATION cli_g012_atom_random,6
+ CLI_TYPED_DATA_APPLICATION cli_g015_atom_matrix,6
+ CLI_TYPED_DATA_APPLICATION cli_g016_atom_tensor,6
+ CLI_TYPED_DATA_APPLICATION cli_typed_schema,6
+ CLI_TYPED_DATA_APPLICATION cli_typed_row,3
+ CLI_TYPED_DATA_APPLICATION cli_typed_table,5
+ CLI_TYPED_DATA_APPLICATION cli_typed_dataset,7
+ ; The parsed namespace selects complete FunctionTable validation even when
+ ; the fallible template result is unused or the call has invalid arguments.
+ ; The typed formatting owner still checks namespace shadowing and every node.
+ CLI_TYPED_DATA_APPLICATION cli_g059_atom_format_string,12
+%undef CLI_TYPED_DATA_APPLICATION
+ mov rax,[rbx+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rel cli_tokens]
+ add rdi,rax
+ lea rsi,[rel cli_g008_atom_hasher]
+ mov edx,cli_g008_atom_hasher_len
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ mov rax,[rbx+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rel cli_tokens]
+ add rdi,rax
+ lea rsi,[rel cli_associative_name_hash]
+ mov edx,4
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+ jmp .next
+.method_name:
+ mov rax,[rbx+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdi,[rel cli_tokens]
+ add rdi,rax
+ call cli_token_is_public_hash_method
+ test eax,eax
+ jnz .yes
+.next:
+ add rbx,NEBOC_AST_NODE_SIZE
+ dec r12
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,8
+ pop r12
+ pop rbx
+ ret
+
+; These parsed public receiver calls need FunctionTable's typed owner. The
+; old binding evaluator has no Float method result model. This witness selects
+; complete Program validation; it neither claims values nor consumes statements.
+cli_tokens_contain_approx_call:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ mov r13d,1
+.scan:
+ lea rax,[r13+1]
+ cmp rax,r12
+ jae .no
+ imul rax,r13,NEBOC_TOKEN_SIZE
+ lea rdi,[rbx+rax]
+ cmp qword [rdi-NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne .next
+ cmp qword [rdi+NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ jne .next
+ cmp qword [rdi+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+ lea rsi,[rel nn_approx]
+ mov edx,12
+ call cli_token_equals
+ test eax,eax
+ jnz .done
+.next:
+ inc r13
+ jmp .scan
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+cli_program_has_native_numeric_call:
+ push rbx
+ push r12
+ push r13
+ sub rsp,16
+ xor r12d,r12d
+.scan:
+ cmp r12,[rel cli_ast_builder+NEBOC_AST_BUILDER_COUNT_OFFSET]
+ jae .none
+ lea rdi,[rel cli_ast_builder]
+ lea rsi,[r12+1]
+ mov rdx,rsp
+ call neboc_ast_builder_node
+ test eax,eax
+ jnz .none
+ mov rax,[rsp]
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .next
+ test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
+ jnz .next
+ mov rax,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ cmp rax,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ jae .none
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rbx,[rel cli_tokens]
+ add rbx,rax
+%macro NATIVE_NUMERIC_NAME 2
+ mov rdi,rbx
+ lea rsi,[rel nn_%1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ NATIVE_NUMERIC_NAME floor,5
+ NATIVE_NUMERIC_NAME ceil,4
+ NATIVE_NUMERIC_NAME round,5
+ NATIVE_NUMERIC_NAME finite,8
+ NATIVE_NUMERIC_NAME nan,5
+ NATIVE_NUMERIC_NAME infinite,10
+ NATIVE_NUMERIC_NAME negative_zero,14
+ NATIVE_NUMERIC_NAME approx,12
+%unmacro NATIVE_NUMERIC_NAME 2
+.next:
+ inc r12
+ jmp .scan
+.none:
+ xor eax,eax
+ jmp .done
+.yes:
+ mov eax,1
+.done:
+ add rsp,16
+ pop r13
+ pop r12
+ pop rbx
+ ret
+section .rodata
+nn_floor: db 'floor'
+nn_ceil: db 'ceil'
+nn_round: db 'round'
+nn_finite: db 'isFinite'
+nn_nan: db 'isNaN'
+nn_infinite: db 'isInfinite'
+nn_negative_zero: db 'isNegativeZero'
+nn_approx: db 'approxEquals'
+section .text
+
 cli_program_requires_function_codegen:
  push rbx
  push r12
@@ -13711,6 +23992,14 @@ cli_program_requires_function_codegen:
  je .yes
  cmp rax,NEBOC_AST_BINDING_STMT
  je .yes
+ cmp rax,NEBOC_AST_UNARY_EXPR
+ jne .not_quantity_unary
+ mov rax,[r14+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ cmp rax,NEBOC_TOKEN_DEGREE
+ jb .next
+ cmp rax,NEBOC_TOKEN_POSTFIX_PERCENT
+ jbe .yes
+.not_quantity_unary:
  cmp rax,NEBOC_AST_TEXT_LITERAL
  je .yes
  cmp rax,NEBOC_AST_CALL_EXPR
@@ -13724,7 +24013,13 @@ cli_program_requires_function_codegen:
  mov eax,1
  jmp .done
 .none:
- xor eax,eax
+ call cli_program_has_native_numeric_call
+ test eax,eax
+ jnz .done
+ ; Semantic ownership already yields explicit-start-return Console/Scan
+ ; bodies to FunctionTable. The backend choice must use that same witness,
+ ; including Int/Bool literal receivers with no binding or Text AST node.
+ call cli_program_is_function_composition
  jmp .done
 .bad:
  mov eax,-1
@@ -14170,8 +24465,9 @@ cli_program_is_function_loop:
  pop rbx
  ret
 
-; Return 1 only when the shared AST contains the existing zero-option
-; console() call spelling inside a receiver-first function declaration span.
+; Return 1 only when the shared AST contains a structurally valid bounded
+; console(options...) call inside a receiver-first function or explicit-return
+; start declaration.
 ; A top-level Console plus an unrelated function must retain its established
 ; vertical owner.  This is a routing classifier, not a type checker: the
 ; function backend validates the already-public Text/Int/Bool receiver set and
@@ -14205,9 +24501,9 @@ cli_program_is_function_console:
  jne .next
  test qword [r15+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
  jnz .next
- cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
- jne .next
- cmp qword [r15+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],1
+ mov rax,[r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET]
+ inc rax
+ cmp rax,[r15+NEBOC_AST_NODE_CHILD_COUNT_OFFSET]
  jne .next
  mov rax,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
  cmp rax,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
@@ -14473,8 +24769,41 @@ cli_generate_assembly:
  test eax,eax
  jnz .bad
 .entry_prelude_ready:
+ ; Preserve the authenticated owner through emission as well as admission.
+ cmp qword [rel cli_module_request+NEBOC_MODULE_FOUND_OFFSET],0
+ jne ._module_program
+ call cli_tokens_contain_public_visual_program
+ test eax,eax
+ jnz .function_program
+ call cli_program_has_associative_application
+ test eax,eax
+ jnz .function_program
+ call cli_tokens_contain_textual_binding_return
+ test eax,eax
+ jnz .function_program
  cmp qword [rel cli_entrypoint_target_kind],NEBOC_TARGET_KIND_LIBRARY
  je .function_program
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],1
+ jne .g008_dispatch_done
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_DIAGNOSTIC_OFFSET],0
+ jne .g008_dispatch_done
+ mov rax,[rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_HASH_OFFSET]
+ xor rax,[rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_OUTPUT_VALUE_OFFSET]
+ mov rdx,0x5246323034473038
+ cmp rax,rdx
+ je .colecoes_primitivas_program
+ mov rdx,0x5246323034473039
+ cmp rax,rdx
+ je .colecoes_primitivas_program
+ mov rdx,0x5246323034473130
+ cmp rax,rdx
+ je .colecoes_primitivas_program
+ mov rdx,0x5246323034473235
+ cmp rax,rdx
+ je .colecoes_primitivas_program
+.g008_dispatch_done:
+ cmp qword [rel cli_binary_foundation+NEBOC_BF_FOUND_OFFSET],0
+ jne .binary_foundation_program
  cmp qword [rel text_char_unicode_e_bytes_cli_semantic+NEBOC_SEM_FOUND_OFFSET],0
  jne .text_char_bytes_program
  cmp qword [rel cli_buffer+NEBOC_BUFFER_FOUND_OFFSET],0
@@ -14550,6 +24879,27 @@ cli_generate_assembly:
  test eax,eax
  jnz .function_program
  jmp .legacy_no_function
+
+.binary_foundation_program:
+ lea rdi,[rel cli_binary_foundation_codegen]
+ mov ecx,NEBOC_BF_CODEGEN_QWORDS
+ xor eax,eax
+ rep stosq
+ lea rax,[rel cli_binary_foundation_plan]
+ mov [rel cli_binary_foundation_codegen+NEBOC_BF_CODEGEN_PLAN_OFFSET],rax
+ lea rax,[rel cli_writer]
+ mov [rel cli_binary_foundation_codegen+NEBOC_BF_CODEGEN_WRITER_OFFSET],rax
+ lea rdi,[rel cli_binary_foundation_codegen]
+ call neboc_binary_foundation_codegen_emit
+ test eax,eax
+ jz .program_emitted
+ mov rdx,[rel cli_binary_foundation_codegen+NEBOC_BF_CODEGEN_DIAGNOSTIC_OFFSET]
+ mov [rel cli_binary_foundation+NEBOC_BF_DIAGNOSTIC_OFFSET],rdx
+ cmp eax,NEBOC_STATUS_INVALID_SOURCE
+ je .source_bad
+ cmp eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ je .source_bad
+ jmp .bad
 
 ._buffer_program:
  lea rdi,[rel cli_buffer_codegen]
@@ -14677,6 +25027,13 @@ cli_generate_assembly:
  jmp .bad
 
 .biblioteca_padrao_por_dominios_program:
+ cmp qword [rel sp_found],0
+ je .legacy_std_math_program
+ call cli_emit_scalar_program
+ test eax,eax
+ jz .program_emitted
+ jmp .bad
+.legacy_std_math_program:
  lea rdi,[rel biblioteca_padrao_por_dominios_cli_codegen_request]
  mov ecx,neboc_biblioteca_padrao_por_dominios_CODEGEN_REQUEST_QWORDS
  xor eax,eax
@@ -14962,6 +25319,8 @@ cli_generate_assembly:
 ._array_range_program:
  test qword [rel cli_array_range+NEBOC_AR_FOR_FLAGS_OFFSET],NEBOC_AR_FOR_FLAG_GENERAL_BODY
  jnz .function_program
+ test qword [rel cli_array_range+NEBOC_AR_FOR_FLAGS_OFFSET],NEBOC_AR_FOR_FLAG_MAP
+ jnz ._for_program
  cmp qword [rel cli_ar_plan+NEBOC_AR_PLAN_LOOP_COUNT_OFFSET],0
  jne ._for_program
  cmp qword [rel cli_slice_plan+NEBOC_SLICE_PLAN_FOUND_OFFSET],0
@@ -15009,6 +25368,8 @@ cli_generate_assembly:
  jmp .bad
 
 ._nominal_program:
+ test qword [rel cli_array_range+NEBOC_AR_FOR_FLAGS_OFFSET],NEBOC_AR_FOR_FLAG_GENERAL_BODY
+ jnz .function_program
  lea rdi,[rel cli_nominal_codegen]
  mov ecx,NEBOC_NOM_CODEGEN_QWORDS
  xor eax,eax
@@ -15072,6 +25433,8 @@ cli_generate_assembly:
  jmp .bad
 
 ._generic_program:
+ cmp qword [rel cli_generic+NEBOC_GEN_PURE_DECL_END_OFFSET],0
+ jne .function_program
  lea rdi,[rel cli_generic_codegen]
  mov ecx,NEBOC_GEN_CODEGEN_QWORDS
  xor eax,eax
@@ -15327,6 +25690,11 @@ cli_generate_assembly:
  mov qword [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_codegen_request+neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_MAX_DEPTH_OFFSET],neboc_bindings_constantes_mutabilidade_e_definite_assignment_CODEGEN_MAX_DEPTH_DEFAULT
  lea rax,[rel cli_loop_stack]
  mov [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_codegen_request+NEBOC_CODEGEN_LOOP_STACK_OFFSET],rax
+ lea rax,[rel cli_defer_stack]
+ mov [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_codegen_request+NEBOC_CODEGEN_DEFER_STACK_OFFSET],rax
+ mov qword [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_codegen_request+NEBOC_CODEGEN_DEFER_CAPACITY_OFFSET],NEBOC_CODEGEN_MAX_DEFERS
+ lea rax,[rel cli_loop_defer_bases]
+ mov [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_codegen_request+NEBOC_CODEGEN_LOOP_DEFER_BASES_OFFSET],rax
  lea rdi,[rel bindings_constantes_mutabilidade_e_definite_assignment_cli_codegen_request]
  call neboc_binding_codegen_emit_start
  test eax,eax
@@ -15558,6 +25926,8 @@ cli_generate_assembly:
  mov [rel cli_function_codegen_request+NEBOC_FUNCTION_CODEGEN_REQUEST_BUFFER_OWNERS_OFFSET],rax
  mov rax,[rel cli_buffer_owner_count]
  mov [rel cli_function_codegen_request+NEBOC_FUNCTION_CODEGEN_REQUEST_BUFFER_OWNER_COUNT_OFFSET],rax
+ mov rax,[rel cli_parser_request+NEBOC_PARSER_STRUCT_OWNER_OFFSET]
+ mov [rel cli_function_codegen_request+NEBOC_FUNCTION_CODEGEN_REQUEST_STRUCT_OWNER_OFFSET],rax
  lea rax,[rel cli_nominal_owners]
  mov [rel cli_function_codegen_request+NEBOC_FUNCTION_CODEGEN_REQUEST_NOMINAL_OWNERS_OFFSET],rax
  mov rax,[rel cli_nominal_owner_count]
@@ -15861,6 +26231,7 @@ cli_toolchain_runner:
  mov r12,rsi
  mov r13,r8
  mov r14,rcx
+ mov r15,rdi
  test r12,r12
  jz .host_error
  test r13,r13
@@ -15905,11 +26276,26 @@ cli_toolchain_runner:
  xor eax,eax
  jmp .done
 .child:
+ ; The compiler may provide an open assembly input descriptor through the
+ ; runner context. Duplicating it only in the child gives NASM a stable input
+ ; name without clobbering a descriptor owned by the invoking process.
+ test r15,r15
+ jz .child_exec
+ mov rdi,[r15]
+ test rdi,rdi
+ js .child_exec
+ mov esi,198
+ mov eax,33
+ syscall
+ test rax,rax
+ js .child_failure
+.child_exec:
  mov rdi,[r12]
  mov rsi,r12
  lea rdx,[rel cli_null_env]
  mov eax,59
  syscall
+.child_failure:
  mov edi,127
  mov eax,60
  syscall
@@ -15939,6 +26325,7 @@ cli_build_artifact:
  push r14
  push r15
  sub rsp,32
+ mov qword [rel cli_toolchain_assembler_fd],-1
  mov r12,[rel cli_state+NEBOC_CLI_STATE_OUTPUT_PTR_OFFSET]
  lea rdi,[rel cli_temp_asm_path]
  mov rsi,r12
@@ -16006,7 +26393,8 @@ cli_build_artifact:
  mov [rel cli_toolchain_request+NEBOC_TOOLCHAIN_REQUEST_RUNNER_OFFSET],rax
  lea rax,[rel cli_toolchain_remover]
  mov [rel cli_toolchain_request+NEBOC_TOOLCHAIN_REQUEST_REMOVER_OFFSET],rax
- mov qword [rel cli_toolchain_request+NEBOC_TOOLCHAIN_REQUEST_CONTEXT_OFFSET],0
+ lea rax,[rel cli_toolchain_assembler_fd]
+ mov [rel cli_toolchain_request+NEBOC_TOOLCHAIN_REQUEST_CONTEXT_OFFSET],rax
  mov qword [rel cli_toolchain_request+NEBOC_TOOLCHAIN_REQUEST_NASM_MAJOR_OFFSET],2
  mov qword [rel cli_toolchain_request+NEBOC_TOOLCHAIN_REQUEST_NASM_MINOR_OFFSET],16
  mov qword [rel cli_toolchain_request+NEBOC_TOOLCHAIN_REQUEST_LD_MAJOR_OFFSET],2
@@ -16032,20 +26420,38 @@ cli_build_artifact:
  test eax,eax
  jnz .io
 
+ ; NASM records its input path as an ELF STT_FILE symbol. Keep the real
+ ; temporary path private and expose its open descriptor under a stable child
+ ; path. This makes emit-object byte deterministic across output locations and
+ ; remains safe when separate compiler processes run concurrently.
+ lea rdi,[rel cli_temp_asm_path]
+ xor esi,esi
+ xor edx,edx
+ mov eax,2
+ syscall
+ test rax,rax
+ js .io
+ mov [rel cli_toolchain_assembler_fd],rax
+
  lea rdi,[rel cli_toolchain]
- lea rsi,[rel cli_temp_asm_path]
- mov rdx,r14
+ lea rsi,[rel canonical_asm_input]
+ mov edx,canonical_asm_input_len
  lea rcx,[rel cli_temp_obj_path]
  mov r8,r15
  lea r9,[rel cli_toolchain_invocation]
  call neboc_toolchain_build_assembler_invocation
  test eax,eax
- jnz .internal
+ jnz .close_assembler_internal
  lea rdi,[rel cli_toolchain]
  lea rsi,[rel cli_toolchain_invocation]
  lea rdx,[rel cli_toolchain_result]
  call neboc_toolchain_execute
- test eax,eax
+ mov rbx,rax
+ mov rdi,[rel cli_toolchain_assembler_fd]
+ mov eax,3
+ syscall
+ mov qword [rel cli_toolchain_assembler_fd],-1
+ test rbx,rbx
  jnz .tool_fail
 
  cmp qword [rel cli_entrypoint_target_kind],NEBOC_TARGET_KIND_LIBRARY
@@ -16080,6 +26486,14 @@ cli_build_artifact:
  add rsp,16
  test eax,eax
  jnz .internal
+ ; The public profiling host authenticates its source before selecting this
+ ; private retain-all reference mode. Ordinary builds always keep native GC.
+ cmp qword [rel cli_retain_runtime_sections],0
+ je .link_sections_ready
+ mov qword [rel cli_toolchain_invocation+NEBOC_TOOLCHAIN_INVOCATION_ARGC_OFFSET],14
+ mov qword [rel cli_toolchain_invocation+NEBOC_TOOLCHAIN_INVOCATION_ARGV_PTRS_OFFSET+14*8],0
+ mov qword [rel cli_toolchain_invocation+NEBOC_TOOLCHAIN_INVOCATION_ARGV_LENS_OFFSET+14*8],0
+.link_sections_ready:
  lea rdi,[rel cli_toolchain]
  lea rsi,[rel cli_toolchain_invocation]
  lea rdx,[rel cli_toolchain_result]
@@ -16119,6 +26533,12 @@ cli_build_artifact:
 .library_io:
  mov eax,NEBOC_CLI_EXIT_IO_ERROR
  jmp .done
+.close_assembler_internal:
+ mov rdi,[rel cli_toolchain_assembler_fd]
+ mov eax,3
+ syscall
+ mov qword [rel cli_toolchain_assembler_fd],-1
+ jmp .internal
 .io:
  mov eax,NEBOC_CLI_EXIT_IO_ERROR
  jmp .done
@@ -16159,10 +26579,64 @@ cli_prepare_canonical_diagnostic:
  jz .lexer
  mov r14d,1
 .lexer:
+ cmp qword [rel cli_lexer_status],NEBOC_STATUS_LIMIT_EXCEEDED
+ je .lexer_limit
  cmp qword [rel cli_lexer_request+NEBOC_LEXER_REQUEST_ERROR_COUNT_OFFSET],0
  jne .lexer_scan_begin
- cmp qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_API_DIAG_UNKNOWN
- je .textual_unknown
+ cmp qword [rel sp_diagnostic],0
+ je .scalar_diagnostic_ready
+ mov r12,[rel sp_diagnostic]
+ mov r13,[rel sp_error_start]
+ mov r14,[rel sp_error_end]
+ jmp .selected
+.scalar_diagnostic_ready:
+ cmp qword [rel cli_binary_foundation+NEBOC_BF_DIAGNOSTIC_OFFSET],0
+ je .binary_foundation_checked
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_FOUND_OFFSET],1
+ jne .binary_foundation
+ cmp qword [rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_DIAGNOSTIC_OFFSET],0
+ jne .binary_foundation
+ mov rax,[rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_HASH_OFFSET]
+ xor rax,[rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_OUTPUT_VALUE_OFFSET]
+ mov rdx,0x5246323034473038
+ cmp rax,rdx
+ jne .binary_foundation
+.binary_foundation_checked:
+ ; The typed Program owner retains the native Text API's public identity.
+ mov rax,[rel cli_function_codegen+FCG_TEXT_ERROR]
+ test rax,rax
+ jz .typed_text_diagnostic_ready
+ mov [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],rax
+.typed_text_diagnostic_ready:
+ mov rax,[rel text_char_unicode_e_bytes_cli_frontend_diagnostic]
+ cmp rax,NEBOC_DIAG_BITWISE_WRONG_RECEIVER
+ je .textual_frontend
+ cmp rax,neboc_text_char_unicode_e_bytes_API_DIAG_ARGUMENTS_NOT_ALLOWED
+ je .textual_frontend
+ cmp rax,NEBOC_API_DIAG_TEXT_RESULT_FALLBACK
+ je .textual_frontend
+ cmp rax,NEBOC_API_DIAG_UNKNOWN
+ je .textual_frontend
+ cmp rax,neboc_text_char_unicode_e_bytes_API_DIAG_ALIAS_FORBIDDEN
+ je .textual_frontend
+ cmp rax,NEBOC_API_DIAG_ARGUMENT_MUST_BE_TEXT
+ je .textual_frontend
+ cmp rax,NEBOC_API_DIAG_TEXT_QUERY_ARITY
+ je .textual_frontend
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_ARITY
+ je .textual_frontend
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_TEXT_ARGUMENT
+ je .textual_frontend
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_INT_ARGUMENT
+ je .textual_frontend
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_BOUNDS
+ je .textual_frontend
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_EMPTY_SEPARATOR
+ je .textual_frontend
+ cmp rax,NEBOC_API_DIAG_TEXT_PARSE_ARITY
+ je .textual_frontend
+ cmp rax,NEBOC_API_DIAG_TEXT_CONVERSION_RECEIVER
+ je .textual_frontend
  cmp qword [rel vetores_matrizes_tensores_e_computacao_cientifica_cli_vertical_request+NEBOC_VECTOR_VERTICAL_FOUND_OFFSET],0
  jne .scientific
  jmp .array
@@ -16178,6 +26652,16 @@ cli_prepare_canonical_diagnostic:
  test qword [rbx+NEBOC_TOKEN_FLAGS_OFFSET],NEBOC_TOKEN_FLAG_ERROR
  jz .lexer_next
  mov rax,[rbx+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ cmp rax,NEBOC_UNICODE_DIAG_CONFUSABLE
+ je .lexer_unicode_confusable
+ cmp rax,NEBOC_UNICODE_DIAG_BIDI_CONTROL
+ je .lexer_unicode_bidi
+ cmp rax,NEBOC_UNICODE_DIAG_INVISIBLE
+ je .lexer_unicode_invisible
+ cmp rax,NEBOC_UNICODE_DIAG_COMBINING
+ je .lexer_unicode_combining
+ cmp rax,NEBOC_UNICODE_DIAG_MALFORMED_UTF8
+ je .lexer_unicode_malformed
  cmp rax,NEBOC_DIAG_LEX_INVALID_UTF8
  je .lexer_owned
  cmp rax,NEBOC_DIAG_LEX_INVALID_CHARACTER
@@ -16186,8 +26670,29 @@ cli_prepare_canonical_diagnostic:
  jb .lexer_default
  cmp rax,NEBOC_DIAG_LEX_UNSUPPORTED_BLOCK_COMMENT
  jbe .lexer_owned
+ cmp rax,NEBOC_DIAG_LEX_RESERVED_SYMBOL
+ je .lexer_owned
+ cmp rax,NEBOC_DIAG_LEX_REJECTED_FORM
+ je .lexer_owned
+ cmp rax,NEBOC_DIAG_LEX_BLOCK_COMMENT_DEPTH
+ je .lexer_owned
 .lexer_default:
  mov eax,NEBOC_DIAG_LEX_INVALID_CHARACTER
+ jmp .lexer_owned
+.lexer_unicode_confusable:
+ mov eax,NEBOC_DIAG_UNICODE_CONFUSABLE
+ jmp .lexer_owned
+.lexer_unicode_bidi:
+ mov eax,NEBOC_DIAG_UNICODE_BIDI_CONTROL
+ jmp .lexer_owned
+.lexer_unicode_invisible:
+ mov eax,NEBOC_DIAG_UNICODE_INVISIBLE_SEPARATOR
+ jmp .lexer_owned
+.lexer_unicode_combining:
+ mov eax,NEBOC_DIAG_UNICODE_COMBINING_MARK
+ jmp .lexer_owned
+.lexer_unicode_malformed:
+ mov eax,NEBOC_DIAG_UNICODE_MALFORMED_UTF8
 .lexer_owned:
  mov r12,rax
  mov r13,[rbx+NEBOC_TOKEN_START_OFFSET]
@@ -16197,8 +26702,102 @@ cli_prepare_canonical_diagnostic:
  inc r15
  jmp .lexer_scan
 
-.textual_unknown:
+.lexer_limit:
+ mov r12d,NEBOC_DIAG_LIMIT_EXCEEDED
+ mov rax,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ test rax,rax
+ jz .selected
+ dec rax
+ imul rax,NEBOC_TOKEN_SIZE
+ lea rdx,[rel cli_tokens]
+ mov r13,[rdx+rax+NEBOC_TOKEN_END_OFFSET]
+ mov r14,r13
+ cmp r14,[rel cli_state+NEBOC_CLI_STATE_SOURCE_LENGTH_OFFSET]
+ jae .selected
+ inc r14
+ jmp .selected
+
+.binary_foundation:
+ mov rax,[rel cli_binary_foundation+NEBOC_BF_DIAGNOSTIC_OFFSET]
+ cmp rax,NEBOC_BF_DIAG_SYNTAX
+ je .binary_parse
+ cmp rax,NEBOC_BF_DIAG_ARITY
+ je .binary_arity
+ cmp rax,NEBOC_BF_DIAG_BOUNDS
+ je .binary_bounds
+ cmp rax,NEBOC_BF_DIAG_CAPACITY
+ je .binary_limit
+ cmp rax,NEBOC_BF_DIAG_OWNERSHIP
+ je .binary_ownership
+ mov r12d,NEBOC_DIAG_CALL_ARGUMENT_TYPE
+ jmp .binary_span
+.binary_parse:
+ mov r12d,NEBOC_DIAG_PARSE_UNEXPECTED_TOKEN
+ jmp .binary_span
+.binary_arity:
+ mov r12d,NEBOC_DIAG_CALL_ARITY
+ jmp .binary_span
+.binary_bounds:
+ mov r12d,NEBOC_DIAG_TUPLE_INDEX_OUT_OF_RANGE
+ jmp .binary_span
+.binary_limit:
+ mov r12d,NEBOC_DIAG_LIMIT_EXCEEDED
+ jmp .binary_span
+.binary_ownership:
+ mov r12d,neboc_memoria_ownership_lifetimes_e_recursos_DIAG_SECURITY_diagnostics
+.binary_span:
+ mov rdi,[rel cli_binary_foundation+NEBOC_BF_ERROR_TOKEN_OFFSET]
+ call cli_diag_span_from_token
+ test ecx,ecx
+ jz .selected
+ mov r13,rax
+ mov r14,rdx
+ jmp .selected
+
+.textual_frontend:
+ mov rax,[rel text_char_unicode_e_bytes_cli_frontend_diagnostic]
  mov r12d,NEBOC_DIAG_BEHAVIOR_UNSUPPORTED
+ cmp rax,NEBOC_DIAG_BITWISE_WRONG_RECEIVER
+ je .textual_argument
+ cmp rax,neboc_text_char_unicode_e_bytes_API_DIAG_ARGUMENTS_NOT_ALLOWED
+ je .textual_arity
+ cmp rax,NEBOC_API_DIAG_TEXT_RESULT_FALLBACK
+ je .textual_argument
+ cmp rax,NEBOC_API_DIAG_TEXT_QUERY_ARITY
+ je .textual_arity
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_ARITY
+ je .textual_arity
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_TEXT_ARGUMENT
+ je .textual_argument
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_INT_ARGUMENT
+ je .textual_argument
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_BOUNDS
+ je .textual_bounds
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_EMPTY_SEPARATOR
+ je .textual_argument
+ cmp rax,NEBOC_API_DIAG_TEXT_PARSE_ARITY
+ je .textual_arity
+ cmp rax,NEBOC_API_DIAG_TEXT_CONVERSION_RECEIVER
+ je .textual_argument
+ cmp rax,NEBOC_API_DIAG_ARGUMENT_MUST_BE_TEXT
+ jne .textual_span
+ mov r12d,NEBOC_DIAG_CALL_ARGUMENT_TYPE
+ jmp .textual_span
+.textual_arity:
+ mov r12d,NEBOC_DIAG_CALL_ARITY
+ jmp .textual_span
+.textual_argument:
+ mov r12d,NEBOC_DIAG_CALL_ARGUMENT_TYPE
+ jmp .textual_span
+.textual_bounds:
+ mov r12d,NEBOC_DIAG_TUPLE_INDEX_OUT_OF_RANGE
+.textual_span:
+ cmp qword [rel cli_function_codegen+FCG_TEXT_ERROR],0
+ je .textual_token_span
+ mov r13,[rel cli_function_codegen+FCG_TEXT_ERROR_START]
+ mov r14,[rel cli_function_codegen+FCG_TEXT_ERROR_END]
+ jmp .selected
+.textual_token_span:
  mov rdi,[rel cli_textual_frontend_error_token]
  call cli_diag_span_from_token
  test ecx,ecx
@@ -16209,6 +26808,12 @@ cli_prepare_canonical_diagnostic:
 
 .scientific:
  mov rax,[rel vetores_matrizes_tensores_e_computacao_cientifica_cli_vertical_request+NEBOC_VECTOR_VERTICAL_DIAGNOSTIC_OFFSET]
+ cmp rax,1
+ je .scientific_g135_shape
+ cmp rax,2
+ je .scientific_g135_type
+ cmp rax,10
+ je .scientific_g135_overflow
  cmp rax,11
  je .scientific_dtype
  cmp rax,12
@@ -16230,7 +26835,39 @@ cli_prepare_canonical_diagnostic:
  cmp rax,22
  je .scientific_tensor_deferred
  cmp rax,23
- jne .array
+ je .scientific_tensor_deferred
+ cmp rax,24
+ je .scientific_g135_syntax
+ cmp rax,25
+ je .scientific_g135_shape
+ cmp rax,26
+ je .scientific_g135_bounds
+ cmp rax,27
+ je .scientific_g135_singular
+ cmp rax,28
+ je .scientific_g135_domain
+ jmp .array
+.scientific_g135_syntax:
+ mov r12d,NEBOC_DIAG_PARSE_UNEXPECTED_TOKEN
+ jmp .scientific_tensor_span
+.scientific_g135_shape:
+ mov r12d,NEBOC_DIAG_TYPE_MISMATCH
+ jmp .scientific_tensor_span
+.scientific_g135_type:
+ mov r12d,NEBOC_DIAG_TYPE_MISMATCH
+ jmp .scientific_tensor_span
+.scientific_g135_bounds:
+ mov r12d,NEBOC_DIAG_TUPLE_INDEX_OUT_OF_RANGE
+ jmp .scientific_tensor_span
+.scientific_g135_singular:
+ mov r12d,NEBOC_DIAG_TYPE_DIVISION_BY_ZERO
+ jmp .scientific_tensor_span
+.scientific_g135_overflow:
+ mov r12d,NEBOC_DIAG_TYPE_CONSTANT_OVERFLOW
+ jmp .scientific_tensor_span
+.scientific_g135_domain:
+ mov r12d,NEBOC_DIAG_TYPE_UNSUPPORTED_OPERATOR
+ jmp .scientific_tensor_span
 .scientific_tensor_deferred:
  mov r12d,NEBOC_DIAG_BEHAVIOR_UNSUPPORTED
  jmp .scientific_tensor_span
@@ -16273,6 +26910,52 @@ cli_prepare_canonical_diagnostic:
  jmp .selected
 
 .array:
+ mov rax,[rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_DIAGNOSTIC_OFFSET]
+ cmp rax,20
+ jb .array_range_owner
+ cmp rax,27
+ ja .array_range_owner
+ mov r12d,NEBOC_DIAG_PARSE_UNEXPECTED_TOKEN
+ cmp rax,21
+ jne .collection_bounds
+ mov r12d,NEBOC_DIAG_TYPE_MISMATCH
+ jmp .collection_span
+.collection_bounds:
+ cmp rax,22
+ jne .collection_capacity
+ mov r12d,NEBOC_DIAG_TUPLE_INDEX_OUT_OF_RANGE
+ jmp .collection_span
+.collection_capacity:
+ cmp rax,23
+ jne .collection_method
+ mov r12d,NEBOC_DIAG_LIMIT_EXCEEDED
+ jmp .collection_span
+.collection_method:
+ cmp rax,24
+ jne .collection_callback
+ mov r12d,NEBOC_DIAG_BEHAVIOR_UNSUPPORTED
+ jmp .collection_span
+.collection_callback:
+ cmp rax,25
+ jne .collection_limit
+ mov r12d,NEBOC_DIAG_CALL_ARGUMENT_TYPE
+ jmp .collection_span
+.collection_limit:
+ cmp rax,26
+ jne .collection_borrow
+ mov r12d,NEBOC_DIAG_LIMIT_EXCEEDED
+ jmp .collection_span
+.collection_borrow:
+ mov r12d,NEBOC_DIAG_BEHAVIOR_UNSUPPORTED
+ jmp .collection_span
+.collection_span:
+ xor r13d,r13d
+ mov r14,[rel cli_state+NEBOC_CLI_STATE_SOURCE_LENGTH_OFFSET]
+ test r14,r14
+ jz .selected
+ mov r14d,1
+ jmp .selected
+.array_range_owner:
  mov rax,[rel cli_array_range+NEBOC_AR_DIAGNOSTIC_OFFSET]
  cmp rax,NEBOC_PARSE_DIAG_CONTROL_HEADER_PARENS_REQUIRED
  je .array_control_pair
@@ -16284,7 +26967,37 @@ cli_prepare_canonical_diagnostic:
  je .array_records
  cmp rax,NEBOC_AR_DIAG_VALUE_CAPACITY
  je .array_values
- jmp .tuple
+ cmp rax,NEBOC_AR_DIAG_BOUNDS
+ je .array_bounds
+ cmp rax,NEBOC_AR_DIAG_RANGE
+ je .array_range_error
+ cmp rax,NEBOC_AR_DIAG_ARITY
+ je .array_arity
+ cmp rax,NEBOC_AR_DIAG_TYPE
+ je .array_type
+ cmp rax,NEBOC_AR_DIAG_DYNAMIC_INDEX
+ je .array_type
+ cmp rax,NEBOC_AR_DIAG_SYNTAX
+ je .array_syntax
+ cmp rax,NEBOC_AR_DIAG_SLICE_STALE
+ je .array_ownership
+ cmp rax,NEBOC_AR_DIAG_SLICE_MUTATION_CONFLICT
+ je .array_ownership
+ cmp rax,NEBOC_AR_DIAG_SLICE_ESCAPE
+ je .array_ownership
+ cmp rax,NEBOC_AR_DIAG_SLICE_UNAVAILABLE
+ je .array_ownership
+ cmp rax,NEBOC_AR_DIAG_FOR_TYPE
+ je .array_type
+ cmp rax,NEBOC_AR_DIAG_FOR_MUTATION
+ je .array_ownership
+ cmp rax,NEBOC_AR_DIAG_FOR_OVERFLOW
+ je .array_range_error
+ cmp rax,NEBOC_AR_DIAG_FOR_SYNTAX
+ je .array_syntax
+ cmp rax,NEBOC_AR_DIAG_FOR_NESTING
+ je .array_records
+ jmp .option_result
 .array_control_pair:
  mov r12d,NEBOC_DIAG_CONTROL_HEADER_PARENS_REQUIRED
  jmp .array_span
@@ -16299,6 +27012,24 @@ cli_prepare_canonical_diagnostic:
  jmp .array_span
 .array_values:
  mov r12d,NEBOC_DIAG_COLLECTION_SCALAR_POOL_CAPACITY
+ jmp .array_span
+.array_bounds:
+ mov r12d,NEBOC_DIAG_TUPLE_INDEX_OUT_OF_RANGE
+ jmp .array_span
+.array_range_error:
+ mov r12d,NEBOC_DIAG_LIMIT_EXCEEDED
+ jmp .array_span
+.array_arity:
+ mov r12d,NEBOC_DIAG_CALL_ARITY
+ jmp .array_span
+.array_type:
+ mov r12d,NEBOC_DIAG_TYPE_MISMATCH
+ jmp .array_span
+.array_syntax:
+ mov r12d,NEBOC_DIAG_PARSE_UNEXPECTED_TOKEN
+ jmp .array_span
+.array_ownership:
+ mov r12d,NEBOC_DIAG_TYPE_MISMATCH
 .array_span:
  mov rdi,[rel cli_array_range+NEBOC_AR_ERROR_TOKEN_OFFSET]
  call cli_diag_span_from_token
@@ -16308,9 +27039,103 @@ cli_prepare_canonical_diagnostic:
  mov r14,rdx
  jmp .selected
 
+.option_result:
+ mov rax,[rel cli_option+NEBOC_OPTION_DIAGNOSTIC_OFFSET]
+ test rax,rax
+ jnz .option_diagnostic
+ mov rax,[rel cli_result+neboc_bindings_constantes_mutabilidade_e_definite_assignment_RESULT_DIAGNOSTIC_OFFSET]
+ test rax,rax
+ jz .tuple
+ cmp rax,NEBOC_RESULT_DIAG_LAYOUT
+ je .result_limit
+ cmp rax,NEBOC_RESULT_DIAG_VARIANT
+ je .result_parse
+ cmp rax,NEBOC_RESULT_DIAG_SYNTAX
+ je .result_parse
+ cmp rax,NEBOC_RESULT_DIAG_PROPAGATION_SYNTAX
+ je .result_parse
+ cmp rax,NEBOC_RESULT_DIAG_LAZY
+ je .result_behavior
+ cmp rax,NEBOC_RESULT_DIAG_WRONG_SIDE
+ je .result_behavior
+ cmp rax,NEBOC_RESULT_DIAG_NON_EXHAUSTIVE
+ je .result_behavior
+ cmp rax,NEBOC_RESULT_DIAG_UNREACHABLE_ARM
+ je .result_behavior
+ cmp rax,NEBOC_RESULT_DIAG_DROPPED_CONTEXT
+ je .result_behavior
+ cmp rax,NEBOC_RESULT_DIAG_DOUBLE_CLEANUP
+ je .result_behavior
+ mov r12d,NEBOC_DIAG_TYPE_MISMATCH
+ jmp .result_span
+.result_limit:
+ mov r12d,NEBOC_DIAG_LIMIT_EXCEEDED
+ jmp .result_span
+.result_parse:
+ mov r12d,NEBOC_DIAG_PARSE_UNEXPECTED_TOKEN
+ jmp .result_span
+.result_behavior:
+ mov r12d,NEBOC_DIAG_BEHAVIOR_UNSUPPORTED
+.result_span:
+ mov rdi,[rel cli_result+NEBOC_RESULT_ERROR_TOKEN_OFFSET]
+ call cli_diag_span_from_token
+ test ecx,ecx
+ jz .selected
+ mov r13,rax
+ mov r14,rdx
+ jmp .selected
+.option_diagnostic:
+ cmp rax,NEBOC_OPTION_DIAG_LAYOUT
+ je .option_limit
+ cmp rax,NEBOC_OPTION_DIAG_VARIANT
+ je .option_parse
+ cmp rax,NEBOC_OPTION_DIAG_CANONICAL
+ je .option_parse
+ cmp rax,NEBOC_OPTION_DIAG_SYNTAX
+ je .option_parse
+ cmp rax,NEBOC_OPTION_DIAG_LAZY
+ je .option_behavior
+ cmp rax,NEBOC_OPTION_DIAG_UNSAFE_GET
+ je .option_behavior
+ mov r12d,NEBOC_DIAG_TYPE_MISMATCH
+ jmp .option_span
+.option_limit:
+ mov r12d,NEBOC_DIAG_LIMIT_EXCEEDED
+ jmp .option_span
+.option_parse:
+ mov r12d,NEBOC_DIAG_PARSE_UNEXPECTED_TOKEN
+ jmp .option_span
+.option_behavior:
+ mov r12d,NEBOC_DIAG_BEHAVIOR_UNSUPPORTED
+.option_span:
+ mov rdi,[rel cli_option+NEBOC_OPTION_ERROR_TOKEN_OFFSET]
+ call cli_diag_span_from_token
+ test ecx,ecx
+ jz .selected
+ mov r13,rax
+ mov r14,rdx
+ jmp .selected
+
 .tuple:
+ ; Preserve the nominal semantic owner's typed rejection and causal span.
+ mov rax,[rel cli_nominal+NEBOC_NOM_DIAGNOSTIC_OFFSET]
+ cmp rax,NEBOC_NOM_DIAG_PAYLOAD
+ je .nominal_payload_type
+ cmp rax,NEBOC_NOM_DIAG_IDENTITY
+ je .nominal_payload_type
+ jmp .tuple_owner
+.nominal_payload_type:
+ mov r12d,NEBOC_DIAG_TYPE_MISMATCH
+ mov rdi,[rel cli_nominal+NEBOC_NOM_ERROR_TOKEN_OFFSET]
+ call cli_diag_span_from_token
+ test ecx,ecx
+ jz .selected
+ mov r13,rax
+ mov r14,rdx
+ jmp .selected
+.tuple_owner:
  cmp qword [rel cli_struct_tuple+NEBOC_ST_FOUND_OFFSET],0
- je .binding
+ je .generic_current
  mov rax,[rel cli_struct_tuple+NEBOC_ST_DIAGNOSTIC_OFFSET]
  cmp rax,NEBOC_DIAG_WRONG_ARITY
  je .tuple_arity
@@ -16321,8 +27146,37 @@ cli_prepare_canonical_diagnostic:
  cmp rax,NEBOC_DIAG_TUPLE_TYPE
  je .tuple_type
  cmp rax,NEBOC_DIAG_TUPLE_DUPLICATE_BINDING
- jne .binding
+ je .tuple_duplicate_binding
+ cmp rax,neboc_option_result_null_externo_e_erros_tipados_DIAG_DUPLICATE_FIELD
+ je .tuple_duplicate
+ cmp rax,neboc_option_result_null_externo_e_erros_tipados_DIAG_TYPE_MISMATCH
+ je .tuple_mismatch
+ cmp rax,neboc_option_result_null_externo_e_erros_tipados_DIAG_UNKNOWN_FIELD
+ je .tuple_unknown
+ cmp rax,neboc_option_result_null_externo_e_erros_tipados_DIAG_SYNTAX
+ je .tuple_syntax
+ cmp rax,NEBOC_DIAG_LAYOUT_OVERFLOW
+ je .tuple_limit
+ cmp rax,NEBOC_DIAG_RECURSIVE_LAYOUT
+ je .tuple_mismatch
+ jmp .generic_current
+.tuple_duplicate_binding:
  mov r12d,NEBOC_DIAG_TUPLE_DUPLICATE_BINDING_PUBLIC
+ jmp .tuple_span
+.tuple_duplicate:
+ mov r12d,NEBOC_DIAG_NAME_DUPLICATE
+ jmp .tuple_span
+.tuple_mismatch:
+ mov r12d,NEBOC_DIAG_TYPE_MISMATCH
+ jmp .tuple_span
+.tuple_unknown:
+ mov r12d,NEBOC_DIAG_NAME_UNDEFINED
+ jmp .tuple_span
+.tuple_syntax:
+ mov r12d,NEBOC_DIAG_PARSE_UNEXPECTED_TOKEN
+ jmp .tuple_span
+.tuple_limit:
+ mov r12d,NEBOC_DIAG_LIMIT_EXCEEDED
  jmp .tuple_span
 .tuple_type:
  mov r12d,NEBOC_DIAG_TUPLE_INVALID_RECEIVER
@@ -16344,6 +27198,47 @@ cli_prepare_canonical_diagnostic:
  mov r14,rdx
  jmp .selected
 
+.generic_current:
+ ; The binding owner is more specific than the broad generic probe when both
+ ; reject the same malformed statement (for example an immutable assignment).
+ ; Preserve the first causal semantic owner in structured diagnostics.
+ cmp qword [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_vertical_request+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],0
+ jne .binding
+ mov rax,[rel cli_generic+NEBOC_GEN_DIAGNOSTIC_OFFSET]
+ test rax,rax
+ jz .binding
+ cmp rax,NEBOC_GEN_DIAG_CONSTRAINT
+ je .generic_type
+ cmp rax,NEBOC_GEN_DIAG_TYPE
+ je .generic_type
+ cmp rax,NEBOC_GEN_DIAG_BUDGET
+ je .generic_limit
+ cmp rax,NEBOC_GEN_DIAG_COLLISION
+ je .generic_duplicate
+ cmp rax,NEBOC_GEN_DIAG_RECURSIVE
+ je .generic_type
+ cmp rax,NEBOC_GEN_DIAG_SYNTAX
+ je .generic_syntax
+ jmp .binding
+.generic_type:
+ mov r12d,NEBOC_DIAG_TYPE_MISMATCH
+ jmp .generic_span
+.generic_limit:
+ mov r12d,NEBOC_DIAG_LIMIT_EXCEEDED
+ jmp .generic_span
+.generic_duplicate:
+ mov r12d,NEBOC_DIAG_NAME_DUPLICATE
+ jmp .generic_span
+.generic_syntax:
+ mov r12d,NEBOC_DIAG_PARSE_UNEXPECTED_TOKEN
+.generic_span:
+ xor r13d,r13d
+ mov r14,[rel cli_state+NEBOC_CLI_STATE_SOURCE_LENGTH_OFFSET]
+ test r14,r14
+ jz .selected
+ mov r14d,1
+ jmp .selected
+
 .binding:
  mov rax,[rel bindings_constantes_mutabilidade_e_definite_assignment_cli_vertical_request+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET]
  test rax,rax
@@ -16352,6 +27247,8 @@ cli_prepare_canonical_diagnostic:
  je .binding_break
  cmp rax,NEBOC_DIAG_CONTINUE_OUTSIDE_LOOP
  je .binding_continue
+ cmp rax,NEBOC_DIAG_IF_CONDITION_TYPE
+ je .binding_if_condition
  cmp rax,NEBOC_DIAG_WHILE_CONDITION_TYPE
  je .binding_while_condition
  cmp rax,NEBOC_BIND_DIAG_UNDEFINED_NAME
@@ -16366,6 +27263,12 @@ cli_prepare_canonical_diagnostic:
  je .binding_shadow
  cmp rax,NEBOC_BIND_DIAG_TYPE_MISMATCH
  je .binding_type
+ cmp rax,NEBOC_DIAG_ASSIGNMENT_IMMUTABLE
+ je .binding_assignment_type
+ cmp rax,NEBOC_DIAG_ASSIGNMENT_EXPRESSION
+ je .binding_assignment_type
+ cmp rax,NEBOC_DIAG_COMPOUND_UNSUPPORTED
+ je .binding_assignment_type
  cmp rax,NEBOC_DIAG_ASSIGNMENT_TYPE_MISMATCH
  je .binding_assignment_type
  jmp .mutable
@@ -16374,6 +27277,9 @@ cli_prepare_canonical_diagnostic:
  jmp .binding_span
 .binding_continue:
  mov r12d,NEBOC_DIAG_LOOP_CONTINUE_OUTSIDE
+ jmp .binding_span
+.binding_if_condition:
+ mov r12d,NEBOC_DIAG_CONTROL_CONDITION_TYPE
  jmp .binding_span
 .binding_while_condition:
  mov r12d,NEBOC_DIAG_WHILE_CONDITION_TYPE_PUBLIC
@@ -16418,6 +27324,12 @@ cli_prepare_canonical_diagnostic:
 
 .mutable:
  mov rax,[rel literais_numericos_bases_e_representacao_cli_parse_request+neboc_literais_numericos_bases_e_representacao_PARSE_DIAGNOSTIC_OFFSET]
+ cmp rax,NEBOC_DIAG_ASSIGNMENT_IMMUTABLE
+ je .cli_semantic_assignment_type
+ cmp rax,NEBOC_DIAG_ASSIGNMENT_EXPRESSION
+ je .cli_semantic_assignment_type
+ cmp rax,NEBOC_DIAG_COMPOUND_UNSUPPORTED
+ je .cli_semantic_assignment_type
  cmp rax,NEBOC_DIAG_BREAK_OUTSIDE_LOOP
  je .mutable_break
  cmp rax,NEBOC_DIAG_CONTINUE_OUTSIDE_LOOP
@@ -16455,19 +27367,56 @@ cli_prepare_canonical_diagnostic:
 ; function entry.
 .cli_semantic_module:
  mov rax,[rel cli_module_request+NEBOC_MODULE_DIAGNOSTIC_OFFSET]
+ cmp rax,NEBOC_MODULE_DIAG_INTERFACE
+ je .cli_semantic_module_type
+ cmp rax,NEBOC_MODULE_DIAG_REEXPORT_VISIBILITY
+ je .cli_semantic_module_type
+ cmp rax,NEBOC_MODULE_DIAG_IMPORT_CYCLE
+ je .cli_semantic_module_cycle
+ cmp rax,neboc_seguranca_numerica_conversoes_e_overflow_MODULE_DIAG_CAPACITY
+ je .cli_semantic_module_limit
+ cmp rax,NEBOC_MODULE_DIAG_SYNTAX
+ je .cli_semantic_module_parse
+ cmp rax,neboc_seguranca_numerica_conversoes_e_overflow_MODULE_DIAG_MISSING_UNIT
+ je .cli_semantic_module_type
+ cmp rax,NEBOC_MODULE_DIAG_IDENTITY_COLLISION
+ je .cli_semantic_module_type
  cmp rax,NEBOC_MODULE_DIAG_PRIVATE_ACCESS
- je .cli_semantic_module_owned
+ je .cli_semantic_module_type
  cmp rax,NEBOC_MODULE_DIAG_MISSING_EXPORT
- jne .cli_semantic_ownership
-.cli_semantic_module_owned:
- mov r12d,NEBOC_DIAG_TYPE_MISMATCH
+ je .cli_semantic_module_type
+ jmp .cli_semantic_ownership
+.cli_semantic_module_type:
+ mov r12d,neboc_imports_modulos_namespaces_e_api_publica_DIAG_TYPE_diagnostics
+ jmp .cli_semantic_whole_source_span
+.cli_semantic_module_parse:
+ mov r12d,neboc_imports_modulos_namespaces_e_api_publica_DIAG_PARSE_diagnostics
+ jmp .cli_semantic_whole_source_span
+.cli_semantic_module_limit:
+ mov r12d,NEBOC_DIAG_LIMIT_EXCEEDED
+ jmp .cli_semantic_whole_source_span
+.cli_semantic_module_cycle:
+ mov r12d,neboc_imports_modulos_namespaces_e_api_publica_DIAG_SECURITY_diagnostics
  jmp .cli_semantic_whole_source_span
 
 .cli_semantic_ownership:
  mov rax,[rel text_char_unicode_e_bytes_cli_semantic+neboc_text_char_unicode_e_bytes_SEM_DIAGNOSTIC_OFFSET]
- cmp rax,NEBOC_DIAG_USE_AFTER_MOVE
+ test rax,rax
+ jz .cli_semantic_policy
+ cmp rax,NEBOC_DIAG_INVALID_PROCESS_RETURN
+ je .cli_semantic_ownership_selected
+ cmp rax,NEBOC_DIAG_ARENA_EXHAUSTED
+ jbe .cli_semantic_ownership_selected
+ cmp rax,NEBOC_DIAG_RESOURCE_LEAK_PATH
+ je .cli_semantic_ownership_selected
+ cmp rax,neboc_text_char_unicode_e_bytes_DIAG_INTERNAL
  jne .cli_semantic_policy
+.cli_semantic_ownership_selected:
  mov r12d,NEBOC_DIAG_TYPE_MISMATCH
+ cmp rax,NEBOC_DIAG_INVALID_PROCESS_RETURN
+ jne .cli_semantic_ownership_span
+ mov r12d,NEBOC_DIAG_ENTRYPOINT_INVALID_SIGNATURE
+.cli_semantic_ownership_span:
  mov r13,[rel text_char_unicode_e_bytes_cli_semantic+neboc_text_char_unicode_e_bytes_SEM_ERROR_START_OFFSET_semantic_memory_native_vertical]
  mov r14,[rel text_char_unicode_e_bytes_cli_semantic+neboc_text_char_unicode_e_bytes_SEM_ERROR_END_OFFSET_semantic_memory_native_vertical]
  cmp r14,r13
@@ -16497,9 +27446,66 @@ cli_prepare_canonical_diagnostic:
  jmp .cli_semantic_whole_source_span
 
 .cli_semantic_parameters:
- cmp qword [rel cli_parameters+NEBOC_PARAM_DIAGNOSTIC_OFFSET],NEBOC_DIAG_MISSING_ARGUMENT
- jne .cli_semantic_result
+ mov rax,[rel cli_parameters+NEBOC_PARAM_DIAGNOSTIC_OFFSET]
+ cmp rax,NEBOC_DIAG_SIGNATURE
+ je .cli_semantic_parameter_parse
+ cmp rax,NEBOC_DIAG_DEFAULT
+ je .cli_semantic_parameter_parse
+ cmp rax,neboc_seguranca_numerica_conversoes_e_overflow_DIAG_SYNTAX
+ je .cli_semantic_parameter_parse
+ cmp rax,NEBOC_DIAG_DUPLICATE_PARAMETER
+ je .cli_semantic_parameter_duplicate
+ cmp rax,NEBOC_DIAG_MISSING_ARGUMENT
+ je .cli_semantic_parameter_arity
+ cmp rax,NEBOC_DIAG_EXTRA_ARGUMENT
+ je .cli_semantic_parameter_arity
+ cmp rax,NEBOC_DIAG_ABI_BOUND
+ je .cli_semantic_parameter_limit
+ cmp rax,NEBOC_DIAG_DUPLICATE_NAMED
+ je .cli_semantic_parameter_arity
+ cmp rax,NEBOC_DIAG_AMBIGUOUS_OVERLOAD
+ je .cli_semantic_parameter_type
+ cmp rax,NEBOC_DIAG_DUPLICATE_SIGNATURE
+ je .cli_semantic_parameter_type
+ cmp rax,NEBOC_DIAG_MANGLE_COLLISION
+ je .cli_semantic_parameter_type
+ cmp rax,neboc_seguranca_numerica_conversoes_e_overflow_DIAG_TYPE_MISMATCH
+ je .cli_semantic_parameter_argument
+ cmp rax,NEBOC_DIAG_CALLABLE_SIGNATURE
+ je .cli_semantic_parameter_argument
+ cmp rax,NEBOC_DIAG_CALLABLE_CAPACITY
+ je .cli_semantic_parameter_limit
+ cmp rax,NEBOC_DIAG_RETURN
+ je .cli_semantic_parameter_return
+ cmp rax,NEBOC_DIAG_CLOSURE_BORROW_ESCAPE
+ je .cli_semantic_parameter_ownership
+ cmp rax,NEBOC_DIAG_CALLABLE_DOUBLE_DROP
+ je .cli_semantic_parameter_ownership
+ jmp .cli_semantic_result
+.cli_semantic_parameter_parse:
+ mov r12d,NEBOC_DIAG_PARSE_UNEXPECTED_TOKEN
+ jmp .cli_semantic_parameter_span
+.cli_semantic_parameter_duplicate:
+ mov r12d,NEBOC_DIAG_NAME_DUPLICATE
+ jmp .cli_semantic_parameter_span
+.cli_semantic_parameter_arity:
+ mov r12d,NEBOC_DIAG_CALL_ARITY
+ jmp .cli_semantic_parameter_span
+.cli_semantic_parameter_type:
  mov r12d,NEBOC_DIAG_TYPE_MISMATCH
+ jmp .cli_semantic_parameter_span
+.cli_semantic_parameter_argument:
+ mov r12d,NEBOC_DIAG_CALL_ARGUMENT_TYPE
+ jmp .cli_semantic_parameter_span
+.cli_semantic_parameter_limit:
+ mov r12d,NEBOC_DIAG_LIMIT_EXCEEDED
+ jmp .cli_semantic_parameter_span
+.cli_semantic_parameter_return:
+ mov r12d,NEBOC_DIAG_TYPE_INCONSISTENT_RETURN
+ jmp .cli_semantic_parameter_span
+.cli_semantic_parameter_ownership:
+ mov r12d,neboc_memoria_ownership_lifetimes_e_recursos_DIAG_SECURITY_diagnostics
+.cli_semantic_parameter_span:
  mov rdi,[rel cli_parameters+NEBOC_PARAM_ERROR_TOKEN_OFFSET]
  call cli_diag_span_from_token
  test ecx,ecx
@@ -16558,7 +27564,25 @@ cli_prepare_canonical_diagnostic:
  jmp .selected
 
 .function:
+ cmp qword [rel cli_function_codegen+FCG_VECTOR_ERROR],0
+ jne .vector_type_error
+ cmp qword [rel cli_function_codegen+FCG_FORMAT_ERROR],0
+ jne .format_error
+ cmp qword [rel cli_function_codegen+FCG_ASSOC_ERROR],0
+ jne .associative_error
  mov rax,[rel cli_function_codegen+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET]
+ cmp rax,NEBOC_FUNCTION_CODEGEN_ERROR_CALL_ARITY
+ je .function_arity
+ cmp rax,NEBOC_FUNCTION_CODEGEN_ERROR_CONSTANT_OVERFLOW
+ je .function_constant_overflow
+ cmp rax,NEBOC_FUNCTION_CODEGEN_ERROR_CONST_WRITE
+ je .function_const_write
+ cmp rax,NEBOC_FUNCTION_CODEGEN_ERROR_DUPLICATE_BINDING
+ je .function_binding_duplicate
+ cmp rax,NEBOC_FUNCTION_CODEGEN_ERROR_TYPE_ASSERTION
+ je .function_assignment_type
+ cmp rax,NEBOC_FUNCTION_CODEGEN_ERROR_MULTIPLE_RETURN
+ je .function_unreachable
  cmp rax,NEBOC_FUNCTION_CODEGEN_ERROR_PARAMETER_LIMIT
  je .function_call_limit
  cmp rax,NEBOC_FUNCTION_CODEGEN_ERROR_CALL_LIMIT
@@ -16626,6 +27650,26 @@ cli_prepare_canonical_diagnostic:
  cmp rax,NEBOC_FUNCTION_CODEGEN_ERROR_ENTRYPOINT_STATUS
  je .function_entrypoint_status
  jmp .parser
+.vector_type_error:
+ mov r12d,NEBOC_DIAG_PUBLIC_USE_AFTER_MOVE
+ cmp qword [rel cli_function_codegen+FCG_VECTOR_ERROR],3
+ je .vector_error_span
+ mov r12d,NEBOC_DIAG_PUBLIC_BORROW_CONFLICT
+ cmp qword [rel cli_function_codegen+FCG_VECTOR_ERROR],4
+ je .vector_error_span
+ mov r12d,NEBOC_DIAG_TYPE_MISMATCH
+ cmp qword [rel cli_function_codegen+FCG_VECTOR_ERROR],2
+ jne .vector_error_span
+ mov r12d,NEBOC_DIAG_LIMIT_EXCEEDED
+.vector_error_span:
+ mov r13,[rel cli_function_codegen+FCG_VECTOR_ERROR_START]
+ mov r14,[rel cli_function_codegen+FCG_VECTOR_ERROR_END]
+ jmp .selected
+.format_error:
+ mov r12d,NEBOC_DIAG_CALL_ARGUMENT_TYPE
+ mov r13,[rel cli_function_codegen+FCG_FORMAT_ERROR_START]
+ mov r14,[rel cli_function_codegen+FCG_FORMAT_ERROR_END]
+ jmp .selected
 .function_call_limit:
  mov r12d,NEBOC_DIAG_FUNCTION_CALL_CAPACITY
  jmp .function_span
@@ -16641,11 +27685,20 @@ cli_prepare_canonical_diagnostic:
 .function_assignment_undeclared:
  mov r12d,NEBOC_DIAG_NAME_UNDEFINED
  jmp .function_span
+.function_const_write:
+ mov r12d,NEBOC_DIAG_PUBLIC_CONST_WRITE
+ jmp .function_span
+.function_binding_duplicate:
+ mov r12d,NEBOC_DIAG_NAME_DUPLICATE
+ jmp .function_span
 .function_assignment_immutable:
  mov r12d,NEBOC_DIAG_TYPE_UNSUPPORTED_OPERATOR
  jmp .function_span
 .function_assignment_type:
  mov r12d,NEBOC_DIAG_TYPE_MISMATCH
+ jmp .function_span
+.function_constant_overflow:
+ mov r12d,NEBOC_DIAG_TYPE_CONSTANT_OVERFLOW
  jmp .function_span
 .function_assignment_compound:
  mov r12d,NEBOC_DIAG_TYPE_UNSUPPORTED_OPERATOR
@@ -16658,6 +27711,9 @@ cli_prepare_canonical_diagnostic:
  jmp .function_span
 .function_recursion:
  mov r12d,NEBOC_DIAG_CALL_RECURSION
+ jmp .function_span
+.function_arity:
+ mov r12d,NEBOC_DIAG_CALL_ARITY
  jmp .function_span
 .function_undefined_call:
  mov r12d,NEBOC_DIAG_CALL_UNDEFINED
@@ -16718,6 +27774,28 @@ cli_prepare_canonical_diagnostic:
  jmp .function_span
 .function_entrypoint_status:
  mov r12d,NEBOC_DIAG_ENTRYPOINT_INVALID_SIGNATURE
+ jmp .function_span
+.function_unreachable:
+ mov r12d,NEBOC_DIAG_PARSE_UNEXPECTED_TOKEN
+ jmp .function_span
+.associative_error:
+ mov r12d,NEBOC_DIAG_PUBLIC_BORROW_CONFLICT
+ cmp qword [rel cli_function_codegen+FCG_ASSOC_ERROR],6
+ je .associative_span
+ mov r12d,NEBOC_DIAG_PUBLIC_USE_AFTER_MOVE
+ cmp qword [rel cli_function_codegen+FCG_ASSOC_ERROR],4
+ je .associative_span
+ mov r12d,NEBOC_DIAG_PUBLIC_COPY_UNIQUE
+ cmp qword [rel cli_function_codegen+FCG_ASSOC_ERROR],5
+ je .associative_span
+ mov r12d,NEBOC_DIAG_TYPE_MISMATCH
+ cmp qword [rel cli_function_codegen+FCG_ASSOC_ERROR],2
+ jne .associative_span
+ mov r12d,NEBOC_DIAG_LIMIT_EXCEEDED
+.associative_span:
+ mov r13,[rel cli_function_codegen+FCG_ASSOC_ERROR_START]
+ mov r14,[rel cli_function_codegen+FCG_ASSOC_ERROR_END]
+ jmp .selected
 .function_span:
  mov r13,[rel cli_function_codegen+NEBOC_FUNCTION_CODEGEN_ERROR_START_OFFSET]
  mov r14,[rel cli_function_codegen+NEBOC_FUNCTION_CODEGEN_ERROR_END_OFFSET]
@@ -16861,6 +27939,13 @@ cli_prepare_canonical_diagnostic:
  mov qword [rdx+NEBOC_DIAGNOSTIC_ARGUMENT_LENGTH_OFFSET],1
 .record_ready:
  mov rdi,rbx
+ call cli_enrich_delimiter_diagnostic
+ mov rdi,rbx
+ call cli_enrich_module_diagnostic
+ mov rdi,rbx
+ mov rsi,r12
+ call cli_enrich_unicode_security_diagnostic
+ mov rdi,rbx
  call cli_enrich_entrypoint_diagnostic
  xor eax,eax
 .done:
@@ -16870,6 +27955,566 @@ cli_prepare_canonical_diagnostic:
  pop r12
  pop rbx
  ret
+
+; Recover exact structural evidence for local delimiter failures that were
+; rejected before a narrow parser owner could publish its token index.  The
+; lexer token stream is authoritative: literals and comments are atomic, so
+; delimiter-looking bytes inside them cannot affect this bounded stack walk.
+cli_enrich_delimiter_diagnostic:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ mov rbx,rdi
+ cmp qword [rbx+NEBOC_DIAGNOSTIC_PHASE_OFFSET],NEBOC_DIAGNOSTIC_PHASE_PARSE
+ jne .done
+ mov rax,[rbx+NEBOC_DIAGNOSTIC_CODE_OFFSET]
+ cmp rax,NEBOC_DIAG_PARSE_EXPECTED_TOKEN
+ je .scan_begin
+ cmp rax,NEBOC_DIAG_PARSE_UNEXPECTED_TOKEN
+ jne .done
+.scan_begin:
+ lea r12,[rel cli_tokens]
+ lea rsi,[rel cli_delimiter_stack]
+ mov r13,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r14d,r14d
+ xor r15d,r15d
+.scan:
+ cmp r15,r13
+ jae .at_eof
+ mov rax,r15
+ imul rax,NEBOC_TOKEN_SIZE
+ lea r10,[r12+rax]
+ mov r9,[r10+NEBOC_TOKEN_KIND_OFFSET]
+ cmp r9,NEBOC_TOKEN_EOF
+ je .at_eof
+ cmp r9,NEBOC_TOKEN_LPAREN
+ je .push
+ cmp r9,NEBOC_TOKEN_RESERVED_LBRACKET
+ je .push
+ cmp r9,NEBOC_TOKEN_LBRACE
+ jne .maybe_semicolon
+ ; An opening brace while a parenthesis is still open pinpoints a missing
+ ; ')' in function/control/call syntax rather than a nested block.
+ test r14,r14
+ jz .push
+ mov rax,[rsi+r14*8-8]
+ imul rax,NEBOC_TOKEN_SIZE
+ cmp qword [r12+rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ je .safe_mismatch
+ jmp .push
+.maybe_semicolon:
+ cmp r9,NEBOC_TOKEN_SEMICOLON
+ jne .maybe_close
+ test r14,r14
+ jz .next
+ mov rax,[rsi+r14*8-8]
+ imul rax,NEBOC_TOKEN_SIZE
+ cmp qword [r12+rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LPAREN
+ je .safe_mismatch
+ jmp .next
+.maybe_close:
+ cmp r9,NEBOC_TOKEN_RPAREN
+ je .close
+ cmp r9,NEBOC_TOKEN_RESERVED_RBRACKET
+ je .close
+ cmp r9,NEBOC_TOKEN_RBRACE
+ jne .next
+.close:
+ test r14,r14
+ jz .primary_only
+ mov rdx,[rsi+r14*8-8]
+ mov rax,rdx
+ imul rax,NEBOC_TOKEN_SIZE
+ mov r11,[r12+rax+NEBOC_TOKEN_KIND_OFFSET]
+ cmp r9,NEBOC_TOKEN_RPAREN
+ jne .close_bracket
+ cmp r11,NEBOC_TOKEN_LPAREN
+ je .matched
+ jmp .unsafe_mismatch
+.close_bracket:
+ cmp r9,NEBOC_TOKEN_RESERVED_RBRACKET
+ jne .close_brace
+ cmp r11,NEBOC_TOKEN_RESERVED_LBRACKET
+ je .matched
+ jmp .unsafe_mismatch
+.close_brace:
+ cmp r11,NEBOC_TOKEN_LBRACE
+ je .matched
+ ; A closing brace commonly terminates the enclosing declaration after a
+ ; missing ')' and is therefore a safe insertion boundary.
+ cmp r11,NEBOC_TOKEN_LPAREN
+ je .safe_mismatch_with_top
+ jmp .unsafe_mismatch
+.matched:
+ dec r14
+ jmp .next
+.push:
+ cmp r14,NEBOC_CLI_TOKEN_CAPACITY
+ jae .done
+ mov [rsi+r14*8],r15
+ inc r14
+.next:
+ inc r15
+ jmp .scan
+
+.safe_mismatch:
+ mov rdx,[rsi+r14*8-8]
+.safe_mismatch_with_top:
+ mov r8d,1
+ jmp .publish_mismatch
+.unsafe_mismatch:
+ xor r8d,r8d
+.publish_mismatch:
+ ; R15 is the offending token and RDX is the unmatched opening token.
+ mov rax,r15
+ imul rax,NEBOC_TOKEN_SIZE
+ lea r10,[r12+rax]
+ mov rcx,[r10+NEBOC_TOKEN_START_OFFSET]
+ mov rax,[r10+NEBOC_TOKEN_END_OFFSET]
+ mov [rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET],rcx
+ mov [rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_END_OFFSET],rax
+ jmp .publish_related
+.primary_only:
+ mov rax,r15
+ imul rax,NEBOC_TOKEN_SIZE
+ lea r10,[r12+rax]
+ mov rcx,[r10+NEBOC_TOKEN_START_OFFSET]
+ mov rax,[r10+NEBOC_TOKEN_END_OFFSET]
+ mov [rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET],rcx
+ mov [rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_END_OFFSET],rax
+ jmp .done
+
+.at_eof:
+ test r14,r14
+ jz .done
+ mov rdx,[rsi+r14*8-8]
+ mov rcx,[rel cli_state+NEBOC_CLI_STATE_SOURCE_LENGTH_OFFSET]
+ mov [rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET],rcx
+ mov [rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_END_OFFSET],rcx
+ mov r8d,1
+.publish_related:
+ mov rax,rdx
+ imul rax,NEBOC_TOKEN_SIZE
+ lea r10,[r12+rax]
+ mov r11,[r10+NEBOC_TOKEN_KIND_OFFSET]
+ mov rax,[rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_ID_OFFSET]
+ mov [rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_ID_OFFSET],rax
+ mov rax,[r10+NEBOC_TOKEN_START_OFFSET]
+ mov [rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET],rax
+ mov rax,[r10+NEBOC_TOKEN_END_OFFSET]
+ mov [rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_END_OFFSET],rax
+ mov rax,[rel cli_state+NEBOC_CLI_STATE_SOURCE_LENGTH_OFFSET]
+ mov [rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_LENGTH_OFFSET],rax
+ lea rax,[rel cli_delimiter_related_label]
+ mov [rbx+NEBOC_DIAGNOSTIC_SECONDARY_LABEL_OFFSET],rax
+ mov qword [rbx+NEBOC_DIAGNOSTIC_SECONDARY_LABEL_LENGTH_OFFSET],cli_delimiter_related_label_end-cli_delimiter_related_label
+ or qword [rbx+NEBOC_DIAGNOSTIC_FLAGS_OFFSET],NEBOC_DIAGNOSTIC_FLAG_HAS_SECONDARY
+ test r8d,r8d
+ jz .done
+ mov qword [rbx+NEBOC_DIAGNOSTIC_ARGUMENT_COUNT_OFFSET],1
+ or qword [rbx+NEBOC_DIAGNOSTIC_FLAGS_OFFSET],NEBOC_DIAGNOSTIC_FLAG_HAS_SUGGESTION|NEBOC_DIAGNOSTIC_FLAG_HAS_FIXITS
+ lea rax,[rel cli_delimiter_fix_suggestion]
+ mov [rbx+NEBOC_DIAGNOSTIC_SUGGESTION_OFFSET],rax
+ mov qword [rbx+NEBOC_DIAGNOSTIC_SUGGESTION_LENGTH_OFFSET],cli_delimiter_fix_suggestion_end-cli_delimiter_fix_suggestion
+ mov [rbx+NEBOC_DIAGNOSTIC_INSERTION_OFFSET],rcx
+ lea rdx,[rbx+NEBOC_DIAGNOSTIC_ARGUMENTS_OFFSET]
+ mov qword [rdx+NEBOC_DIAGNOSTIC_ARGUMENT_TYPE_OFFSET],NEBOC_DIAGNOSTIC_ARGUMENT_TEXT
+ mov [rdx+NEBOC_DIAGNOSTIC_ARGUMENT_VALUE_OFFSET],rcx
+ lea rax,[rel cli_fix_rparen]
+ cmp r11,NEBOC_TOKEN_LPAREN
+ je .fix_text_ready
+ lea rax,[rel cli_fix_rbracket]
+ cmp r11,NEBOC_TOKEN_RESERVED_LBRACKET
+ je .fix_text_ready
+ lea rax,[rel cli_fix_rbrace]
+.fix_text_ready:
+ mov [rdx+NEBOC_DIAGNOSTIC_ARGUMENT_DATA_OFFSET],rax
+ mov qword [rdx+NEBOC_DIAGNOSTIC_ARGUMENT_LENGTH_OFFSET],1
+.done:
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Module visibility/export failures are inherently cross-unit. Project the
+; referenced module declaration as a secondary span using the pointerless name
+; span recorded by the module parser.
+cli_enrich_module_diagnostic:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ mov rbx,rdi
+ mov rax,[rel cli_module_request+NEBOC_MODULE_DIAGNOSTIC_OFFSET]
+ cmp rax,NEBOC_MODULE_DIAG_INTERFACE
+ je .interface
+ cmp rax,NEBOC_MODULE_DIAG_PRIVATE_ACCESS
+ je .find
+ cmp rax,NEBOC_MODULE_DIAG_MISSING_EXPORT
+ jne .done
+.find:
+ mov rax,[rel cli_module_request+NEBOC_MODULE_ROOT_INDEX_OFFSET]
+ cmp rax,NEBOC_MODULE_MAX_UNITS
+ jae .done
+ shl rax,7
+ lea r8,[rel cli_module_records]
+ add rax,r8
+ mov r11,[rax+NEBOC_MODULE_RECORD_START0_MODULE_OFFSET]
+ xor r12d,r12d
+.scan:
+ cmp r12d,NEBOC_MODULE_MAX_UNITS
+ jae .done
+ mov rax,r12
+ shl rax,7
+ lea r10,[r8+rax]
+ cmp r11,[r10+NEBOC_MODULE_RECORD_MODULE_HASH_OFFSET]
+ je .found
+ inc r12d
+ jmp .scan
+.found:
+ mov rax,[r10+NEBOC_MODULE_RECORD_NAME_SPAN_OFFSET]
+ mov r13d,eax
+ shr rax,32
+ mov r14,rax
+ test r14,r14
+ jnz .span_ready
+ xor r13d,r13d
+.span_ready:
+ cmp r12d,1
+ je .source1_length
+ cmp r12d,2
+ je .source2_length
+ mov r15,[rel cli_state+NEBOC_CLI_STATE_SOURCE_LENGTH_OFFSET]
+ jmp .publish
+.source1_length:
+ mov r15,[rel cli_module_unit_lengths]
+ jmp .publish
+.source2_length:
+ mov r15,[rel cli_module_unit_lengths+8]
+.publish:
+ test r14,r14
+ jnz .bounded
+ mov r14,r15
+.bounded:
+ add r14,r13
+ cmp r14,r15
+ jbe .store
+ mov r14,r15
+.store:
+ lea rax,[r12+1]
+ mov [rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_ID_OFFSET],rax
+ mov [rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET],r13
+ mov [rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_END_OFFSET],r14
+ mov [rbx+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_LENGTH_OFFSET],r15
+ lea rax,[rel cli_module_related_label]
+ mov [rbx+NEBOC_DIAGNOSTIC_SECONDARY_LABEL_OFFSET],rax
+ mov qword [rbx+NEBOC_DIAGNOSTIC_SECONDARY_LABEL_LENGTH_OFFSET],cli_module_related_label_end-cli_module_related_label
+ or qword [rbx+NEBOC_DIAGNOSTIC_FLAGS_OFFSET],NEBOC_DIAGNOSTIC_FLAG_HAS_SECONDARY
+ jmp .done
+.interface:
+ mov rax,[rel cli_module_request+NEBOC_MODULE_DIAGNOSTIC_UNIT_OFFSET]
+ cmp rax,2
+ ja .done
+ mov rcx,[rel cli_state+NEBOC_CLI_STATE_SOURCE_LENGTH_OFFSET]
+ test rax,rax
+ jz .interface_span
+ lea rdx,[rel cli_module_unit_lengths]
+ mov rcx,[rdx+rax*8-8]
+.interface_span:
+ inc rax
+ mov [rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_ID_OFFSET],rax
+ mov [rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_LENGTH_OFFSET],rcx
+ mov qword [rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET],0
+ cmp rcx,8
+ jbe .interface_end
+ mov ecx,8
+.interface_end:
+ mov [rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_END_OFFSET],rcx
+.done:
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Attach exact source evidence to every G126 public diagnostic.  Machine
+; renderers carry this deterministic note verbatim; the human renderer prints
+; it after the stable catalog message.  Valid source bytes are decoded by the
+; same strict scanner used by the lexer, never by normalization.
+cli_enrich_unicode_security_diagnostic:
+ cmp rsi,NEBOC_DIAG_UNICODE_CONFUSABLE
+ jb .unicode_enrich_none
+ cmp rsi,NEBOC_DIAG_UNICODE_MALFORMED_UTF8
+ ja .unicode_enrich_none
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,32
+ mov rbx,rdi
+ mov r12,rsi
+ lea r15,[rel cli_unicode_security_note]
+ mov qword [rbx+NEBOC_DIAGNOSTIC_CATEGORY_OFFSET],NEBOC_DIAGNOSTIC_CATEGORY_SYNTAX
+ cmp r12,NEBOC_DIAG_UNICODE_MALFORMED_UTF8
+ je .unicode_malformed_note
+ mov r13,[rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET]
+ lea rdi,[rel cli_source]
+ add rdi,r13
+ mov rsi,[rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_END_OFFSET]
+ sub rsi,r13
+ lea rdx,[rsp]
+ call neboc_unicode_operator_scan
+ test eax,eax
+ jnz .unicode_enrich_done
+ mov r14,[rsp+NEBOC_UNICODE_SCAN_CODEPOINT_OFFSET]
+ mov rdi,r15
+ lea rsi,[rel cli_unicode_note_codepoint]
+ mov edx,cli_unicode_note_codepoint_len
+ call cli_unicode_note_append
+ mov r15,rax
+ mov rdi,r15
+ mov rsi,r14
+ mov edx,6
+ call cli_unicode_note_hex
+ mov r15,rax
+ mov rdi,r15
+ lea rsi,[rel cli_unicode_note_name]
+ mov edx,cli_unicode_note_name_len
+ call cli_unicode_note_append
+ mov r15,rax
+ mov rdi,r14
+ mov rsi,r12
+ call cli_unicode_security_name
+ mov rdi,r15
+ call cli_unicode_note_append
+ mov r15,rax
+ cmp r12,NEBOC_DIAG_UNICODE_CONFUSABLE
+ jne .unicode_remove_note
+ mov rdi,r15
+ lea rsi,[rel cli_unicode_note_replacement]
+ mov edx,cli_unicode_note_replacement_len
+ call cli_unicode_note_append
+ mov r15,rax
+ mov rax,r14
+ cmp rax,0xff01
+ jb .unicode_named_replacement
+ cmp rax,0xff5e
+ ja .unicode_named_replacement
+ sub rax,0xfee0
+ jmp .unicode_replacement_ready
+.unicode_named_replacement:
+ mov eax,'-'
+ cmp r14,0x2010
+ je .unicode_replacement_ready
+ cmp r14,0x2011
+ je .unicode_replacement_ready
+ mov eax,'/'
+.unicode_replacement_ready:
+ mov [r15],al
+ inc r15
+ jmp .unicode_publish_note
+.unicode_remove_note:
+ mov rdi,r15
+ lea rsi,[rel cli_unicode_note_remove]
+ mov edx,cli_unicode_note_remove_len
+ call cli_unicode_note_append
+ mov r15,rax
+ jmp .unicode_publish_note
+.unicode_malformed_note:
+ mov rdi,r15
+ lea rsi,[rel cli_unicode_note_byte]
+ mov edx,cli_unicode_note_byte_len
+ call cli_unicode_note_append
+ mov r15,rax
+ mov r13,[rbx+NEBOC_DIAGNOSTIC_PRIMARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET]
+ lea rax,[rel cli_source]
+ movzx esi,byte [rax+r13]
+ mov rdi,r15
+ mov edx,2
+ call cli_unicode_note_hex
+ mov r15,rax
+ mov rdi,r15
+ lea rsi,[rel cli_unicode_note_malformed_tail]
+ mov edx,cli_unicode_note_malformed_tail_len
+ call cli_unicode_note_append
+ mov r15,rax
+.unicode_publish_note:
+ lea rax,[rel cli_unicode_security_note]
+ mov [rbx+NEBOC_DIAGNOSTIC_NOTE_OFFSET],rax
+ sub r15,rax
+ mov [rbx+NEBOC_DIAGNOSTIC_NOTE_LENGTH_OFFSET],r15
+ or qword [rbx+NEBOC_DIAGNOSTIC_FLAGS_OFFSET],NEBOC_DIAGNOSTIC_FLAG_HAS_NOTE
+.unicode_enrich_done:
+ add rsp,32
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+.unicode_enrich_none:
+ ret
+
+; destination, source, length -> next destination
+cli_unicode_note_append:
+ mov rax,rdi
+ test rdx,rdx
+ jz .unicode_append_done
+.unicode_append_loop:
+ mov cl,[rsi]
+ mov [rax],cl
+ inc rsi
+ inc rax
+ dec rdx
+ jnz .unicode_append_loop
+.unicode_append_done:
+ ret
+
+; destination, unsigned value, digit count -> next destination
+cli_unicode_note_hex:
+ mov rax,rdi
+ mov ecx,edx
+ dec ecx
+ shl ecx,2
+ lea r8,[rel cli_unicode_hex_digits]
+.unicode_hex_loop:
+ mov r9,rsi
+ shr r9,cl
+ and r9d,15
+ mov r9b,[r8+r9]
+ mov [rax],r9b
+ inc rax
+ sub ecx,4
+ jns .unicode_hex_loop
+ ret
+
+; codepoint, public diagnostic id -> exact Unicode name where the contracted
+; set has a finite name, otherwise the authoritative Unicode name category.
+cli_unicode_security_name:
+ cmp rsi,NEBOC_DIAG_UNICODE_CONFUSABLE
+ je .unicode_name_confusable
+ cmp rsi,NEBOC_DIAG_UNICODE_BIDI_CONTROL
+ je .unicode_name_bidi
+ cmp rsi,NEBOC_DIAG_UNICODE_INVISIBLE_SEPARATOR
+ je .unicode_name_invisible
+ cmp rdi,0x0300
+ je .unicode_name_combining_grave
+ cmp rdi,0x036f
+ je .unicode_name_combining_x
+ lea rsi,[rel cli_unicode_name_combining]
+ mov edx,cli_unicode_name_combining_len
+ ret
+.unicode_name_combining_grave:
+ lea rsi,[rel cli_unicode_name_combining_grave]
+ mov edx,cli_unicode_name_combining_grave_len
+ ret
+.unicode_name_combining_x:
+ lea rsi,[rel cli_unicode_name_combining_x]
+ mov edx,cli_unicode_name_combining_x_len
+ ret
+.unicode_name_confusable:
+ cmp rdi,0xff0d
+ je .unicode_name_fullwidth_hyphen
+ cmp rdi,0xff0f
+ je .unicode_name_fullwidth_solidus
+ cmp rdi,0x2010
+ je .unicode_name_hyphen
+ cmp rdi,0x2011
+ je .unicode_name_nonbreaking_hyphen
+ cmp rdi,0x2215
+ je .unicode_name_division_slash
+ cmp rdi,0x2044
+ je .unicode_name_fraction_slash
+ lea rsi,[rel cli_unicode_name_fullwidth]
+ mov edx,cli_unicode_name_fullwidth_len
+ ret
+.unicode_name_fullwidth_hyphen:
+ lea rsi,[rel cli_unicode_name_fullwidth_hyphen]
+ mov edx,cli_unicode_name_fullwidth_hyphen_len
+ ret
+.unicode_name_fullwidth_solidus:
+ lea rsi,[rel cli_unicode_name_fullwidth_solidus]
+ mov edx,cli_unicode_name_fullwidth_solidus_len
+ ret
+.unicode_name_hyphen:
+ lea rsi,[rel cli_unicode_name_hyphen]
+ mov edx,cli_unicode_name_hyphen_len
+ ret
+.unicode_name_nonbreaking_hyphen:
+ lea rsi,[rel cli_unicode_name_nonbreaking_hyphen]
+ mov edx,cli_unicode_name_nonbreaking_hyphen_len
+ ret
+.unicode_name_division_slash:
+ lea rsi,[rel cli_unicode_name_division_slash]
+ mov edx,cli_unicode_name_division_slash_len
+ ret
+.unicode_name_fraction_slash:
+ lea rsi,[rel cli_unicode_name_fraction_slash]
+ mov edx,cli_unicode_name_fraction_slash_len
+ ret
+.unicode_name_bidi:
+ cmp rdi,0x202a
+ je .unicode_name_lre
+ cmp rdi,0x202b
+ je .unicode_name_rle
+ cmp rdi,0x202c
+ je .unicode_name_pdf
+ cmp rdi,0x202d
+ je .unicode_name_lro
+ cmp rdi,0x202e
+ je .unicode_name_rlo
+ cmp rdi,0x2066
+ je .unicode_name_lri
+ cmp rdi,0x2067
+ je .unicode_name_rli
+ cmp rdi,0x2068
+ je .unicode_name_fsi
+ lea rsi,[rel cli_unicode_name_pdi]
+ mov edx,cli_unicode_name_pdi_len
+ ret
+%macro UNICODE_NAME_RETURN 3
+.%1:
+ lea rsi,[rel %2]
+ mov edx,%3
+ ret
+%endmacro
+UNICODE_NAME_RETURN unicode_name_lre,cli_unicode_name_lre,cli_unicode_name_lre_len
+UNICODE_NAME_RETURN unicode_name_rle,cli_unicode_name_rle,cli_unicode_name_rle_len
+UNICODE_NAME_RETURN unicode_name_pdf,cli_unicode_name_pdf,cli_unicode_name_pdf_len
+UNICODE_NAME_RETURN unicode_name_lro,cli_unicode_name_lro,cli_unicode_name_lro_len
+UNICODE_NAME_RETURN unicode_name_rlo,cli_unicode_name_rlo,cli_unicode_name_rlo_len
+UNICODE_NAME_RETURN unicode_name_lri,cli_unicode_name_lri,cli_unicode_name_lri_len
+UNICODE_NAME_RETURN unicode_name_rli,cli_unicode_name_rli,cli_unicode_name_rli_len
+UNICODE_NAME_RETURN unicode_name_fsi,cli_unicode_name_fsi,cli_unicode_name_fsi_len
+.unicode_name_invisible:
+ cmp rdi,0x200b
+ je .unicode_name_zwsp
+ cmp rdi,0x200c
+ je .unicode_name_zwnj
+ cmp rdi,0x200d
+ je .unicode_name_zwj
+ cmp rdi,0x200e
+ je .unicode_name_lrm
+ cmp rdi,0x200f
+ je .unicode_name_rlm
+ cmp rdi,0x2060
+ je .unicode_name_word_joiner
+ lea rsi,[rel cli_unicode_name_zwnbsp]
+ mov edx,cli_unicode_name_zwnbsp_len
+ ret
+UNICODE_NAME_RETURN unicode_name_zwsp,cli_unicode_name_zwsp,cli_unicode_name_zwsp_len
+UNICODE_NAME_RETURN unicode_name_zwnj,cli_unicode_name_zwnj,cli_unicode_name_zwnj_len
+UNICODE_NAME_RETURN unicode_name_zwj,cli_unicode_name_zwj,cli_unicode_name_zwj_len
+UNICODE_NAME_RETURN unicode_name_lrm,cli_unicode_name_lrm,cli_unicode_name_lrm_len
+UNICODE_NAME_RETURN unicode_name_rlm,cli_unicode_name_rlm,cli_unicode_name_rlm_len
+UNICODE_NAME_RETURN unicode_name_word_joiner,cli_unicode_name_word_joiner,cli_unicode_name_word_joiner_len
+%unmacro UNICODE_NAME_RETURN 3
 
 ; Project the C11 scientific owner into the canonical diagnostic without
 ; teaching the global catalog a partially implemented Matrix/Tensor surface.
@@ -16975,34 +28620,91 @@ cli_enrich_scientific_diagnostic:
  ret
 
 ; Project existing semantic owners into the shared diagnostic record.
-; Public identities remain the exact frozen RF27 identities; the catalog's
-; TYPE/SECURITY phases are the authenticated machine-level representation of
-; the finer ownership, effect and module phase-depth taxonomy.
+; Public identities use the current stable ownership and language-domain
+; codes; TYPE/SECURITY remain the authenticated machine-level phases for the
+; finer ownership, effect and module taxonomy.
 cli_enrich_cli_semantic_diagnostic:
+ cmp qword [rel cli_function_codegen+FCG_FORMAT_ERROR],0
+ jne .typed_format_error
+ cmp qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_DIAG_BITWISE_WRONG_RECEIVER
+ je .bit_receiver
+ cmp qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_API_DIAG_TEXT_RESULT_FALLBACK
+ je .text_result_fallback
+ cmp qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],neboc_text_char_unicode_e_bytes_API_DIAG_ARGUMENTS_NOT_ALLOWED
+ je .text_zero_arguments
+ cmp qword [rel cli_module_request+NEBOC_MODULE_DIAGNOSTIC_OFFSET],NEBOC_MODULE_DIAG_INTERFACE
+ je .module_interface
+ cmp qword [rel cli_module_request+NEBOC_MODULE_DIAGNOSTIC_OFFSET],NEBOC_MODULE_DIAG_REEXPORT_VISIBILITY
+ je .module_reexport
  cmp qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_API_DIAG_UNKNOWN
  je .textual_unknown
+ cmp qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],neboc_text_char_unicode_e_bytes_API_DIAG_ALIAS_FORBIDDEN
+ je .textual_alias
+ cmp qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_API_DIAG_ARGUMENT_MUST_BE_TEXT
+ je .text_query_argument
+ cmp qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_API_DIAG_TEXT_QUERY_ARITY
+ je .text_query_arity
+ cmp qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_API_DIAG_TEXT_TRANSFORM_ARITY
+ je .text_transform_arity
+ cmp qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_API_DIAG_TEXT_TRANSFORM_TEXT_ARGUMENT
+ je .text_transform_text_argument
+ cmp qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_API_DIAG_TEXT_TRANSFORM_INT_ARGUMENT
+ je .text_transform_int_argument
+ cmp qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_API_DIAG_TEXT_TRANSFORM_BOUNDS
+ je .text_transform_bounds
+ cmp qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_API_DIAG_TEXT_TRANSFORM_EMPTY_SEPARATOR
+ je .text_transform_empty_separator
+ cmp qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_API_DIAG_TEXT_PARSE_ARITY
+ je .text_parse_arity
+ cmp qword [rel text_char_unicode_e_bytes_cli_frontend_diagnostic],NEBOC_API_DIAG_TEXT_CONVERSION_RECEIVER
+ je .text_conversion_receiver
  cmp qword [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_vertical_request+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],NEBOC_BIND_DIAG_NOT_DEFINITELY_INITIALIZED
  je .binding_flow
- mov rax,[rel cli_module_request+NEBOC_MODULE_DIAGNOSTIC_OFFSET]
- cmp rax,NEBOC_MODULE_DIAG_PRIVATE_ACCESS
- je .module_private
- cmp rax,NEBOC_MODULE_DIAG_MISSING_EXPORT
- je .module_export
  mov rax,[rel text_char_unicode_e_bytes_cli_semantic+neboc_text_char_unicode_e_bytes_SEM_DIAGNOSTIC_OFFSET]
  cmp rax,NEBOC_DIAG_USE_AFTER_MOVE
  je .use_after_move
+ cmp rax,NEBOC_DIAG_DOUBLE_DROP
+ je .double_drop
+ cmp rax,NEBOC_DIAG_BORROW_CONFLICT
+ je .borrow_conflict
+ cmp rax,NEBOC_DIAG_MOVE_WHILE_BORROWED
+ je .move_while_borrowed
+ cmp rax,NEBOC_DIAG_BORROW_ESCAPE
+ je .lifetime_escape
+ cmp rax,NEBOC_DIAG_COPY_UNIQUE
+ je .copy_unique
+ cmp rax,NEBOC_DIAG_CLONE_UNAVAILABLE
+ je .operation_unavailable
+ cmp rax,NEBOC_DIAG_ALLOCATOR_LAYOUT
+ je .allocator_layout
+ cmp rax,NEBOC_DIAG_ARENA_EXHAUSTED
+ je .arena_exhausted
+ cmp rax,NEBOC_DIAG_RESOURCE_LEAK_PATH
+ je .resource_leak
+ cmp rax,neboc_text_char_unicode_e_bytes_DIAG_INTERNAL
+ je .ownership_internal
  cmp qword [rel effects_capabilities_e_politicas_cli_frontend_diagnostic],neboc_effects_capabilities_e_politicas_DIAG_SECURITY_driver_cli_linux_x86_64
  je .policy_security
  cmp qword [rel structs_enums_variants_e_tipos_do_programador_cli_vertical_request+neboc_structs_enums_variants_e_tipos_do_programador_VERTICAL_DIAGNOSTIC_OFFSET],4
  je .duplicate_field
- cmp qword [rel cli_parameters+NEBOC_PARAM_DIAGNOSTIC_OFFSET],NEBOC_DIAG_MISSING_ARGUMENT
- je .missing_argument
  cmp qword [rel cli_result+neboc_bindings_constantes_mutabilidade_e_definite_assignment_RESULT_DIAGNOSTIC_OFFSET],NEBOC_RESULT_DIAG_NON_EXHAUSTIVE
  je .result_non_exhaustive
  cmp qword [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_vertical_request+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],NEBOC_DIAG_ASSIGNMENT_TYPE_MISMATCH
  je .assignment_type
+ cmp qword [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_vertical_request+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],NEBOC_DIAG_ASSIGNMENT_IMMUTABLE
+ je .assignment_immutable
+ cmp qword [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_vertical_request+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],NEBOC_DIAG_ASSIGNMENT_EXPRESSION
+ je .assignment_expression
+ cmp qword [rel bindings_constantes_mutabilidade_e_definite_assignment_cli_vertical_request+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],NEBOC_DIAG_COMPOUND_UNSUPPORTED
+ je .compound_unsupported
  cmp qword [rel literais_numericos_bases_e_representacao_cli_parse_request+neboc_literais_numericos_bases_e_representacao_PARSE_DIAGNOSTIC_OFFSET],NEBOC_DIAG_ASSIGNMENT_TYPE_MISMATCH
  je .assignment_type
+ cmp qword [rel literais_numericos_bases_e_representacao_cli_parse_request+neboc_literais_numericos_bases_e_representacao_PARSE_DIAGNOSTIC_OFFSET],NEBOC_DIAG_ASSIGNMENT_IMMUTABLE
+ je .assignment_immutable
+ cmp qword [rel literais_numericos_bases_e_representacao_cli_parse_request+neboc_literais_numericos_bases_e_representacao_PARSE_DIAGNOSTIC_OFFSET],NEBOC_DIAG_ASSIGNMENT_EXPRESSION
+ je .assignment_expression
+ cmp qword [rel literais_numericos_bases_e_representacao_cli_parse_request+neboc_literais_numericos_bases_e_representacao_PARSE_DIAGNOSTIC_OFFSET],NEBOC_DIAG_COMPOUND_UNSUPPORTED
+ je .compound_unsupported
  cmp qword [rel text_char_unicode_e_bytes_cli_vertical_request+neboc_text_char_unicode_e_bytes_VERTICAL_ERROR_CODE_OFFSET],NEBOC_DIAG_BITWISE_WRONG_RECEIVER
  je .bit_receiver
  cmp qword [rel seguranca_numerica_conversoes_e_overflow_cli_vertical_request+neboc_seguranca_numerica_conversoes_e_overflow_VERTICAL_ERROR_CODE_OFFSET],NEBOC_DIAG_BITWISE_WRONG_RECEIVER
@@ -17014,9 +28716,111 @@ cli_enrich_cli_semantic_diagnostic:
  lea r10,[rel cli_semantic_message_textual_unknown]
  mov r11d,cli_semantic_message_textual_unknown_end-cli_semantic_message_textual_unknown
  jmp .write_type
+.textual_alias:
+ lea r8,[rel cli_semantic_code_textual_alias]
+ mov r9d,cli_semantic_code_textual_alias_end-cli_semantic_code_textual_alias
+ lea r10,[rel cli_semantic_message_textual_alias]
+ mov r11d,cli_semantic_message_textual_alias_end-cli_semantic_message_textual_alias
+ jmp .write_type
+.text_query_argument:
+ lea r8,[rel cli_semantic_code_text_query_argument]
+ mov r9d,cli_semantic_code_text_query_argument_end-cli_semantic_code_text_query_argument
+ lea r10,[rel cli_semantic_message_text_query_argument]
+ mov r11d,cli_semantic_message_text_query_argument_end-cli_semantic_message_text_query_argument
+ jmp .write_type
+.typed_format_error:
+ cmp qword [rel cli_function_codegen+FCG_FORMAT_ERROR],9
+ je .interpolation_effect_error
+ sub rsp,8
+ mov rdi,[rel cli_function_codegen+FCG_FORMAT_ERROR]
+ call neboc_percent_diagnostic_name
+ add rsp,8
+ mov r8,rax
+ mov r9,rdx
+ lea r10,[rel cli_semantic_message_typed_format]
+ mov r11d,cli_semantic_message_typed_format_end-cli_semantic_message_typed_format
+ jmp .write_type
+.interpolation_effect_error:
+ lea r8,[rel cli_semantic_code_interpolation_effect]
+ mov r9d,cli_semantic_code_interpolation_effect_end-cli_semantic_code_interpolation_effect
+ lea r10,[rel cli_semantic_message_interpolation_effect]
+ mov r11d,cli_semantic_message_interpolation_effect_end-cli_semantic_message_interpolation_effect
+ jmp .write_type
+.text_zero_arguments:
+ lea r8,[rel cli_semantic_code_text_zero_arguments]
+ mov r9d,cli_semantic_code_text_zero_arguments_end-cli_semantic_code_text_zero_arguments
+ lea r10,[rel cli_semantic_message_text_zero_arguments]
+ mov r11d,cli_semantic_message_text_zero_arguments_end-cli_semantic_message_text_zero_arguments
+ jmp .write
+.text_result_fallback:
+ lea r8,[rel cli_semantic_code_text_result_fallback]
+ mov r9d,cli_semantic_code_text_result_fallback_end-cli_semantic_code_text_result_fallback
+ lea r10,[rel cli_semantic_message_text_result_fallback]
+ mov r11d,cli_semantic_message_text_result_fallback_end-cli_semantic_message_text_result_fallback
+ jmp .write_type
+.text_query_arity:
+ lea r8,[rel cli_semantic_code_text_query_arity]
+ mov r9d,cli_semantic_code_text_query_arity_end-cli_semantic_code_text_query_arity
+ lea r10,[rel cli_semantic_message_text_query_arity]
+ mov r11d,cli_semantic_message_text_query_arity_end-cli_semantic_message_text_query_arity
+ jmp .write_type
+.text_transform_arity:
+ lea r8,[rel cli_semantic_code_text_transform_arity]
+ mov r9d,cli_semantic_code_text_transform_arity_end-cli_semantic_code_text_transform_arity
+ lea r10,[rel cli_semantic_message_text_transform_arity]
+ mov r11d,cli_semantic_message_text_transform_arity_end-cli_semantic_message_text_transform_arity
+ jmp .write_type
+.text_transform_text_argument:
+ lea r8,[rel cli_semantic_code_text_transform_text_argument]
+ mov r9d,cli_semantic_code_text_transform_text_argument_end-cli_semantic_code_text_transform_text_argument
+ lea r10,[rel cli_semantic_message_text_transform_text_argument]
+ mov r11d,cli_semantic_message_text_transform_text_argument_end-cli_semantic_message_text_transform_text_argument
+ jmp .write_type
+.text_transform_int_argument:
+ lea r8,[rel cli_semantic_code_text_transform_int_argument]
+ mov r9d,cli_semantic_code_text_transform_int_argument_end-cli_semantic_code_text_transform_int_argument
+ lea r10,[rel cli_semantic_message_text_transform_int_argument]
+ mov r11d,cli_semantic_message_text_transform_int_argument_end-cli_semantic_message_text_transform_int_argument
+ jmp .write_type
+.text_transform_bounds:
+ lea r8,[rel cli_semantic_code_text_transform_bounds]
+ mov r9d,cli_semantic_code_text_transform_bounds_end-cli_semantic_code_text_transform_bounds
+ lea r10,[rel cli_semantic_message_text_transform_bounds]
+ mov r11d,cli_semantic_message_text_transform_bounds_end-cli_semantic_message_text_transform_bounds
+ jmp .write_type
+.text_transform_empty_separator:
+ lea r8,[rel cli_semantic_code_text_transform_empty_separator]
+ mov r9d,cli_semantic_code_text_transform_empty_separator_end-cli_semantic_code_text_transform_empty_separator
+ lea r10,[rel cli_semantic_message_text_transform_empty_separator]
+ mov r11d,cli_semantic_message_text_transform_empty_separator_end-cli_semantic_message_text_transform_empty_separator
+ jmp .write_type
+.text_parse_arity:
+ lea r8,[rel cli_semantic_code_text_parse_arity]
+ mov r9d,cli_semantic_code_text_parse_arity_end-cli_semantic_code_text_parse_arity
+ lea r10,[rel cli_semantic_message_text_parse_arity]
+ mov r11d,cli_semantic_message_text_parse_arity_end-cli_semantic_message_text_parse_arity
+ jmp .write_type
+.text_conversion_receiver:
+ lea r8,[rel cli_semantic_code_text_conversion_receiver]
+ mov r9d,cli_semantic_code_text_conversion_receiver_end-cli_semantic_code_text_conversion_receiver
+ lea r10,[rel cli_semantic_message_text_conversion_receiver]
+ mov r11d,cli_semantic_message_text_conversion_receiver_end-cli_semantic_message_text_conversion_receiver
+ jmp .write_type
 .binding_flow:
  mov qword [rbx+NEBOC_DIAGNOSTIC_PHASE_OFFSET],NEBOC_DIAGNOSTIC_PHASE_NAME
  ret
+.module_interface:
+ lea r8,[rel cli_semantic_code_module_interface]
+ mov r9d,cli_semantic_code_module_interface_end-cli_semantic_code_module_interface
+ lea r10,[rel cli_semantic_message_module_interface]
+ mov r11d,cli_semantic_message_module_interface_end-cli_semantic_message_module_interface
+ jmp .write_type
+.module_reexport:
+ lea r8,[rel cli_semantic_code_module_reexport]
+ mov r9d,cli_semantic_code_module_reexport_end-cli_semantic_code_module_reexport
+ lea r10,[rel cli_semantic_message_module_reexport]
+ mov r11d,cli_semantic_message_module_reexport_end-cli_semantic_message_module_reexport
+ jmp .write_type
 .module_private:
  lea r8,[rel cli_semantic_code_module_private]
  mov r9d,cli_semantic_code_module_private_end-cli_semantic_code_module_private
@@ -17034,6 +28838,66 @@ cli_enrich_cli_semantic_diagnostic:
  mov r9d,cli_semantic_code_use_after_move_end-cli_semantic_code_use_after_move
  lea r10,[rel cli_semantic_message_use_after_move]
  mov r11d,cli_semantic_message_use_after_move_end-cli_semantic_message_use_after_move
+ jmp .write_ownership
+.double_drop:
+ lea r8,[rel cli_semantic_code_double_drop]
+ mov r9d,cli_semantic_code_double_drop_end-cli_semantic_code_double_drop
+ lea r10,[rel cli_semantic_message_double_drop]
+ mov r11d,cli_semantic_message_double_drop_end-cli_semantic_message_double_drop
+ jmp .write_ownership
+.borrow_conflict:
+ lea r8,[rel cli_semantic_code_borrow_conflict]
+ mov r9d,cli_semantic_code_borrow_conflict_end-cli_semantic_code_borrow_conflict
+ lea r10,[rel cli_semantic_message_borrow_conflict]
+ mov r11d,cli_semantic_message_borrow_conflict_end-cli_semantic_message_borrow_conflict
+ jmp .write_ownership
+.move_while_borrowed:
+ lea r8,[rel cli_semantic_code_borrow_conflict]
+ mov r9d,cli_semantic_code_borrow_conflict_end-cli_semantic_code_borrow_conflict
+ lea r10,[rel cli_semantic_message_move_while_borrowed]
+ mov r11d,cli_semantic_message_move_while_borrowed_end-cli_semantic_message_move_while_borrowed
+ jmp .write_ownership
+.lifetime_escape:
+ lea r8,[rel cli_semantic_code_lifetime_escape]
+ mov r9d,cli_semantic_code_lifetime_escape_end-cli_semantic_code_lifetime_escape
+ lea r10,[rel cli_semantic_message_lifetime_escape]
+ mov r11d,cli_semantic_message_lifetime_escape_end-cli_semantic_message_lifetime_escape
+ jmp .write_ownership
+.copy_unique:
+ lea r8,[rel cli_semantic_code_copy_unique]
+ mov r9d,cli_semantic_code_copy_unique_end-cli_semantic_code_copy_unique
+ lea r10,[rel cli_semantic_message_copy_unique]
+ mov r11d,cli_semantic_message_copy_unique_end-cli_semantic_message_copy_unique
+ jmp .write_ownership
+.operation_unavailable:
+ lea r8,[rel cli_semantic_code_operation_unavailable]
+ mov r9d,cli_semantic_code_operation_unavailable_end-cli_semantic_code_operation_unavailable
+ lea r10,[rel cli_semantic_message_operation_unavailable]
+ mov r11d,cli_semantic_message_operation_unavailable_end-cli_semantic_message_operation_unavailable
+ jmp .write_ownership
+.allocator_layout:
+ lea r8,[rel cli_semantic_code_allocator_layout]
+ mov r9d,cli_semantic_code_allocator_layout_end-cli_semantic_code_allocator_layout
+ lea r10,[rel cli_semantic_message_allocator_layout]
+ mov r11d,cli_semantic_message_allocator_layout_end-cli_semantic_message_allocator_layout
+ jmp .write_ownership
+.arena_exhausted:
+ lea r8,[rel cli_semantic_code_arena_exhausted]
+ mov r9d,cli_semantic_code_arena_exhausted_end-cli_semantic_code_arena_exhausted
+ lea r10,[rel cli_semantic_message_arena_exhausted]
+ mov r11d,cli_semantic_message_arena_exhausted_end-cli_semantic_message_arena_exhausted
+ jmp .write_ownership
+.resource_leak:
+ lea r8,[rel cli_semantic_code_resource_leak]
+ mov r9d,cli_semantic_code_resource_leak_end-cli_semantic_code_resource_leak
+ lea r10,[rel cli_semantic_message_resource_leak]
+ mov r11d,cli_semantic_message_resource_leak_end-cli_semantic_message_resource_leak
+ jmp .write_ownership
+.ownership_internal:
+ lea r8,[rel cli_semantic_code_ownership_internal]
+ mov r9d,cli_semantic_code_ownership_internal_end-cli_semantic_code_ownership_internal
+ lea r10,[rel cli_semantic_message_ownership_internal]
+ mov r11d,cli_semantic_message_ownership_internal_end-cli_semantic_message_ownership_internal
  jmp .write_ownership
 .policy_security:
  mov qword [rbx+NEBOC_DIAGNOSTIC_CATEGORY_OFFSET],NEBOC_DIAGNOSTIC_CATEGORY_EFFECT
@@ -17062,6 +28926,24 @@ cli_enrich_cli_semantic_diagnostic:
  mov r9d,cli_semantic_code_assignment_type_end-cli_semantic_code_assignment_type
  lea r10,[rel cli_semantic_message_assignment_type]
  mov r11d,cli_semantic_message_assignment_type_end-cli_semantic_message_assignment_type
+ jmp .write_type
+.assignment_immutable:
+ lea r8,[rel cli_semantic_code_assignment_immutable]
+ mov r9d,cli_semantic_code_assignment_immutable_end-cli_semantic_code_assignment_immutable
+ lea r10,[rel cli_semantic_message_assignment_immutable]
+ mov r11d,cli_semantic_message_assignment_immutable_end-cli_semantic_message_assignment_immutable
+ jmp .write_type
+.assignment_expression:
+ lea r8,[rel cli_semantic_code_assignment_expression]
+ mov r9d,cli_semantic_code_assignment_expression_end-cli_semantic_code_assignment_expression
+ lea r10,[rel cli_semantic_message_assignment_expression]
+ mov r11d,cli_semantic_message_assignment_expression_end-cli_semantic_message_assignment_expression
+ jmp .write_type
+.compound_unsupported:
+ lea r8,[rel cli_semantic_code_compound_unsupported]
+ mov r9d,cli_semantic_code_compound_unsupported_end-cli_semantic_code_compound_unsupported
+ lea r10,[rel cli_semantic_message_compound_unsupported]
+ mov r11d,cli_semantic_message_compound_unsupported_end-cli_semantic_message_compound_unsupported
  jmp .write_type
 .bit_receiver:
  lea r8,[rel cli_semantic_code_bit_receiver]
@@ -17284,6 +29166,60 @@ cli_emit_canonical_diagnostic:
  add rsp,8
  ret
 
+; Serialize build events from the same canonical Diagnostic used by human,
+; JSON, JSONL, SARIF and LSP renderers. The writer is populated completely
+; before the destination is opened, so a serialization failure cannot leave a
+; plausible but incomplete event stream behind.
+cli_write_canonical_failure_events:
+ push rbx
+ lea rax,[rel cli_diag_output]
+ mov [rel cli_diag_writer+NEBOC_WRITER_BYTES_OFFSET],rax
+ mov qword [rel cli_diag_writer+NEBOC_WRITER_CAPACITY_OFFSET],NEBOC_MACHINE_MAX_OUTPUT
+ mov qword [rel cli_diag_writer+NEBOC_WRITER_LENGTH_OFFSET],0
+ mov rdi,[rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_PHASE_OFFSET]
+ lea rsi,[rel build_events_unit]
+ mov edx,build_events_unit_end-build_events_unit
+ lea rcx,[rel cli_diag_writer]
+ call neboc_build_event_phase_started
+ test eax,eax
+ jnz .done
+ mov rbx,[rel cli_diag_writer+NEBOC_WRITER_LENGTH_OFFSET]
+ lea rax,[rel cli_diag_output]
+ add rax,rbx
+ mov [rel cli_diag_writer+NEBOC_WRITER_BYTES_OFFSET],rax
+ mov rax,NEBOC_MACHINE_MAX_OUTPUT
+ sub rax,rbx
+ mov [rel cli_diag_writer+NEBOC_WRITER_CAPACITY_OFFSET],rax
+ mov qword [rel cli_diag_writer+NEBOC_WRITER_LENGTH_OFFSET],0
+ lea rdi,[rel cli_canonical_diagnostic]
+ lea rsi,[rel cli_diag_writer]
+ call neboc_build_event_diagnostic
+ test eax,eax
+ jnz .done
+ add rbx,[rel cli_diag_writer+NEBOC_WRITER_LENGTH_OFFSET]
+ lea rax,[rel cli_diag_output]
+ add rax,rbx
+ mov [rel cli_diag_writer+NEBOC_WRITER_BYTES_OFFSET],rax
+ mov rax,NEBOC_MACHINE_MAX_OUTPUT
+ sub rax,rbx
+ mov [rel cli_diag_writer+NEBOC_WRITER_CAPACITY_OFFSET],rax
+ mov qword [rel cli_diag_writer+NEBOC_WRITER_LENGTH_OFFSET],0
+ mov rdi,[rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_PHASE_OFFSET]
+ mov esi,NEBOC_BUILD_OUTCOME_FAILURE
+ mov edx,1
+ lea rcx,[rel cli_diag_writer]
+ call neboc_build_event_phase_finished
+ test eax,eax
+ jnz .done
+ add rbx,[rel cli_diag_writer+NEBOC_WRITER_LENGTH_OFFSET]
+ mov rdi,[rel cli_build_events_path]
+ lea rsi,[rel cli_diag_output]
+ mov rdx,rbx
+ call cli_write_file
+.done:
+ pop rbx
+ ret
+
 ; Emit the exact zero-width insertion edits already carried by the canonical
 ; diagnostic. The byte offsets and replacement bytes are identical to the
 ; JSON/JSONL/SARIF payloads; source application remains explicit.
@@ -17370,16 +29306,21 @@ cli_emit_canonical_human:
  lea rdi,[rel cli_diag_human_related]
  mov esi,cli_diag_human_related_len
  call cli_write_stderr_raw
- mov rdi,[rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET]
+ mov rdi,[rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_ID_OFFSET]
+ call cli_diag_source_path
+ mov rdi,rax
  call cli_cstr_length
  mov rsi,rax
- mov rdi,[rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET]
+ mov rdi,[rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_ID_OFFSET]
+ call cli_diag_source_path
+ mov rdi,rax
  call cli_write_stderr_raw
  lea rdi,[rel cli_diag_human_separator]
  mov esi,1
  call cli_write_stderr_raw
  mov rdi,[rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_START_OFFSET]
- call cli_diag_line_column
+ mov rsi,[rel cli_canonical_diagnostic+NEBOC_DIAGNOSTIC_SECONDARY_SPAN_OFFSET+NEBOC_SOURCE_SPAN_SOURCE_ID_OFFSET]
+ call cli_diag_line_column_for_source
  mov r12,rax
  mov r13,rdx
  mov rdi,r12
@@ -17421,6 +29362,71 @@ cli_emit_canonical_human:
 cli_diag_line_column:
  mov r8,rdi
  lea r9,[rel cli_source]
+ xor ecx,ecx
+ mov eax,1
+ mov edx,1
+.scan:
+ cmp rcx,r8
+ jae .done
+ movzx r10d,byte [r9+rcx]
+ cmp r10b,13
+ je .cr
+ cmp r10b,10
+ je .lf
+ mov r11d,r10d
+ and r11d,0c0h
+ cmp r11d,080h
+ je .next
+ inc rdx
+.next:
+ inc rcx
+ jmp .scan
+.cr:
+ inc rax
+ mov edx,1
+ inc rcx
+ cmp rcx,r8
+ jae .scan
+ cmp byte [r9+rcx],10
+ jne .scan
+ inc rcx
+ jmp .scan
+.lf:
+ inc rax
+ mov edx,1
+ inc rcx
+ jmp .scan
+.done:
+ ret
+
+; Resolve the stable command-line spelling of a diagnostic source id.
+cli_diag_source_path:
+ cmp rdi,2
+ je .unit1
+ cmp rdi,3
+ je .unit2
+ mov rax,[rel cli_state+NEBOC_CLI_STATE_INPUT_PTR_OFFSET]
+ ret
+.unit1:
+ mov rax,[rel cli_module_unit_paths]
+ ret
+.unit2:
+ mov rax,[rel cli_module_unit_paths+8]
+ ret
+
+; byte offset + source id -> 1-based Unicode code-point line/column.
+cli_diag_line_column_for_source:
+ mov r8,rdi
+ lea r9,[rel cli_source]
+ cmp rsi,2
+ je .unit1
+ cmp rsi,3
+ jne .scan_init
+ lea r9,[rel cli_module_source2]
+ jmp .scan_init
+.unit1:
+ lea r9,[rel cli_module_source1]
+.scan_init:
  xor ecx,ecx
  mov eax,1
  mov edx,1
@@ -17546,6 +29552,1036 @@ cli_emit_observability:
  pop rbx
  ret
 
+cli_g029_verify_report:
+ push rbx
+ push r12
+ push r13
+ sub rsp,16
+ mov rax,[rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_OUTPUT_VALUE_OFFSET]
+ mov r13d,eax
+ shr rax,32
+ mov r12d,eax
+ mov edi,r12d
+ mov esi,r13d
+ call nebo_g029_source_probe
+ shr rax,32
+ test eax,eax
+ jnz .failed
+ cmp qword [rel cli_meta_mode],6
+ je .property
+ cmp qword [rel cli_meta_mode],7
+ je .counterexample
+ lea rdi,[rel cli_g029_verify_prefix]
+ mov esi,cli_g029_verify_prefix_len
+ call cli_write_stdout
+ mov rdi,r13
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g029_verify_suffix]
+ mov esi,cli_g029_verify_suffix_len
+ call cli_write_stdout
+ xor eax,eax
+ jmp .done
+.property:
+ lea rdi,[rel cli_g029_property_prefix]
+ mov esi,cli_g029_property_prefix_len
+ call cli_write_stdout
+ mov rdi,r13
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g029_property_suffix]
+ mov esi,cli_g029_property_suffix_len
+ call cli_write_stdout
+ xor eax,eax
+ jmp .done
+.counterexample:
+ lea rdi,[rel cli_g029_counterexample_prefix]
+ mov esi,cli_g029_counterexample_prefix_len
+ call cli_write_stdout
+ mov rdi,r13
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g029_counterexample_suffix]
+ mov esi,cli_g029_counterexample_suffix_len
+ call cli_write_stdout
+ xor eax,eax
+.done:
+ add rsp,16
+ pop r13
+ pop r12
+ pop rbx
+ ret
+.failed:
+ mov eax,1
+ jmp .done
+
+cli_g030_solve_report:
+ push rbx
+ push r12
+ push r13
+ sub rsp,64
+ mov rax,[rel colecoes_primitivas_cli_vertical_request+NEBOC_ARRAY_VERTICAL_OUTPUT_VALUE_OFFSET]
+ mov r13d,eax
+ shr rax,32
+ mov r12d,eax
+ mov edi,r12d
+ mov esi,r13d
+ call nebo_g030_source_probe
+ shr rax,32
+ test eax,eax
+ jnz .failed
+ cmp qword [rel cli_meta_mode],4
+ je .unsat
+ lea rdi,[rel cli_g030_solve_sat_prefix]
+ mov esi,cli_g030_solve_sat_prefix_len
+ call cli_write_stdout
+ mov rdi,r13
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g030_solve_sat_suffix]
+ mov esi,cli_g030_solve_sat_suffix_len
+ call cli_write_stdout
+ xor eax,eax
+ jmp .done
+.unsat:
+ mov edi,5
+ mov esi,1
+ lea rdx,[rsp]
+ lea rcx,[rsp+8]
+ lea r8,[rsp+48]
+ call nebo_g030_explain_model
+ test eax,eax
+ jnz .failed
+ cmp qword [rsp],1
+ jne .failed
+ lea rdi,[rel cli_g030_solve_unsat_prefix]
+ mov esi,cli_g030_solve_unsat_prefix_len
+ call cli_write_stdout
+ mov rdi,r13
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g030_solve_unsat_suffix]
+ mov esi,cli_g030_solve_unsat_suffix_len
+ call cli_write_stdout
+ xor eax,eax
+.done:
+ add rsp,64
+ pop r13
+ pop r12
+ pop rbx
+ ret
+.failed:
+ mov eax,1
+ jmp .done
+
+; Add source-relative primary/related context to every public G151 diagnostic.
+cli_g151_write_diagnostic_context:
+ push rbx
+ push r12
+ sub rsp,8
+ lea rdx,[rel cli_module_import_asts]
+ mov rax,[rdx+NEBOC_IMPORT_AST_DIAGNOSTIC_SPAN_OFFSET]
+ mov rbx,rax
+ shr rax,32
+ mov r12,rax
+ test r12,r12
+ jnz .span_ready
+ mov rax,[rdx+NEBOC_IMPORT_AST_CAPSULE_SPAN_OFFSET]
+ test rax,rax
+ jnz .span_fallback
+ mov rax,[rdx+NEBOC_IMPORT_AST_ALIAS0_SPAN_OFFSET]
+.span_fallback:
+ mov rbx,rax
+ shr rax,32
+ mov r12,rax
+.span_ready:
+ mov ebx,ebx
+ lea rdi,[rel cli_g151_diag_primary]
+ mov esi,cli_g151_diag_primary_len
+ call cli_write_stderr_raw
+ mov rdi,rbx
+ call cli_write_u64_stderr
+ lea rdi,[rel cli_g151_diag_range]
+ mov esi,cli_g151_diag_range_len
+ call cli_write_stderr_raw
+ add rbx,r12
+ mov rdi,rbx
+ call cli_write_u64_stderr
+ lea rdi,[rel cli_g151_diag_related]
+ mov esi,cli_g151_diag_related_len
+ call cli_write_stderr_raw
+ add rsp,8
+ pop r12
+ pop rbx
+ ret
+
+; Validate an explain query against the analyzed import namespace and export
+; table. This prevents an arbitrary string from masquerading as an explanation.
+cli_g151_validate_query:
+ push rbx
+ push rbp
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,8
+ lea rbx,[rel cli_module_import_asts]
+ mov rbp,[rel cli_g151_query]
+ test rbp,rbp
+ jz .syntax
+ mov r8,14695981039346656037
+ mov r9,1099511628211
+ xor ecx,ecx
+.namespace:
+ movzx edx,byte [rbp+rcx]
+ test ecx,ecx
+ jnz .namespace_tail
+ cmp dl,'a'
+ jb .syntax
+ cmp dl,'z'
+ ja .syntax
+ jmp .namespace_take
+.namespace_tail:
+ cmp dl,'.'
+ je .symbol_start
+ cmp dl,'a'
+ jb .namespace_digit
+ cmp dl,'z'
+ jbe .namespace_take
+.namespace_digit:
+ cmp dl,'0'
+ jb .namespace_under
+ cmp dl,'9'
+ jbe .namespace_take
+.namespace_under:
+ cmp dl,'_'
+ jne .syntax
+.namespace_take:
+ cmp ecx,NEBOC_IMPORT_MAX_IDENTIFIER_BYTES
+ jae .syntax
+ xor r8,rdx
+ imul r8,r9
+ inc ecx
+ jmp .namespace
+.symbol_start:
+ test ecx,ecx
+ jz .syntax
+ inc ecx
+ movzx edx,byte [rbp+rcx]
+ cmp dl,'A'
+ jb .syntax
+ cmp dl,'Z'
+ jbe .symbol_first_ok
+ cmp dl,'a'
+ jb .syntax
+ cmp dl,'z'
+ ja .syntax
+.symbol_first_ok:
+ mov r10,14695981039346656037
+ xor r11d,r11d
+.symbol:
+ movzx edx,byte [rbp+rcx]
+ test dl,dl
+ jz .symbol_done
+ cmp dl,'A'
+ jb .symbol_digit
+ cmp dl,'Z'
+ jbe .symbol_take
+ cmp dl,'a'
+ jb .symbol_digit
+ cmp dl,'z'
+ jbe .symbol_take
+.symbol_digit:
+ cmp dl,'0'
+ jb .symbol_under
+ cmp dl,'9'
+ jbe .symbol_take
+.symbol_under:
+ cmp dl,'_'
+ jne .syntax
+.symbol_take:
+ cmp r11d,NEBOC_IMPORT_MAX_IDENTIFIER_BYTES
+ jae .syntax
+ xor r10,rdx
+ imul r10,r9
+ inc r11d
+ inc ecx
+ jmp .symbol
+.symbol_done:
+ test r11d,r11d
+ jz .syntax
+ mov rax,[rbx+NEBOC_IMPORT_AST_FORM_OFFSET]
+ cmp rax,NEBOC_IMPORT_FORM_NAMED_CAPSULE
+ je .named
+ cmp r8,[rbx+NEBOC_IMPORT_AST_ALIAS0_HASH_OFFSET]
+ je .alias0
+ cmp qword [rbx+NEBOC_IMPORT_AST_COUNT_OFFSET],2
+ jb .missing
+ cmp r8,[rbx+NEBOC_IMPORT_AST_ALIAS1_HASH_OFFSET]
+ jne .missing
+ mov r12,[rbx+NEBOC_IMPORT_AST_TARGET1_HASH_OFFSET]
+ jmp .single_target
+.alias0:
+ mov r12,[rbx+NEBOC_IMPORT_AST_TARGET0_HASH_OFFSET]
+.single_target:
+ xor r15d,r15d
+.single_find:
+ cmp r15d,NEBOC_MODULE_MAX_UNITS
+ jae .missing_unit
+ mov rax,r15
+ shl rax,7
+ lea r14,[rel cli_module_records]
+ add r14,rax
+ cmp r12,[r14+NEBOC_MODULE_RECORD_MODULE_HASH_OFFSET]
+ je .single_found
+ inc r15d
+ jmp .single_find
+.single_found:
+ test qword [r14+NEBOC_MODULE_RECORD_FLAGS_OFFSET],NEBOC_MODULE_RECORD_EXPORT
+ jz .missing
+ cmp r10,[r14+NEBOC_MODULE_RECORD_EXPORT_HASH_OFFSET]
+ jne .missing
+ cmp qword [r14+NEBOC_MODULE_RECORD_VISIBILITY_OFFSET],NEBOC_MODULE_VISIBILITY_PRIVATE
+ je .private
+ jmp .ok
+
+.named:
+ cmp r8,[rbx+NEBOC_IMPORT_AST_CAPSULE_HASH_OFFSET]
+ jne .missing
+ xor r12d,r12d               ; entry index
+ xor r13d,r13d               ; matching public exports
+.named_entry:
+ cmp r12,[rbx+NEBOC_IMPORT_AST_COUNT_OFFSET]
+ jae .named_done
+ mov rax,r12
+ imul rax,40
+ mov r14,[rbx+rax+NEBOC_IMPORT_AST_TARGET0_HASH_OFFSET]
+ xor r15d,r15d
+.named_find:
+ cmp r15d,NEBOC_MODULE_MAX_UNITS
+ jae .named_next
+ mov rax,r15
+ shl rax,7
+ lea rdx,[rel cli_module_records]
+ add rdx,rax
+ cmp r14,[rdx+NEBOC_MODULE_RECORD_MODULE_HASH_OFFSET]
+ jne .named_find_next
+ test qword [rdx+NEBOC_MODULE_RECORD_FLAGS_OFFSET],NEBOC_MODULE_RECORD_EXPORT
+ jz .named_next
+ cmp r10,[rdx+NEBOC_MODULE_RECORD_EXPORT_HASH_OFFSET]
+ jne .named_next
+ cmp qword [rdx+NEBOC_MODULE_RECORD_VISIBILITY_OFFSET],NEBOC_MODULE_VISIBILITY_PRIVATE
+ je .private
+ inc r13d
+ jmp .named_next
+.named_find_next:
+ inc r15d
+ jmp .named_find
+.named_next:
+ inc r12d
+ jmp .named_entry
+.named_done:
+ cmp r13d,1
+ je .ok
+ cmp r13d,1
+ ja .ambiguous
+ jmp .missing
+.syntax:
+ mov qword [rel cli_module_request+NEBOC_MODULE_DIAGNOSTIC_OFFSET],NEBOC_IMPORT_DIAG_SYNTAX
+ jmp .failed
+.missing_unit:
+ mov qword [rel cli_module_request+NEBOC_MODULE_DIAGNOSTIC_OFFSET],neboc_seguranca_numerica_conversoes_e_overflow_MODULE_DIAG_MISSING_UNIT
+ jmp .failed
+.missing:
+ mov qword [rel cli_module_request+NEBOC_MODULE_DIAGNOSTIC_OFFSET],NEBOC_MODULE_DIAG_MISSING_EXPORT
+ jmp .failed
+.private:
+ mov qword [rel cli_module_request+NEBOC_MODULE_DIAGNOSTIC_OFFSET],NEBOC_MODULE_DIAG_PRIVATE_ACCESS
+ jmp .failed
+.ambiguous:
+ mov qword [rel cli_module_request+NEBOC_MODULE_DIAGNOSTIC_OFFSET],NEBOC_IMPORT_DIAG_AMBIGUOUS_SYMBOL
+.failed:
+ mov eax,1
+ jmp .done
+.ok:
+ xor eax,eax
+.done:
+ add rsp,8
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbp
+ pop rbx
+ ret
+
+; Render the canonical pointerless import AST already consumed by the live
+; parser/semantic/lowering pipeline. No command reparses source bytes.
+cli_g151_render_imports:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ lea rbx,[rel cli_module_import_asts]
+ mov rax,[rbx+NEBOC_IMPORT_AST_FORM_OFFSET]
+ cmp rax,NEBOC_IMPORT_FORM_SIMPLE
+ jb .failed
+ cmp rax,NEBOC_IMPORT_FORM_SELECTIVE
+ ja .failed
+ cmp qword [rel cli_g151_report_kind],2
+ jne .form
+ lea rdi,[rel cli_g151_out_query]
+ mov esi,cli_g151_out_query_len
+ call cli_write_stdout
+ mov rdi,[rel cli_g151_query]
+ call cli_cstr_length
+ mov rsi,rax
+ mov rdi,[rel cli_g151_query]
+ call cli_write_stdout
+ lea rdi,[rel cli_g150_graph_end]
+ mov esi,cli_g150_graph_end_len
+ call cli_write_stdout
+.form:
+ lea rdi,[rel cli_g151_out_form]
+ mov esi,cli_g151_out_form_len
+ call cli_write_stdout
+ mov rax,[rbx+NEBOC_IMPORT_AST_FORM_OFFSET]
+ cmp rax,NEBOC_IMPORT_FORM_SIMPLE
+ je .form_simple
+ cmp rax,NEBOC_IMPORT_FORM_NAMED_CAPSULE
+ je .form_named
+ cmp rax,NEBOC_IMPORT_FORM_SELECTIVE
+ je .form_selective
+ lea rdi,[rel cli_g151_form_anonymous]
+ mov esi,cli_g151_form_anonymous_len
+ jmp .form_write
+.form_simple:
+ lea rdi,[rel cli_g151_form_simple]
+ mov esi,cli_g151_form_simple_len
+ jmp .form_write
+.form_named:
+ lea rdi,[rel cli_g151_form_named]
+ mov esi,cli_g151_form_named_len
+ jmp .form_write
+.form_selective:
+ lea rdi,[rel cli_g152_form_selective]
+ mov esi,cli_g152_form_selective_len
+.form_write:
+ call cli_write_stdout
+ lea rdi,[rel cli_g151_out_count]
+ mov esi,cli_g151_out_count_len
+ call cli_write_stdout
+ mov rdi,[rbx+NEBOC_IMPORT_AST_COUNT_OFFSET]
+ cmp qword [rbx+NEBOC_IMPORT_AST_FORM_OFFSET],NEBOC_IMPORT_FORM_SELECTIVE
+ jne .count_ready
+ mov rdi,[rbx+NEBOC_IMPORT_AST_SELECTIVE_COUNT_OFFSET]
+.count_ready:
+ call cli_write_u64_stdout
+ cmp qword [rbx+NEBOC_IMPORT_AST_FORM_OFFSET],NEBOC_IMPORT_FORM_NAMED_CAPSULE
+ jne .entry0
+ lea rdi,[rel cli_g151_out_capsule]
+ mov esi,cli_g151_out_capsule_len
+ call cli_write_stdout
+ lea rdi,[rel cli_source]
+ mov rsi,[rbx+NEBOC_IMPORT_AST_CAPSULE_SPAN_OFFSET]
+ call cli_g151_write_span
+.entry0:
+ lea rdi,[rel cli_g151_out_path0]
+ mov esi,cli_g151_out_path0_len
+ call cli_write_stdout
+ lea rdi,[rel cli_source]
+ mov rsi,[rbx+NEBOC_IMPORT_AST_PATH0_SPAN_OFFSET]
+ call cli_g151_write_span
+ lea rdi,[rel cli_g151_out_alias0]
+ mov esi,cli_g151_out_alias0_len
+ call cli_write_stdout
+ lea rdi,[rel cli_source]
+ mov rsi,[rbx+NEBOC_IMPORT_AST_ALIAS0_SPAN_OFFSET]
+ call cli_g151_write_span
+ cmp qword [rbx+NEBOC_IMPORT_AST_FORM_OFFSET],NEBOC_IMPORT_FORM_SELECTIVE
+ jne .entry1_check
+ xor r12d,r12d
+.selective_symbol:
+ cmp r12,[rbx+NEBOC_IMPORT_AST_SELECTIVE_COUNT_OFFSET]
+ jae .trace
+ lea rdi,[rel cli_g152_out_symbol]
+ mov esi,cli_g152_out_symbol_len
+ call cli_write_stdout
+ lea rdi,[rel cli_source]
+ mov rsi,[rbx+NEBOC_IMPORT_AST_SELECTIVE_SPANS_OFFSET+r12*8]
+ call cli_g151_write_span
+ inc r12
+ jmp .selective_symbol
+.entry1_check:
+ cmp qword [rbx+NEBOC_IMPORT_AST_COUNT_OFFSET],2
+ jb .trace
+ lea rdi,[rel cli_g151_out_path1]
+ mov esi,cli_g151_out_path1_len
+ call cli_write_stdout
+ lea rdi,[rel cli_source]
+ mov rsi,[rbx+NEBOC_IMPORT_AST_PATH1_SPAN_OFFSET]
+ call cli_g151_write_span
+ lea rdi,[rel cli_g151_out_alias1]
+ mov esi,cli_g151_out_alias1_len
+ call cli_write_stdout
+ lea rdi,[rel cli_source]
+ mov rsi,[rbx+NEBOC_IMPORT_AST_ALIAS1_SPAN_OFFSET]
+ call cli_g151_write_span
+.trace:
+ lea rdi,[rel cli_g151_out_trace]
+ mov esi,cli_g151_out_trace_len
+ call cli_write_stdout
+ mov rdi,[rbx+NEBOC_IMPORT_AST_TRACE_HASH_OFFSET]
+ call cli_write_u64_stdout
+ cmp qword [rel cli_g151_report_kind],2
+ jne .newline
+ lea rdi,[rel cli_g151_out_steps]
+ mov esi,cli_g151_out_steps_len
+ call cli_write_stdout
+ xor eax,eax
+ jmp .done
+.newline:
+ lea rdi,[rel cli_g150_graph_end]
+ mov esi,cli_g150_graph_end_len
+ call cli_write_stdout
+ xor eax,eax
+ jmp .done
+.failed:
+ mov eax,NEBOC_CLI_EXIT_SOURCE_ERROR
+.done:
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Write a source-relative packed span from base RDI and span RSI.
+cli_g151_write_span:
+ mov edx,esi
+ shr rsi,32
+ add rdi,rdx
+ call cli_write_stdout
+ ret
+
+; Build the G150 view from the already parsed/analyzed/lowered G003 snapshot.
+; ModuleId adds the implicit workspace package; edges point dependency first.
+cli_g150_prepare_snapshot:
+ push rbx
+ push rbp
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,8
+ lea rdi,[rel cli_g150_ids]
+ mov ecx,(NEBOC_MODULE_MAX_UNITS*NEBOC_MODULE_ID_SIZE)/8
+ xor eax,eax
+ rep stosq
+ lea rdi,[rel cli_g150_nodes]
+ mov ecx,NEBOC_MODULE_MAX_UNITS
+ xor eax,eax
+ rep stosq
+ lea rdi,[rel cli_g150_edges]
+ mov ecx,(6*NEBOC_GRAPH_EDGE_SIZE)/8
+ xor eax,eax
+ rep stosq
+ mov qword [rel cli_g150_edge_count],0
+ mov qword [rel cli_g150_snapshot],0
+ xor ebx,ebx
+.identity_loop:
+ cmp rbx,NEBOC_MODULE_MAX_UNITS
+ jae .edges
+ mov rax,rbx
+ shl rax,7
+ lea rbp,[rel cli_module_records]
+ add rbp,rax
+ mov rax,[rbp+NEBOC_MODULE_RECORD_NAME_SPAN_OFFSET]
+ mov r10d,eax
+ shr rax,32
+ mov r11,rax
+ test r11,r11
+ jz .source
+ lea rdx,[rel cli_source]
+ test rbx,rbx
+ jz .source_selected
+ lea rdx,[rel cli_module_source1]
+ cmp rbx,1
+ je .source_selected
+ lea rdx,[rel cli_module_source2]
+.source_selected:
+ add rdx,r10
+ mov rax,rbx
+ imul rax,NEBOC_MODULE_ID_SIZE
+ lea r8,[rel cli_g150_ids]
+ add r8,rax
+ mov r15,r8
+ lea rdi,[rel cli_g150_package]
+ mov esi,cli_g150_package_len
+ mov rcx,r11
+ call neboc_module_id
+ test eax,eax
+ jnz .done
+ mov rax,[r15+NEBOC_MODULE_ID_DIGEST]
+ lea rdx,[rel cli_g150_nodes]
+ mov [rdx+rbx*8],rax
+ inc rbx
+ jmp .identity_loop
+.edges:
+ xor ebx,ebx
+.edge_unit:
+ cmp rbx,NEBOC_MODULE_MAX_UNITS
+ jae .build
+ mov rax,rbx
+ shl rax,7
+ lea r13,[rel cli_module_records]
+ add r13,rax
+ xor ebp,ebp
+.edge_import:
+ cmp rbp,[r13+NEBOC_MODULE_RECORD_IMPORT_COUNT_OFFSET]
+ jae .edge_next_unit
+ mov r14,[r13+rbp*8+NEBOC_MODULE_RECORD_IMPORT0_HASH_OFFSET]
+ xor r12d,r12d
+.edge_find:
+ cmp r12,NEBOC_MODULE_MAX_UNITS
+ jae .source
+ mov rax,r12
+ shl rax,7
+ lea r15,[rel cli_module_records]
+ cmp r14,[r15+rax+NEBOC_MODULE_RECORD_MODULE_HASH_OFFSET]
+ je .edge_found
+ inc r12
+ jmp .edge_find
+.edge_found:
+ mov rcx,[rel cli_g150_edge_count]
+ cmp rcx,6
+ jae .source
+ mov rax,rcx
+ shl rax,4
+ lea r15,[rel cli_g150_edges]
+ mov [r15+rax+NEBOC_GRAPH_EDGE_FROM],r12
+ mov [r15+rax+NEBOC_GRAPH_EDGE_TO],rbx
+ inc rcx
+ mov [rel cli_g150_edge_count],rcx
+ inc rbp
+ jmp .edge_import
+.edge_next_unit:
+ inc rbx
+ jmp .edge_unit
+.build:
+ lea rdi,[rel cli_g150_nodes]
+ mov esi,NEBOC_MODULE_MAX_UNITS
+ lea rdx,[rel cli_g150_edges]
+ mov rcx,[rel cli_g150_edge_count]
+ lea r8,[rel cli_g150_snapshot]
+ call neboc_module_graph_build
+ test eax,eax
+ jnz .done
+ lea rdi,[rel cli_g150_nodes]
+ mov esi,NEBOC_MODULE_MAX_UNITS
+ lea rdx,[rel cli_g150_edges]
+ mov rcx,[rel cli_g150_edge_count]
+ lea r8,[rel cli_g150_order]
+ mov r9d,NEBOC_MODULE_MAX_UNITS
+ call neboc_module_graph_order
+ jmp .done
+.source:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.done:
+ add rsp,8
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbp
+ pop rbx
+ ret
+
+cli_g150_render_info:
+ push rbx
+ push rbp
+ push r12
+ push r13
+ sub rsp,8
+ xor ebx,ebx
+ mov rbp,-1
+.rank:
+ cmp rbx,NEBOC_MODULE_MAX_UNITS
+ jae .rank_done
+ lea rax,[rel cli_g150_order]
+ cmp qword [rax+rbx*8],0
+ jne .rank_next
+ mov rbp,rbx
+.rank_next:
+ inc rbx
+ jmp .rank
+.rank_done:
+ cmp rbp,-1
+ je .failed
+ lea rdi,[rel cli_g150_info_id]
+ mov esi,cli_g150_info_id_len
+ call cli_write_stdout
+ mov rdi,[rel cli_g150_nodes]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g150_info_logical]
+ mov esi,cli_g150_info_logical_len
+ call cli_write_stdout
+ mov rax,[rel cli_module_records+NEBOC_MODULE_RECORD_NAME_SPAN_OFFSET]
+ mov edx,eax
+ mov rsi,rax
+ shr rsi,32
+ lea rdi,[rel cli_source]
+ add rdi,rdx
+ call cli_write_stdout
+ lea rdi,[rel cli_g150_info_rank]
+ mov esi,cli_g150_info_rank_len
+ call cli_write_stdout
+ mov rdi,rbp
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g150_info_source]
+ mov esi,cli_g150_info_source_len
+ call cli_write_stdout
+ mov rdi,[rel cli_module_records+NEBOC_MODULE_RECORD_SOURCE_HASH_OFFSET]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g150_info_snapshot]
+ mov esi,cli_g150_info_snapshot_len
+ call cli_write_stdout
+ mov rdi,[rel cli_g150_snapshot]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g150_info_units]
+ mov esi,cli_g150_info_units_len
+ call cli_write_stdout
+ lea rdi,[rel cli_g153_info_imports]
+ mov esi,cli_g153_info_imports_len
+ call cli_write_stdout
+ mov rdi,[rel cli_module_records+NEBOC_MODULE_RECORD_IMPORT_COUNT_OFFSET]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g153_info_starts]
+ mov esi,cli_g153_info_starts_len
+ call cli_write_stdout
+ mov rdi,[rel cli_module_records+NEBOC_MODULE_RECORD_START_COUNT_OFFSET]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g153_info_visibility]
+ mov esi,cli_g153_info_visibility_len
+ call cli_write_stdout
+ mov rdi,[rel cli_module_records+NEBOC_MODULE_RECORD_VISIBILITY_OFFSET]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g154_info_export_symbol]
+ mov esi,cli_g154_info_export_symbol_len
+ call cli_write_stdout
+ mov rdi,[rel cli_module_records+NEBOC_MODULE_RECORD_EXPORT_HASH_OFFSET]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g153_info_export]
+ mov esi,cli_g153_info_export_len
+ call cli_write_stdout
+ mov rdi,[rel cli_module_records+NEBOC_MODULE_RECORD_EXPORT_VALUE_OFFSET]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_module_typed_result]
+ mov esi,cli_module_typed_result_len
+ call cli_write_stdout
+ mov rdi,[rel cli_module_request+NEBOC_MODULE_RESULT_OFFSET]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g150_graph_end]
+ mov esi,cli_g150_graph_end_len
+ call cli_write_stdout
+ xor eax,eax
+ jmp .done
+.failed:
+ mov eax,NEBOC_CLI_EXIT_SOURCE_ERROR
+.done:
+ add rsp,8
+ pop r13
+ pop r12
+ pop rbp
+ pop rbx
+ ret
+
+; EAX=1 exactly when the pair of record indices R12/R13 is an edge.
+cli_g150_edge_exists:
+ xor r14d,r14d
+.scan:
+ cmp r14,[rel cli_g150_edge_count]
+ jae .no
+ mov rax,r14
+ shl rax,4
+ lea rdx,[rel cli_g150_edges]
+ cmp r12,[rdx+rax+NEBOC_GRAPH_EDGE_FROM]
+ jne .next
+ cmp r13,[rdx+rax+NEBOC_GRAPH_EDGE_TO]
+ je .yes
+.next:
+ inc r14
+ jmp .scan
+.yes:
+ mov eax,1
+ ret
+.no:
+ xor eax,eax
+ ret
+
+cli_g150_render_graph:
+ push rbx
+ push rbp
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,8
+ mov rax,[rel cli_g150_report_format]
+ cmp rax,2
+ je .json
+ cmp rax,3
+ je .dot
+.text:
+ lea rdi,[rel cli_g150_graph_snapshot]
+ mov esi,cli_g150_graph_snapshot_len
+ call cli_write_stdout
+ mov rdi,[rel cli_g150_snapshot]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g150_graph_order]
+ mov esi,cli_g150_graph_order_len
+ call cli_write_stdout
+ xor ebx,ebx
+.text_nodes:
+ cmp rbx,NEBOC_MODULE_MAX_UNITS
+ jae .text_links
+ test rbx,rbx
+ jz .text_node_value
+ lea rdi,[rel cli_g150_comma]
+ mov esi,1
+ call cli_write_stdout
+.text_node_value:
+ lea rdx,[rel cli_g150_order]
+ mov rax,[rdx+rbx*8]
+ lea rdx,[rel cli_g150_nodes]
+ mov rdi,[rdx+rax*8]
+ call cli_write_u64_stdout
+ inc rbx
+ jmp .text_nodes
+.text_links:
+ lea rdi,[rel cli_g150_graph_links]
+ mov esi,cli_g150_graph_links_len
+ call cli_write_stdout
+ xor r15d,r15d
+ xor ebx,ebx
+.text_from:
+ cmp rbx,NEBOC_MODULE_MAX_UNITS
+ jae .text_end
+ lea rax,[rel cli_g150_order]
+ mov r12,[rax+rbx*8]
+ xor ebp,ebp
+.text_to:
+ cmp rbp,NEBOC_MODULE_MAX_UNITS
+ jae .text_next_from
+ lea rax,[rel cli_g150_order]
+ mov r13,[rax+rbp*8]
+ call cli_g150_edge_exists
+ test eax,eax
+ jz .text_next_to
+ test r15,r15
+ jz .text_edge
+ lea rdi,[rel cli_g150_comma]
+ mov esi,1
+ call cli_write_stdout
+.text_edge:
+ lea rax,[rel cli_g150_nodes]
+ mov rdi,[rax+r12*8]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g150_arrow]
+ mov esi,2
+ call cli_write_stdout
+ lea rax,[rel cli_g150_nodes]
+ mov rdi,[rax+r13*8]
+ call cli_write_u64_stdout
+ mov r15d,1
+.text_next_to:
+ inc rbp
+ jmp .text_to
+.text_next_from:
+ inc rbx
+ jmp .text_from
+.text_end:
+ lea rdi,[rel cli_g150_graph_end]
+ mov esi,cli_g150_graph_end_len
+ call cli_write_stdout
+ jmp .ok
+.json:
+ lea rdi,[rel cli_g150_json_a]
+ mov esi,cli_g150_json_a_len
+ call cli_write_stdout
+ mov rdi,[rel cli_g150_snapshot]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g150_json_b]
+ mov esi,cli_g150_json_b_len
+ call cli_write_stdout
+ xor ebx,ebx
+.json_nodes:
+ cmp rbx,NEBOC_MODULE_MAX_UNITS
+ jae .json_links
+ test rbx,rbx
+ jz .json_node_value
+ lea rdi,[rel cli_g150_comma]
+ mov esi,1
+ call cli_write_stdout
+.json_node_value:
+ lea rdx,[rel cli_g150_order]
+ mov rax,[rdx+rbx*8]
+ lea rdx,[rel cli_g150_nodes]
+ mov rdi,[rdx+rax*8]
+ call cli_write_u64_stdout
+ inc rbx
+ jmp .json_nodes
+.json_links:
+ lea rdi,[rel cli_g150_json_c]
+ mov esi,cli_g150_json_c_len
+ call cli_write_stdout
+ xor r15d,r15d
+ xor ebx,ebx
+.json_from:
+ cmp rbx,NEBOC_MODULE_MAX_UNITS
+ jae .json_end
+ lea rax,[rel cli_g150_order]
+ mov r12,[rax+rbx*8]
+ xor ebp,ebp
+.json_to:
+ cmp rbp,NEBOC_MODULE_MAX_UNITS
+ jae .json_next_from
+ lea rax,[rel cli_g150_order]
+ mov r13,[rax+rbp*8]
+ call cli_g150_edge_exists
+ test eax,eax
+ jz .json_next_to
+ test r15,r15
+ jz .json_edge
+ lea rdi,[rel cli_g150_comma]
+ mov esi,1
+ call cli_write_stdout
+.json_edge:
+ lea rdi,[rel cli_g150_json_link_a]
+ mov esi,1
+ call cli_write_stdout
+ lea rax,[rel cli_g150_nodes]
+ mov rdi,[rax+r12*8]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g150_json_link_b]
+ mov esi,1
+ call cli_write_stdout
+ lea rax,[rel cli_g150_nodes]
+ mov rdi,[rax+r13*8]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g150_json_link_c]
+ mov esi,1
+ call cli_write_stdout
+ mov r15d,1
+.json_next_to:
+ inc rbp
+ jmp .json_to
+.json_next_from:
+ inc rbx
+ jmp .json_from
+.json_end:
+ lea rdi,[rel cli_g150_json_d]
+ mov esi,cli_g150_json_d_len
+ call cli_write_stdout
+ jmp .ok
+.dot:
+ lea rdi,[rel cli_g150_dot_a]
+ mov esi,cli_g150_dot_a_len
+ call cli_write_stdout
+ xor ebx,ebx
+.dot_nodes:
+ cmp rbx,NEBOC_MODULE_MAX_UNITS
+ jae .dot_links
+ lea rdi,[rel cli_g150_dot_indent]
+ mov esi,2
+ call cli_write_stdout
+ lea rdx,[rel cli_g150_order]
+ mov rax,[rdx+rbx*8]
+ lea rdx,[rel cli_g150_nodes]
+ mov rdi,[rdx+rax*8]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g150_dot_node_end]
+ mov esi,2
+ call cli_write_stdout
+ inc rbx
+ jmp .dot_nodes
+.dot_links:
+ xor ebx,ebx
+.dot_from:
+ cmp rbx,NEBOC_MODULE_MAX_UNITS
+ jae .dot_end
+ lea rax,[rel cli_g150_order]
+ mov r12,[rax+rbx*8]
+ xor ebp,ebp
+.dot_to:
+ cmp rbp,NEBOC_MODULE_MAX_UNITS
+ jae .dot_next_from
+ lea rax,[rel cli_g150_order]
+ mov r13,[rax+rbp*8]
+ call cli_g150_edge_exists
+ test eax,eax
+ jz .dot_next_to
+ lea rdi,[rel cli_g150_dot_indent]
+ mov esi,2
+ call cli_write_stdout
+ lea rax,[rel cli_g150_nodes]
+ mov rdi,[rax+r12*8]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g150_dot_edge]
+ mov esi,4
+ call cli_write_stdout
+ lea rax,[rel cli_g150_nodes]
+ mov rdi,[rax+r13*8]
+ call cli_write_u64_stdout
+ lea rdi,[rel cli_g150_dot_node_end]
+ mov esi,2
+ call cli_write_stdout
+.dot_next_to:
+ inc rbp
+ jmp .dot_to
+.dot_next_from:
+ inc rbx
+ jmp .dot_from
+.dot_end:
+ lea rdi,[rel cli_g150_dot_end]
+ mov esi,cli_g150_dot_end_len
+ call cli_write_stdout
+.ok:
+ xor eax,eax
+.done:
+ add rsp,8
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbp
+ pop rbx
+ ret
+
+cli_write_u64_stdout:
+ sub rsp,40
+ lea r8,[rsp+32]
+ mov rax,rdi
+ xor ecx,ecx
+ mov r9d,10
+ test rax,rax
+ jnz .digits
+ dec r8
+ mov byte [r8],'0'
+ mov ecx,1
+ jmp .write
+.digits:
+ xor edx,edx
+ div r9
+ add dl,'0'
+ dec r8
+ mov [r8],dl
+ inc rcx
+ test rax,rax
+ jnz .digits
+.write:
+ mov rdi,r8
+ mov rsi,rcx
+ call cli_write_stdout
+ add rsp,40
+ ret
+
 cli_write_stdout:
  mov rdx,rsi
  mov rsi,rdi
@@ -17574,9 +30610,254 @@ cli_write_stderr_suppressed:
 %include "compiler/driver/cli/linux-x86_64/net_port_cli.inc"
 %include "compiler/driver/cli/linux-x86_64/visual_summary_cli.inc"
 %include "compiler/driver/cli/linux-x86_64/probabilistic_report_cli.inc"
+%include "compiler/driver/cli/linux-x86_64/reactive_report_cli.inc"
+%include "compiler/driver/cli/linux-x86_64/database_cli.inc"
 %include "compiler/driver/cli/linux-x86_64/firmware_cli.inc"
 %include "compiler/driver/cli/linux-x86_64/simulation_cli.inc"
 %include "compiler/driver/cli/linux-x86_64/security_optimization_cli.inc"
 %include "compiler/driver/cli/linux-x86_64/protocol_cli.inc"
+%include "compiler/driver/cli/linux-x86_64/workflow_cli.inc"
+%include "compiler/driver/cli/linux-x86_64/spatial_cli.inc"
+; The portable CLI stays a bounded native extension of the static driver.
+%include "compiler/driver/cli/linux-x86_64/portable_cli.inc"
 
 section .note.GNU-stack noalloc noexec nowrite progbits
+
+section .rodata
+cli_public_Color: db 'Color'
+cli_public_Path: db 'Path'
+cli_public_Regex: db 'Regex'
+cli_public_RenderPlan: db 'RenderPlan'
+cli_public_File: db 'File'
+cli_public_Console: db 'Console'
+cli_public_Position: db 'Position'
+section .text
+cli_tokens_contain_public_visual_program:
+ push rbx
+ push r12
+ push r13
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r13d,r13d
+.scan:
+ test r12,r12
+ jz .result
+ cmp qword [rbx+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_KW_RETURN
+ jne .identifier
+ or r13d,1
+.identifier:
+ cmp qword [rbx+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_LBRACE
+ jne .struct_keyword
+ lea rax,[rel cli_tokens+2*NEBOC_TOKEN_SIZE]
+ cmp rbx,rax
+ jb .struct_keyword
+ cmp qword [rbx-NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .struct_keyword
+ cmp qword [rbx-2*NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_KW_STRUCT
+ je .struct_keyword
+ ; Identifier followed by a field initializer block, distinct from the
+ ; declaration itself. Complete default/mapEach profiles retain their owner.
+ or r13d,16
+.struct_keyword:
+ cmp qword [rbx+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_KW_STRUCT
+ jne .check_identifier
+ or r13d,4
+.check_identifier:
+ cmp qword [rbx+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+ mov rdi,rbx
+ lea rsi,[rel cli_function_console_name]
+ mov edx,7
+ call cli_token_equals
+ test eax,eax
+ jz .color
+ or r13d,8
+.color:
+ mov rdi,rbx
+ lea rsi,[rel cli_public_Color]
+ mov edx,5
+ call cli_token_equals
+ test eax,eax
+ jnz .namespace
+ mov rdi,rbx
+ lea rsi,[rel cli_public_Console]
+ mov edx,7
+ call cli_token_equals
+ test eax,eax
+ jnz .namespace
+ mov rdi,rbx
+ lea rsi,[rel cli_public_Position]
+ mov edx,8
+ call cli_token_equals
+ test eax,eax
+ jnz .namespace
+ mov rdi,rbx
+ lea rsi,[rel cli_g018_atom_visual]
+ mov edx,6
+ call cli_token_equals
+ test eax,eax
+ jnz .namespace
+ mov rdi,rbx
+ lea rsi,[rel cli_public_Path]
+ mov edx,4
+ call cli_token_equals
+ test eax,eax
+ jnz .namespace
+ mov rdi,rbx
+ lea rsi,[rel cli_public_File]
+ mov edx,4
+ call cli_token_equals
+ test eax,eax
+ jnz .namespace
+ mov rdi,rbx
+ lea rsi,[rel cli_public_Regex]
+ mov edx,5
+ call cli_token_equals
+ test eax,eax
+ jnz .namespace
+ mov rdi,rbx
+ lea rsi,[rel cli_public_RenderPlan]
+ mov edx,10
+ call cli_token_equals
+ test eax,eax
+ jz .next
+.namespace:
+ or r13d,2
+.next:
+ add rbx,NEBOC_TOKEN_SIZE
+ dec r12
+ jmp .scan
+.result:
+ test r13d,2
+ jnz .yes
+ ; Material field initializers with an explicit return need the typed Program
+ ; even without Console. Complete implicit aggregate profiles retain their
+ ; owner; they do not claim the source's separate explicit terminal.
+ xor eax,eax
+ test r13d,4
+ jz .done
+ test r13d,8
+ jnz .yes
+ and r13d,17
+ cmp r13d,17
+ sete al
+ jmp .done
+.yes:
+ mov eax,1
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; Recognize actual top-level import tokens, never strings/comments or method
+; names inside a body. The canonical registry host validates the full import
+; syntax and exports, then the native aliases consume the remaining source.
+cli_tokens_contain_std_import:
+ lea rdx,[rel cli_tokens]
+ mov rcx,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+ xor r8d,r8d
+.scan:
+ cmp rcx,2
+ jb .no
+ mov rax,[rdx+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rax,NEBOC_TOKEN_LBRACE
+ jne .close
+ inc r8
+ jmp .next
+.close:
+ cmp rax,NEBOC_TOKEN_RBRACE
+ jne .identifier
+ test r8,r8
+ jz .no
+ dec r8
+ jmp .next
+.identifier:
+ test r8,r8
+ jnz .next
+ cmp rax,NEBOC_TOKEN_KW_IMPORT
+ jne .next
+ cmp qword [rdx+NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_TEXT
+ jne .next
+ mov rax,[rdx+NEBOC_TOKEN_SIZE+NEBOC_TOKEN_END_OFFSET]
+ sub rax,[rdx+NEBOC_TOKEN_SIZE+NEBOC_TOKEN_START_OFFSET]
+ cmp rax,7
+ jb .next
+ lea rax,[rel cli_source]
+ add rax,[rdx+NEBOC_TOKEN_SIZE+NEBOC_TOKEN_START_OFFSET]
+ cmp dword [rax],0x64747322 ; "std
+ jne .next
+ cmp byte [rax+4],'.'
+ jne .next
+ mov eax,1
+ ret
+.next:
+ add rdx,NEBOC_TOKEN_SIZE
+ dec rcx
+ jmp .scan
+.no:
+ xor eax,eax
+ ret
+
+section .rodata
+cli_system_cancel_token: db 'CancellationToken'
+cli_system_channel: db 'Channel'
+cli_system_mutex: db 'Mutex'
+cli_system_rwlock: db 'RwLock'
+cli_system_atomic: db 'AtomicInt'
+cli_system_duration: db 'Duration'
+cli_system_instant: db 'Instant'
+cli_system_process: db 'Process'
+cli_system_json: db 'Json'
+cli_system_csv: db 'Csv'
+cli_system_task: db 'Task'
+cli_system_task_group: db 'TaskGroup'
+cli_system_environment: db 'Environment'
+cli_network_ip: db 'IpAddress'
+cli_network_address: db 'SocketAddress'
+cli_network_listener: db 'TcpListener'
+cli_network_stream: db 'TcpStream'
+cli_network_udp: db 'UdpSocket'
+cli_network_http_request: db 'HttpRequest'
+cli_network_http_client: db 'HttpClient'
+section .text
+; A namespace witness only chooses full AST parsing; semantic lookup still
+; validates shadowing, signatures and every adjacent source statement.
+cli_tokens_contain_network_namespace:
+ push rbx
+ push r12
+ lea rbx,[rel cli_tokens]
+ mov r12,[rel cli_lexer_request+NEBOC_LEXER_REQUEST_COUNT_OFFSET]
+.scan:
+ cmp r12,2
+ jb .no
+ cmp qword [rbx+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .next
+ cmp qword [rbx+NEBOC_TOKEN_SIZE+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_DOT
+ jne .next
+%macro CLI_NETWORK_NAMESPACE 2
+ mov rdi,rbx
+ lea rsi,[rel %1]
+ mov edx,%2
+ call cli_token_equals
+ test eax,eax
+ jnz .yes
+%endmacro
+ CLI_NETWORK_NAMESPACE cli_network_listener,11
+ CLI_NETWORK_NAMESPACE cli_network_stream,9
+ CLI_NETWORK_NAMESPACE cli_network_udp,9
+ CLI_NETWORK_NAMESPACE cli_network_http_client,10
+%unmacro CLI_NETWORK_NAMESPACE 2
+.next:
+ add rbx,NEBOC_TOKEN_SIZE
+ dec r12
+ jmp .scan
+.no:
+ xor eax,eax
+ jmp .done
+.yes:
+ mov eax,1
+.done:
+ pop r12
+ pop rbx
+ ret

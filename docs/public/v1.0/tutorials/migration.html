@@ -1,0 +1,17 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Explicit imports and current spelling</title><link rel="stylesheet" href="../assets/style.css"></head><body><a href="#main">Skip to content</a><nav aria-label="Home"><a href="../index.html">Nebo documentation home</a></nav><main id="main"><h1>Explicit imports and current spelling</h1><p>Keep Edition, release version, serialized interface version and target identity distinct. Edition 1 filesystem use requires import &quot;std.fs&quot; with the selected File and Path names. A missing import is a visibility error; .console() is the current rendered output sink.</p><p>Diagnose first: read the diagnostic code and source span, fix the causal declaration/import/operator, then check and build again. Never edit an expected result to silence a failure. For SDK repair, verify the local candidate and run the existing lifecycle repair command against its owned prefix; foreign files are retained. For operators, use Edition 1 arithmetic +, *, comparison &lt; and compound += with compatible typed operands; the tour exercises these spellings. Replace an assumed .get() on a Scan result with its documented .unwrapOr(default) and handle .isErr() before consuming it. Unsupported editions, stale interfaces and unreviewed cryptography remain explicit boundaries.</p><h2>Complete Nebo source</h2><pre><code>import &quot;std.fs&quot; { Path; File; }.fs;
+// Explicit visibility replaces an undeclared filesystem name.
+start(){Path.parse(&quot;migrated.txt&quot;).p;File.writeText(p,&quot;value=71&quot;,utf8,atomic);File.readText(p,utf8,64).console();53.return;}
+</code></pre><h2>Inputs and independent expectations</h2><pre>{
+  &quot;expected_exit&quot;: 53,
+  &quot;expected_files&quot;: {
+    &quot;migrated.txt&quot;: {
+      &quot;bytes_hex&quot;: &quot;76616c75653d3731&quot;
+    }
+  },
+  &quot;kinds&quot;: [
+    2
+  ],
+  &quot;text&quot;: {
+    &quot;bytes_hex&quot;: &quot;76616c75653d3731&quot;
+  }
+}</pre></main></body></html>

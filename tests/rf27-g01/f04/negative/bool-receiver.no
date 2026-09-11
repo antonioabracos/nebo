@@ -1,0 +1,3 @@
+start() {
+    true.bitAnd(1).return;
+}

@@ -12,13 +12,13 @@ nebo_pattern_operator_metadata:
     mov qword [rsi+8], 1
     cmp rdi, 0
     jne .pattern
-    mov qword [rsi+16], 70
+    mov qword [rsi+16], 130
     mov qword [rsi+24], 0
     mov qword [rsi+32], 74
     xor eax, eax
     ret
 .pattern:
-    mov qword [rsi+16], 50
+    mov qword [rsi+16], 110
     mov qword [rsi+24], 0
     lea rax, [rdi+74]
     mov [rsi+32], rax

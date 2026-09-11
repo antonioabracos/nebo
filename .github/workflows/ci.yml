@@ -1,0 +1,25 @@
+name: Public integration
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: public-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  public-validation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install host prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y nasm ninja-build binutils ripgrep python3-pil
+      - name: Validate the public source candidate
+        run: bash scripts/ci-public.sh

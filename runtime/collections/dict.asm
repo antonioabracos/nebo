@@ -370,43 +370,7 @@ NEBOC_ABI_FUNCTION neboc_dict_insert
  mov rdi,r12
  mov rsi,r13
  call neboc_dict_probe
- test rax,rax
- jz .ins_full
- test edx,edx
- jnz .ins_update
- mov r9,[r12+NEBO_DICT_LENGTH]
- inc r9
- mov r10,r9
- shl r10,2
- mov r11,[r12+NEBO_DICT_CAPACITY]
- imul r11,3
- cmp r10,r11
- ja .ins_full
- cmp qword [rax+NEBO_DICT_SLOT_STATE],NEBO_DICT_TOMBSTONE
- jne .ins_new
- dec qword [r12+NEBO_DICT_TOMBSTONES]
-.ins_new:
- mov qword [rax+NEBO_DICT_SLOT_STATE],NEBO_DICT_OCCUPIED
- mov [rax+NEBO_DICT_SLOT_HASH],r8
- mov [rax+NEBO_DICT_SLOT_KEY],r13
- mov [rax+NEBO_DICT_SLOT_VALUE],r14
- mov [r12+NEBO_DICT_LENGTH],r9
- mov qword [rbp],0
- cmp rcx,[r12+NEBO_DICT_MAX_PROBE]
- cmova rdx,rcx
- jbe .ins_gen
- mov [r12+NEBO_DICT_MAX_PROBE],rcx
-.ins_gen:
- inc qword [r12+NEBO_DICT_GENERATION]
- xor eax,eax
- jmp .ins_done
-.ins_update:
- mov r9,[rax+NEBO_DICT_SLOT_VALUE]
- mov [r15],r9
- mov qword [rbp],1
- mov [rax+NEBO_DICT_SLOT_VALUE],r14
- inc qword [r12+NEBO_DICT_GENERATION]
- xor eax,eax
+ call dict_commit_probed_slot
  jmp .ins_done
 .ins_full:
  mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
@@ -421,6 +385,144 @@ NEBOC_ABI_FUNCTION neboc_dict_insert
  pop r12
  ret
 .ins_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+; Shared commit for an authenticated probe. Both insert and exclusive Entry
+; write use this leaf; hashing/probing is never repeated by an Entry update.
+; R12 descriptor, R13 key, R14 value, R15 old output, RBP had-old output;
+; RAX slot, RDX found, RCX probe count, R8 hash. Caller validated the generation.
+dict_commit_probed_slot:
+ test rax,rax
+ jz .full
+ test edx,edx
+ jnz .update
+ mov r9,[r12+NEBO_DICT_LENGTH]
+ inc r9
+ mov r10,r9
+ shl r10,2
+ mov r11,[r12+NEBO_DICT_CAPACITY]
+ imul r11,3
+ cmp r10,r11
+ ja .full
+ cmp qword [rax+NEBO_DICT_SLOT_STATE],NEBO_DICT_TOMBSTONE
+ jne .new
+ dec qword [r12+NEBO_DICT_TOMBSTONES]
+.new:
+ mov qword [rax+NEBO_DICT_SLOT_STATE],NEBO_DICT_OCCUPIED
+ mov [rax+NEBO_DICT_SLOT_HASH],r8
+ mov [rax+NEBO_DICT_SLOT_KEY],r13
+ mov [rax+NEBO_DICT_SLOT_VALUE],r14
+ mov [r12+NEBO_DICT_LENGTH],r9
+ mov qword [rbp],0
+ cmp rcx,[r12+NEBO_DICT_MAX_PROBE]
+ cmova rdx,rcx
+ jbe .generation
+ mov [r12+NEBO_DICT_MAX_PROBE],rcx
+.generation:
+ inc qword [r12+NEBO_DICT_GENERATION]
+ xor eax,eax
+ jmp .done
+.update:
+ mov r9,[rax+NEBO_DICT_SLOT_VALUE]
+ mov [r15],r9
+ mov qword [rbp],1
+ mov [rax+NEBO_DICT_SLOT_VALUE],r14
+ inc qword [r12+NEBO_DICT_GENERATION]
+ xor eax,eax
+ jmp .done
+.full:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+.done:
+ ret
+
+; entry_commit(reference*, value, old_out*, had_old*). The private reference
+; carries one native probe under an exclusive generation-bound borrow.
+NEBOC_ABI_FUNCTION neboc_dict_entry_commit
+ test rdi,rdi
+ jz .invalid
+ test rdi,7
+ jnz .invalid
+ test rdx,rdx
+ jz .invalid
+ test rcx,rcx
+ jz .invalid
+ push r12
+ push r13
+ push r14
+ push r15
+ push rbp
+ sub rsp,16
+ mov [rsp],rdi
+ mov r14,rsi
+ mov r15,rdx
+ mov rbp,rcx
+ cmp qword [rdi+NEBO_DICT_VIEW_KIND],5
+ jne .stale
+ cmp qword [rdi+NEBO_DICT_VIEW_RELEASED],0
+ jne .stale
+ mov r12,[rdi+NEBO_DICT_VIEW_OWNER]
+ mov rdi,r12
+ call neboc_dict_validate
+ test eax,eax
+ jnz .done
+ cmp dword [r12+NEBO_DICT_BORROW_COUNT],0xffffffff
+ jne .stale
+ mov r11,[rsp]
+ mov rax,[r12+NEBO_DICT_GENERATION]
+ cmp rax,[r11+NEBO_DICT_VIEW_GENERATION]
+ jne .stale
+ mov rdx,NEBO_DICT_GENERATION_MASK
+ cmp rax,rdx
+ jae .limit
+ mov rax,[r11+NEBO_DICT_VIEW_INDEX]
+ sub rax,NEBO_DICT_SLOT_VALUE
+ mov rdx,rax
+ sub rdx,[r12+NEBO_DICT_STORAGE]
+ jc .stale
+ test rdx,NEBO_DICT_U64_SLOT_SIZE-1
+ jnz .stale
+ mov rcx,[r12+NEBO_DICT_CAPACITY]
+ shl rcx,5
+ cmp rdx,rcx
+ jae .stale
+ mov r13,[r11+56]
+ mov r8,[r11+32]
+ mov rcx,[r11+40]
+ test rcx,rcx
+ jz .stale
+ cmp rcx,[r12+NEBO_DICT_CAPACITY]
+ ja .stale
+ xor edx,edx
+ cmp qword [rax+NEBO_DICT_SLOT_STATE],NEBO_DICT_OCCUPIED
+ jne .commit
+ cmp [rax+NEBO_DICT_SLOT_KEY],r13
+ jne .stale
+ cmp [rax+NEBO_DICT_SLOT_HASH],r8
+ jne .stale
+ mov edx,1
+.commit:
+ call dict_commit_probed_slot
+ test eax,eax
+ jnz .done
+ mov r11,[rsp]
+ mov rdx,[r12+NEBO_DICT_GENERATION]
+ mov [r11+NEBO_DICT_VIEW_GENERATION],rdx
+ jmp .done
+.stale:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .done
+.limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+.done:
+ add rsp,16
+ pop rbp
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ ret
+.invalid:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
  ret
 
@@ -867,6 +969,101 @@ NEBOC_ABI_FUNCTION neboc_dict_rehash
  mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
  ret
 .rehash_invalid:
+ mov eax,NEBOC_STATUS_INVALID_ARGUMENT
+ ret
+
+; retain(desc*, predicate(key, value) -> Bool). Evaluate each occupied entry
+; exactly once under an exclusive borrow, then commit removals through the
+; canonical mutation owner. A bad Bool or exhausted generation leaves the
+; dictionary unchanged. The public bounded layout has at most 64 buckets.
+NEBOC_ABI_FUNCTION neboc_dict_retain
+ test rsi,rsi
+ jz .retain_invalid
+ push r12
+ push r13
+ push r14
+ push r15
+ push rbp
+ sub rsp,16
+ mov r12,rdi
+ mov r13,rsi
+ call neboc_dict_validate
+ test eax,eax
+ jnz .retain_done
+ cmp qword [r12+NEBO_DICT_CAPACITY],64
+ ja .retain_limit
+ cmp dword [r12+NEBO_DICT_BORROW_COUNT],0
+ jne .retain_borrowed
+ mov dword [r12+NEBO_DICT_BORROW_COUNT],0xffffffff
+ xor r14d,r14d
+ xor r15d,r15d
+ xor ebp,ebp
+.retain_scan:
+ cmp r14,[r12+NEBO_DICT_CAPACITY]
+ jae .retain_evaluated
+ mov rax,r14
+ shl rax,5
+ add rax,[r12+NEBO_DICT_STORAGE]
+ cmp qword [rax+NEBO_DICT_SLOT_STATE],NEBO_DICT_OCCUPIED
+ jne .retain_next
+ mov rdi,[rax+NEBO_DICT_SLOT_KEY]
+ mov rsi,[rax+NEBO_DICT_SLOT_VALUE]
+ call r13
+ cmp rax,1
+ ja .retain_bad_bool
+ test eax,eax
+ jnz .retain_next
+ bts r15,r14
+ inc rbp
+.retain_next:
+ inc r14
+ jmp .retain_scan
+.retain_evaluated:
+ mov dword [r12+NEBO_DICT_BORROW_COUNT],0
+ mov rax,[r12+NEBO_DICT_GENERATION]
+ add rax,rbp
+ jc .retain_limit
+ mov rdx,NEBO_DICT_GENERATION_MASK
+ cmp rax,rdx
+ ja .retain_limit
+ xor r14d,r14d
+.retain_commit:
+ cmp r14,[r12+NEBO_DICT_CAPACITY]
+ jae .retain_ok
+ bt r15,r14
+ jnc .retain_commit_next
+ mov rax,r14
+ shl rax,5
+ add rax,[r12+NEBO_DICT_STORAGE]
+ mov rsi,[rax+NEBO_DICT_SLOT_KEY]
+ mov rdi,r12
+ lea rdx,[rsp]
+ lea rcx,[rsp+8]
+ call neboc_dict_remove
+ test eax,eax
+ jnz .retain_done
+.retain_commit_next:
+ inc r14
+ jmp .retain_commit
+.retain_bad_bool:
+ mov dword [r12+NEBO_DICT_BORROW_COUNT],0
+.retain_borrowed:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .retain_done
+.retain_limit:
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
+ jmp .retain_done
+.retain_ok:
+ xor eax,eax
+.retain_done:
+ add rsp,16
+ pop rbp
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ ret
+.retain_invalid:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
  ret
 

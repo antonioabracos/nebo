@@ -1,0 +1,7 @@
+start() {
+  Range.exclusive(5,2).stepBy(-1).items;
+  for (item in items) {
+    item.return;
+  }
+  items.length().return;
+}

@@ -1,0 +1,2 @@
+one-line semantic tree == multiline semantic tree
+physical spans may differ

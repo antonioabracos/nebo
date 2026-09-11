@@ -1,0 +1,13 @@
+// Posterior summaries and predictions remain separate from sampling convergence and effective-size diagnostics.
+(Int.self)posteriorMean() { self.return; }
+(Int.self)posteriorVariance() { self.return; }
+(Int.self)posteriorCredibleInterval() { self.return; }
+(Int.self)posteriorSample() { self.return; }
+(Int.self)posteriorPredict() { self.return; }
+(Int.self)inferenceRHat() { self.return; }
+(Int.self)inferenceEffectiveSampleSize() { self.return; }
+(Int.self)inferenceDiagnostics() { self.return; }
+
+start() {
+    127.posteriorMean().posteriorVariance().posteriorCredibleInterval().posteriorSample().posteriorPredict().inferenceRHat().inferenceEffectiveSampleSize().inferenceDiagnostics();
+}

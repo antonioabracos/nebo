@@ -1,0 +1,6 @@
+start() {
+    7.source;
+    source.copy().copied;
+    source.move().transferred;
+    copied;
+}

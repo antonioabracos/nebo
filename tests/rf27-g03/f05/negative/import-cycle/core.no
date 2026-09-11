@@ -1,0 +1,1 @@
+module core import util export public base = 20;

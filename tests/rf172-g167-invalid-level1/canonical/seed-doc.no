@@ -1,0 +1,7 @@
+doc {
+    title: "G167 semantic documentation seed";
+    summary: "Exercises the current doc-block grammar through its owner.";
+}
+
+module seed_doc;
+start 182;

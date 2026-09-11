@@ -1,0 +1,2 @@
+(Int.self)work(Bool.flag) { Array<Int,2> [4,9].values; 0.index.mutable; if (flag) { index = 1; } else { index = 0; } values.at(index).return; }
+start() { 0.work(true).return; }

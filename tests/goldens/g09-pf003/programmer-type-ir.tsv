@@ -1,0 +1,7 @@
+case_id	hir	lir	allocation	expectation
+G09-IR-01	901	911	0	product construction
+G09-IR-02	902	912	0	sum construction
+G09-IR-03	903	913	0	field projection index zero through seven
+G09-IR-04	REJECT	REJECT	0	member index eight
+G09-IR-05	REJECT	REJECT	0	semantic hash or nominal identity mismatch
+G09-IR-06	REJECT	REJECT	0	unsupported target

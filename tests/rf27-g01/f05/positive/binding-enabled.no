@@ -1,0 +1,5 @@
+start() {
+    0.value;
+    true.enabled;
+    value.withBit(2, enabled).result;
+}

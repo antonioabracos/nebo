@@ -1,0 +1,4 @@
+start() {
+  Range.inclusive(5,1).stepBy(-2).down;
+  down.length().return;
+}

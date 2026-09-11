@@ -1,0 +1,13 @@
+// A simulation identity reports hardware absence and never fabricates attestation or sealed storage.
+(Int.self)secureContextOpen() { self.return; }
+(Int.self)attestationRequest() { self.return; }
+(Int.self)attestationVerify() { self.return; }
+(Int.self)secretSeal() { self.return; }
+(Int.self)sealedUnseal() { self.return; }
+(Int.self)contextMeasurement() { self.return; }
+(Int.self)contextDestroy() { self.return; }
+(Int.self)attestationProvenance() { self.return; }
+
+start() {
+    88.secureContextOpen().attestationRequest().attestationVerify().secretSeal().sealedUnseal().contextMeasurement().contextDestroy().attestationProvenance();
+}

@@ -1,0 +1,3 @@
+start() {
+    try { 1.value; } catch { 0.value; }
+}

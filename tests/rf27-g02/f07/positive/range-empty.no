@@ -1,0 +1,6 @@
+start() {
+  Range.exclusive(4,4).items;
+  for (item in items) {
+  }
+  items.length().return;
+}

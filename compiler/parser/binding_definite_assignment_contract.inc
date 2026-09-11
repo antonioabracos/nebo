@@ -27,6 +27,26 @@
 %define NEBOC_BIND_TYPE_FLOAT 9
 %define NEBOC_BIND_TYPE_CHAR 10
 %define NEBOC_BIND_TYPE_BYTES 11
+; G002 allocation-free semantic carrier types. These values never escape the
+; compiler ABI: the native lowering carries small aggregate results in RAX/RDX.
+%define NEBOC_BIND_TYPE_OPTION_INT 12
+%define NEBOC_BIND_TYPE_OVERFLOW_INT 13
+%define NEBOC_BIND_TYPE_RANGE_INT 14
+%define NEBOC_BIND_TYPE_ITERATOR_INT 15
+%define NEBOC_BIND_TYPE_SIZE_HINT 16
+; G123's three-way comparison is a scalar value. Keep its binding-only carrier
+; distinct from the earlier allocation-free aggregate carriers above; the
+; canonical public TypeId remains NEBOC_TYPE_ID_ORDERING (14).
+%define NEBOC_BIND_TYPE_ORDERING 21
+; G129 preserves the public quantity identities through the binding vertical.
+; Their runtime payload is one checked qword, but their semantic identities
+; must never collapse to Int or to one another.
+%define NEBOC_BIND_TYPE_PERCENT 22
+%define NEBOC_BIND_TYPE_PER_MILLE 23
+%define NEBOC_BIND_TYPE_BASIS_POINTS 24
+%define NEBOC_BIND_TYPE_ANGLE 25
+%define NEBOC_BIND_TYPE_TEMPERATURE 26
+%define NEBOC_BIND_TYPE_UNCERTAIN_INT 27
 
 %define NEBOC_BIND_AST_NONE 0
 %define NEBOC_BIND_AST_BINDING_TERMINAL 1

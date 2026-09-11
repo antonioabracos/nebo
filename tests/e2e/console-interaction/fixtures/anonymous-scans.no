@@ -1,0 +1,4 @@
+start() {
+    "Aluno A: ".console().scan().alunoA;
+    "Aluno B: ".console().scan().alunoB;
+}

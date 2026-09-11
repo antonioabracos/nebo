@@ -20,8 +20,100 @@ n_byte_length: db "byteLength"
 n_byte_length_len equ $-n_byte_length
 n_codepoint_count: db "codepointCount"
 n_codepoint_count_len equ $-n_codepoint_count
+n_grapheme_count: db "graphemeCount"
+n_grapheme_count_len equ $-n_grapheme_count
+n_normalize_nfc: db "normalizeNfc"
+n_normalize_nfc_len equ $-n_normalize_nfc
+n_normalize_nfd: db "normalizeNfd"
+n_normalize_nfd_len equ $-n_normalize_nfd
+n_case_fold: db "caseFold"
+n_case_fold_len equ $-n_case_fold
+n_slice_codepoints: db "sliceCodepoints"
+n_slice_codepoints_len equ $-n_slice_codepoints
+n_slice_graphemes: db "sliceGraphemes"
+n_slice_graphemes_len equ $-n_slice_graphemes
 n_codepoint: db "codepoint"
 n_codepoint_len equ $-n_codepoint
+n_is_empty_text: db "isEmpty"
+n_is_empty_text_len equ $-n_is_empty_text
+n_equals_text: db "equals"
+n_equals_text_len equ $-n_equals_text
+n_equals_ascii_ignore_case: db "equalsAsciiIgnoreCase"
+n_equals_ascii_ignore_case_len equ $-n_equals_ascii_ignore_case
+n_starts_with_text: db "startsWith"
+n_starts_with_text_len equ $-n_starts_with_text
+n_ends_with_text: db "endsWith"
+n_ends_with_text_len equ $-n_ends_with_text
+n_contains_text: db "contains"
+n_contains_text_len equ $-n_contains_text
+n_index_of: db "indexOf"
+n_index_of_len equ $-n_index_of
+n_last_index_of: db "lastIndexOf"
+n_last_index_of_len equ $-n_last_index_of
+n_is_ascii: db "isAscii"
+n_is_ascii_len equ $-n_is_ascii
+n_is_utf8: db "isUtf8"
+n_is_utf8_len equ $-n_is_utf8
+n_is_blank: db "isBlank"
+n_is_blank_len equ $-n_is_blank
+n_is_digits: db "isDigits"
+n_is_digits_len equ $-n_is_digits
+n_is_alpha_ascii: db "isAlphaAscii"
+n_is_alpha_ascii_len equ $-n_is_alpha_ascii
+n_is_alnum_ascii: db "isAlnumAscii"
+n_is_alnum_ascii_len equ $-n_is_alnum_ascii
+n_concat_text: db "concat"
+n_concat_text_len equ $-n_concat_text
+n_trim: db "trim"
+n_trim_len equ $-n_trim
+n_trim_start: db "trimStart"
+n_trim_start_len equ $-n_trim_start
+n_trim_end: db "trimEnd"
+n_trim_end_len equ $-n_trim_end
+n_lower_text: db "lower"
+n_lower_text_len equ $-n_lower_text
+n_upper_text: db "upper"
+n_upper_text_len equ $-n_upper_text
+n_byte_slice_text: db "byteSlice"
+n_byte_slice_text_len equ $-n_byte_slice_text
+n_take_bytes: db "takeBytes"
+n_take_bytes_len equ $-n_take_bytes
+n_drop_bytes: db "dropBytes"
+n_drop_bytes_len equ $-n_drop_bytes
+n_normalize_newlines: db "normalizeNewlines"
+n_normalize_newlines_len equ $-n_normalize_newlines
+n_normalize_whitespace: db "normalizeWhitespace"
+n_normalize_whitespace_len equ $-n_normalize_whitespace
+n_replace_once: db "replaceOnce"
+n_replace_once_len equ $-n_replace_once
+n_replace_all: db "replaceAll"
+n_replace_all_len equ $-n_replace_all
+n_split_text: db "split"
+n_split_text_len equ $-n_split_text
+n_join_text: db "join"
+n_join_text_len equ $-n_join_text
+n_pad_start: db "padStart"
+n_pad_start_len equ $-n_pad_start
+n_pad_end: db "padEnd"
+n_pad_end_len equ $-n_pad_end
+n_parse_int_text: db "parseInt"
+n_parse_int_text_len equ $-n_parse_int_text
+n_parse_float_text: db "parseFloat"
+n_parse_float_text_len equ $-n_parse_float_text
+n_parse_bool_text: db "parseBool"
+n_parse_bool_text_len equ $-n_parse_bool_text
+n_split_checked: db "splitChecked"
+n_split_checked_len equ $-n_split_checked
+n_replace_all_checked: db "replaceAllChecked"
+n_replace_all_checked_len equ $-n_replace_all_checked
+n_to_text: db "toText"
+n_to_text_len equ $-n_to_text
+n_is_nebo_identifier: db "isNeboIdentifier"
+n_is_nebo_identifier_len equ $-n_is_nebo_identifier
+n_is_ok: db "isOk"
+n_is_ok_len equ $-n_is_ok
+n_is_err: db "isErr"
+n_is_err_len equ $-n_is_err
 n_empty: db "empty"
 n_empty_len equ $-n_empty
 n_from_byte: db "fromByte"
@@ -78,7 +170,10 @@ text_desc_mid: db ':',10,'    dq nebo_text_data'
 text_desc_mid_len equ $-text_desc_mid
 text_desc_length: db 10,'    dq '
 text_desc_length_len equ $-text_desc_length
-text_desc_tail: db 10,'    dd 0',10,'    dw 1',10,'    dw 1',10
+; Public static Text ABI tail: immutable/static/validated flags, UTF-8 encoding
+; and program lifetime.  The 24-byte public descriptor is the compact static
+; counterpart of the 32-byte owned/view runtime descriptor.
+text_desc_tail: db 10,'    dd 7',10,'    dw 1',10,'    dw 1',10
 text_desc_tail_len equ $-text_desc_tail
 bytes_data_prefix: db 'nebo_bytes_data'
 bytes_data_prefix_len equ $-bytes_data_prefix
@@ -164,6 +259,50 @@ mov_eax: db '    mov eax, '
 mov_eax_len equ $-mov_eax
 mov_rdi_rax: db '    mov rdi, rax',10
 mov_rdi_rax_len equ $-mov_rdi_rax
+push_rdi: db '    push rdi',10
+push_rdi_len equ $-push_rdi
+pair_text_arguments: db '    mov rsi, rdi',10,'    pop rdi',10
+pair_text_arguments_len equ $-pair_text_arguments
+one_int_arguments: db '    mov rsi, rax',10,'    pop rdi',10
+one_int_arguments_len equ $-one_int_arguments
+two_int_arguments: db '    mov rdx, rax',10,'    pop rsi',10,'    pop rdi',10
+two_int_arguments_len equ $-two_int_arguments
+two_text_arguments: db '    mov rdx, rdi',10,'    pop rsi',10,'    pop rdi',10
+two_text_arguments_len equ $-two_text_arguments
+pad_arguments: db '    mov rdx, rdi',10,'    pop rsi',10,'    pop rdi',10
+pad_arguments_len equ $-pad_arguments
+transform_zero_view_setup: db '    sub rsp, 4128',10,'    lea rsi, [rsp + 4096]',10
+transform_zero_view_setup_len equ $-transform_zero_view_setup
+transform_zero_buffer_setup: db '    sub rsp, 4128',10,'    lea rsi, [rsp]',10,'    mov edx, 4096',10,'    lea rcx, [rsp + 4096]',10
+transform_zero_buffer_setup_len equ $-transform_zero_buffer_setup
+transform_one_text_setup: db '    sub rsp, 4128',10,'    lea rdx, [rsp]',10,'    mov ecx, 4096',10,'    lea r8, [rsp + 4096]',10
+transform_one_text_setup_len equ $-transform_one_text_setup
+transform_split_setup: db '    sub rsp, 4128',10,'    lea rdx, [rsp]',10,'    mov ecx, 254',10,'    lea r8, [rsp + 4096]',10
+transform_split_setup_len equ $-transform_split_setup
+transform_two_text_setup: db '    sub rsp, 4128',10,'    lea rcx, [rsp]',10,'    mov r8d, 4096',10,'    lea r9, [rsp + 4096]',10
+transform_two_text_setup_len equ $-transform_two_text_setup
+transform_byte_slice_setup: db '    sub rsp, 4128',10,'    lea rcx, [rsp + 4096]',10
+transform_byte_slice_setup_len equ $-transform_byte_slice_setup
+transform_one_int_setup: db '    sub rsp, 4128',10,'    lea rdx, [rsp + 4096]',10
+transform_one_int_setup_len equ $-transform_one_int_setup
+transform_join_setup: db '    sub rsp, 4128',10,'    lea rdx, [rsp]',10,'    mov ecx, 4096',10,'    lea r8, [rsp + 4096]',10
+transform_join_setup_len equ $-transform_join_setup
+transform_pad_setup: db '    sub rsp, 4128',10,'    lea rcx, [rsp]',10,'    mov r8d, 4096',10,'    lea r9, [rsp + 4096]',10
+transform_pad_setup_len equ $-transform_pad_setup
+parse_result_setup: db '    sub rsp, 16',10,'    mov rsi, rsp',10
+parse_result_setup_len equ $-parse_result_setup
+split_checked_setup: db '    sub rsp, 4112',10,'    lea rdx, [rsp + 4064]',10,'    mov rcx, rsp',10,'    mov r8d, 254',10
+split_checked_setup_len equ $-split_checked_setup
+replace_checked_setup: db '    sub rsp, 4144',10,'    lea rcx, [rsp + 4096]',10,'    mov r8, rsp',10,'    mov r9d, 4096',10
+replace_checked_setup_len equ $-replace_checked_setup
+text_to_text_setup: db '    sub rsp, 4128',10,'    lea rsi, [rsp]',10,'    mov edx, 4096',10,'    lea rcx, [rsp + 4096]',10
+text_to_text_setup_len equ $-text_to_text_setup
+int_to_text_setup: db '    mov rdi, rax',10,'    sub rsp, 64',10,'    lea rsi, [rsp]',10,'    mov edx, 32',10,'    lea rcx, [rsp + 32]',10
+int_to_text_setup_len equ $-int_to_text_setup
+bool_to_text_setup: db '    mov rdi, rax',10,'    sub rsp, 32',10,'    lea rsi, [rsp]',10
+bool_to_text_setup_len equ $-bool_to_text_setup
+lea_option_out: db '    lea rdx, [rbp - 16]',10
+lea_option_out_len equ $-lea_option_out
 mov_esi: db '    mov esi, '
 mov_esi_len equ $-mov_esi
 mov_edx_scan: db '    mov edx, '
@@ -174,6 +313,98 @@ call_text_byte_length: db '    call nebo_runtime_textual_text_byte_length',10
 call_text_byte_length_len equ $-call_text_byte_length
 call_text_codepoint_count: db '    call nebo_runtime_textual_text_codepoint_count',10
 call_text_codepoint_count_len equ $-call_text_codepoint_count
+call_text_grapheme_count: db '    call nebo_runtime_textual_text_grapheme_count',10
+call_text_grapheme_count_len equ $-call_text_grapheme_count
+call_text_normalize_nfc: db '    call nebo_runtime_textual_text_normalize_nfc',10
+call_text_normalize_nfc_len equ $-call_text_normalize_nfc
+call_text_normalize_nfd: db '    call nebo_runtime_textual_text_normalize_nfd',10
+call_text_normalize_nfd_len equ $-call_text_normalize_nfd
+call_text_case_fold: db '    call nebo_runtime_textual_text_case_fold',10
+call_text_case_fold_len equ $-call_text_case_fold
+call_text_slice_codepoints: db '    call nebo_runtime_textual_text_slice_codepoints',10
+call_text_slice_codepoints_len equ $-call_text_slice_codepoints
+call_text_slice_graphemes: db '    call nebo_runtime_textual_text_slice_graphemes',10
+call_text_slice_graphemes_len equ $-call_text_slice_graphemes
+call_text_is_empty: db '    call nebo_runtime_textual_text_is_empty',10
+call_text_is_empty_len equ $-call_text_is_empty
+call_text_equals: db '    call nebo_runtime_textual_text_equals',10
+call_text_equals_len equ $-call_text_equals
+call_text_equals_ascii_ignore_case: db '    call nebo_runtime_textual_text_equals_ascii_ignore_case',10
+call_text_equals_ascii_ignore_case_len equ $-call_text_equals_ascii_ignore_case
+call_text_starts_with: db '    call nebo_runtime_textual_text_starts_with',10
+call_text_starts_with_len equ $-call_text_starts_with
+call_text_ends_with: db '    call nebo_runtime_textual_text_ends_with',10
+call_text_ends_with_len equ $-call_text_ends_with
+call_text_contains: db '    call nebo_runtime_textual_text_contains',10
+call_text_contains_len equ $-call_text_contains
+call_text_index_of: db '    call nebo_runtime_textual_text_index_of',10
+call_text_index_of_len equ $-call_text_index_of
+call_text_last_index_of: db '    call nebo_runtime_textual_text_last_index_of',10
+call_text_last_index_of_len equ $-call_text_last_index_of
+call_text_is_ascii: db '    call nebo_runtime_textual_text_is_ascii',10
+call_text_is_ascii_len equ $-call_text_is_ascii
+call_text_is_utf8: db '    call nebo_runtime_textual_text_is_utf8',10
+call_text_is_utf8_len equ $-call_text_is_utf8
+call_text_is_blank: db '    call nebo_runtime_textual_text_is_blank',10
+call_text_is_blank_len equ $-call_text_is_blank
+call_text_is_digits: db '    call nebo_runtime_textual_text_is_digits',10
+call_text_is_digits_len equ $-call_text_is_digits
+call_text_is_alpha_ascii: db '    call nebo_runtime_textual_text_is_alpha_ascii',10
+call_text_is_alpha_ascii_len equ $-call_text_is_alpha_ascii
+call_text_is_alnum_ascii: db '    call nebo_runtime_textual_text_is_alnum_ascii',10
+call_text_is_alnum_ascii_len equ $-call_text_is_alnum_ascii
+call_text_concat: db '    call nebo_runtime_textual_text_concat',10
+call_text_concat_len equ $-call_text_concat
+call_text_trim: db '    call nebo_runtime_textual_text_trim',10
+call_text_trim_len equ $-call_text_trim
+call_text_trim_start: db '    call nebo_runtime_textual_text_trim_start',10
+call_text_trim_start_len equ $-call_text_trim_start
+call_text_trim_end: db '    call nebo_runtime_textual_text_trim_end',10
+call_text_trim_end_len equ $-call_text_trim_end
+call_text_lower: db '    call nebo_runtime_textual_text_lower',10
+call_text_lower_len equ $-call_text_lower
+call_text_upper: db '    call nebo_runtime_textual_text_upper',10
+call_text_upper_len equ $-call_text_upper
+call_text_byte_slice: db '    call nebo_runtime_textual_text_byte_slice',10
+call_text_byte_slice_len equ $-call_text_byte_slice
+call_text_take_bytes: db '    call nebo_runtime_textual_text_take_bytes',10
+call_text_take_bytes_len equ $-call_text_take_bytes
+call_text_drop_bytes: db '    call nebo_runtime_textual_text_drop_bytes',10
+call_text_drop_bytes_len equ $-call_text_drop_bytes
+call_text_normalize_newlines: db '    call nebo_runtime_textual_text_normalize_newlines',10
+call_text_normalize_newlines_len equ $-call_text_normalize_newlines
+call_text_normalize_whitespace: db '    call nebo_runtime_textual_text_normalize_whitespace',10
+call_text_normalize_whitespace_len equ $-call_text_normalize_whitespace
+call_text_replace_once: db '    call nebo_runtime_textual_text_replace_once',10
+call_text_replace_once_len equ $-call_text_replace_once
+call_text_replace_all: db '    call nebo_runtime_textual_text_replace_all',10
+call_text_replace_all_len equ $-call_text_replace_all
+call_text_split: db '    call nebo_runtime_textual_text_split',10
+call_text_split_len equ $-call_text_split
+call_text_join: db '    call nebo_runtime_textual_text_join',10
+call_text_join_len equ $-call_text_join
+call_text_pad_start: db '    call nebo_runtime_textual_text_pad_start',10
+call_text_pad_start_len equ $-call_text_pad_start
+call_text_pad_end: db '    call nebo_runtime_textual_text_pad_end',10
+call_text_pad_end_len equ $-call_text_pad_end
+call_text_parse_int: db '    call nebo_runtime_textual_text_parse_int',10
+call_text_parse_int_len equ $-call_text_parse_int
+call_text_parse_float: db '    call nebo_runtime_textual_text_parse_float',10
+call_text_parse_float_len equ $-call_text_parse_float
+call_text_parse_bool: db '    call nebo_runtime_textual_text_parse_bool',10
+call_text_parse_bool_len equ $-call_text_parse_bool
+call_text_split_checked: db '    call nebo_runtime_textual_text_split_checked',10
+call_text_split_checked_len equ $-call_text_split_checked
+call_text_replace_all_checked: db '    call nebo_runtime_textual_text_replace_all_checked',10
+call_text_replace_all_checked_len equ $-call_text_replace_all_checked
+call_text_to_text: db '    call nebo_runtime_textual_text_to_text',10
+call_text_to_text_len equ $-call_text_to_text
+call_int_to_text: db '    call nebo_runtime_textual_int_to_text',10
+call_int_to_text_len equ $-call_int_to_text
+call_bool_to_text: db '    call nebo_runtime_textual_bool_to_text',10
+call_bool_to_text_len equ $-call_bool_to_text
+call_text_is_nebo_identifier: db '    call nebo_runtime_textual_text_is_nebo_identifier',10
+call_text_is_nebo_identifier_len equ $-call_text_is_nebo_identifier
 call_char_codepoint: db '    call nebo_runtime_textual_char_codepoint',10
 call_char_codepoint_len equ $-call_char_codepoint
 call_bytes_empty: db '    call nebo_runtime_textual_bytes_empty',10
@@ -199,13 +430,19 @@ call_scan_anonymous_len equ $-call_scan_anonymous
 
 section .text
 ; Emit deterministic Text descriptors before the backend opens start().
+NEBOC_ABI_FUNCTION neboc_text_char_bytes_codegen_emit_function_data
+ mov esi,1
+ jmp g04c_emit_data_mode
 NEBOC_ABI_FUNCTION neboc_text_char_bytes_codegen_emit_data
+ xor esi,esi
+g04c_emit_data_mode:
  push rbx
  push r12
  push r13
  push r14
  push r15
  sub rsp,64
+ mov [rsp+56],rsi
  mov r12,rdi
  test r12,r12
  jz .invalid
@@ -245,6 +482,20 @@ NEBOC_ABI_FUNCTION neboc_text_char_bytes_codegen_emit_data
  jnz .bytes_constructor
  mov rdi,r12
  mov rsi,rbx
+ lea rdx,[rel n_index_of]
+ mov ecx,n_index_of_len
+ call g04c_token_match
+ test eax,eax
+ jnz .option_get
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_last_index_of]
+ mov ecx,n_last_index_of_len
+ call g04c_token_match
+ test eax,eax
+ jnz .option_get
+ mov rdi,r12
+ mov rsi,rbx
  lea rdx,[rel n_get]
  mov ecx,n_get_len
  call g04c_token_match
@@ -262,6 +513,14 @@ NEBOC_ABI_FUNCTION neboc_text_char_bytes_codegen_emit_data
  mov dword [r12+NEBOC_CODEGEN_OPTION_USED_OFFSET],1
  jmp .next
 .bytes_slice:
+ ; A homonymous method on Matrix or a user receiver is not Bytes data.
+ ; Authenticate the expression's constructor chain before pre-emitting it;
+ ; the ordinary typed owner still validates all unrelated calls.
+ mov rdi,r12
+ mov rsi,r14
+ call g04c_is_bytes_expression
+ test eax,eax
+ jz .next
  cmp qword [rsp],0
  jne .slice_header_done
  mov rdi,r12
@@ -279,6 +538,15 @@ NEBOC_ABI_FUNCTION neboc_text_char_bytes_codegen_emit_data
  jnz .done
  jmp .next
 .bytes_constructor:
+ mov rdi,r12
+ mov rsi,r14
+ call g04c_is_bytes_expression
+ test eax,eax
+ jz .next
+ ; FunctionTable owns every Bytes constructor, including constant operands.
+ ; The legacy owner still emits its own independent static slice data.
+ cmp qword [rsp+56],0
+ jnz .next
  cmp qword [rsp],0
  jne .header_done
  mov rdi,r12
@@ -592,6 +860,74 @@ g04c_find_prior_binding_expr:
  ret
 
 ; request*, bounded Bytes expression, out { length, packed }.
+g04c_is_bytes_expression:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ mov rbx,rdi
+ mov r12,rsi
+ mov rax,[rbx+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov r14,[rax+NEBOC_AST_BUILDER_COUNT_OFFSET]
+.walk:
+ test r14,r14
+ jz .no
+ dec r14
+ mov rdi,[rbx+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,r12
+ call g04c_node_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .call
+ mov rdi,rbx
+ mov rsi,r12
+ call g04c_find_prior_binding_expr
+ test rax,rax
+ jz .no
+ mov r12,rax
+ jmp .walk
+.call:
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .no
+ mov r13,rax
+ mov rdi,rbx
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ lea rdx,[rel text_char_bytes_codegen_n_slice]
+ mov ecx,text_char_bytes_codegen_n_slice_len
+ call g04c_token_match
+ test eax,eax
+ jz .constructor
+ mov r12,[r13+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ jmp .walk
+.constructor:
+ mov rdi,[rbx+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,[r13+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_node_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .no
+ mov rdi,rbx
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ lea rdx,[rel g04c_bytes_namespace]
+ mov ecx,5
+ call g04c_token_match
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+section .rodata
+g04c_bytes_namespace: db 'Bytes'
+section .text
+
 g04c_extract_static_bytes:
  push rbx
  push r12
@@ -1198,7 +1534,7 @@ g04c_emit_any:
  push r12
  push r13
  push r14
- sub rsp,8
+ sub rsp,24
  mov r12,rdi
  mov r13,rsi
  mov [rsp],r13
@@ -1240,11 +1576,319 @@ g04c_emit_any:
  jnz .codepoint_count
  mov rdi,r12
  mov rsi,r13
+ lea rdx,[rel n_grapheme_count]
+ mov ecx,n_grapheme_count_len
+ call g04c_token_match
+ test eax,eax
+ jnz .grapheme_count
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_normalize_nfc]
+ mov ecx,n_normalize_nfc_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_normalize_nfc
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_normalize_nfd]
+ mov ecx,n_normalize_nfd_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_normalize_nfd
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_case_fold]
+ mov ecx,n_case_fold_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_case_fold
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_slice_codepoints]
+ mov ecx,n_slice_codepoints_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_slice_codepoints
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_slice_graphemes]
+ mov ecx,n_slice_graphemes_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_slice_graphemes
+ mov rdi,r12
+ mov rsi,r13
  lea rdx,[rel n_codepoint]
  mov ecx,n_codepoint_len
  call g04c_token_match
  test eax,eax
  jnz .codepoint
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_is_empty_text]
+ mov ecx,n_is_empty_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_is_empty
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_equals_text]
+ mov ecx,n_equals_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_equals
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_equals_ascii_ignore_case]
+ mov ecx,n_equals_ascii_ignore_case_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_equals_ascii_ignore_case
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_starts_with_text]
+ mov ecx,n_starts_with_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_starts_with
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_ends_with_text]
+ mov ecx,n_ends_with_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_ends_with
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_contains_text]
+ mov ecx,n_contains_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_contains
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_index_of]
+ mov ecx,n_index_of_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_index_of
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_last_index_of]
+ mov ecx,n_last_index_of_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_last_index_of
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_is_ascii]
+ mov ecx,n_is_ascii_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_is_ascii
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_is_utf8]
+ mov ecx,n_is_utf8_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_is_utf8
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_is_blank]
+ mov ecx,n_is_blank_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_is_blank
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_is_digits]
+ mov ecx,n_is_digits_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_is_digits
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_is_alpha_ascii]
+ mov ecx,n_is_alpha_ascii_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_is_alpha_ascii
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_is_alnum_ascii]
+ mov ecx,n_is_alnum_ascii_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_is_alnum_ascii
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_concat_text]
+ mov ecx,n_concat_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_concat
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_trim]
+ mov ecx,n_trim_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_trim
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_trim_start]
+ mov ecx,n_trim_start_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_trim_start
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_trim_end]
+ mov ecx,n_trim_end_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_trim_end
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_lower_text]
+ mov ecx,n_lower_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_lower
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_upper_text]
+ mov ecx,n_upper_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_upper
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_byte_slice_text]
+ mov ecx,n_byte_slice_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_byte_slice
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_take_bytes]
+ mov ecx,n_take_bytes_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_take_bytes
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_drop_bytes]
+ mov ecx,n_drop_bytes_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_drop_bytes
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_normalize_newlines]
+ mov ecx,n_normalize_newlines_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_normalize_newlines
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_normalize_whitespace]
+ mov ecx,n_normalize_whitespace_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_normalize_whitespace
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_replace_once]
+ mov ecx,n_replace_once_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_replace_once
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_replace_all]
+ mov ecx,n_replace_all_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_replace_all
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_split_text]
+ mov ecx,n_split_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_split
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_join_text]
+ mov ecx,n_join_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_join
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_pad_start]
+ mov ecx,n_pad_start_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_pad_start
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_pad_end]
+ mov ecx,n_pad_end_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_pad_end
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_parse_int_text]
+ mov ecx,n_parse_int_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_parse_int
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_parse_float_text]
+ mov ecx,n_parse_float_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_parse_float
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_parse_bool_text]
+ mov ecx,n_parse_bool_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_parse_bool
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_split_checked]
+ mov ecx,n_split_checked_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_split_checked
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_replace_all_checked]
+ mov ecx,n_replace_all_checked_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_replace_all_checked
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_to_text]
+ mov ecx,n_to_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .to_text
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_is_nebo_identifier]
+ mov ecx,n_is_nebo_identifier_len
+ call g04c_token_match
+ test eax,eax
+ jnz .text_is_nebo_identifier
  mov rdi,r12
  mov rsi,r13
  lea rdx,[rel n_empty]
@@ -1308,6 +1952,20 @@ g04c_emit_any:
  call g04c_token_match
  test eax,eax
  jnz .option_unwrap_or
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_is_ok]
+ mov ecx,n_is_ok_len
+ call g04c_token_match
+ test eax,eax
+ jnz .result_is_ok
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_is_err]
+ mov ecx,n_is_err_len
+ call g04c_token_match
+ test eax,eax
+ jnz .result_is_err
  mov rdi,r12
  mov rsi,r13
  lea rdx,[rel n_bit_and]
@@ -1553,6 +2211,12 @@ g04c_emit_any:
  jmp .option_predicate
 .option_is_none:
  xor r13d,r13d
+ jmp .option_predicate
+.result_is_ok:
+ xor r13d,r13d
+ jmp .option_predicate
+.result_is_err:
+ mov r13d,1
 .option_predicate:
  mov rdi,r12
  mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
@@ -1595,9 +2259,39 @@ g04c_emit_any:
  call g04c_append
  test eax,eax
  jnz .finish
+ ; Option success is Some=1; G056 Result success is Ok=0.
+ mov rdi,r14
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .unwrap_option_tag
+ mov r13,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_parse_int_text]
+ mov ecx,n_parse_int_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .unwrap_result_tag
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_parse_bool_text]
+ mov ecx,n_parse_bool_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .unwrap_result_tag
+.unwrap_option_tag:
  mov rdi,r12
  lea rsi,[rel mov_esi_one]
  mov edx,mov_esi_one_len
+ jmp .unwrap_tag_ready
+.unwrap_result_tag:
+ mov rdi,r12
+ lea rsi,[rel mov_esi_zero]
+ mov edx,mov_esi_zero_len
+.unwrap_tag_ready:
  call g04c_append
  test eax,eax
  jnz .finish
@@ -1798,6 +2492,29 @@ g04c_emit_any:
  call g04c_append
  test eax,eax
  jnz .finish
+ ; A nested G055 transform is still Text. Only the two public Bytes-producing
+ ; receiver calls owned by this bounded backend select the Bytes length symbol.
+ mov rdi,r14
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ mov r13,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_empty]
+ mov ecx,n_empty_len
+ call g04c_token_match
+ test eax,eax
+ jnz .bytes_length
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel text_char_bytes_codegen_n_slice]
+ mov ecx,text_char_bytes_codegen_n_slice_len
+ call g04c_token_match
+ test eax,eax
+ jz .text_length
+.bytes_length:
  mov rdi,r12
  lea rsi,[rel call_bytes_byte_length]
  mov edx,call_bytes_byte_length_len
@@ -1818,6 +2535,17 @@ g04c_emit_any:
  mov rdi,r12
  lea rsi,[rel call_text_codepoint_count]
  mov edx,call_text_codepoint_count_len
+ call g04c_append
+ jmp .count
+.grapheme_count:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_text_grapheme_count]
+ mov edx,call_text_grapheme_count_len
  call g04c_append
  jmp .count
 .codepoint:
@@ -1849,6 +2577,539 @@ g04c_emit_any:
  mov rdi,r12
  lea rsi,[rel call_char_codepoint]
  mov edx,call_char_codepoint_len
+ call g04c_append
+ jmp .count
+.text_is_empty:
+ lea rax,[rel call_text_is_empty]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_is_empty_len
+ jmp .text_predicate
+.text_is_ascii:
+ lea rax,[rel call_text_is_ascii]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_is_ascii_len
+ jmp .text_predicate
+.text_is_utf8:
+ lea rax,[rel call_text_is_utf8]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_is_utf8_len
+ jmp .text_predicate
+.text_is_blank:
+ lea rax,[rel call_text_is_blank]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_is_blank_len
+ jmp .text_predicate
+.text_is_digits:
+ lea rax,[rel call_text_is_digits]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_is_digits_len
+ jmp .text_predicate
+.text_is_alpha_ascii:
+ lea rax,[rel call_text_is_alpha_ascii]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_is_alpha_ascii_len
+ jmp .text_predicate
+.text_is_alnum_ascii:
+ lea rax,[rel call_text_is_alnum_ascii]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_is_alnum_ascii_len
+ jmp .text_predicate
+.text_is_nebo_identifier:
+ lea rax,[rel call_text_is_nebo_identifier]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_is_nebo_identifier_len
+.text_predicate:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ mov rsi,[rsp+8]
+ mov rdx,[rsp+16]
+ call g04c_append
+ jmp .count
+.text_equals:
+ lea rax,[rel call_text_equals]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_equals_len
+ jmp .text_binary_bool
+.text_equals_ascii_ignore_case:
+ lea rax,[rel call_text_equals_ascii_ignore_case]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_equals_ascii_ignore_case_len
+ jmp .text_binary_bool
+.text_starts_with:
+ lea rax,[rel call_text_starts_with]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_starts_with_len
+ jmp .text_binary_bool
+.text_ends_with:
+ lea rax,[rel call_text_ends_with]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_ends_with_len
+ jmp .text_binary_bool
+.text_contains:
+ lea rax,[rel call_text_contains]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_contains_len
+.text_binary_bool:
+ mov rdi,r12
+ mov rsi,[rsp]
+ call g04c_emit_text_query_pair
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ mov rsi,[rsp+8]
+ mov rdx,[rsp+16]
+ call g04c_append
+ jmp .count
+.text_index_of:
+ lea rax,[rel call_text_index_of]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_index_of_len
+ jmp .text_index
+.text_last_index_of:
+ lea rax,[rel call_text_last_index_of]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_last_index_of_len
+.text_index:
+ mov rdi,r12
+ mov rsi,[rsp]
+ call g04c_emit_text_query_pair
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel lea_option_out]
+ mov edx,lea_option_out_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ mov rsi,[rsp+8]
+ mov rdx,[rsp+16]
+ call g04c_append
+ jmp .count
+.text_parse_int:
+ lea rax,[rel call_text_parse_int]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_parse_int_len
+ jmp .text_parse_scalar
+.text_parse_float:
+ lea rax,[rel call_text_parse_float]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_parse_float_len
+ jmp .text_parse_scalar
+.text_parse_bool:
+ lea rax,[rel call_text_parse_bool]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_parse_bool_len
+.text_parse_scalar:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel parse_result_setup]
+ mov edx,parse_result_setup_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ mov rsi,[rsp+8]
+ mov rdx,[rsp+16]
+ call g04c_append
+ jmp .count
+.text_trim:
+ lea rax,[rel call_text_trim]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_trim_len
+ jmp .text_zero_view
+.text_trim_start:
+ lea rax,[rel call_text_trim_start]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_trim_start_len
+ jmp .text_zero_view
+.text_trim_end:
+ lea rax,[rel call_text_trim_end]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_trim_end_len
+.text_zero_view:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel transform_zero_view_setup]
+ mov edx,transform_zero_view_setup_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ mov rsi,[rsp+8]
+ mov rdx,[rsp+16]
+ call g04c_append
+ jmp .count
+.text_lower:
+ lea rax,[rel call_text_lower]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_lower_len
+ jmp .text_zero_buffer
+.text_upper:
+ lea rax,[rel call_text_upper]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_upper_len
+ jmp .text_zero_buffer
+.text_normalize_nfc:
+ lea rax,[rel call_text_normalize_nfc]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_normalize_nfc_len
+ jmp .text_zero_buffer
+.text_normalize_nfd:
+ lea rax,[rel call_text_normalize_nfd]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_normalize_nfd_len
+ jmp .text_zero_buffer
+.text_case_fold:
+ lea rax,[rel call_text_case_fold]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_case_fold_len
+ jmp .text_zero_buffer
+.text_normalize_newlines:
+ lea rax,[rel call_text_normalize_newlines]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_normalize_newlines_len
+ jmp .text_zero_buffer
+.text_normalize_whitespace:
+ lea rax,[rel call_text_normalize_whitespace]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_normalize_whitespace_len
+.text_zero_buffer:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel transform_zero_buffer_setup]
+ mov edx,transform_zero_buffer_setup_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ mov rsi,[rsp+8]
+ mov rdx,[rsp+16]
+ call g04c_append
+ jmp .count
+.text_concat:
+ mov rdi,r12
+ mov rsi,[rsp]
+ call g04c_emit_text_query_pair
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel transform_one_text_setup]
+ mov edx,transform_one_text_setup_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_text_concat]
+ mov edx,call_text_concat_len
+ call g04c_append
+ jmp .count
+.text_split:
+ mov rdi,r12
+ mov rsi,[rsp]
+ call g04c_emit_text_query_pair
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel transform_split_setup]
+ mov edx,transform_split_setup_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_text_split]
+ mov edx,call_text_split_len
+ call g04c_append
+ jmp .count
+.text_split_checked:
+ mov rdi,r12
+ mov rsi,[rsp]
+ call g04c_emit_text_query_pair
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel split_checked_setup]
+ mov edx,split_checked_setup_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_text_split_checked]
+ mov edx,call_text_split_checked_len
+ call g04c_append
+ jmp .count
+.text_join:
+ mov rdi,r12
+ mov rsi,[rsp]
+ call g04c_emit_text_join_arguments
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel transform_join_setup]
+ mov edx,transform_join_setup_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_text_join]
+ mov edx,call_text_join_len
+ call g04c_append
+ jmp .count
+.text_replace_once:
+ lea rax,[rel call_text_replace_once]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_replace_once_len
+ jmp .text_replace
+.text_replace_all:
+ lea rax,[rel call_text_replace_all]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_replace_all_len
+.text_replace:
+ mov rdi,r12
+ mov rsi,[rsp]
+ call g04c_emit_transform_two_text
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel transform_two_text_setup]
+ mov edx,transform_two_text_setup_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ mov rsi,[rsp+8]
+ mov rdx,[rsp+16]
+ call g04c_append
+ jmp .count
+.text_replace_all_checked:
+ mov rdi,r12
+ mov rsi,[rsp]
+ call g04c_emit_transform_two_text
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel replace_checked_setup]
+ mov edx,replace_checked_setup_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_text_replace_all_checked]
+ mov edx,call_text_replace_all_checked_len
+ call g04c_append
+ jmp .count
+.text_byte_slice:
+ mov rdi,r12
+ mov rsi,[rsp]
+ call g04c_emit_transform_two_int
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel transform_byte_slice_setup]
+ mov edx,transform_byte_slice_setup_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_text_byte_slice]
+ mov edx,call_text_byte_slice_len
+ call g04c_append
+ jmp .count
+.text_slice_codepoints:
+ lea rax,[rel call_text_slice_codepoints]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_slice_codepoints_len
+ jmp .text_unicode_slice
+.text_slice_graphemes:
+ lea rax,[rel call_text_slice_graphemes]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_slice_graphemes_len
+.text_unicode_slice:
+ mov rdi,r12
+ mov rsi,[rsp]
+ call g04c_emit_transform_two_int
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel transform_byte_slice_setup]
+ mov edx,transform_byte_slice_setup_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ mov rsi,[rsp+8]
+ mov rdx,[rsp+16]
+ call g04c_append
+ jmp .count
+.text_take_bytes:
+ lea rax,[rel call_text_take_bytes]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_take_bytes_len
+ jmp .text_one_int
+.text_drop_bytes:
+ lea rax,[rel call_text_drop_bytes]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_drop_bytes_len
+.text_one_int:
+ mov rdi,r12
+ mov rsi,[rsp]
+ call g04c_emit_transform_one_int
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel transform_one_int_setup]
+ mov edx,transform_one_int_setup_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ mov rsi,[rsp+8]
+ mov rdx,[rsp+16]
+ call g04c_append
+ jmp .count
+.text_pad_start:
+ lea rax,[rel call_text_pad_start]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_pad_start_len
+ jmp .text_pad
+.text_pad_end:
+ lea rax,[rel call_text_pad_end]
+ mov [rsp+8],rax
+ mov qword [rsp+16],call_text_pad_end_len
+.text_pad:
+ mov rdi,r12
+ mov rsi,[rsp]
+ call g04c_emit_transform_pad
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel transform_pad_setup]
+ mov edx,transform_pad_setup_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ mov rsi,[rsp+8]
+ mov rdx,[rsp+16]
+ call g04c_append
+ jmp .count
+.to_text:
+ mov rdi,r14
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ mov r13,[rax+NEBOC_AST_NODE_KIND_OFFSET]
+ cmp r13,NEBOC_AST_TEXT_LITERAL
+ je .to_text_text
+ cmp r13,NEBOC_AST_INTEGER_LITERAL
+ je .to_text_int
+ cmp r13,NEBOC_AST_UNARY_EXPR
+ je .to_text_int
+ cmp r13,NEBOC_AST_BOOL_LITERAL
+ je .to_text_bool
+ cmp r13,NEBOC_AST_CALL_EXPR
+ jne .unsupported
+ ; Resolve the scalar type of Result.unwrapOr composition from its parse
+ ; receiver.  Other nested calls reaching this branch produce Text.
+ mov [rsp+8],rax
+ mov r13,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_unwrap_or]
+ mov ecx,n_unwrap_or_len
+ call g04c_token_match
+ test eax,eax
+ jz .to_text_text
+ mov rax,[rsp+8]
+ mov rdi,r14
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_node_ptr
+ test rax,rax
+ jz .ast
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .unsupported
+ mov r13,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_parse_int_text]
+ mov ecx,n_parse_int_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .to_text_int
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[rel n_parse_bool_text]
+ mov ecx,n_parse_bool_text_len
+ call g04c_token_match
+ test eax,eax
+ jnz .to_text_bool
+ jmp .unsupported
+.to_text_text:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel text_to_text_setup]
+ mov edx,text_to_text_setup_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_text_to_text]
+ mov edx,call_text_to_text_len
+ call g04c_append
+ jmp .count
+.to_text_int:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_any
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel int_to_text_setup]
+ mov edx,int_to_text_setup_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_int_to_text]
+ mov edx,call_int_to_text_len
+ call g04c_append
+ jmp .count
+.to_text_bool:
+ mov rdi,r12
+ mov rsi,[rbx+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g04c_emit_any
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel bool_to_text_setup]
+ mov edx,bool_to_text_setup_len
+ call g04c_append
+ test eax,eax
+ jnz .finish
+ mov rdi,r12
+ lea rsi,[rel call_bool_to_text]
+ mov edx,call_bool_to_text_len
  call g04c_append
  jmp .count
 .empty:
@@ -1967,7 +3228,7 @@ g04c_emit_any:
  mov eax,NEBOC_STATUS_INVALID_SOURCE
 .finish:
  dec qword [r12+neboc_text_char_unicode_e_bytes_CODEGEN_DEPTH_OFFSET]
- add rsp,8
+ add rsp,24
  pop r14
  pop r13
  pop r12
@@ -2058,6 +3319,349 @@ g04c_emit_scan_prompt:
  pop rbx
  ret
 
+; request*, G055 call node id: emit receiver plus one literal Int in RSI.
+g04c_emit_transform_one_int:
+ push rbx
+ push r12
+ push r13
+ mov r12,rdi
+ mov r13,rsi
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,r13
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov rbx,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel push_rdi]
+ mov edx,push_rdi_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_any
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel one_int_arguments]
+ mov edx,one_int_arguments_len
+ call g04c_append
+ jmp .done
+.bad: mov eax,NEBOC_STATUS_INVALID_SOURCE
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; request*, call node id: receiver, first Int in RSI, second Int in RDX.
+g04c_emit_transform_two_int:
+ push rbx
+ push r12
+ push r13
+ mov r12,rdi
+ mov r13,rsi
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,r13
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov rbx,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel push_rdi]
+ mov edx,push_rdi_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_any
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel push_rax]
+ mov edx,push_rax_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_any
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel two_int_arguments]
+ mov edx,two_int_arguments_len
+ call g04c_append
+ jmp .done
+.bad: mov eax,NEBOC_STATUS_INVALID_SOURCE
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; request*, call node id: receiver, first Text in RSI, second Text in RDX.
+g04c_emit_transform_two_text:
+ push rbx
+ push r12
+ push r13
+ mov r12,rdi
+ mov r13,rsi
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,r13
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov rbx,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel push_rdi]
+ mov edx,push_rdi_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel push_rdi]
+ mov edx,push_rdi_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel two_text_arguments]
+ mov edx,two_text_arguments_len
+ call g04c_append
+ jmp .done
+.bad: mov eax,NEBOC_STATUS_INVALID_SOURCE
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; request*, pad call: receiver, target Int in RSI, fill Text in RDX.
+g04c_emit_transform_pad:
+ push rbx
+ push r12
+ push r13
+ mov r12,rdi
+ mov r13,rsi
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,r13
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov rbx,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel push_rdi]
+ mov edx,push_rdi_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_any
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel push_rax]
+ mov edx,push_rax_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel pad_arguments]
+ mov edx,pad_arguments_len
+ call g04c_append
+ jmp .done
+.bad: mov eax,NEBOC_STATUS_INVALID_SOURCE
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; request*, join call: lower TextSplit receiver to RDI and separator to RSI.
+g04c_emit_text_join_arguments:
+ push rbx
+ push r12
+ push r13
+ mov r12,rdi
+ mov r13,rsi
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,r13
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov rbx,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_any
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel mov_rdi_rax]
+ mov edx,mov_rdi_rax_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel push_rdi]
+ mov edx,push_rdi_len
+ call g04c_append
+ test eax,eax
+ jnz .done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .bad
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel pair_text_arguments]
+ mov edx,pair_text_arguments_len
+ call g04c_append
+ jmp .done
+.bad: mov eax,NEBOC_STATUS_INVALID_SOURCE
+.done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; request*, binary Text query call node id: emit receiver in RDI and argument
+; in RSI while keeping the generated runtime call stack aligned.
+g04c_emit_text_query_pair:
+ push rbx
+ push r12
+ push r13
+ mov r12,rdi
+ mov r13,rsi
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,r13
+ call g04c_node_ptr
+ test rax,rax
+ jz .pair_bad
+ mov rbx,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .pair_done
+ mov rdi,r12
+ lea rsi,[rel push_rdi]
+ mov edx,push_rdi_len
+ call g04c_append
+ test eax,eax
+ jnz .pair_done
+ mov rdi,[r12+neboc_text_char_unicode_e_bytes_CODEGEN_BUILDER_OFFSET]
+ mov rsi,rbx
+ call g04c_node_ptr
+ test rax,rax
+ jz .pair_bad
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rbx,rbx
+ jz .pair_bad
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_text_receiver
+ test eax,eax
+ jnz .pair_done
+ mov rdi,r12
+ lea rsi,[rel pair_text_arguments]
+ mov edx,pair_text_arguments_len
+ call g04c_append
+ jmp .pair_done
+.pair_bad:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.pair_done:
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
 ; request*, node id: emit either Text descriptor address or Bytes.empty().
 %undef call
 g04c_emit_receiver:
@@ -2112,7 +3716,18 @@ g04c_emit_text_receiver:
  cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
  jne .bad
  test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
- jz .bad
+ jnz .constructor
+ mov rdi,r12
+ mov rsi,rbx
+ call g04c_emit_any
+ test eax,eax
+ jnz .done
+ mov rdi,r12
+ lea rsi,[rel mov_rdi_rax]
+ mov edx,mov_rdi_rax_len
+ call g04c_append
+ jmp .done
+.constructor:
  mov rbx,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  mov rdi,r13
  mov rsi,rbx

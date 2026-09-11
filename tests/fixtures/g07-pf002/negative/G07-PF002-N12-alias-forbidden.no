@@ -1,0 +1,6 @@
+template<Value: Number> (Value.value)identity() {
+    value.return;
+}
+
+start() {
+}

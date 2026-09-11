@@ -1,0 +1,7 @@
+// The progress snapshot publishes values rather than borrowed state pointers.
+start() {
+    RenderPlan;
+    3105;
+    output.stdout().stderr().target("observability-service").plain().visual().headlessEvent();
+    lifecycle.event("log-progress-timeline").payload("progress-snapshot").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

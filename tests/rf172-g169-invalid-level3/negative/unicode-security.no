@@ -1,0 +1,4 @@
+start() {
+    let paylоad = "é";
+    "‮\q";
+}

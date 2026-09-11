@@ -1,0 +1,7 @@
+// Progress creation, ordered update, and increment share one owned panel.
+start() {
+    RenderPlan;
+    3103;
+    output.stdout().stderr().target("observability-service").plain().visual().headlessEvent();
+    lifecycle.event("log-progress-timeline").payload("progress-create-update-increment").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

@@ -1,0 +1,3 @@
+// Tuple.mapEach, tuple.toStruct, Array.map and const generic<N> are comments.
+// They must never activate an aggregate or generic compiler owner.
+start() { 0.return; }

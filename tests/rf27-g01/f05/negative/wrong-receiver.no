@@ -1,0 +1,3 @@
+start() {
+    false.shiftLeft(1).return;
+}

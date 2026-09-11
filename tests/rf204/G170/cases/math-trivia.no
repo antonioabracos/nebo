@@ -1,0 +1,2 @@
+// Atomic pure integer math; expected values come from the Python oracle.
+start() { std /* namespace */ . math . max ( 17 , 29 ) . return ; }

@@ -1,0 +1,6 @@
+// Appends canonical JSONL records to a bounded all-or-none stream batch.
+start() {
+    RenderPlan;
+    1306;
+    protocol.event("console.emit").event("console.text").event("console.table").payload("jsonl-batch-stream").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

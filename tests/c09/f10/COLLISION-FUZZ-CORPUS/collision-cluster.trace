@@ -1,0 +1,8 @@
+profile=C09-F10-v1
+capacity=8
+seed=42
+keys=1,9,17,25,33,41
+expected_length=6
+expected_collision_count_min=5
+expected_max_probe_min=6
+budget_operations=6

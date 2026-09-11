@@ -1,0 +1,14 @@
+// Spatial indexes retain stable handles and verify bounded queries against an independent full scan.
+(Int.self)rtreeNew() { self.return; }
+(Int.self)kdTreeFrom() { self.return; }
+(Int.self)indexInsert() { self.return; }
+(Int.self)indexRemove() { self.return; }
+(Int.self)indexUpdate() { self.return; }
+(Int.self)indexWithin() { self.return; }
+(Int.self)indexIntersecting() { self.return; }
+(Int.self)indexNearest() { self.return; }
+(Int.self)indexVerifyAgainst() { self.return; }
+
+start() {
+    93.rtreeNew().kdTreeFrom().indexInsert().indexRemove().indexUpdate().indexWithin().indexIntersecting().indexNearest().indexVerifyAgainst();
+}

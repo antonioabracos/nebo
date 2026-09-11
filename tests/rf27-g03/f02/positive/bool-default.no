@@ -1,0 +1,2 @@
+(Bool.self)choose(Bool.flag = false) { (flag).return; }
+start() { true.choose().return; }

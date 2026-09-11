@@ -1,0 +1,6 @@
+start() {
+  1.counter.mutable;
+  while (counter) {
+    break;
+  }
+}

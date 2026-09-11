@@ -1,0 +1,2 @@
+callable flag(Bool.value) capture none { value.return; }
+start() { callback(flag, true).return; }

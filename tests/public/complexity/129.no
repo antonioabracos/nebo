@@ -1,0 +1,7 @@
+// Panel, text, and chart adapters share one bounded dashboard generation.
+start() {
+    RenderPlan;
+    3302;
+    output.stdout().stderr().target("domain-visual-service").plain().visual().headlessEvent();
+    lifecycle.event("domain-visual").payload("dashboard-panel-text-chart").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

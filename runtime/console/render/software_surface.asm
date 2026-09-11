@@ -56,6 +56,8 @@ nebo_surface_required_bytes_internal:
     ret
 
 ; fill_rect(surface*, x_px, y_px, width_px, height_px, BGRA32) -> status
+global nebo_software_surface_fill_rect
+nebo_software_surface_fill_rect:
 nebo_surface_fill_rect_internal:
     push rbx
     push r12

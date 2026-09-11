@@ -234,6 +234,7 @@ NEBOC_ABI_FUNCTION neboc_table_validate
  push r13
  push r14
  push r15
+ sub rsp,8
  mov r12,rdi
  mov r13,[r12+NEBO_TABLE_SCHEMA]
  mov r14,[r12+NEBO_TABLE_COLUMNS]
@@ -260,7 +261,9 @@ NEBOC_ABI_FUNCTION neboc_table_validate
  jae .tv_ok
  mov rdi,[r14+r10*8]
  push r10
+ sub rsp,8
  call neboc_column_validate
+ add rsp,8
  pop r10
  test eax,eax
  jnz .tv_source
@@ -278,6 +281,7 @@ NEBOC_ABI_FUNCTION neboc_table_validate
  jmp .tv_done
 .tv_source: mov eax,NEBOC_STATUS_INVALID_SOURCE
 .tv_done:
+ add rsp,8
  pop r15
  pop r14
  pop r13
@@ -491,7 +495,9 @@ NEBOC_ABI_FUNCTION neboc_table_filter_eq_i64
  mov rbp,r8
  mov qword [r9],0
  push r9
+ sub rsp,8
  call neboc_table_validate
+ add rsp,8
  pop r9
  test eax,eax
  jnz .tf_done

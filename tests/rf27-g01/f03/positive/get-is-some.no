@@ -1,0 +1,3 @@
+start() {
+    Bytes.fromValues(10, 20, 30, 40).get(1).isSome().return;
+}

@@ -1,0 +1,2 @@
+generic<T> (T.value)hold() { value.return; }
+start() { 37.hold(); }

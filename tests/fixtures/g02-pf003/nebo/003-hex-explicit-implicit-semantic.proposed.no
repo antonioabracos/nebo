@@ -1,0 +1,4 @@
+start() {
+    Int(0x2A).explicit_hex;
+    0x2a.implicit_hex;
+}

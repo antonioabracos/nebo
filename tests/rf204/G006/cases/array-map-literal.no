@@ -1,0 +1,2 @@
+callable addOne(Int.value) capture none { (value + 1).return; }
+start() { Array<Int, 4> [6, 6, 6, 6].a; a.map(addOne).b; b.at(3); }

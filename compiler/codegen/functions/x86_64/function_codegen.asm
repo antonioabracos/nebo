@@ -6,15 +6,23 @@ default rel
 %include "compiler/support/status/status_codes.inc"
 %include "compiler/tokens/token.inc"
 %include "compiler/tokens/token_kind.inc"
+%include "compiler/tokens/operator_registry.inc"
+%include "compiler/semantic/operators/core_option_range_flow_registry.inc"
 %include "compiler/lexer/lexer.inc"
 %include "compiler/ast/ast_node.inc"
 %include "compiler/semantic/types/type_table.inc"
+%include "compiler/semantic/types/struct_tuple.inc"
+%include "compiler/semantic/const_binding.inc"
+%include "compiler/lowering/scalars/foundation_float_lowering.inc"
 %include "compiler/semantic/collections/array_range.inc"
 %include "compiler/parser/buffer_parser.inc"
 %include "compiler/parser/nominal_types.inc"
+%include "compiler/parser/text_char_bytes_api_contract.inc"
 %include "compiler/semantic/collections/vector_vertical.inc"
 %include "compiler/semantic/types/buffer_freeze.inc"
 %include "compiler/semantic/collections/public_slice.inc"
+%include "compiler/semantic/operators/core_arithmetic_registry.inc"
+%include "compiler/semantic/operators/core_power_xor_ordering_registry.inc"
 %include "compiler/lowering/function_lowering_plan.inc"
 %include "compiler/codegen/asm-writer/assembly_writer.inc"
 %include "compiler/codegen/arch/x86_64/architecture_backend.inc"
@@ -36,10 +44,15 @@ extern neboc_abi_adapter_emit_prepared_call
 extern neboc_abi_adapter_emit_prepared_private_nested_call
 extern neboc_abi_adapter_emit_return_rax
 extern neboc_function_plan_compute_hash
+extern neboc_text_char_bytes_api_contract
 extern neboc_text_char_bytes_codegen_emit_data
+extern neboc_text_char_bytes_codegen_emit_function_data
 extern neboc_text_char_bytes_codegen_emit_expression
 extern neboc_vector_codegen_emit_start
 extern neboc_buffer_parse
+extern neboc_buffer_analyze
+extern neboc_const_symbol_resolve
+extern neboc_const_validate_action
 
 section .rodata
 fcg_type_int: db 'Int'
@@ -57,8 +70,44 @@ fcg_name_byte_length: db 'byteLength'
 fcg_name_byte_length_len equ $-fcg_name_byte_length
 fcg_name_codepoint_count: db 'codepointCount'
 fcg_name_codepoint_count_len equ $-fcg_name_codepoint_count
+fcg_name_grapheme_count: db 'graphemeCount'
+fcg_name_grapheme_count_len equ $-fcg_name_grapheme_count
+fcg_name_normalize_nfc: db 'normalizeNfc'
+fcg_name_normalize_nfc_len equ $-fcg_name_normalize_nfc
+fcg_name_normalize_nfd: db 'normalizeNfd'
+fcg_name_normalize_nfd_len equ $-fcg_name_normalize_nfd
+fcg_name_case_fold: db 'caseFold'
+fcg_name_case_fold_len equ $-fcg_name_case_fold
+fcg_name_slice_codepoints: db 'sliceCodepoints'
+fcg_name_slice_codepoints_len equ $-fcg_name_slice_codepoints
+fcg_name_slice_graphemes: db 'sliceGraphemes'
+fcg_name_slice_graphemes_len equ $-fcg_name_slice_graphemes
 fcg_name_to_float: db 'toFloat'
 fcg_name_to_float_len equ $-fcg_name_to_float
+fcg_name_sqrt: db 'sqrt'
+fcg_name_sqrt_len equ $-fcg_name_sqrt
+fcg_name_cube_root: db 'cubeRoot'
+fcg_name_cube_root_len equ $-fcg_name_cube_root
+fcg_name_fourth_root: db 'fourthRoot'
+fcg_name_fourth_root_len equ $-fcg_name_fourth_root
+fcg_name_factorial: db 'factorial'
+fcg_name_factorial_len equ $-fcg_name_factorial
+fcg_name_flow: db 'flow'
+fcg_name_assert: db 'assert'
+fcg_flow_assert_head: db '    test rax, rax',10,'    jnz .nebo_flow_assert_'
+fcg_flow_assert_head_len equ $-fcg_flow_assert_head
+fcg_flow_assert_trap: db 10,'    mov edi, 47',10,'    call nebo_runtime_trap',10,'.nebo_flow_assert_'
+fcg_flow_assert_trap_len equ $-fcg_flow_assert_trap
+fcg_flow_assert_end: db ':',10,'    xor eax, eax',10
+fcg_flow_assert_end_len equ $-fcg_flow_assert_end
+fcg_name_round: db 'round'
+fcg_name_round_len equ $-fcg_name_round
+fcg_name_nearest_even: db 'nearestEven'
+fcg_name_nearest_even_len equ $-fcg_name_nearest_even
+fcg_name_floor: db 'floor'
+fcg_name_floor_len equ $-fcg_name_floor
+fcg_name_ceil: db 'ceil'
+fcg_name_ceil_len equ $-fcg_name_ceil
 fcg_name_is_finite: db 'isFinite'
 fcg_name_is_finite_len equ $-fcg_name_is_finite
 fcg_name_is_nan: db 'isNaN'
@@ -85,12 +134,28 @@ fcg_name_tuple_of: db 'of'
 fcg_name_tuple_of_len equ $-fcg_name_tuple_of
 fcg_name_collection_contains: db 'contains'
 fcg_name_collection_contains_len equ $-fcg_name_collection_contains
+fcg_name_set_cardinality: db 'cardinality'
+fcg_name_set_cardinality_len equ $-fcg_name_set_cardinality
 fcg_name_collection_as_slice: db 'asSlice'
 fcg_name_collection_as_slice_len equ $-fcg_name_collection_as_slice
 fcg_name_collection_release: db 'release'
 fcg_name_collection_release_len equ $-fcg_name_collection_release
 fcg_name_collection_sum: db 'sum'
 fcg_name_collection_sum_len equ $-fcg_name_collection_sum
+fcg_name_collection_product: db 'product'
+fcg_name_collection_product_len equ $-fcg_name_collection_product
+fcg_name_collection_sum_mapped: db 'sumMapped'
+fcg_name_collection_sum_mapped_len equ $-fcg_name_collection_sum_mapped
+fcg_name_collection_sum_filtered: db 'sumFiltered'
+fcg_name_collection_sum_filtered_len equ $-fcg_name_collection_sum_filtered
+fcg_name_collection_sum_deterministic: db 'sumTree'
+fcg_name_collection_sum_deterministic_len equ $-fcg_name_collection_sum_deterministic
+fcg_name_collection_sum_pairwise: db 'sumPairwise'
+fcg_name_collection_sum_pairwise_len equ $-fcg_name_collection_sum_pairwise
+fcg_name_collection_sum_kahan: db 'sumKahan'
+fcg_name_collection_sum_kahan_len equ $-fcg_name_collection_sum_kahan
+fcg_name_collection_sum_neumaier: db 'sumNeumaier'
+fcg_name_collection_sum_neumaier_len equ $-fcg_name_collection_sum_neumaier
 fcg_name_bytes_type: db 'Bytes'
 fcg_name_bytes_type_len equ $-fcg_name_bytes_type
 fcg_name_bytes_empty: db 'empty'
@@ -127,6 +192,40 @@ fcg_name_is_none: db 'isNone'
 fcg_name_is_none_len equ $-fcg_name_is_none
 fcg_name_unwrap_or: db 'unwrapOr'
 fcg_name_unwrap_or_len equ $-fcg_name_unwrap_or
+; Public uncertainty/number-theory spellings.  These are matched
+; from the source token, never from fixture names or generated-output text.
+fcg_name_uncertain_type: db 'Uncertain'
+fcg_name_uncertain_type_len equ $-fcg_name_uncertain_type
+fcg_name_measurement_type: db 'Measurement'
+fcg_name_measurement_type_len equ $-fcg_name_measurement_type
+fcg_name_approx_equals: db 'approxEquals'
+fcg_name_approx_equals_len equ $-fcg_name_approx_equals
+fcg_name_equivalent_to: db 'equivalentTo'
+fcg_name_equivalent_to_len equ $-fcg_name_equivalent_to
+fcg_name_divides: db 'divides'
+fcg_name_divides_len equ $-fcg_name_divides
+fcg_name_proportional_to: db 'proportionalTo'
+fcg_name_proportional_to_len equ $-fcg_name_proportional_to
+fcg_name_add_worst_case: db 'addWorstCase'
+fcg_name_add_worst_case_len equ $-fcg_name_add_worst_case
+fcg_name_add_independent: db 'addIndependent'
+fcg_name_add_independent_len equ $-fcg_name_add_independent
+fcg_name_add_correlated: db 'addCorrelated'
+fcg_name_add_correlated_len equ $-fcg_name_add_correlated
+fcg_name_add_interval: db 'addInterval'
+fcg_name_add_interval_len equ $-fcg_name_add_interval
+fcg_name_measured_value: db 'measuredValue'
+fcg_name_measured_value_len equ $-fcg_name_measured_value
+fcg_name_uncertainty: db 'uncertainty'
+fcg_name_uncertainty_len equ $-fcg_name_uncertainty
+fcg_name_unit_code: db 'unitCode'
+fcg_name_unit_code_len equ $-fcg_name_unit_code
+fcg_name_quality: db 'quality'
+fcg_name_quality_len equ $-fcg_name_quality
+fcg_name_confidence: db 'confidence'
+fcg_name_confidence_len equ $-fcg_name_confidence
+fcg_name_separator_codepoint: db 'separatorCodepoint'
+fcg_name_separator_codepoint_len equ $-fcg_name_separator_codepoint
 fcg_text_bit_and: db '    mov rcx, rax',10,'    pop rax',10,'    and rax, rcx',10
 fcg_text_bit_and_len equ $-fcg_text_bit_and
 fcg_text_bit_or: db '    mov rcx, rax',10,'    pop rax',10,'    or rax, rcx',10
@@ -145,6 +244,25 @@ fcg_text_with_bit: db '    mov rdx, rax',10,'    pop rcx',10,'    pop rax',10,' 
 fcg_text_with_bit_len equ $-fcg_text_with_bit
 fcg_text_bytes_byte_length: db '    mov rdi, rax',10,'    call nebo_runtime_textual_bytes_byte_length',10
 fcg_text_bytes_byte_length_len equ $-fcg_text_bytes_byte_length
+fcg_text_bytes_at: db '    mov rsi, rax',10,'    mov rdi, [r12]',10,'    lea rsp, [r12 + 32]',10,'    mov r12, [r12 + 24]',10,'    call nebo_runtime_textual_bytes_at',10
+fcg_text_bytes_at_len equ $-fcg_text_bytes_at
+fcg_bytes_constructor_frame:
+ db '    mov r11, rsp',10,'    sub r11, 128',10,'    jc nebo_runtime_trap_stack_budget',10
+ db '    cmp r11, [rel nebo_runtime_owned_stack_floor]',10,'    jb nebo_runtime_trap_stack_budget',10
+ db '    mov [r11 + 24], r12',10,'    mov r12, r11',10,'    mov rsp, r11',10
+fcg_bytes_constructor_frame_len equ $-fcg_bytes_constructor_frame
+fcg_bytes_argument_slot: db '    mov [r12 + '
+fcg_bytes_argument_slot_len equ $-fcg_bytes_argument_slot
+fcg_bytes_argument_end: db '], rax',10
+fcg_bytes_argument_end_len equ $-fcg_bytes_argument_end
+fcg_bytes_constructor_count: db '    mov esi, '
+fcg_bytes_constructor_count_len equ $-fcg_bytes_constructor_count
+fcg_bytes_constructor_commit:
+ db 10,'%ifndef NEBO_BYTES_CONSTRUCTOR_EXTERN',10,'%define NEBO_BYTES_CONSTRUCTOR_EXTERN 1',10
+ db 'extern nebo_runtime_textual_bytes_construct',10,'%endif',10
+ db '    lea rdi, [r12 + 96]',10,'    lea rdx, [r12 + 64]',10,'    lea rcx, [r12 + 32]',10
+ db '    call nebo_runtime_textual_bytes_construct',10,'    mov rsp, r12',10,'    mov r12, [r12 + 24]',10
+fcg_bytes_constructor_commit_len equ $-fcg_bytes_constructor_commit
 fcg_numeric_to_float: db '    mov rdi, rax',10,'    call nebo_runtime_numeric_safety_int_to_float',10,'    movq rax, xmm0',10
 fcg_numeric_to_float_len equ $-fcg_numeric_to_float
 fcg_numeric_is_finite: db '    call nebo_runtime_numeric_safety_is_finite',10
@@ -155,6 +273,66 @@ fcg_numeric_is_infinite: db '    call nebo_runtime_numeric_safety_is_infinite',1
 fcg_numeric_is_infinite_len equ $-fcg_numeric_is_infinite
 fcg_numeric_is_negative_zero: db '    call nebo_runtime_numeric_safety_is_negative_zero',10
 fcg_numeric_is_negative_zero_len equ $-fcg_numeric_is_negative_zero
+fcg_g131_uncertain_create: db '    mov rdi, rax',10,'    mov rsi, rcx',10,'    call nebo_runtime_uncertain_create',10
+fcg_g131_uncertain_create_len equ $-fcg_g131_uncertain_create
+fcg_g131_uncertain_load: db '    mov rsi, rax',10,'    mov rdi, [rsp]',10,'    add rsp, 16',10,'    call nebo_runtime_uncertain_create',10
+fcg_g131_uncertain_load_len equ $-fcg_g131_uncertain_load
+fcg_g131_measurement_load: db '    mov r8, [rsp + 32]',10,'    mov rcx, [rsp + 24]',10,'    mov rdx, [rsp + 16]',10,'    mov rsi, [rsp + 8]',10,'    mov rdi, [rsp]',10,'    add rsp, 48',10,'    call nebo_runtime_measurement_create',10
+fcg_g131_measurement_load_len equ $-fcg_g131_measurement_load
+fcg_g131_alloc_16: db '    sub rsp, 16',10
+fcg_g131_alloc_16_len equ $-fcg_g131_alloc_16
+fcg_g131_alloc_48: db '    sub rsp, 48',10
+fcg_g131_alloc_48_len equ $-fcg_g131_alloc_48
+fcg_g131_store_0: db '    mov [rsp], rax',10
+fcg_g131_store_0_len equ $-fcg_g131_store_0
+fcg_g131_store_8: db '    mov [rsp + 8], rax',10
+fcg_g131_store_8_len equ $-fcg_g131_store_8
+fcg_g131_store_16: db '    mov [rsp + 16], rax',10
+fcg_g131_store_16_len equ $-fcg_g131_store_16
+fcg_g131_store_24: db '    mov [rsp + 24], rax',10
+fcg_g131_store_24_len equ $-fcg_g131_store_24
+fcg_g131_store_32: db '    mov [rsp + 32], rax',10
+fcg_g131_store_32_len equ $-fcg_g131_store_32
+fcg_g131_save_receiver: db '    sub rsp, 16',10,'    mov [rsp], rax',10
+fcg_g131_save_receiver_len equ $-fcg_g131_save_receiver
+fcg_g131_prepare_binary: db '    mov rdi, rax',10,'    mov rsi, rcx',10
+fcg_g131_prepare_binary_len equ $-fcg_g131_prepare_binary
+fcg_g131_prepare_method: db '    mov rsi, rax',10,'    mov rdi, [rsp]',10,'    add rsp, 16',10
+fcg_g131_prepare_method_len equ $-fcg_g131_prepare_method
+fcg_g131_prepare_unary: db '    mov rdi, rax',10
+fcg_g131_prepare_unary_len equ $-fcg_g131_prepare_unary
+fcg_g131_call_approx: db '    call nebo_runtime_uncertain_approx_equal',10
+fcg_g131_call_approx_len equ $-fcg_g131_call_approx
+fcg_g131_call_not_approx: db '    call nebo_runtime_uncertain_not_approx_equal',10
+fcg_g131_call_not_approx_len equ $-fcg_g131_call_not_approx
+fcg_g131_call_equivalent: db '    call nebo_runtime_uncertain_equivalent',10
+fcg_g131_call_equivalent_len equ $-fcg_g131_call_equivalent
+fcg_g131_call_divides: db '    call nebo_runtime_int_divides',10
+fcg_g131_call_divides_len equ $-fcg_g131_call_divides
+fcg_g131_call_not_divides: db '    call nebo_runtime_int_not_divides',10
+fcg_g131_call_not_divides_len equ $-fcg_g131_call_not_divides
+fcg_g131_call_proportional: db '    call nebo_runtime_uncertain_proportional',10
+fcg_g131_call_proportional_len equ $-fcg_g131_call_proportional
+fcg_g131_call_worst_case: db '    call nebo_runtime_uncertain_add_worst_case',10
+fcg_g131_call_worst_case_len equ $-fcg_g131_call_worst_case
+fcg_g131_call_independent: db '    call nebo_runtime_uncertain_add_independent',10
+fcg_g131_call_independent_len equ $-fcg_g131_call_independent
+fcg_g131_call_correlated: db '    call nebo_runtime_uncertain_add_correlated',10
+fcg_g131_call_correlated_len equ $-fcg_g131_call_correlated
+fcg_g131_call_interval: db '    call nebo_runtime_uncertain_add_interval',10
+fcg_g131_call_interval_len equ $-fcg_g131_call_interval
+fcg_g131_call_value: db '    call nebo_runtime_uncertain_value',10
+fcg_g131_call_value_len equ $-fcg_g131_call_value
+fcg_g131_call_uncertainty: db '    call nebo_runtime_uncertain_uncertainty',10
+fcg_g131_call_uncertainty_len equ $-fcg_g131_call_uncertainty
+fcg_g131_call_unit: db '    call nebo_runtime_uncertain_unit',10
+fcg_g131_call_unit_len equ $-fcg_g131_call_unit
+fcg_g131_call_quality: db '    call nebo_runtime_uncertain_quality',10
+fcg_g131_call_quality_len equ $-fcg_g131_call_quality
+fcg_g131_call_confidence: db '    call nebo_runtime_uncertain_confidence',10
+fcg_g131_call_confidence_len equ $-fcg_g131_call_confidence
+fcg_g131_call_separator: db '    call nebo_runtime_uncertain_separator_codepoint',10
+fcg_g131_call_separator_len equ $-fcg_g131_call_separator
 
 fcg_mov_rax: db '    mov rax, '
 fcg_mov_rax_len equ $-fcg_mov_rax
@@ -170,18 +348,114 @@ fcg_newline: db 10
 fcg_newline_len equ $-fcg_newline
 fcg_push_rax: db '    push rax',10
 fcg_push_rax_len equ $-fcg_push_rax
+fcg_lateral_save_rax equ fcg_assignment_save
+fcg_lateral_save_rax_len equ fcg_assignment_save_len
+fcg_lateral_restore_rax equ fcg_assignment_restore
+fcg_lateral_restore_rax_len equ fcg_assignment_restore_len
+; Preserve both call-site alignment and the receiver frame identity across
+; option factories that allocate owned temporary values.
+fcg_console_save_receiver equ fcg_assignment_save
+fcg_console_save_receiver_len equ fcg_assignment_save_len
+fcg_console_restore_receiver equ fcg_assignment_restore
+fcg_console_restore_receiver_len equ fcg_assignment_restore_len
 fcg_restore_binary: db '    mov rcx, rax',10,'    pop rax',10
 fcg_restore_binary_len equ $-fcg_restore_binary
+; RHS owners may allocate persistent result frames. Anchor scalar operands to
+; the linked frame identity rather than assuming RSP survives RHS evaluation.
+fcg_assignment_save:
+ db '    mov r11, rsp',10,'    sub r11, 32',10
+ db '    jc nebo_runtime_trap_stack_budget',10
+ db '    cmp r11, [rel nebo_runtime_owned_stack_floor]',10
+ db '    jb nebo_runtime_trap_stack_budget',10
+ db '    mov [r11 + 24], r12',10,'    mov r12, r11',10,'    mov rsp, r11',10
+ db '    mov [r12], rax',10
+fcg_assignment_save_len equ $-fcg_assignment_save
+fcg_assignment_restore:
+ db '    mov rcx, rax',10,'    mov rax, [r12]',10
+ db '    lea rsp, [r12 + 32]',10,'    mov r12, [r12 + 24]',10
+fcg_assignment_restore_len equ $-fcg_assignment_restore
+fcg_bytes_xor_frame:
+ db '    mov r11, rsp',10,'    sub r11, 4160',10,'    jc nebo_runtime_trap_stack_budget',10
+ db '    cmp r11, [rel nebo_runtime_owned_stack_floor]',10,'    jb nebo_runtime_trap_stack_budget',10
+ db '    mov [r11 + 24], r12',10,'    mov r12, r11',10,'    mov rsp, r11',10
+fcg_bytes_xor_frame_len equ $-fcg_bytes_xor_frame
+fcg_bytes_xor_left: db '    mov [r12], rax',10
+fcg_bytes_xor_left_len equ $-fcg_bytes_xor_left
+fcg_bytes_xor_commit:
+ db '    mov rsi, rax',10,'    mov rdi, [r12]',10,'    lea rdx, [r12 + 64]',10
+ db '    mov ecx, 4096',10,'    lea r8, [r12 + 32]',10,'    call nebo_runtime_bytes_xor',10
+ db '    mov rsp, r12',10,'    mov r12, [r12 + 24]',10
+fcg_bytes_xor_commit_len equ $-fcg_bytes_xor_commit
 fcg_add: db '    add rax, rcx',10,'    jo .nebo_trap_overflow',10
 fcg_add_len equ $-fcg_add
 fcg_sub: db '    sub rax, rcx',10,'    jo .nebo_trap_overflow',10
 fcg_sub_len equ $-fcg_sub
 fcg_mul: db '    imul rax, rcx',10,'    jo .nebo_trap_overflow',10
 fcg_mul_len equ $-fcg_mul
+fcg_runtime_div: db '    mov rdi, rax',10,'    mov rsi, rcx',10,'    call nebo_runtime_checked_divide',10
+fcg_runtime_div_len equ $-fcg_runtime_div
+fcg_runtime_rem: db '    mov rdi, rax',10,'    mov rsi, rcx',10,'    call nebo_runtime_checked_remainder',10
+fcg_runtime_rem_len equ $-fcg_runtime_rem
+fcg_runtime_power: db '    mov rdi, rax',10,'    mov rsi, rcx',10,'    call nebo_runtime_checked_power',10
+fcg_runtime_power_len equ $-fcg_runtime_power
+fcg_xor: db '    xor rax, rcx',10
+fcg_xor_len equ $-fcg_xor
+fcg_spaceship: db '    xor edx, edx',10,'    cmp rax, rcx',10,'    setg dl',10,'    setl al',10,'    movzx eax, al',10,'    neg rax',10,'    lea rax, [rax + rdx + 1]',10
+fcg_spaceship_len equ $-fcg_spaceship
 fcg_neg: db '    neg rax',10,'    jo .nebo_trap_overflow',10
 fcg_neg_len equ $-fcg_neg
 fcg_not: db '    test rax, rax',10,'    sete al',10,'    movzx eax, al',10
 fcg_not_len equ $-fcg_not
+fcg_quantity_percent: db '    mov rdi, rax',10,'    call nebo_runtime_quantity_percent',10
+fcg_quantity_percent_len equ $-fcg_quantity_percent
+fcg_quantity_per_mille: db '    mov rdi, rax',10,'    call nebo_runtime_quantity_per_mille',10
+fcg_quantity_per_mille_len equ $-fcg_quantity_per_mille
+fcg_quantity_angle: db '    mov rdi, rax',10,'    call nebo_runtime_quantity_angle',10
+fcg_quantity_angle_len equ $-fcg_quantity_angle
+fcg_quantity_celsius: db '    mov rdi, rax',10,'    call nebo_runtime_quantity_celsius',10
+fcg_quantity_celsius_len equ $-fcg_quantity_celsius
+fcg_quantity_fahrenheit: db '    mov rdi, rax',10,'    call nebo_runtime_quantity_fahrenheit',10
+fcg_quantity_fahrenheit_len equ $-fcg_quantity_fahrenheit
+fcg_math_square_root: db '    mov rdi, rax',10,'    call nebo_runtime_math_square_root_exact',10
+fcg_math_square_root_len equ $-fcg_math_square_root
+fcg_math_cube_root: db '    mov rdi, rax',10,'    call nebo_runtime_math_cube_root_exact',10
+fcg_math_cube_root_len equ $-fcg_math_cube_root
+fcg_math_fourth_root: db '    mov rdi, rax',10,'    call nebo_runtime_math_fourth_root_exact',10
+fcg_math_fourth_root_len equ $-fcg_math_fourth_root
+fcg_math_factorial: db '    mov rdi, rax',10,'    call nebo_runtime_math_factorial_checked',10
+fcg_math_factorial_len equ $-fcg_math_factorial
+fcg_numeric_float_carrier: db '    movq xmm0, rax',10
+fcg_numeric_float_carrier_len equ $-fcg_numeric_float_carrier
+fcg_round_save: db '    sub rsp, 16',10,'    movq [rsp], xmm0',10
+fcg_round_save_len equ $-fcg_round_save
+fcg_round_default: db '    xor eax, eax',10
+fcg_round_default_len equ $-fcg_round_default
+fcg_round_call: db '    mov rdx, rax',10,'    movq xmm0, [rsp]',10,'    add rsp, 16',10,'    call nebo_math_round_mode_f64',10,'    test eax, eax',10,'    jnz nebo_runtime_trap_arithmetic_domain',10,'    movq rax, xmm0',10
+fcg_round_call_len equ $-fcg_round_call
+fcg_approx_store_first: db '    mov [r12], rax',10
+fcg_approx_store_first_len equ $-fcg_approx_store_first
+fcg_approx_store_other: db '    mov [r12 + 8], rax',10
+fcg_approx_store_other_len equ $-fcg_approx_store_other
+fcg_approx_dynamic: db '    cmp qword [rax + 8], 2',10,'    jne nebo_runtime_trap_arithmetic_domain',10,'    mov rax, [rax]',10
+fcg_approx_dynamic_len equ $-fcg_approx_dynamic
+fcg_approx_call:
+ db '%ifndef NEBO_APPROX_NATIVE_EXTERN',10,'%define NEBO_APPROX_NATIVE_EXTERN 1',10,'extern nebo_float_approx_equal_f64',10,'%endif',10
+ db '    movq xmm0, [r12]',10,'    movq xmm1, [r12 + 8]',10,'    movq xmm2, [rax]',10,'    movq xmm3, [rax + 8]',10
+ db '    call nebo_float_approx_equal_f64',10,'    test eax, eax',10,'    jnz nebo_runtime_trap_arithmetic_domain',10,'    mov eax, edx',10
+ db '    lea rsp, [r12 + 64]',10,'    mov r12, [r12 + 24]',10
+fcg_approx_call_len equ $-fcg_approx_call
+fcg_math_floor: db '    movq rdi, xmm0',10,'    call nebo_runtime_math_floor',10
+fcg_math_floor_len equ $-fcg_math_floor
+fcg_math_ceil: db '    movq rdi, xmm0',10,'    call nebo_runtime_math_ceil',10
+fcg_math_ceil_len equ $-fcg_math_ceil
+fcg_math_infinity: db '    call nebo_runtime_math_infinity',10
+fcg_math_infinity_len equ $-fcg_math_infinity
+fcg_math_pi: db '    call nebo_runtime_math_pi',10
+fcg_math_pi_len equ $-fcg_math_pi
+fcg_math_tau: db '    call nebo_runtime_math_tau',10
+fcg_math_tau_len equ $-fcg_math_tau
+fcg_float_neg: db '    mov rdx, 0x8000000000000000',10,'    xor rax, rdx',10,'    movq xmm0, rax',10
+fcg_float_neg_len equ $-fcg_float_neg
 fcg_cmp_eq: db '    cmp rax, rcx',10,'    sete al',10,'    movzx eax, al',10
 fcg_cmp_eq_len equ $-fcg_cmp_eq
 fcg_cmp_ne: db '    cmp rax, rcx',10,'    setne al',10,'    movzx eax, al',10
@@ -222,8 +496,10 @@ fcg_store_slot: db '    mov [rbp - '
 fcg_store_slot_len equ $-fcg_store_slot
 fcg_store_slot_suffix: db '], rax',10
 fcg_store_slot_suffix_len equ $-fcg_store_slot_suffix
-fcg_sub_rsp: db '    sub rsp, '
+fcg_sub_rsp: db '    mov r11, rsp',10,'    sub r11, '
 fcg_sub_rsp_len equ $-fcg_sub_rsp
+fcg_owned_frame_guard: db 10,'    jc nebo_runtime_trap_stack_budget',10,'    cmp r11, [rel nebo_runtime_owned_stack_floor]',10,'    jb nebo_runtime_trap_stack_budget',10,'    mov rsp, r11',10
+fcg_owned_frame_guard_len equ $-fcg_owned_frame_guard
 fcg_if_test: db '    test rax, rax',10,'    jz .nebo_if_else_'
 fcg_if_test_len equ $-fcg_if_test
 fcg_if_jump_end: db '    jmp .nebo_if_end_'
@@ -252,7 +528,7 @@ fcg_lea_text_desc_suffix: db ']',10
 fcg_lea_text_desc_suffix_len equ $-fcg_lea_text_desc_suffix
 fcg_text_equal_extern: db 'extern nebo_runtime_text_equal',10
 fcg_text_equal_extern_len equ $-fcg_text_equal_extern
-fcg_text_equal_call: db '    mov rsi, rax',10,'    pop rdi',10,'    call nebo_runtime_text_equal',10
+fcg_text_equal_call: db '    mov rsi, rax',10,'    mov rdi, [r12]',10,'    mov r12, [r12+24]',10,'    call nebo_runtime_text_equal',10
 fcg_text_equal_call_len equ $-fcg_text_equal_call
 fcg_text_not_equal: db '    xor eax, 1',10
 fcg_text_not_equal_len equ $-fcg_text_not_equal
@@ -470,6 +746,28 @@ fcg_pop_r9: db '    pop r9',10
 fcg_pop_r9_len equ $-fcg_pop_r9
 fcg_pop_r10_value: db '    pop r10',10
 fcg_pop_r10_value_len equ $-fcg_pop_r10_value
+fcg_call_load_rdi: db '    mov rdi, [r12]',10
+fcg_call_load_rdi_len equ $-fcg_call_load_rdi
+fcg_call_load_rsi: db '    mov rsi, [r12 + 8]',10
+fcg_call_load_rsi_len equ $-fcg_call_load_rsi
+fcg_call_load_rdx: db '    mov rdx, [r12 + 16]',10
+fcg_call_load_rdx_len equ $-fcg_call_load_rdx
+fcg_call_load_rcx: db '    mov rcx, [r12 + 32]',10
+fcg_call_load_rcx_len equ $-fcg_call_load_rcx
+fcg_call_load_r8: db '    mov r8, [r12 + 40]',10
+fcg_call_load_r8_len equ $-fcg_call_load_r8
+fcg_call_load_r9: db '    mov r9, [r12 + 48]',10
+fcg_call_load_r9_len equ $-fcg_call_load_r9
+fcg_call_load_ptrs: dq fcg_call_load_rdi,fcg_call_load_rsi,fcg_call_load_rdx,fcg_call_load_rcx,fcg_call_load_r8,fcg_call_load_r9
+fcg_call_load_lens: dq fcg_call_load_rdi_len,fcg_call_load_rsi_len,fcg_call_load_rdx_len,fcg_call_load_rcx_len,fcg_call_load_r8_len,fcg_call_load_r9_len
+fcg_call_store_head: db '    mov [r12 + '
+fcg_call_store_head_len equ $-fcg_call_store_head
+fcg_call_store_tail: db '], rax',10
+fcg_call_store_tail_len equ $-fcg_call_store_tail
+; Scalar returns do not borrow argument storage. Reclaim this call's frame
+; and nested argument temporaries after the callee has consumed every value.
+fcg_call_frame_restore: db '    lea rsp, [r12 + 64]',10,'    mov r12, [r12 + 24]',10
+fcg_call_frame_restore_len equ $-fcg_call_frame_restore
 fcg_pop_ptrs: dq fcg_pop_rdi,fcg_pop_rsi,fcg_pop_rdx,fcg_pop_rcx,fcg_pop_r8,fcg_pop_r9
 fcg_pop_lens: dq fcg_pop_rdi_len,fcg_pop_rsi_len,fcg_pop_rdx_len,fcg_pop_rcx_len,fcg_pop_r8_len,fcg_pop_r9_len
 fcg_sret_pop_ptrs: dq fcg_pop_rsi,fcg_pop_rdx,fcg_pop_rcx,fcg_pop_r8,fcg_pop_r9
@@ -854,6 +1152,8 @@ NEBOC_ABI_FUNCTION neboc_function_codegen_init
  mov [rbx+NEBOC_FUNCTION_CODEGEN_SCIENTIFIC_SOURCE_ENDS_OFFSET],rax
  mov rax,[r12+NEBOC_FUNCTION_CODEGEN_REQUEST_SCIENTIFIC_RESULT_STARTS_OFFSET]
  mov [rbx+NEBOC_FUNCTION_CODEGEN_SCIENTIFIC_RESULT_STARTS_OFFSET],rax
+ mov rax,[r12+NEBOC_FUNCTION_CODEGEN_REQUEST_STRUCT_OWNER_OFFSET]
+ mov [rbx+FCG_STRUCT_OWNER],rax
  mov rax,[r12+NEBOC_FUNCTION_CODEGEN_REQUEST_FLAGS_OFFSET]
  mov [rbx+NEBOC_FUNCTION_CODEGEN_FLAGS_OFFSET],rax
  mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_NONE
@@ -906,6 +1206,8 @@ NEBOC_ABI_FUNCTION neboc_function_codegen_emit
  ja .limit
  jmp .first_next
 .check_start:
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_STRUCT_DECL
+ je .first_next
  cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_START_DECL
  jne .ast
  cmp qword [rsp+8],0
@@ -939,6 +1241,10 @@ NEBOC_ABI_FUNCTION neboc_function_codegen_emit
  mov [rbx+NEBOC_FUNCTION_CODEGEN_HAS_SLICE_PARAMETERS_OFFSET],rax
  mov rdi,rbx
  call fcg_emit_text_literals
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ call fcg_emit_struct_render_metadata
  test eax,eax
  jnz .done
  test qword [rbx+NEBOC_FUNCTION_CODEGEN_FLAGS_OFFSET],NEBOC_FUNCTION_CODEGEN_FLAG_TEXTUAL_VALIDATED
@@ -1089,7 +1395,9 @@ fcg_emit_function:
  mov [rsp+40],rax            ; total local slots (parameters + bindings)
  mov [rsp+48],rdx            ; binding count
  mov [rbx+NEBOC_FUNCTION_CODEGEN_SLICE_TEMP_BASE_OFFSET],rax
- cmp qword [rbx+NEBOC_FUNCTION_CODEGEN_HAS_SLICE_PARAMETERS_OFFSET],0
+ mov rdi,rbx
+ call fcg_needs_slice_temporaries
+ test eax,eax
  je .function_locals_ready
  add qword [rsp+40],NEBOC_FUNCTION_CODEGEN_SLICE_TEMP_SLOTS
 .function_locals_ready:
@@ -1112,6 +1420,10 @@ fcg_emit_function:
  jnz .sret_return_contract
  mov rdi,[rsp+56]
  call fcg_slice_type_decode
+ test eax,eax
+ jnz .sret_return_contract
+ mov rdi,[rsp+56]
+ call fcg_aggregate_sret_type_decode
  test eax,eax
  jz .return_contract_ready
 .sret_return_contract:
@@ -1202,6 +1514,11 @@ fcg_emit_function:
  jmp .copy_params
 .body:
  mov rdi,rbx
+ mov rsi,r12
+ call fcg_matrix_emit_parameter_borrows
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
  mov rsi,[rsp+8]
  call fcg_emit_mutable_array_initializers_for_block
  test eax,eax
@@ -1213,6 +1530,15 @@ fcg_emit_function:
  jz .ast
  mov r12,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
 .statement_loop:
+ mov rsi,[rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_STATEMENT_OFFSET]
+ test rsi,rsi
+ jz .statement_temporary_cleaned
+ mov rdi,rbx
+ mov edx,65
+ call fcg_assoc_emit_view_lifecycle
+ test eax,eax
+ jnz .done
+.statement_temporary_cleaned:
  test r12,r12
  jz .body_done
  mov [rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_STATEMENT_OFFSET],r12
@@ -1383,6 +1709,12 @@ fcg_emit_function:
  call fcg_append
  test eax,eax
  jnz .done
+ mov rdi,rbx
+ xor esi,esi
+ mov edx,59
+ call fcg_assoc_emit_view_lifecycle
+ test eax,eax
+ jnz .done
  mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_ADAPTER_OFFSET]
  call neboc_abi_adapter_emit_return_rax
  test eax,eax
@@ -1491,7 +1823,9 @@ fcg_emit_start:
  jnz .done
  mov rax,[rsp+32]
  mov [rbx+NEBOC_FUNCTION_CODEGEN_SLICE_TEMP_BASE_OFFSET],rax
- cmp qword [rbx+NEBOC_FUNCTION_CODEGEN_HAS_SLICE_PARAMETERS_OFFSET],0
+ mov rdi,rbx
+ call fcg_needs_slice_temporaries
+ test eax,eax
  je .start_locals_ready
  add qword [rsp+32],NEBOC_FUNCTION_CODEGEN_SLICE_TEMP_SLOTS
 .start_locals_ready:
@@ -1542,6 +1876,15 @@ fcg_emit_start:
  mov r12,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  mov qword [rsp+24],0
 .statement_loop:
+ mov rsi,[rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_STATEMENT_OFFSET]
+ test rsi,rsi
+ jz .statement_temporary_cleaned
+ mov rdi,rbx
+ mov edx,65
+ call fcg_assoc_emit_view_lifecycle
+ test eax,eax
+ jnz .done
+.statement_temporary_cleaned:
  test r12,r12
  jz .tail
  mov [rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_STATEMENT_OFFSET],r12
@@ -1583,6 +1926,31 @@ fcg_emit_start:
  mov rdi,rbx
  xor edx,edx
  call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ ; A discarded descriptor/value object cannot become an implicit process
+ ; status through RAX's low byte. Preserve only the existing scalar profile;
+ ; explicit return jumps bypass the later fallthrough path entirely.
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,rbx
+ xor edx,edx
+ call fcg_infer_type
+ cmp rax,NEBOC_TYPE_ID_INT
+ je .discard_scalar
+ cmp rax,NEBOC_TYPE_ID_BOOL
+ je .discard_scalar
+ cmp rax,NEBOC_TYPE_ID_CHAR
+ je .discard_scalar
+ mov rdi,rbx
+ lea rsi,[rel fcg_mov_false]
+ mov edx,fcg_mov_false_len
+ call fcg_append
+ jmp .emitted
+.discard_scalar:
+ xor eax,eax
  jmp .emitted
 .binding_stmt:
  test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPED_BINDING_DECLARATION
@@ -1707,6 +2075,12 @@ fcg_emit_start:
  test eax,eax
  jnz .done
 .return:
+ mov rdi,rbx
+ xor esi,esi
+ mov edx,59
+ call fcg_assoc_emit_view_lifecycle
+ test eax,eax
+ jnz .done
  mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_ADAPTER_OFFSET]
  call neboc_abi_adapter_emit_return_rax
  test eax,eax
@@ -1808,6 +2182,8 @@ fcg_validate_start_status_block:
  je .loop_statement
  jmp .next
 .return_statement:
+ cmp qword [r15+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET],0
+ jne .unreachable_tail
  mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  test rsi,rsi
  jz .bad
@@ -1830,8 +2206,15 @@ fcg_validate_start_status_block:
  je .next
  cmp rax,NEBOC_TYPE_ID_CHAR
  je .next
+ ; A known aggregate type is a successful inference followed by an invalid
+ ; process-status type. Speculative constructor-child lookups must not replace
+ ; that causal diagnostic with a stale undefined-name error on (for example)
+ ; the schema's Tuple descriptor. Preserve inference errors only for type zero.
+ test rax,rax
+ jnz .invalid_status_type
  cmp qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_NONE
  jne .invalid_source
+.invalid_status_type:
  mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_ENTRYPOINT_STATUS
  mov rdi,rbx
  mov rsi,[rsp]
@@ -1865,6 +2248,12 @@ fcg_validate_start_status_block:
  jmp .done
 .bad:
  mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_BAD_AST
+ jmp .invalid_source
+.unreachable_tail:
+ mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_MULTIPLE_RETURN
+ mov rdi,rbx
+ mov rsi,[r15+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ call fcg_capture_node_span
 .invalid_source:
  mov eax,NEBOC_STATUS_INVALID_SOURCE
 .done:
@@ -2150,9 +2539,9 @@ fcg_prepare_contracts:
  pop rbx
  ret
 
-; state*, frozen signature -> status. Reserve a separately bounded, aligned
-; mutable-Array payload below the ABI-owned scalar frame. `leave` remains the
-; shared epilogue, so no ABI or runtime contract changes.
+; state*, frozen signature -> status. Guard the prospective owned-storage
+; frame before touching it, including storage held by callers. R11 is an ABI
+; scratch register; incoming parameters remain intact. `leave` frees storage.
 fcg_emit_mutable_frame_reserve:
  push rbx
  push r12
@@ -2181,8 +2570,8 @@ fcg_emit_mutable_frame_reserve:
  test eax,eax
  jnz .writer
  mov rdi,rbx
- lea rsi,[rel fcg_newline]
- mov edx,fcg_newline_len
+ lea rsi,[rel fcg_owned_frame_guard]
+ mov edx,fcg_owned_frame_guard_len
  call fcg_append
  jmp .done
 .writer:
@@ -2217,6 +2606,22 @@ fcg_emit_expr:
  jz .ast
  mov r14,rax
  mov rax,[r14+NEBOC_AST_NODE_KIND_OFFSET]
+ cmp rax,NEBOC_AST_STRUCT_CONSTRUCTOR
+ je .struct_value
+ cmp rax,NEBOC_AST_BINDING_TERMINAL
+ je .struct_value
+ test qword [r14+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_NOMINAL_VARIANT_RECEIVER
+ jz .struct_checked
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_struct_field_info
+ test rax,rax
+ jnz .struct_value
+ mov rax,[r14+NEBOC_AST_NODE_KIND_OFFSET]
+.struct_checked:
+ cmp rax,NEBOC_AST_FLOAT_LITERAL
+ je .float_literal
  cmp rax,NEBOC_AST_INTEGER_LITERAL
  je .integer
  cmp rax,NEBOC_AST_BOOL_LITERAL
@@ -2225,6 +2630,12 @@ fcg_emit_expr:
  je .integer
  cmp rax,NEBOC_AST_TEXT_LITERAL
  je .text_literal
+ cmp rax,NEBOC_AST_INTERPOLATED_TEXT
+ je .format_call
+ cmp rax,NEBOC_AST_MATH_CONSTANT
+ je .math_constant
+ cmp rax,NEBOC_AST_SET_EMPTY_LITERAL
+ je .set_constant
  cmp rax,NEBOC_AST_IDENTIFIER_EXPR
  je .identifier
  cmp rax,NEBOC_AST_UNARY_EXPR
@@ -2234,6 +2645,17 @@ fcg_emit_expr:
  cmp rax,NEBOC_AST_CALL_EXPR
  je .call
  jmp .unsupported
+.struct_value:
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_emit_struct_expr
+ jmp .done
+.float_literal:
+ mov rdi,rbx
+ mov rsi,r14
+ call fcg_emit_float_literal
+ jmp .done
 .integer:
  mov rdi,rbx
  lea rsi,[rel fcg_mov_rax]
@@ -2280,6 +2702,54 @@ fcg_emit_expr:
  mov rdi,rbx
  lea rsi,[rel fcg_lea_text_desc_suffix]
  mov edx,fcg_lea_text_desc_suffix_len
+ call fcg_append
+ jmp .done
+.math_constant:
+ mov rax,[r14+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ cmp rax,NEBOC_TOKEN_INFINITY
+ je .math_infinity
+ cmp rax,NEBOC_TOKEN_PI
+ je .math_pi
+ cmp rax,NEBOC_TOKEN_TAU
+ jne .unsupported
+ mov rdi,rbx
+ lea rsi,[rel fcg_math_tau]
+ mov edx,fcg_math_tau_len
+ call fcg_append
+ jmp .done
+.math_infinity:
+ mov rdi,rbx
+ lea rsi,[rel fcg_math_infinity]
+ mov edx,fcg_math_infinity_len
+ call fcg_append
+ jmp .done
+.math_pi:
+ mov rdi,rbx
+ lea rsi,[rel fcg_math_pi]
+ mov edx,fcg_math_pi_len
+ call fcg_append
+ jmp .done
+.set_constant:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_set_value_info
+ test eax,eax
+ jz .unsupported
+ mov [rsp+56],rdx
+ mov rdi,rbx
+ lea rsi,[rel fcg_mov_rax]
+ mov edx,fcg_mov_rax_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_WRITER_OFFSET]
+ mov rsi,[rsp+56]
+ call neboc_assembly_writer_append_i64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,rbx
+ lea rsi,[rel fcg_newline]
+ mov edx,fcg_newline_len
  call fcg_append
  jmp .done
 .identifier:
@@ -2329,6 +2799,29 @@ fcg_emit_expr:
  mov eax,NEBOC_STATUS_INVALID_SOURCE
  jmp .done
 .unary:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_collection_binder_info
+ test eax,eax
+ jz .unary_regular
+ mov [rsp+56],rdx
+ mov rdi,rbx
+ lea rsi,[rel fcg_mov_rax]
+ mov edx,fcg_mov_rax_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_WRITER_OFFSET]
+ mov rsi,[rsp+56]
+ call neboc_assembly_writer_append_i64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,rbx
+ lea rsi,[rel fcg_newline]
+ mov edx,fcg_newline_len
+ call fcg_append
+ jmp .done
+.unary_regular:
  mov r15,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  test r15,r15
  jz .ast
@@ -2339,6 +2832,34 @@ fcg_emit_expr:
  test eax,eax
  jnz .done
  mov rax,[r14+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ NEBOC_CORE_ORF_CLASSIFY rax,rdx,.unary_not_lateral
+ cmp rdx,NEBOC_OPERATOR_ID_NSR_CORE_047
+ je .unary_lateral
+.unary_not_lateral:
+ cmp rax,NEBOC_TOKEN_POSTFIX_PERCENT
+ je .unary_quantity_percent
+ cmp rax,NEBOC_TOKEN_PER_MILLE
+ je .unary_quantity_per_mille
+ cmp rax,NEBOC_TOKEN_BASIS_POINTS
+ je .ok
+ cmp rax,NEBOC_TOKEN_DEGREE
+ je .unary_quantity_angle
+ cmp rax,NEBOC_TOKEN_CELSIUS
+ je .unary_quantity_celsius
+ cmp rax,NEBOC_TOKEN_FAHRENHEIT
+ je .unary_quantity_fahrenheit
+ cmp rax,NEBOC_TOKEN_SQUARE_ROOT
+ je .unary_math_square_root
+ cmp rax,NEBOC_TOKEN_CUBE_ROOT
+ je .unary_math_cube_root
+ cmp rax,NEBOC_TOKEN_FOURTH_ROOT
+ je .unary_math_fourth_root
+ cmp rax,NEBOC_TOKEN_POSTFIX_FACTORIAL
+ je .unary_math_factorial
+ cmp rax,NEBOC_TOKEN_FLOOR_OPEN
+ je .unary_math_floor
+ cmp rax,NEBOC_TOKEN_CEIL_OPEN
+ je .unary_math_ceil
  cmp rax,NEBOC_TOKEN_PLUS
  je .ok
  cmp rax,NEBOC_TOKEN_MINUS
@@ -2346,7 +2867,124 @@ fcg_emit_expr:
  cmp rax,NEBOC_TOKEN_BANG
  je .unary_not
  jmp .unsupported
+.unary_quantity_percent:
+ mov rdi,rbx
+ lea rsi,[rel fcg_quantity_percent]
+ mov edx,fcg_quantity_percent_len
+ call fcg_append
+ jmp .done
+.unary_quantity_per_mille:
+ mov rdi,rbx
+ lea rsi,[rel fcg_quantity_per_mille]
+ mov edx,fcg_quantity_per_mille_len
+ call fcg_append
+ jmp .done
+.unary_quantity_angle:
+ mov rdi,rbx
+ lea rsi,[rel fcg_quantity_angle]
+ mov edx,fcg_quantity_angle_len
+ call fcg_append
+ jmp .done
+.unary_quantity_celsius:
+ mov rdi,rbx
+ lea rsi,[rel fcg_quantity_celsius]
+ mov edx,fcg_quantity_celsius_len
+ call fcg_append
+ jmp .done
+.unary_quantity_fahrenheit:
+ mov rdi,rbx
+ lea rsi,[rel fcg_quantity_fahrenheit]
+ mov edx,fcg_quantity_fahrenheit_len
+ call fcg_append
+ jmp .done
+.unary_math_square_root:
+ mov rdi,rbx
+ lea rsi,[rel fcg_math_square_root]
+ mov edx,fcg_math_square_root_len
+ call fcg_append
+ jmp .done
+.unary_math_cube_root:
+ mov rdi,rbx
+ lea rsi,[rel fcg_math_cube_root]
+ mov edx,fcg_math_cube_root_len
+ call fcg_append
+ jmp .done
+.unary_math_fourth_root:
+ mov rdi,rbx
+ lea rsi,[rel fcg_math_fourth_root]
+ mov edx,fcg_math_fourth_root_len
+ call fcg_append
+ jmp .done
+.unary_math_factorial:
+ mov rdi,rbx
+ lea rsi,[rel fcg_math_factorial]
+ mov edx,fcg_math_factorial_len
+ call fcg_append
+ jmp .done
+.unary_math_floor:
+ mov rdi,rbx
+ lea rsi,[rel fcg_math_floor]
+ mov edx,fcg_math_floor_len
+ call fcg_append
+ jmp .done
+.unary_math_ceil:
+ mov rdi,rbx
+ lea rsi,[rel fcg_math_ceil]
+ mov edx,fcg_math_ceil_len
+ call fcg_append
+ jmp .done
+.unary_lateral:
+ mov rdi,rbx
+ lea rsi,[rel fcg_lateral_save_rax]
+ mov edx,fcg_lateral_save_rax_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_node_ptr
+ test rax,rax
+ jz .ast
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rsi,rsi
+ jz .ast
+ mov rdi,rbx
+ lea rdx,[r13+1]
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_lateral_restore_rax]
+ mov edx,fcg_lateral_restore_rax_len
+ call fcg_append
+ jmp .done
 .unary_minus:
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[r13+1]
+ call fcg_infer_type
+ cmp rax,NEBOC_TYPE_ID_FLOAT
+ jne .unary_minus_integer
+ mov rdi,rbx
+ lea rsi,[rel fcg_float_neg]
+ mov edx,fcg_float_neg_len
+ call fcg_append
+ jmp .done
+.unary_minus_integer:
+ ; The literal semantic stores 9223372036854775808 as its final two's-
+ ; complement INT_MIN payload and admits it only beneath unary minus.  It is
+ ; already materialized as INT_MIN here, so a second machine NEG would trap.
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_node_ptr
+ test rax,rax
+ jz .ast
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_INTEGER_LITERAL
+ jne .unary_minus_emit
+ mov rdx,0x8000000000000000
+ cmp [rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET],rdx
+ je .ok
+.unary_minus_emit:
  or qword [rbx+NEBOC_FUNCTION_CODEGEN_TRAP_FLAGS_OFFSET],NEBOC_FUNCTION_CODEGEN_TRAP_OVERFLOW
  mov rdi,rbx
  lea rsi,[rel fcg_neg]
@@ -2360,6 +2998,40 @@ fcg_emit_expr:
  call fcg_append
  jmp .done
 .binary:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_linear_vector_info
+ test eax,eax
+ jz .binary_not_linear_vector
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_linear_vector_emit
+ jmp .done
+.binary_not_linear_vector:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_set_value_info
+ test eax,eax
+ jz .binary_regular
+ mov [rsp+56],rdx
+ mov rdi,rbx
+ lea rsi,[rel fcg_mov_rax]
+ mov edx,fcg_mov_rax_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_WRITER_OFFSET]
+ mov rsi,[rsp+56]
+ call neboc_assembly_writer_append_i64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,rbx
+ lea rsi,[rel fcg_newline]
+ mov edx,fcg_newline_len
+ call fcg_append
+ jmp .done
+.binary_regular:
  mov r15,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  test r15,r15
  jz .ast
@@ -2402,8 +3074,10 @@ fcg_emit_expr:
  test eax,eax
  jnz .done
  mov rdi,rbx
- lea rsi,[rel fcg_push_rax]
- mov edx,fcg_push_rax_len
+ ; The right operand can retain an owned frame (Text transform or address
+ ; formatting). A linked operand slot survives that allocation; pop does not.
+ lea rsi,[rel fcg_aligned_binary_save]
+ mov edx,fcg_aligned_binary_save_len
  call fcg_append
  test eax,eax
  jnz .done
@@ -2428,14 +3102,27 @@ fcg_emit_expr:
  jmp .done
 .generic_binary:
  mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_infer_type
+ test rax,rax
+ jz .unsupported
+ cmp rax,NEBOC_TYPE_ID_BYTES
+ je .bytes_xor_value
+ mov rdi,rbx
+ mov rsi,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ lea rdx,[r13+1]
+ call fcg_infer_type
+ mov [rsp+64],rax
+ mov rdi,rbx
  mov rsi,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  lea rdx,[r13+1]
  call fcg_emit_expr
  test eax,eax
  jnz .done
  mov rdi,rbx
- lea rsi,[rel fcg_push_rax]
- mov edx,fcg_push_rax_len
+ lea rsi,[rel fcg_aligned_binary_save]
+ mov edx,fcg_aligned_binary_save_len
  call fcg_append
  test eax,eax
  jnz .done
@@ -2446,12 +3133,41 @@ fcg_emit_expr:
  test eax,eax
  jnz .done
  mov rdi,rbx
- lea rsi,[rel fcg_restore_binary]
- mov edx,fcg_restore_binary_len
+ lea rsi,[rel fcg_aligned_binary_restore]
+ mov edx,fcg_aligned_binary_restore_len
  call fcg_append
  test eax,eax
  jnz .done
+ cmp qword [rsp+64],NEBOC_TYPE_ID_FLOAT
+ jne .generic_integer_binary
+ mov rdi,rbx
+ mov rsi,[r14+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ call fcg_emit_float_binary
+ jmp .done
+.generic_integer_binary:
  mov rax,[r14+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ NEBOC_CORE_PXO_CLASSIFY rax,rcx,.binary_token_dispatch
+ cmp rcx,NEBOC_OPERATOR_ID_NSR_CORE_017
+ je .power
+ cmp rcx,NEBOC_OPERATOR_ID_NSR_CORE_023
+ je .xor
+ cmp rcx,NEBOC_OPERATOR_ID_NSR_CORE_030
+ je .spaceship
+.binary_token_dispatch:
+ cmp rax,NEBOC_TOKEN_PLUS_MINUS
+ je .g131_uncertain
+ cmp rax,NEBOC_TOKEN_APPROX_EQUAL
+ je .g131_approx
+ cmp rax,NEBOC_TOKEN_NOT_APPROX_EQUAL
+ je .g131_not_approx
+ cmp rax,NEBOC_TOKEN_EQUIVALENT
+ je .g131_equivalent
+ cmp rax,NEBOC_TOKEN_DIVIDES
+ je .g131_divides
+ cmp rax,NEBOC_TOKEN_NOT_DIVIDES
+ je .g131_not_divides
+ cmp rax,NEBOC_TOKEN_PROPORTIONAL
+ je .g131_proportional
  cmp rax,NEBOC_TOKEN_PLUS
  je .add
  cmp rax,NEBOC_TOKEN_MINUS
@@ -2475,6 +3191,84 @@ fcg_emit_expr:
  cmp rax,NEBOC_TOKEN_GREATER_EQUAL
  je .ge
  jmp .unsupported
+.g131_uncertain:
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_uncertain_create]
+ mov edx,fcg_g131_uncertain_create_len
+ call fcg_append
+ jmp .done
+.g131_approx:
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_prepare_binary]
+ mov edx,fcg_g131_prepare_binary_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_call_approx]
+ mov edx,fcg_g131_call_approx_len
+ call fcg_append
+ jmp .done
+.g131_not_approx:
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_prepare_binary]
+ mov edx,fcg_g131_prepare_binary_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_call_not_approx]
+ mov edx,fcg_g131_call_not_approx_len
+ call fcg_append
+ jmp .done
+.g131_equivalent:
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_prepare_binary]
+ mov edx,fcg_g131_prepare_binary_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_call_equivalent]
+ mov edx,fcg_g131_call_equivalent_len
+ call fcg_append
+ jmp .done
+.g131_divides:
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_prepare_binary]
+ mov edx,fcg_g131_prepare_binary_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_call_divides]
+ mov edx,fcg_g131_call_divides_len
+ call fcg_append
+ jmp .done
+.g131_not_divides:
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_prepare_binary]
+ mov edx,fcg_g131_prepare_binary_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_call_not_divides]
+ mov edx,fcg_g131_call_not_divides_len
+ call fcg_append
+ jmp .done
+.g131_proportional:
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_prepare_binary]
+ mov edx,fcg_g131_prepare_binary_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_call_proportional]
+ mov edx,fcg_g131_call_proportional_len
+ call fcg_append
+ jmp .done
 .add:
  or qword [rbx+NEBOC_FUNCTION_CODEGEN_TRAP_FLAGS_OFFSET],NEBOC_FUNCTION_CODEGEN_TRAP_OVERFLOW
  mov rdi,rbx
@@ -2497,45 +3291,66 @@ fcg_emit_expr:
  call fcg_append
  jmp .done
 .div:
- xor r15d,r15d
- jmp .division_common
+ mov rdi,rbx
+ lea rsi,[rel fcg_runtime_div]
+ mov edx,fcg_runtime_div_len
+ call fcg_append
+ jmp .done
 .mod:
- mov r15d,1
-.division_common:
- or qword [rbx+NEBOC_FUNCTION_CODEGEN_TRAP_FLAGS_OFFSET],NEBOC_FUNCTION_CODEGEN_TRAP_OVERFLOW|NEBOC_FUNCTION_CODEGEN_TRAP_DIV_ZERO
  mov rdi,rbx
- lea rsi,[rel fcg_div_prefix]
- mov edx,fcg_div_prefix_len
+ lea rsi,[rel fcg_runtime_rem]
+ mov edx,fcg_runtime_rem_len
+ call fcg_append
+ jmp .done
+.power:
+ mov rdi,rbx
+ lea rsi,[rel fcg_runtime_power]
+ mov edx,fcg_runtime_power_len
+ call fcg_append
+ jmp .done
+.bytes_xor_value:
+ ; Reserve output before evaluating either input. Both sources remain live
+ ; through the native call; only their temporary frames are released after
+ ; the checked native owner has committed a distinct immutable Bytes value.
+ mov rdi,rbx
+ lea rsi,[rel fcg_bytes_xor_frame]
+ mov edx,fcg_bytes_xor_frame_len
  call fcg_append
  test eax,eax
  jnz .done
- mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_WRITER_OFFSET]
- mov rsi,r12
- call neboc_assembly_writer_append_u64_decimal
- test eax,eax
- jnz .writer
  mov rdi,rbx
- lea rsi,[rel fcg_div_mid]
- mov edx,fcg_div_mid_len
+ mov rsi,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ lea rdx,[r13+1]
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_bytes_xor_left]
+ mov edx,fcg_bytes_xor_left_len
  call fcg_append
  test eax,eax
  jnz .done
- mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_WRITER_OFFSET]
- mov rsi,r12
- call neboc_assembly_writer_append_u64_decimal
- test eax,eax
- jnz .writer
  mov rdi,rbx
- lea rsi,[rel fcg_div_tail]
- mov edx,fcg_div_tail_len
- call fcg_append
+ mov rsi,r15
+ lea rdx,[r13+1]
+ call fcg_emit_expr
  test eax,eax
  jnz .done
- test r15d,r15d
- jz .ok
  mov rdi,rbx
- lea rsi,[rel fcg_mod_tail]
- mov edx,fcg_mod_tail_len
+ lea rsi,[rel fcg_bytes_xor_commit]
+ mov edx,fcg_bytes_xor_commit_len
+ call fcg_append
+ jmp .done
+.xor:
+ mov rdi,rbx
+ lea rsi,[rel fcg_xor]
+ mov edx,fcg_xor_len
+ call fcg_append
+ jmp .done
+.spaceship:
+ mov rdi,rbx
+ lea rsi,[rel fcg_spaceship]
+ mov edx,fcg_spaceship_len
  call fcg_append
  jmp .done
 .eq:
@@ -2711,6 +3526,196 @@ fcg_emit_expr:
  call fcg_append
  jmp .done
 .call:
+ test qword [r14+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_CONTEXTUAL_OPTION
+ jnz .unsupported
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_scan_public_info
+ test eax,eax
+ jz .not_public_scan
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_scan_public_emit
+ jmp .done
+.not_public_scan:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_color_public_info
+ test eax,eax
+ jz .not_public_color
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_color_public_emit
+ jmp .done
+.not_public_color:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_console_public_info
+ test eax,eax
+ jz .call_not_public_console
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_console_public_emit
+ jmp .done
+.call_not_public_console:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_visual_summary_info
+ test eax,eax
+ jz .call_not_visual_summary
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_visual_summary_emit
+ jmp .done
+.call_not_visual_summary:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_filesystem_public_info
+ test eax,eax
+ jz .call_not_filesystem
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_filesystem_public_emit
+ jmp .done
+.call_not_filesystem:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_system_public_info
+ test eax,eax
+ jz .call_not_system
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_system_public_emit
+ jmp .done
+.call_not_system:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_tagged_public_info
+ test eax,eax
+ jz .call_not_tagged
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_tagged_public_emit
+ jmp .done
+.call_not_tagged:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_regex_public_info
+ test eax,eax
+ jz .call_not_regex
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_regex_public_emit
+ jmp .done
+.call_not_regex:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_slash_public_info
+ test eax,eax
+ jz .call_not_slash
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_slash_public_emit
+ jmp .done
+.call_not_slash:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_tensor_info
+ test eax,eax
+ jz .call_not_tensor
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_tensor_emit
+ jmp .done
+.call_not_tensor:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_matrix_info
+ test eax,eax
+ jz .call_not_matrix
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_matrix_emit
+ jmp .done
+.call_not_matrix:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_random_info
+ test eax,eax
+ jz .call_not_random
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_random_emit
+ jmp .done
+.call_not_random:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_vector_info
+ test eax,eax
+ jz .call_not_vector
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_vector_emit
+ jmp .done
+.call_not_vector:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_assoc_info
+ test eax,eax
+ jz .call_not_associative
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_assoc_emit
+ jmp .done
+.call_not_associative:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_nominal_unwrap_value
+ test rax,rax
+ jz .call_not_nominal_unwrap
+ mov rsi,rax
+ mov rdi,rbx
+ lea rdx,[r13+1]
+ call fcg_emit_expr
+ jmp .done
+.call_not_nominal_unwrap:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_set_query_info
+ test eax,eax
+ jz .call_not_set
+ mov [rsp+56],rdx
+ mov rdi,rbx
+ lea rsi,[rel fcg_mov_rax]
+ mov edx,fcg_mov_rax_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_WRITER_OFFSET]
+ mov rsi,[rsp+56]
+ call neboc_assembly_writer_append_i64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,rbx
+ lea rsi,[rel fcg_newline]
+ mov edx,fcg_newline_len
+ call fcg_append
+ jmp .done
+.call_not_set:
  mov rdi,rbx
  mov rsi,r12
  mov rdx,r13
@@ -2737,6 +3742,16 @@ fcg_emit_expr:
 .call_not_tuple:
  test qword [r14+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
  jnz .type_constructor
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_format_call_info
+ test eax,eax
+ jnz .format_call
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_flow_assert_info
+ test eax,eax
+ jnz .flow_assert_call
  mov rdi,rbx
  mov rsi,r12
  call fcg_is_console_call
@@ -2774,6 +3789,11 @@ fcg_emit_expr:
  jnz .codepoint_count_call
  mov rdi,rbx
  mov rsi,r12
+ call fcg_g131_call_info
+ test eax,eax
+ jnz .g131_call
+ mov rdi,rbx
+ mov rsi,r12
  call fcg_numeric_call_info
  test eax,eax
  jnz .numeric_call
@@ -2804,6 +3824,16 @@ fcg_emit_expr:
  mov rcx,[rbx+NEBOC_FUNCTION_CODEGEN_LAST_CALL_NESTED_OWNER_ID_OFFSET]
  mov [rsp+80],rcx           ; zero or exact private outer owner
  mov rdi,rdx
+ call fcg_aggregate_sret_type_decode
+ test eax,eax
+ jz .call_not_matrix_result
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_matrix_emit_call
+ jmp .done
+.call_not_matrix_result:
+ mov rdi,[rsp+8]
  call fcg_array_type_decode
  test eax,eax
  jnz .unsupported          ; Array calls require a direct typed owner binding.
@@ -2818,6 +3848,25 @@ fcg_emit_expr:
  mov [rsp+16],rax           ; total receiver + args
  mov r15,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  mov qword [rsp+24],0
+ ; Argument values survive any owned storage allocated by a later argument.
+ ; RSP is not a stable spill base once a nested native value has been emitted.
+ mov rdi,rbx
+ lea rsi,[rel ftm_frame_head]
+ mov edx,ftm_frame_head_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_WRITER_OFFSET]
+ mov esi,64
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,rbx
+ lea rsi,[rel ftm_frame_tail]
+ mov edx,ftm_frame_tail_len
+ call fcg_append
+ test eax,eax
+ jnz .done
 .call_eval_loop:
  mov rax,[rsp+24]
  cmp rax,[rsp+16]
@@ -2837,8 +3886,24 @@ fcg_emit_expr:
  test eax,eax
  jnz .done
  mov rdi,rbx
- lea rsi,[rel fcg_push_rax]
- mov edx,fcg_push_rax_len
+ lea rsi,[rel fcg_call_store_head]
+ mov edx,fcg_call_store_head_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rsi,[rsp+24]
+ shl rsi,3
+ cmp rsi,24
+ jb .call_argument_offset
+ add rsi,8
+.call_argument_offset:
+ mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_WRITER_OFFSET]
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,rbx
+ lea rsi,[rel fcg_call_store_tail]
+ mov edx,fcg_call_store_tail_len
  call fcg_append
  test eax,eax
  jnz .done
@@ -2858,9 +3923,9 @@ fcg_emit_expr:
  je .call_emit
  dec qword [rsp+32]
  mov r10,[rsp+32]
- lea rax,[rel fcg_pop_ptrs]
+ lea rax,[rel fcg_call_load_ptrs]
  mov rsi,[rax+r10*8]
- lea rax,[rel fcg_pop_lens]
+ lea rax,[rel fcg_call_load_lens]
  mov rdx,[rax+r10*8]
  mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_WRITER_OFFSET]
  call neboc_assembly_writer_append_bytes
@@ -2891,7 +3956,54 @@ fcg_emit_expr:
 .call_emit_done:
  test eax,eax
  jnz .abi
+ mov rdi,rbx
+ lea rsi,[rel fcg_call_frame_restore]
+ mov edx,fcg_call_frame_restore_len
+ call fcg_append
+ test eax,eax
+ jnz .done
  xor eax,eax
+ jmp .done
+.flow_assert_call:
+ cmp eax,1
+ jne .type_assertion
+ mov rdi,rbx
+ mov rsi,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call fcg_node_ptr
+ test rax,rax
+ jz .ast
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,rbx
+ lea rdx,[r13+1]
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_flow_assert_head]
+ mov edx,fcg_flow_assert_head_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_WRITER_OFFSET]
+ mov rsi,r12
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,rbx
+ lea rsi,[rel fcg_flow_assert_trap]
+ mov edx,fcg_flow_assert_trap_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_WRITER_OFFSET]
+ mov rsi,r12
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .writer
+ mov rdi,rbx
+ lea rsi,[rel fcg_flow_assert_end]
+ mov edx,fcg_flow_assert_end_len
+ call fcg_append
  jmp .done
 .console_call:
  mov rdi,rbx
@@ -2904,6 +4016,11 @@ fcg_emit_expr:
  mov rsi,r12
  mov rdx,r13
  call fcg_emit_scan_call
+ jmp .done
+.format_call:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_format_emit
  jmp .done
 .textual_call:
  mov rdi,rbx
@@ -2949,6 +4066,12 @@ fcg_emit_expr:
  mov rsi,r12
  mov rdx,r13
  call fcg_emit_numeric_call
+ jmp .done
+.g131_call:
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_emit_g131_call
  jmp .done
 .collection_release_call:
  ; Array/Slice semantic ownership has already authenticated the exactly-once
@@ -3429,13 +4552,15 @@ fcg_emit_expr:
  mov eax,NEBOC_STATUS_INVALID_SOURCE
  jmp .done
 .type_constructor:
- cmp qword [r14+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],1
- jne .unsupported
  mov rdi,rbx
  mov rsi,[r14+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
  call fcg_type_from_token
  test rax,rax
  jz .unsupported
+ cmp rax,NEBOC_TYPE_ID_UNCERTAIN_INT
+ je .g131_constructor
+ cmp qword [r14+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],1
+ jne .unsupported
  mov [rsp+48],rax
  mov r15,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  test r15,r15
@@ -3450,6 +4575,162 @@ fcg_emit_expr:
  mov rsi,r15
  lea rdx,[r13+1]
  call fcg_emit_expr
+ jmp .done
+.g131_constructor:
+ cmp qword [r14+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],2
+ je .g131_uncertain_constructor
+ cmp qword [r14+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],5
+ je .g131_measurement_constructor
+ jmp .unsupported
+.g131_uncertain_constructor:
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_alloc_16]
+ mov edx,fcg_g131_alloc_16_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov r15,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test r15,r15
+ jz .ast
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[r13+1]
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_store_0]
+ mov edx,fcg_g131_store_0_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_node_ptr
+ test rax,rax
+ jz .ast
+ mov r15,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test r15,r15
+ jz .ast
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[r13+1]
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_uncertain_load]
+ mov edx,fcg_g131_uncertain_load_len
+ call fcg_append
+ jmp .done
+.g131_measurement_constructor:
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_alloc_48]
+ mov edx,fcg_g131_alloc_48_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov r15,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test r15,r15
+ jz .ast
+ ; The constructor arguments are emitted in lexical order exactly once.  A
+ ; 48-byte aligned scratch area survives arbitrary nested argument calls.
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[r13+1]
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_store_0]
+ mov edx,fcg_g131_store_0_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_node_ptr
+ test rax,rax
+ jz .ast
+ mov r15,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test r15,r15
+ jz .ast
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[r13+1]
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_store_8]
+ mov edx,fcg_g131_store_8_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_node_ptr
+ test rax,rax
+ jz .ast
+ mov r15,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test r15,r15
+ jz .ast
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[r13+1]
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_store_16]
+ mov edx,fcg_g131_store_16_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_node_ptr
+ test rax,rax
+ jz .ast
+ mov r15,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test r15,r15
+ jz .ast
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[r13+1]
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_store_24]
+ mov edx,fcg_g131_store_24_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_node_ptr
+ test rax,rax
+ jz .ast
+ mov r15,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test r15,r15
+ jz .ast
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[r13+1]
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_store_32]
+ mov edx,fcg_g131_store_32_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_measurement_load]
+ mov edx,fcg_g131_measurement_load_len
+ call fcg_append
  jmp .done
 .type_assertion:
  mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_TYPE_ASSERTION
@@ -3493,15 +4774,75 @@ fcg_emit_expr:
  pop rbx
  ret
 
-; state*, call_node_id -> EAX 1 only for the existing zero-option
-; receiver-first console() spelling.  This classifier does not validate the
-; receiver type; fcg_emit_console_call owns that exact public-surface check.
+; state*, call_node_id -> EAX 1 for a structurally valid receiver-first
+; console(options...) spelling.  Unlike the shared intrinsic-name helper,
+; Console admits a bounded general ArgumentList.  Type and effect policy stays
+; owned by fcg_emit_console_call and the semantic Console owner.
 fcg_is_console_call:
  sub rsp,8
  lea rdx,[rel fcg_name_console]
  mov ecx,fcg_name_console_len
- call fcg_call_name_matches
+ call fcg_console_call_name_matches
  add rsp,8
+ ret
+
+; state*, call_node_id, exact_name*, exact_name_len -> EAX 1/0.  Validate the
+; general CallExpr relation child_count == receiver + argument_count.
+fcg_console_call_name_matches:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,16
+ mov rbx,rdi
+ mov r12,rsi
+ mov r13,rdx
+ mov r14,rcx
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ mov r15,rax
+ cmp qword [r15+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .no
+ test qword [r15+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
+ jnz .no
+ mov rax,[r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET]
+ inc rax
+ cmp rax,[r15+NEBOC_AST_NODE_CHILD_COUNT_OFFSET]
+ jne .no
+ mov rdi,rbx
+ mov rsi,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ call fcg_token_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .no
+ mov rcx,[rax+NEBOC_TOKEN_END_OFFSET]
+ sub rcx,[rax+NEBOC_TOKEN_START_OFFSET]
+ cmp rcx,r14
+ jne .no
+ mov rsi,[rbx+NEBOC_FUNCTION_CODEGEN_SOURCE_OFFSET]
+ add rsi,[rax+NEBOC_TOKEN_START_OFFSET]
+ mov rdi,r13
+ mov rcx,r14
+ cld
+ repe cmpsb
+ sete al
+ movzx eax,al
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,16
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ cld
  ret
 
 fcg_is_scan_call:
@@ -3528,17 +4869,42 @@ fcg_is_codepoint_count_call:
  add rsp,8
  ret
 
-; state*, call node id -> EAX exact numeric operation kind and ECX result
-; type.  The receiver is recursively typed through the shared expression
-; oracle, so method spelling alone can never manufacture a numeric intrinsic.
-; Kinds: 1=Int.toFloat, 2=isFinite, 3=isNaN, 4=isInfinite,
-; 5=isNegativeZero.
-fcg_numeric_call_info:
+fcg_g131_constructor_info:
+ push rbx
+ push r12
+ sub rsp,8
+ mov rbx,rdi
+ mov r12,rsi
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .no
+ test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
+ jz .no
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,rbx
+ call fcg_type_from_token
+ cmp rax,NEBOC_TYPE_ID_UNCERTAIN_INT
+ sete al
+ movzx eax,al
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,8
+ pop r12
+ pop rbx
+ ret
+
+; state*, call id -> EAX exact G131 intrinsic kind and ECX result TypeId.
+; Kinds 1..8 consume one argument; 9..14 are zero-argument metadata reads.
+fcg_g131_call_info:
  push rbx
  push r12
  push r13
  push r14
- sub rsp,24
+ sub rsp,40
  mov rbx,rdi
  mov r12,rsi
  mov r13,[rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET]
@@ -3552,6 +4918,517 @@ fcg_numeric_call_info:
  jne .no
  test qword [r14+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
  jnz .no
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_approx_equals]
+ mov ecx,fcg_name_approx_equals_len
+ call fcg_console_call_name_matches
+ test eax,eax
+ jnz .approx
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_equivalent_to]
+ mov ecx,fcg_name_equivalent_to_len
+ call fcg_console_call_name_matches
+ test eax,eax
+ jnz .equivalent
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_divides]
+ mov ecx,fcg_name_divides_len
+ call fcg_console_call_name_matches
+ test eax,eax
+ jnz .divides
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_proportional_to]
+ mov ecx,fcg_name_proportional_to_len
+ call fcg_console_call_name_matches
+ test eax,eax
+ jnz .proportional
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_add_worst_case]
+ mov ecx,fcg_name_add_worst_case_len
+ call fcg_console_call_name_matches
+ test eax,eax
+ jnz .worst
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_add_independent]
+ mov ecx,fcg_name_add_independent_len
+ call fcg_console_call_name_matches
+ test eax,eax
+ jnz .independent
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_add_correlated]
+ mov ecx,fcg_name_add_correlated_len
+ call fcg_console_call_name_matches
+ test eax,eax
+ jnz .correlated
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_add_interval]
+ mov ecx,fcg_name_add_interval_len
+ call fcg_console_call_name_matches
+ test eax,eax
+ jnz .interval
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_measured_value]
+ mov ecx,fcg_name_measured_value_len
+ call fcg_console_call_name_matches
+ test eax,eax
+ jnz .value
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_uncertainty]
+ mov ecx,fcg_name_uncertainty_len
+ call fcg_console_call_name_matches
+ test eax,eax
+ jnz .uncertainty
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_unit_code]
+ mov ecx,fcg_name_unit_code_len
+ call fcg_console_call_name_matches
+ test eax,eax
+ jnz .unit
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_quality]
+ mov ecx,fcg_name_quality_len
+ call fcg_console_call_name_matches
+ test eax,eax
+ jnz .quality
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_confidence]
+ mov ecx,fcg_name_confidence_len
+ call fcg_console_call_name_matches
+ test eax,eax
+ jnz .confidence
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_separator_codepoint]
+ mov ecx,fcg_name_separator_codepoint_len
+ call fcg_console_call_name_matches
+ test eax,eax
+ jnz .separator
+ jmp .no
+.approx:
+ mov qword [rsp],1
+ jmp .uncertain_bool
+.equivalent:
+ mov qword [rsp],2
+ jmp .uncertain_bool
+.divides:
+ mov qword [rsp],3
+ mov qword [rsp+8],NEBOC_TYPE_ID_INT
+ mov qword [rsp+16],NEBOC_TYPE_ID_BOOL
+ jmp .one_arg
+.proportional:
+ mov qword [rsp],4
+ jmp .uncertain_bool
+.worst:
+ mov qword [rsp],5
+ jmp .uncertain_value
+.independent:
+ mov qword [rsp],6
+ jmp .uncertain_value
+.correlated:
+ mov qword [rsp],7
+ jmp .uncertain_value
+.interval:
+ mov qword [rsp],8
+.uncertain_value:
+ mov qword [rsp+8],NEBOC_TYPE_ID_UNCERTAIN_INT
+ mov qword [rsp+16],NEBOC_TYPE_ID_UNCERTAIN_INT
+ jmp .one_arg
+.uncertain_bool:
+ mov qword [rsp+8],NEBOC_TYPE_ID_UNCERTAIN_INT
+ mov qword [rsp+16],NEBOC_TYPE_ID_BOOL
+.one_arg:
+ cmp qword [r14+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ jne .no
+ cmp qword [r14+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],2
+ jne .no
+ jmp .yes
+.value:
+ mov qword [rsp],9
+ jmp .metadata
+.uncertainty:
+ mov qword [rsp],10
+ jmp .metadata
+.unit:
+ mov qword [rsp],11
+ jmp .metadata
+.quality:
+ mov qword [rsp],12
+ jmp .metadata
+.confidence:
+ mov qword [rsp],13
+ jmp .metadata
+.separator:
+ mov qword [rsp],14
+.metadata:
+ cmp qword [r14+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .no
+ cmp qword [r14+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],1
+ jne .no
+ mov qword [rsp+8],NEBOC_TYPE_ID_UNCERTAIN_INT
+ mov qword [rsp+16],NEBOC_TYPE_ID_INT
+.yes:
+ ; A shared method name is not semantic ownership. Authenticate the actual
+ ; receiver and argument before claiming the Uncertain/Int native operation.
+ mov rsi,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov [rsp+24],rsi
+ mov rdi,rbx
+ xor edx,edx
+ call fcg_infer_type
+ cmp rax,[rsp+8]
+ jne .no
+ cmp qword [rsp],9
+ jae .typed
+ mov rdi,rbx
+ mov rsi,[rsp+24]
+ call fcg_node_ptr
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,rbx
+ xor edx,edx
+ call fcg_infer_type
+ cmp rax,[rsp+8]
+ jne .no
+.typed:
+ mov eax,[rsp]
+ mov rcx,[rsp+16]
+ jmp .done
+.no:
+ mov [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],r13
+ xor eax,eax
+ xor ecx,ecx
+.done:
+ add rsp,40
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; state*, authenticated G131 call id, depth -> status.
+fcg_emit_g131_call:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,24
+ mov rbx,rdi
+ mov r12,rsi
+ mov r13,rdx
+ call fcg_g131_call_info
+ test eax,eax
+ jz .unsupported
+ mov [rsp],rax
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ test rax,rax
+ jz .ast
+ mov r14,rax
+ mov rsi,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rsi,rsi
+ jz .ast
+ mov [rsp+8],rsi
+ mov rdi,rbx
+ lea rdx,[r13+1]
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ cmp qword [rsp],9
+ jae .unary_ready
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_save_receiver]
+ mov edx,fcg_g131_save_receiver_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ mov rsi,[rsp+8]
+ call fcg_node_ptr
+ test rax,rax
+ jz .ast
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rsi,rsi
+ jz .ast
+ mov rdi,rbx
+ lea rdx,[r13+1]
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_prepare_method]
+ mov edx,fcg_g131_prepare_method_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ jmp .dispatch
+.unary_ready:
+ mov rdi,rbx
+ lea rsi,[rel fcg_g131_prepare_unary]
+ mov edx,fcg_g131_prepare_unary_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+.dispatch:
+ mov rax,[rsp]
+ cmp rax,1
+ je .approx
+ cmp rax,2
+ je .equivalent
+ cmp rax,3
+ je .divides
+ cmp rax,4
+ je .proportional
+ cmp rax,5
+ je .worst
+ cmp rax,6
+ je .independent
+ cmp rax,7
+ je .correlated
+ cmp rax,8
+ je .interval
+ cmp rax,9
+ je .value
+ cmp rax,10
+ je .uncertainty
+ cmp rax,11
+ je .unit
+ cmp rax,12
+ je .quality
+ cmp rax,13
+ je .confidence
+ cmp rax,14
+ jne .unsupported
+ lea rsi,[rel fcg_g131_call_separator]
+ mov edx,fcg_g131_call_separator_len
+ jmp .append
+.approx:
+ lea rsi,[rel fcg_g131_call_approx]
+ mov edx,fcg_g131_call_approx_len
+ jmp .append
+.equivalent:
+ lea rsi,[rel fcg_g131_call_equivalent]
+ mov edx,fcg_g131_call_equivalent_len
+ jmp .append
+.divides:
+ lea rsi,[rel fcg_g131_call_divides]
+ mov edx,fcg_g131_call_divides_len
+ jmp .append
+.proportional:
+ lea rsi,[rel fcg_g131_call_proportional]
+ mov edx,fcg_g131_call_proportional_len
+ jmp .append
+.worst:
+ lea rsi,[rel fcg_g131_call_worst_case]
+ mov edx,fcg_g131_call_worst_case_len
+ jmp .append
+.independent:
+ lea rsi,[rel fcg_g131_call_independent]
+ mov edx,fcg_g131_call_independent_len
+ jmp .append
+.correlated:
+ lea rsi,[rel fcg_g131_call_correlated]
+ mov edx,fcg_g131_call_correlated_len
+ jmp .append
+.interval:
+ lea rsi,[rel fcg_g131_call_interval]
+ mov edx,fcg_g131_call_interval_len
+ jmp .append
+.value:
+ lea rsi,[rel fcg_g131_call_value]
+ mov edx,fcg_g131_call_value_len
+ jmp .append
+.uncertainty:
+ lea rsi,[rel fcg_g131_call_uncertainty]
+ mov edx,fcg_g131_call_uncertainty_len
+ jmp .append
+.unit:
+ lea rsi,[rel fcg_g131_call_unit]
+ mov edx,fcg_g131_call_unit_len
+ jmp .append
+.quality:
+ lea rsi,[rel fcg_g131_call_quality]
+ mov edx,fcg_g131_call_quality_len
+ jmp .append
+.confidence:
+ lea rsi,[rel fcg_g131_call_confidence]
+ mov edx,fcg_g131_call_confidence_len
+.append:
+ mov rdi,rbx
+ call fcg_append
+ jmp .done
+.unsupported:
+ mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_UNSUPPORTED_NODE
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .done
+.ast:
+ mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_BAD_AST
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.done:
+ add rsp,24
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; state*, call node id -> EAX exact numeric operation kind and ECX result
+; type.  The receiver is recursively typed through the shared expression
+; oracle, so method spelling alone can never manufacture a numeric intrinsic.
+; Kinds: 1=Int.toFloat, 2=isFinite, 3=isNaN, 4=isInfinite,
+; 5=isNegativeZero, 6=sqrt, 7=cubeRoot, 8=fourthRoot, 9=factorial,
+; 10=floor, 11=ceil.
+; Round mode is an ordinary Int value (native public enum 0..3), or the
+; published nearestEven spelling when no binding supplies that identifier.
+; state*, argument node -> 1 evaluated Int / 2 builtin nearest-even / 0 invalid.
+; The core namespace assertion consumes one typed Bool predicate. It shares
+; the canonical contract-assertion trap with the binding owner. A local value
+; named flow retains ordinary name resolution instead of becoming a namespace.
+; state*, call id -> 1 valid, 2 wrong predicate type/arity, 0 not this intrinsic.
+fcg_flow_assert_info:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ mov rbx,rdi
+ mov r12,rsi
+ mov r13,[rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET]
+ lea rdx,[rel fcg_name_assert]
+ mov ecx,6
+ call fcg_console_call_name_matches
+ test eax,eax
+ jz .no
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ mov r14,rax
+ mov rsi,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov [rsp],rsi
+ mov rdi,rbx
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .no
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,rbx
+ lea rdx,[rel fcg_name_flow]
+ mov ecx,4
+ call fcg_token_matches_literal
+ test eax,eax
+ jz .no
+ mov rdi,rbx
+ mov rsi,[rsp]
+ xor edx,edx
+ call fcg_infer_type
+ test rax,rax
+ jnz .no
+ mov [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],r13
+ cmp qword [r14+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ jne .type
+ mov rdi,rbx
+ mov rsi,[rsp]
+ call fcg_node_ptr
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,rbx
+ xor edx,edx
+ call fcg_infer_type
+ cmp rax,NEBOC_TYPE_ID_BOOL
+ jne .type
+ mov eax,1
+ jmp .done
+.type:
+ mov eax,2
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ mov [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],r13
+ add rsp,8
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+fcg_round_mode_info:
+ push rbx
+ push r12
+ push r13
+ mov rbx,rdi
+ mov r12,rsi
+ mov r13,[rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET]
+ xor edx,edx
+ call fcg_infer_type
+ cmp rax,NEBOC_TYPE_ID_INT
+ je .integer
+ test rax,rax
+ jnz .no
+ mov [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],r13
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .no
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,rbx
+ lea rdx,[rel fcg_name_nearest_even]
+ mov ecx,fcg_name_nearest_even_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jz .no
+ mov eax,2
+ jmp .done
+.integer:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ mov [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],r13
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+fcg_numeric_call_info:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,40
+ mov rbx,rdi
+ mov r12,rsi
+ mov r13,[rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET]
+ mov qword [rsp+24],0
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ mov r14,rax
+ cmp qword [r14+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .no
+ test qword [r14+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
+ jnz .no
+ cmp qword [r14+NEBOC_AST_NODE_PAYLOAD1_OFFSET],2
+ je .approx_with_tolerance
+ cmp qword [r14+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ je .round_with_mode
  cmp qword [r14+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
  jne .no
  cmp qword [r14+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],1
@@ -3591,7 +5468,110 @@ fcg_numeric_call_info:
  call fcg_call_name_matches
  test eax,eax
  jnz .negative_zero
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_sqrt]
+ mov ecx,fcg_name_sqrt_len
+ call fcg_call_name_matches
+ test eax,eax
+ jnz .sqrt
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_cube_root]
+ mov ecx,fcg_name_cube_root_len
+ call fcg_call_name_matches
+ test eax,eax
+ jnz .cube_root
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_fourth_root]
+ mov ecx,fcg_name_fourth_root_len
+ call fcg_call_name_matches
+ test eax,eax
+ jnz .fourth_root
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_factorial]
+ mov ecx,fcg_name_factorial_len
+ call fcg_call_name_matches
+ test eax,eax
+ jnz .factorial
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_floor]
+ mov ecx,fcg_name_floor_len
+ call fcg_call_name_matches
+ test eax,eax
+ jnz .floor
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_ceil]
+ mov ecx,fcg_name_ceil_len
+ call fcg_call_name_matches
+ test eax,eax
+ jnz .ceil
  jmp .no
+.round_with_mode:
+ cmp qword [r14+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],2
+ jne .no
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_round]
+ mov ecx,fcg_name_round_len
+ call fcg_console_call_name_matches
+ test eax,eax
+ jz .no
+ mov rdi,rbx
+ mov rsi,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,rbx
+ call fcg_round_mode_info
+ test eax,eax
+ jz .no
+ mov qword [rsp],12
+ mov ecx,NEBOC_TYPE_ID_FLOAT
+ mov edx,NEBOC_TYPE_ID_FLOAT
+ jmp .receiver
+.approx_with_tolerance:
+ cmp qword [r14+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],3
+ jne .no
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_approx_equals]
+ mov ecx,12
+ call fcg_console_call_name_matches
+ test eax,eax
+ jz .no
+ mov rdi,rbx
+ mov rsi,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call fcg_node_ptr
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov [rsp+32],rsi
+ mov rdi,rbx
+ xor edx,edx
+ call fcg_infer_type
+ cmp rax,NEBOC_TYPE_ID_FLOAT
+ jne .no
+ mov rdi,rbx
+ mov rsi,[rsp+32]
+ call fcg_node_ptr
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,rbx
+ xor edx,edx
+ call fcg_infer_type
+ cmp rax,FCG_TYPE_VECTOR_FLOAT_BASE+2
+ je .approx_typed
+ cmp rax,FCG_TYPE_VECTOR_FLOAT_BASE
+ jne .no
+ mov qword [rsp+24],1
+.approx_typed:
+ mov qword [rsp],13
+ mov ecx,NEBOC_TYPE_ID_FLOAT
+ mov edx,NEBOC_TYPE_ID_BOOL
+ jmp .receiver
 .to_float:
  mov qword [rsp],1
  mov ecx,NEBOC_TYPE_ID_INT
@@ -3611,6 +5591,30 @@ fcg_numeric_call_info:
 .classifier:
  mov ecx,NEBOC_TYPE_ID_FLOAT
  mov edx,NEBOC_TYPE_ID_BOOL
+ jmp .receiver
+.sqrt:
+ mov qword [rsp],6
+ jmp .int_to_int
+.cube_root:
+ mov qword [rsp],7
+ jmp .int_to_int
+.fourth_root:
+ mov qword [rsp],8
+ jmp .int_to_int
+.factorial:
+ mov qword [rsp],9
+.int_to_int:
+ mov ecx,NEBOC_TYPE_ID_INT
+ mov edx,NEBOC_TYPE_ID_INT
+ jmp .receiver
+.floor:
+ mov qword [rsp],10
+ jmp .float_to_int
+.ceil:
+ mov qword [rsp],11
+.float_to_int:
+ mov ecx,NEBOC_TYPE_ID_FLOAT
+ mov edx,NEBOC_TYPE_ID_INT
 .receiver:
  mov rsi,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  test rsi,rsi
@@ -3624,13 +5628,14 @@ fcg_numeric_call_info:
  jne .no
  mov eax,[rsp]
  mov rcx,[rsp+16]
+ mov r8,[rsp+24]
  jmp .done
 .no:
  mov [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],r13
  xor eax,eax
  xor ecx,ecx
 .done:
- add rsp,24
+ add rsp,40
  pop r14
  pop r13
  pop r12
@@ -3652,6 +5657,8 @@ fcg_emit_numeric_call:
  call fcg_numeric_call_info
  test eax,eax
  jz .unsupported
+ cmp eax,13
+ je .approx
  mov [rsp],rax
  mov rdi,rbx
  mov rsi,r12
@@ -3667,7 +5674,17 @@ fcg_emit_numeric_call:
  call fcg_emit_expr
  test eax,eax
  jnz .done
+ ; A bound scalar is loaded in RAX. XMM0 may still contain an unrelated
+ ; prior result; reconstruct the native Float ABI from this actual receiver.
+ mov rdi,rbx
+ lea rsi,[rel fcg_numeric_float_carrier]
+ mov edx,fcg_numeric_float_carrier_len
+ call fcg_append
+ test eax,eax
+ jnz .done
  mov rax,[rsp]
+ cmp rax,12
+ je .round
  cmp rax,1
  je .to_float
  cmp rax,2
@@ -3677,7 +5694,81 @@ fcg_emit_numeric_call:
  cmp rax,4
  je .infinite
  cmp rax,5
+ je .negative_zero
+ cmp rax,6
+ je .sqrt
+ cmp rax,7
+ je .cube_root
+ cmp rax,8
+ je .fourth_root
+ cmp rax,9
+ je .factorial
+ cmp rax,10
+ je .floor
+ cmp rax,11
  jne .unsupported
+ lea rsi,[rel fcg_math_ceil]
+ mov edx,fcg_math_ceil_len
+ jmp .append
+.round:
+ mov rdi,rbx
+ lea rsi,[rel fcg_round_save]
+ mov edx,fcg_round_save_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ mov rsi,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call fcg_node_ptr
+ test rax,rax
+ jz .ast
+ mov r14,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,rbx
+ mov rsi,r14
+ call fcg_round_mode_info
+ cmp eax,2
+ je .round_default
+ cmp eax,1
+ jne .unsupported
+ mov rdi,rbx
+ mov rsi,r14
+ lea rdx,[r13+1]
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ jmp .round_call
+.round_default:
+ mov rdi,rbx
+ lea rsi,[rel fcg_round_default]
+ mov edx,fcg_round_default_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+.round_call:
+ lea rsi,[rel fcg_round_call]
+ mov edx,fcg_round_call_len
+ jmp .append
+.sqrt:
+ lea rsi,[rel fcg_math_square_root]
+ mov edx,fcg_math_square_root_len
+ jmp .append
+.cube_root:
+ lea rsi,[rel fcg_math_cube_root]
+ mov edx,fcg_math_cube_root_len
+ jmp .append
+.fourth_root:
+ lea rsi,[rel fcg_math_fourth_root]
+ mov edx,fcg_math_fourth_root_len
+ jmp .append
+.factorial:
+ lea rsi,[rel fcg_math_factorial]
+ mov edx,fcg_math_factorial_len
+ jmp .append
+.floor:
+ lea rsi,[rel fcg_math_floor]
+ mov edx,fcg_math_floor_len
+ jmp .append
+.negative_zero:
  lea rsi,[rel fcg_numeric_is_negative_zero]
  mov edx,fcg_numeric_is_negative_zero_len
  jmp .append
@@ -3700,6 +5791,13 @@ fcg_emit_numeric_call:
  mov rdi,rbx
  call fcg_append
  jmp .done
+.approx:
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ mov rcx,r8
+ call fcg_emit_approx_call
+ jmp .done
 .unsupported:
  mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_UNSUPPORTED_NODE
  mov eax,NEBOC_STATUS_INVALID_SOURCE
@@ -3715,12 +5813,180 @@ fcg_emit_numeric_call:
  pop rbx
  ret
 
+; Typed Float receiver, Float other, Vector<Float,2> tolerance (absolute,
+; relative). A runtime-shaped Vector is checked before reading its two lanes.
+; All three source expressions run once, in order, in a linked caller frame.
+fcg_emit_approx_call:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,16
+ mov rbx,rdi
+ mov r12,rsi
+ mov r13,rdx
+ mov [rsp],rcx
+ call fcg_node_ptr
+ mov r14,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,rbx
+ lea rsi,[rel ftm_frame_head]
+ mov edx,ftm_frame_head_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_WRITER_OFFSET]
+ mov esi,64
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel ftm_frame_tail]
+ mov edx,ftm_frame_tail_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ xor r15d,r15d
+.argument:
+ mov rdi,rbx
+ mov rsi,r14
+ lea rdx,[r13+1]
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ cmp r15,2
+ je .arguments_ready
+ lea rsi,[rel fcg_approx_store_first]
+ mov edx,fcg_approx_store_first_len
+ test r15,r15
+ jz .store
+ lea rsi,[rel fcg_approx_store_other]
+ mov edx,fcg_approx_store_other_len
+.store:
+ mov rdi,rbx
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ mov rsi,r14
+ call fcg_node_ptr
+ mov r14,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ inc r15
+ jmp .argument
+.arguments_ready:
+ cmp qword [rsp],0
+ je .call
+ mov rdi,rbx
+ lea rsi,[rel fcg_approx_dynamic]
+ mov edx,fcg_approx_dynamic_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+.call:
+ mov rdi,rbx
+ lea rsi,[rel fcg_approx_call]
+ mov edx,fcg_approx_call_len
+ call fcg_append
+.done:
+ add rsp,16
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
 ; state*, call node id -> EAX 1 for canonical runtime intrinsics that do not
 ; consume the bounded receiver-first user-function call budget.
 fcg_is_runtime_intrinsic_call:
  sub rsp,24
  mov [rsp],rdi
  mov [rsp+8],rsi
+ call fcg_scan_public_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_color_public_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_console_public_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_visual_summary_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_filesystem_public_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_system_public_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_tagged_public_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_regex_public_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_slash_public_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_tensor_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_matrix_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_random_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_vector_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_format_call_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_nominal_unwrap_value
+ test rax,rax
+ jnz .yes
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_assoc_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_flow_assert_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
  call fcg_is_console_call
  test eax,eax
  jnz .done
@@ -3761,7 +6027,22 @@ fcg_is_runtime_intrinsic_call:
  jnz .done
  mov rdi,[rsp]
  mov rsi,[rsp+8]
+ call fcg_g131_constructor_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_g131_call_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
  call fcg_numeric_call_info
+ test eax,eax
+ jnz .done
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_set_query_info
  test eax,eax
  jnz .done
  mov rdi,[rsp]
@@ -3782,6 +6063,19 @@ fcg_is_runtime_intrinsic_call:
  mov rdi,[rsp]
  mov rsi,[rsp+8]
  call fcg_collection_access_info
+ test eax,eax
+ jnz .done
+ ; A constructor/stepBy child of an authenticated immediate Range remains
+ ; part of that native value expression, rather than a user-function call.
+ mov rdi,[rsp]
+ mov rsi,[rsp+8]
+ call fcg_find_collection_binding_for_node
+ test rax,rax
+ setnz al
+ movzx eax,al
+ jmp .done
+.yes:
+ mov eax,1
 .done:
  add rsp,24
  ret
@@ -3914,7 +6208,8 @@ fcg_call_name_matches:
  cld
  ret
 
-%define FCG_TEXTUAL_OPTION_INT 4096
+%define FCG_TEXTUAL_OPTION_INT NEBOC_FUNCTION_TYPE_OPTION_INT
+%define FCG_TEXTUAL_SPLIT NEBOC_FUNCTION_TYPE_TEXT_SPLIT
 
 ; state*, request* -> status. Build the existing textual-codegen request from
 ; the immutable Program/FunctionTable state; no public descriptor is widened.
@@ -3967,7 +6262,7 @@ fcg_emit_textual_data:
  test eax,eax
  jnz .done
  mov rdi,r12
- call neboc_text_char_bytes_codegen_emit_data
+ call neboc_text_char_bytes_codegen_emit_function_data
 .done:
  add rsp,136
  pop r12
@@ -3998,10 +6293,31 @@ fcg_emit_textual_call:
  mov rsi,r14
  xor edx,edx
  call fcg_textual_expr_type
+ cmp eax,NEBOC_TYPE_ID_CHAR
+ je .char_receiver
+ cmp eax,NEBOC_TYPE_ID_TEXT
+ je .text_receiver
  cmp eax,NEBOC_TYPE_ID_BYTES
  je .bytes_receiver
+ cmp eax,FCG_TEXTUAL_OPTION_INT
+ je .option_receiver
+ cmp eax,FCG_TEXTUAL_SPLIT
+ je .split_receiver
+ cmp eax,NEBOC_FUNCTION_TYPE_TEXT_RESULT_INT
+ jb .primitive_native_receiver
+ cmp eax,NEBOC_FUNCTION_TYPE_TEXT_RESULT_SPLIT
+ jbe .result_receiver
+.primitive_native_receiver:
+ cmp eax,NEBOC_TYPE_ID_BOOL
+ je .bool_receiver
  cmp eax,NEBOC_TYPE_ID_INT
  jne .delegate
+ mov edx,NEBOC_TYPE_ID_INT
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_emit_native_text_call
+ cmp eax,-1
+ jne .done
  mov rdi,rbx
  mov rsi,r15
  lea rdx,[rel fcg_name_bit_and]
@@ -4059,7 +6375,106 @@ fcg_emit_textual_call:
  test eax,eax
  jnz .bit_not
  jmp .delegate
+.char_receiver:
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[rel fcg_name_codepoint]
+ mov ecx,fcg_name_codepoint_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jz .delegate
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ cmp qword [rax+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],1
+ jne .type_error
+ ; A typed Char slot already contains its validated Unicode scalar value.
+ ; Load that live value; the literal-only textual emitter cannot resolve it.
+ mov rdi,rbx
+ mov rsi,r14
+ mov edx,1
+ call fcg_emit_expr
+ jmp .done
+ .result_receiver:
+ lea edx,[eax-4087]
+ jmp .native_text
+.bool_receiver:
+ mov edx,NEBOC_TYPE_ID_BOOL
+ jmp .native_text
+.split_receiver:
+ mov edx,NEBOC_TYPE_ID_TEXT_SPLIT
+ jmp .native_text
+.option_receiver:
+ mov edx,NEBOC_TYPE_ID_OPTION_INT
+ jmp .native_text
+.text_receiver:
+ mov edx,NEBOC_TYPE_ID_TEXT
+.native_text:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_emit_native_text_call
+ cmp eax,-1
+ jne .done
+.text_fallback:
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[rel fcg_name_byte_length]
+ mov ecx,fcg_name_byte_length_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jnz .text_byte_length
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[rel fcg_name_codepoint_count]
+ mov ecx,fcg_name_codepoint_count_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jz .delegate
+ lea r13,[rel fcg_text_codepoint_count]
+ mov r15,fcg_text_codepoint_count_len
+ jmp .text_count
+.text_byte_length:
+ lea r13,[rel fcg_text_byte_length]
+ mov r15,fcg_text_byte_length_len
+.text_count:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ cmp qword [rax+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],1
+ jne .type_error
+ mov rdi,rbx
+ mov rsi,r14
+ mov edx,1
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ mov rsi,r13
+ mov rdx,r15
+ call fcg_append
+ jmp .done
 .bytes_receiver:
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[rel fcg_name_bytes_from_byte]
+ mov ecx,fcg_name_bytes_from_byte_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jnz .bytes_construct_one
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[rel fcg_name_bytes_from_values]
+ mov ecx,fcg_name_bytes_from_values_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jnz .bytes_construct_four
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[rel fcg_name_collection_at]
+ mov ecx,fcg_name_collection_at_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jnz .bytes_at
  mov rdi,rbx
  mov rsi,r15
  lea rdx,[rel fcg_name_byte_length]
@@ -4067,6 +6482,11 @@ fcg_emit_textual_call:
  call fcg_token_matches_literal
  test eax,eax
  jz .delegate
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ cmp qword [rax+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],1
+ jne .type_error
  mov rdi,rbx
  mov rsi,r14
  mov edx,1
@@ -4076,6 +6496,144 @@ fcg_emit_textual_call:
  mov rdi,rbx
  lea rsi,[rel fcg_text_bytes_byte_length]
  mov edx,fcg_text_bytes_byte_length_len
+ call fcg_append
+ jmp .done
+.bytes_construct_one:
+ mov qword [rsp],1
+ jmp .bytes_construct
+.bytes_construct_four:
+ mov qword [rsp],4
+.bytes_construct:
+ ; Authenticate the unshadowed namespace; a live Bytes value is not a
+ ; constructor namespace. Typed operands are evaluated once, in source order.
+ mov rdi,rbx
+ mov rsi,r14
+ call fcg_node_ptr
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .type_error
+ mov r13,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,rbx
+ mov rsi,r13
+ call fcg_resolve_identifier
+ test rax,rax
+ jnz .type_error
+ mov rdi,rbx
+ mov rsi,r13
+ call fcg_type_from_token
+ cmp rax,NEBOC_TYPE_ID_BYTES
+ jne .type_error
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ mov rcx,[rsp]
+ inc rcx
+ cmp rcx,[rax+NEBOC_AST_NODE_CHILD_COUNT_OFFSET]
+ jne .type_error
+ mov rdi,rbx
+ mov rsi,r14
+ call fcg_node_ptr
+ mov r13,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,rbx
+ lea rsi,[rel fcg_bytes_constructor_frame]
+ mov edx,fcg_bytes_constructor_frame_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ xor r15d,r15d
+.bytes_construct_argument:
+ cmp r15,[rsp]
+ jae .bytes_construct_finish
+ mov rdi,rbx
+ mov rsi,r13
+ mov edx,1
+ call fcg_infer_type
+ cmp rax,NEBOC_TYPE_ID_INT
+ jne .type_error
+ mov rdi,rbx
+ mov rsi,r13
+ mov edx,1
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_bytes_argument_slot]
+ mov edx,fcg_bytes_argument_slot_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_WRITER_OFFSET]
+ lea rsi,[r15*8+96]
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_bytes_argument_end]
+ mov edx,fcg_bytes_argument_end_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ mov rsi,r13
+ call fcg_node_ptr
+ mov r13,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ inc r15
+ jmp .bytes_construct_argument
+.bytes_construct_finish:
+ test r13,r13
+ jnz .bad
+ mov rdi,rbx
+ lea rsi,[rel fcg_bytes_constructor_count]
+ mov edx,fcg_bytes_constructor_count_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_WRITER_OFFSET]
+ mov rsi,[rsp]
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_bytes_constructor_commit]
+ mov edx,fcg_bytes_constructor_commit_len
+ call fcg_append
+ jmp .done
+.bytes_at:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ cmp qword [rax+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],2
+ jne .type_error
+ mov rdi,rbx
+ mov rsi,r14
+ call fcg_node_ptr
+ mov r13,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,rbx
+ mov rsi,r13
+ mov edx,1
+ call fcg_infer_type
+ cmp rax,NEBOC_TYPE_ID_INT
+ jne .type_error
+ mov rdi,rbx
+ mov rsi,r14
+ mov edx,1
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_aligned_binary_save]
+ mov edx,fcg_aligned_binary_save_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ mov rsi,r13
+ mov edx,1
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fcg_text_bytes_at]
+ mov edx,fcg_text_bytes_at_len
  call fcg_append
  jmp .done
 .binary_and:
@@ -4206,6 +6764,13 @@ fcg_emit_textual_call:
  mov rsi,r12
  call neboc_text_char_bytes_codegen_emit_expression
  jmp .done
+.type_error:
+ mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_TYPE_ASSERTION
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_capture_node_span
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .done
 .bad:
  mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_BAD_AST
  mov eax,NEBOC_STATUS_INVALID_SOURCE
@@ -4213,6 +6778,52 @@ fcg_emit_textual_call:
  add rsp,128
  pop r15
  pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; state*, call node -> EAX bool: an actual source function owns this name.
+; This is a read-only declaration lookup, not speculative call resolution.
+fcg_call_has_function_declaration:
+ push rbx
+ push r12
+ push r13
+ mov rbx,rdi
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .no
+ mov r12,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,rbx
+ mov rsi,[rbx+NEBOC_FUNCTION_CODEGEN_ROOT_ID_OFFSET]
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ mov r13,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+.next:
+ test r13,r13
+ jz .no
+ mov rdi,rbx
+ mov rsi,r13
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ mov r13,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_FUNCTION_DECL
+ jne .next
+ mov rdx,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rsi,r12
+ mov rdi,rbx
+ call fcg_names_equal
+ test eax,eax
+ jz .next
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
  pop r13
  pop r12
  pop rbx
@@ -4227,7 +6838,12 @@ fcg_textual_call_info:
  mov rbx,rdi
  mov r12,rsi
  test qword [rbx+NEBOC_FUNCTION_CODEGEN_FLAGS_OFFSET],NEBOC_FUNCTION_CODEGEN_FLAG_TEXTUAL_VALIDATED
- jz .no
+ jnz .validated
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_native_text_candidate
+ jmp .done
+.validated:
  mov rdi,rbx
  mov rsi,r12
  call fcg_node_ptr
@@ -4262,6 +6878,13 @@ fcg_textual_call_info:
  test eax,eax
  jnz .no
 .type:
+ ; A declared function may supply a typed receiver, but its call must still
+ ; be emitted by the function owner, preserving all source effects.
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_call_has_function_declaration
+ test eax,eax
+ jnz .no
  mov rdi,rbx
  mov rsi,r12
  xor edx,edx
@@ -4427,49 +7050,30 @@ fcg_nominal_call_info:
  and rax,rdx
  cmp rax,rdx
  jne .no
- mov rdx,[r14+NEBOC_NOM_RESULT_OFFSET]
+ ; Each call selects its own variant, independently of other sizeOf or tag
+ ; observations in this source. The native nominal owner supplies identity
+ ; and the variant table; the AST supplies this call's receiver.
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,rbx
+ call fcg_nominal_constructor_info
+ test eax,eax
+ jz .no
  mov ecx,NEBOC_TYPE_ID_INT
  mov eax,1
  jmp .done
 .nominal_unwrap:
- cmp qword [r14+NEBOC_NOM_KIND_OFFSET],NEBOC_NOM_KIND_NEWTYPE
- jne .no
- test qword [r14+NEBOC_NOM_FLAGS_OFFSET],NEBOC_NOM_FLAG_OP_UNWRAP
- jz .no
- mov rdx,[r14+NEBOC_NOM_RESULT_OFFSET]
- mov rax,[r14+NEBOC_NOM_UNDERLYING_TYPE_OFFSET]
- cmp rax,NEBOC_NOM_TYPE_INT
- je .nominal_type_int
- cmp rax,NEBOC_NOM_TYPE_BOOL
- je .nominal_type_bool
- cmp rax,NEBOC_NOM_TYPE_CHAR
- je .nominal_type_char
- cmp rax,NEBOC_NOM_TYPE_FLOAT
- je .nominal_type_float
- cmp rax,NEBOC_NOM_TYPE_TEXT
- je .nominal_type_text
+ ; Value-bearing unwrap is lowered by fcg_nominal_unwrap_value.
  jmp .no
-.nominal_type_int:
- mov ecx,NEBOC_TYPE_ID_INT
- jmp .nominal_value_yes
-.nominal_type_bool:
- mov ecx,NEBOC_TYPE_ID_BOOL
- jmp .nominal_value_yes
-.nominal_type_char:
- mov ecx,NEBOC_TYPE_ID_CHAR
- jmp .nominal_value_yes
-.nominal_type_float:
- mov ecx,NEBOC_TYPE_ID_FLOAT
- jmp .nominal_value_yes
-.nominal_type_text:
- mov ecx,NEBOC_TYPE_ID_TEXT
-.nominal_value_yes:
- mov eax,1
- jmp .done
+
 .nominal_sizeof:
  test qword [r14+NEBOC_NOM_FLAGS_OFFSET],NEBOC_NOM_FLAG_OP_SIZEOF
  jz .no
- mov rdx,[r14+NEBOC_NOM_RESULT_OFFSET]
+ mov rdx,[r14+NEBOC_NOM_SIZE_OFFSET]
  mov ecx,NEBOC_TYPE_ID_INT
  mov eax,1
  jmp .done
@@ -4617,10 +7221,13 @@ fcg_nominal_constructor_info:
  test rax,rax
  jz .no
  mov r14,rax
+ test qword [r14+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_NOMINAL_VARIANT_RECEIVER
+ jnz .receiver_ready
  cmp qword [r14+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
  jne .no
  test qword [r14+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
  jnz .no
+.receiver_ready:
  mov rdi,rbx
  mov rsi,r12
  call fcg_nominal_owner_for_node
@@ -4637,6 +7244,10 @@ fcg_nominal_constructor_info:
  jz .no
  mov rdi,rbx
  mov rsi,[r14+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ test qword [r14+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_NOMINAL_VARIANT_RECEIVER
+ jz .variant_token_ready
+ mov rsi,[r14+NEBOC_AST_NODE_PAYLOAD1_OFFSET]
+.variant_token_ready:
  call fcg_token_ptr
  test rax,rax
  jz .no
@@ -4657,6 +7268,7 @@ fcg_nominal_constructor_info:
  jmp .variant_hash_loop
 .variant_hash_done:
  mov r15,[r13+NEBOC_NOM_VARIANT_COUNT_OFFSET]
+ mov [rsp],r15
  mov r13,[r13+NEBOC_NOM_VARIANTS_OFFSET]
 .variant_loop:
  test r15,r15
@@ -4664,15 +7276,23 @@ fcg_nominal_constructor_info:
  cmp [r13+NEBOC_NOM_VARIANT_NAME_HASH_OFFSET],r12
  jne .next_variant
  mov rax,[r14+NEBOC_AST_NODE_PAYLOAD1_OFFSET]
+ test qword [r14+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_NOMINAL_VARIANT_RECEIVER
+ jz .variant_arity_ready
+ xor eax,eax
+.variant_arity_ready:
  cmp qword [r13+NEBOC_NOM_VARIANT_PAYLOAD_TYPE_OFFSET],NEBOC_NOM_TYPE_NONE
  jne .payload_variant
  test rax,rax
  jnz .no
+ mov rdx,[rsp]
+ sub rdx,r15
  mov eax,1
  jmp .done
 .payload_variant:
  cmp rax,1
  jne .no
+ mov rdx,[rsp]
+ sub rdx,r15
  mov eax,1
  jmp .done
 .next_variant:
@@ -4690,9 +7310,162 @@ fcg_nominal_constructor_info:
  pop rbx
  ret
 
-; state*, expression node, depth -> RAX exact textual TypeId or zero.
-; Binding recursion walks only a prior lexical initializer and therefore
-; cannot create an ownership cycle.
+; state*, unwrap CallExpr -> RAX underlying expression id, RCX public TypeId.
+; The native nominal owner authenticates identity/layout; Program retains the
+; actual value expression. No source-wide nominal result is a value carrier.
+fcg_nominal_unwrap_value:
+ push rbx
+ push r12
+ push r13
+ sub rsp,16
+ mov rbx,rdi
+ mov r12,rsi
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .no
+ cmp qword [rax+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .no
+ cmp qword [rax+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],1
+ jne .no
+ mov r13,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_unwrap]
+ mov ecx,fcg_name_unwrap_len
+ call fcg_call_name_matches
+ test eax,eax
+ jz .no
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_nominal_owner_for_node
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_NOM_KIND_OFFSET],NEBOC_NOM_KIND_NEWTYPE
+ jne .no
+ cmp qword [rax+NEBOC_NOM_FOUND_OFFSET],1
+ jne .no
+ cmp qword [rax+NEBOC_NOM_DIAGNOSTIC_OFFSET],0
+ jne .no
+ mov rcx,[rax+NEBOC_NOM_UNDERLYING_TYPE_OFFSET]
+ cmp rcx,NEBOC_NOM_TYPE_INT
+ je .int
+ cmp rcx,NEBOC_NOM_TYPE_BOOL
+ je .bool
+ cmp rcx,NEBOC_NOM_TYPE_CHAR
+ je .char
+ cmp rcx,NEBOC_NOM_TYPE_FLOAT
+ je .float
+ cmp rcx,NEBOC_NOM_TYPE_TEXT
+ jne .no
+ mov ecx,NEBOC_TYPE_ID_TEXT
+ jmp .type_ready
+.int: mov ecx,NEBOC_TYPE_ID_INT
+ jmp .type_ready
+.bool: mov ecx,NEBOC_TYPE_ID_BOOL
+ jmp .type_ready
+.char: mov ecx,NEBOC_TYPE_ID_CHAR
+ jmp .type_ready
+.float: mov ecx,NEBOC_TYPE_ID_FLOAT
+.type_ready:
+ mov [rsp],rcx
+ mov rdi,rbx
+ mov rsi,r13
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .no
+ cmp qword [rax+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],1
+ jne .no
+ mov rax,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rcx,[rsp]
+ jmp .done
+.no:
+ xor eax,eax
+ xor ecx,ecx
+.done:
+ add rsp,16
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; state*, parsed CallExpr*, canonical receiver TypeId -> result TypeId and
+; MethodId in RCX. The shared API contract owns signatures and arities.
+fcg_text_contract_result:
+ push rbx
+ push r12
+ push r13
+ sub rsp,128
+ mov rbx,rdi
+ mov r12,rsi
+ mov r13,rdx
+ mov rdi,rsp
+ xor eax,eax
+ mov ecx,16
+ cld
+ rep stosq
+ mov qword [rsp+neboc_text_char_unicode_e_bytes_API_OPERATION_OFFSET],neboc_text_char_unicode_e_bytes_API_OPERATION_METHOD
+ mov [rsp+neboc_text_char_unicode_e_bytes_API_RECEIVER_TYPE_OFFSET],r13
+ mov qword [rsp+NEBOC_API_RECEIVER_FORM_OFFSET],NEBOC_RECEIVER_INSTANCE
+ mov rax,[r12+NEBOC_AST_NODE_PAYLOAD1_OFFSET]
+ mov [rsp+neboc_text_char_unicode_e_bytes_API_ARGUMENT_COUNT_OFFSET],rax
+ mov qword [rsp+neboc_text_char_unicode_e_bytes_API_SOURCE_ID_OFFSET],1
+ mov rdi,rbx
+ mov rsi,[r12+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ call fcg_token_ptr
+ test rax,rax
+ jz .no
+ mov rdx,[rax+NEBOC_TOKEN_START_OFFSET]
+ mov [rsp+neboc_text_char_unicode_e_bytes_API_ABSOLUTE_START_OFFSET],rdx
+ mov rcx,[rbx+NEBOC_FUNCTION_CODEGEN_SOURCE_OFFSET]
+ add rcx,rdx
+ mov [rsp+neboc_text_char_unicode_e_bytes_API_SUBJECT_PTR_OFFSET],rcx
+ mov rcx,[rax+NEBOC_TOKEN_END_OFFSET]
+ sub rcx,rdx
+ mov [rsp+neboc_text_char_unicode_e_bytes_API_SUBJECT_LENGTH_OFFSET],rcx
+ mov rdi,rsp
+ call neboc_text_char_bytes_api_contract
+ test eax,eax
+ jnz .contract_error
+ mov rax,[rsp+neboc_text_char_unicode_e_bytes_API_RESULT_TYPE_OFFSET]
+ mov rcx,[rsp+neboc_text_char_unicode_e_bytes_API_METHOD_ID_OFFSET]
+ jmp .done
+.contract_error:
+ mov rax,[rsp+neboc_text_char_unicode_e_bytes_API_DIAGNOSTIC_OFFSET]
+ cmp rax,NEBOC_DIAG_BITWISE_WRONG_RECEIVER
+ je .record_error
+ cmp rax,neboc_text_char_unicode_e_bytes_API_DIAG_ALIAS_FORBIDDEN
+ je .record_error
+ cmp rax,neboc_text_char_unicode_e_bytes_API_DIAG_ARGUMENTS_NOT_ALLOWED
+ je .record_error
+ cmp rax,NEBOC_API_DIAG_TEXT_QUERY_ARITY
+ je .record_error
+ cmp rax,NEBOC_API_DIAG_TEXT_TRANSFORM_ARITY
+ je .record_error
+ cmp rax,NEBOC_API_DIAG_TEXT_PARSE_ARITY
+ jne .no
+.record_error:
+ cmp qword [rbx+FCG_TEXT_ERROR],0
+ jne .no
+ mov [rbx+FCG_TEXT_ERROR],rax
+ mov rax,[rsp+neboc_text_char_unicode_e_bytes_API_ERROR_START_OFFSET]
+ mov [rbx+FCG_TEXT_ERROR_START],rax
+ mov rax,[rsp+neboc_text_char_unicode_e_bytes_API_ERROR_END_OFFSET]
+ mov [rbx+FCG_TEXT_ERROR_END],rax
+.no:
+ xor eax,eax
+.done:
+ add rsp,128
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; state*, expression node, depth -> exact textual TypeId or zero.
+; Binding recursion follows only a prior lexical initializer.
 fcg_textual_expr_type:
  push rbx
  push r12
@@ -4707,11 +7480,54 @@ fcg_textual_expr_type:
  jae .no
  mov rdi,rbx
  mov rsi,r12
+ call fcg_scan_public_info
+ test eax,eax
+ jz .not_scan
+ mov rax,rcx
+ jmp .done
+.not_scan:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_color_public_info
+ test eax,eax
+ jz .not_color
+ mov rax,rcx
+ jmp .done
+.not_color:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_nominal_unwrap_value
+ test rax,rax
+ jz .not_nominal_unwrap
+ mov [rsp],rcx
+ mov rsi,rax
+ mov rdi,rbx
+ lea rdx,[r13+1]
+ call fcg_textual_expr_type
+ cmp rax,[rsp]
+ jne .no
+ jmp .done
+.not_nominal_unwrap:
+ mov rdi,rbx
+ mov rsi,r12
  call fcg_node_ptr
  test rax,rax
  jz .no
  mov r14,rax
  mov rax,[r14+NEBOC_AST_NODE_KIND_OFFSET]
+ cmp rax,NEBOC_AST_BINDING_TERMINAL
+ je .struct_text_value
+ test qword [r14+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_NOMINAL_VARIANT_RECEIVER
+ jz .struct_text_checked
+.struct_text_value:
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_struct_expr_type
+ jmp .done
+.struct_text_checked:
+ cmp rax,NEBOC_AST_BINARY_EXPR
+ je .typed_binary
  cmp rax,NEBOC_AST_INTEGER_LITERAL
  je .int
  cmp rax,NEBOC_AST_BOOL_LITERAL
@@ -4720,6 +7536,12 @@ fcg_textual_expr_type:
  je .char
  cmp rax,NEBOC_AST_TEXT_LITERAL
  je .text
+ cmp rax,NEBOC_AST_INTERPOLATED_TEXT
+ je .text
+ cmp rax,NEBOC_AST_MATH_CONSTANT
+ je .float
+ cmp rax,NEBOC_AST_SET_EMPTY_LITERAL
+ je .set
  cmp rax,NEBOC_AST_UNARY_EXPR
  je .wrapper
  cmp rax,NEBOC_AST_IDENTIFIER_EXPR
@@ -4746,7 +7568,36 @@ fcg_textual_expr_type:
  jne .no
  mov rax,[rsp]
  jmp .done
+.typed_binary:
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[r13+1]
+ call fcg_infer_type
+ jmp .done
+
 .ordinary_call:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_format_call_info
+ test eax,eax
+ jz .not_format
+ mov rax,rcx
+ jmp .done
+.not_format:
+ ; An actual declared function can produce a scalar receiver for a Text
+ ; conversion. Resolve its source signature before the builtin method table;
+ ; names absent from the function declarations remain with their native owner.
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_call_has_function_declaration
+ test eax,eax
+ jz .text_builtin_method
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_resolve_call
+ mov rax,rdx
+ jmp .done
+.text_builtin_method:
  mov r15,[r14+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
  mov r12,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  test r12,r12
@@ -4768,7 +7619,20 @@ fcg_textual_expr_type:
  je .text_call
  cmp rax,FCG_TEXTUAL_OPTION_INT
  je .option_call
- jmp .no
+ cmp rax,FCG_TEXTUAL_SPLIT
+ je .split_call
+ cmp rax,NEBOC_FUNCTION_TYPE_TEXT_RESULT_INT
+ jb .maybe_bool_call
+ cmp rax,NEBOC_FUNCTION_TYPE_TEXT_RESULT_SPLIT
+ jbe .result_call
+.maybe_bool_call:
+ cmp rax,NEBOC_TYPE_ID_BOOL
+ jne .no
+ mov edx,NEBOC_TYPE_ID_BOOL
+ jmp .contract_method
+.result_call:
+ lea rdx,[rax-4087]
+ jmp .contract_method
 .bytes_call:
  mov rdi,rbx
  mov rsi,r15
@@ -4821,6 +7685,12 @@ fcg_textual_expr_type:
  jnz .int
  jmp .no
 .int_call:
+ mov rdi,rbx
+ mov rsi,r14
+ mov edx,NEBOC_TYPE_ID_INT
+ call fcg_text_contract_result
+ test eax,eax
+ jnz .done
  mov rdi,rbx
  mov rsi,r15
  lea rdx,[rel fcg_name_test_bit]
@@ -4887,22 +7757,33 @@ fcg_textual_expr_type:
  test eax,eax
  jnz .int
  jmp .no
+.split_call:
+ mov edx,NEBOC_TYPE_ID_TEXT_SPLIT
+ jmp .contract_method
 .text_call:
+ mov edx,NEBOC_TYPE_ID_TEXT
+.contract_method:
+ ; Reuse the canonical method contract instead of a partial second table of
+ ; Text result types. The earlier semantic owner validates argument types.
  mov rdi,rbx
- mov rsi,r15
- lea rdx,[rel fcg_name_byte_length]
- mov ecx,fcg_name_byte_length_len
- call fcg_token_matches_literal
- test eax,eax
- jnz .int
- mov rdi,rbx
- mov rsi,r15
- lea rdx,[rel fcg_name_codepoint_count]
- mov ecx,fcg_name_codepoint_count_len
- call fcg_token_matches_literal
- test eax,eax
- jnz .int
- jmp .no
+ mov rsi,r14
+ call fcg_text_contract_result
+ cmp rax,NEBOC_TYPE_ID_OPTION_INT
+ je .canonical_option
+ cmp rax,NEBOC_TYPE_ID_RESULT_INT_TEXT_ERROR
+ jb .canonical_split
+ cmp rax,NEBOC_TYPE_ID_RESULT_TEXT_SPLIT_TEXT_ERROR
+ ja .done
+ add rax,4087
+ jmp .done
+.canonical_split:
+ cmp rax,NEBOC_TYPE_ID_TEXT_SPLIT
+ jne .done
+ mov eax,FCG_TEXTUAL_SPLIT
+ jmp .done
+.canonical_option:
+ mov eax,FCG_TEXTUAL_OPTION_INT
+ jmp .done
 .option_call:
  mov rdi,rbx
  mov rsi,r15
@@ -5003,6 +7884,12 @@ fcg_textual_expr_type:
 .text:
  mov eax,NEBOC_TYPE_ID_TEXT
  jmp .done
+.float:
+ mov eax,NEBOC_TYPE_ID_FLOAT
+ jmp .done
+.set:
+ mov eax,NEBOC_FUNCTION_TYPE_SET_INT
+ jmp .done
 .bytes:
  mov eax,NEBOC_TYPE_ID_BYTES
  jmp .done
@@ -5043,9 +7930,11 @@ fcg_emit_console_call:
  mov r14,rax
  cmp qword [r14+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
  jne .bad
- cmp qword [r14+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
- jne .unsupported
- cmp qword [r14+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],1
+ mov rax,[r14+NEBOC_AST_NODE_PAYLOAD1_OFFSET]
+ cmp rax,NEBOC_FUNCTION_CODEGEN_MAX_PARAMETERS-1
+ ja .parameter
+ inc rax
+ cmp rax,[r14+NEBOC_AST_NODE_CHILD_COUNT_OFFSET]
  jne .bad
  mov r15,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  test r15,r15
@@ -5055,17 +7944,8 @@ fcg_emit_console_call:
  call fcg_node_ptr
  test rax,rax
  jz .bad
- ; Text(...) is the only currently public Console type-constructor receiver.
- ; Do not publish Int(...), Bool(...), Char(...), or call-result composition.
- cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
- jne .infer_receiver
- test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
- jz .unsupported
- mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
- mov rdi,rbx
- call fcg_type_from_token
- cmp rax,NEBOC_TYPE_ID_TEXT
- jne .unsupported
+ ; Console consumes a typed scalar value, including a native collection
+ ; query result. Infer its type first, then evaluate it exactly once below.
 .infer_receiver:
  mov rdi,rbx
  mov rsi,r15
@@ -5076,9 +7956,73 @@ fcg_emit_console_call:
  cmp rax,NEBOC_TYPE_ID_INT
  je .receiver_ready
  cmp rax,NEBOC_TYPE_ID_BOOL
- jne .unsupported
+ je .receiver_ready
+ cmp rax,FCG_TYPE_NATIVE_TABLE_INT
+ je .receiver_ready
+ cmp rax,FCG_TYPE_NATIVE_TREE_INT
+ je .receiver_ready
+ cmp rax,FCG_TYPE_STRUCT_BASE
+ jb .unsupported
+ cmp rax,FCG_TYPE_STRUCT_BASE+NEBOC_ST_MAX_DECLS
+ jae .unsupported
 .receiver_ready:
  mov [rsp],rax
+ ; Resolve every option before emitting any Assembly.  The P01 public profile
+ ; accepts scalar option values produced by pure receiver-first factories;
+ ; G089 owns the later nominal ConsoleOption registry.  This preflight keeps
+ ; invalid calls failure-atomic and prevents a receiver publication before an
+ ; argument type failure is known.
+ mov rax,[r14+NEBOC_AST_NODE_PAYLOAD1_OFFSET]
+ mov [rsp+8],rax
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_node_ptr
+ test rax,rax
+ jz .bad
+ mov r15,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ xor r14d,r14d
+.option_type_loop:
+ cmp r14,[rsp+8]
+ jae .option_types_ready
+ test r15,r15
+ jz .bad
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[r13+1]
+ call fcg_infer_type
+ cmp rax,FCG_TYPE_POSITION
+ je .option_type_ok
+ cmp rax,FCG_TYPE_COLOR
+ je .bare_color
+ cmp rax,FCG_TYPE_CONSOLE_OPTION
+ je .option_type_ok
+ cmp rax,NEBOC_TYPE_ID_INT
+ je .option_type_ok
+ cmp rax,NEBOC_TYPE_ID_BOOL
+ je .option_type_ok
+ cmp rax,NEBOC_TYPE_ID_TEXT
+ jne .unsupported
+.option_type_ok:
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_node_ptr
+ test rax,rax
+ jz .bad
+ mov r15,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ inc r14
+ jmp .option_type_loop
+.option_types_ready:
+ ; Evaluate receiver first and retain it privately.  Option expressions then
+ ; execute once in lexical order; only after all complete is the receiver
+ ; restored and submitted to the Console runtime.
+ ; Reload the receiver node id from the call node, since R14 was the option
+ ; ordinal during preflight.
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ test rax,rax
+ jz .bad
+ mov r15,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  mov rdi,rbx
  mov rsi,r15
  lea rdx,[r13+1]
@@ -5086,10 +8030,78 @@ fcg_emit_console_call:
  test eax,eax
  jnz .done
  mov rdi,rbx
+ lea rsi,[rel cp_console_save_receiver]
+ mov edx,cp_console_save_receiver_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_node_ptr
+ test rax,rax
+ jz .bad
+ mov r15,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ xor r14d,r14d
+.option_eval_loop:
+ cmp r14,[rsp+8]
+ jae .options_evaluated
+ test r15,r15
+ jz .bad
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[r13+1]
+ call fcg_emit_expr
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ mov rsi,r15
+ lea rdx,[r13+1]
+ call fcg_infer_type
+ cmp rax,FCG_TYPE_POSITION
+ je .position_option
+ cmp rax,FCG_TYPE_CONSOLE_OPTION
+ jne .not_nominal_option
+ mov rdi,rbx
+ lea rsi,[rel cp_console_save_option]
+ mov edx,cp_console_save_option_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ jmp .not_nominal_option
+.position_option:
+ mov rdi,rbx
+ lea rsi,[rel cp_console_save_position]
+ mov edx,cp_console_save_position_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+.not_nominal_option:
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_node_ptr
+ test rax,rax
+ jz .bad
+ mov r15,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ inc r14
+ jmp .option_eval_loop
+.options_evaluated:
+ mov rdi,rbx
+ lea rsi,[rel cp_console_prepare_receiver]
+ mov edx,cp_console_prepare_receiver_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
  cmp qword [rsp],NEBOC_TYPE_ID_TEXT
  je .emit_text
  cmp qword [rsp],NEBOC_TYPE_ID_INT
  je .emit_int
+ cmp qword [rsp],FCG_TYPE_NATIVE_TABLE_INT
+ je .emit_table
+ cmp qword [rsp],FCG_TYPE_NATIVE_TREE_INT
+ je .emit_tree
+ cmp qword [rsp],FCG_TYPE_STRUCT_BASE
+ jae .emit_struct
  lea rsi,[rel fcg_console_publish_bool]
  mov edx,fcg_console_publish_bool_len
  jmp .append
@@ -5100,12 +8112,59 @@ fcg_emit_console_call:
 .emit_int:
  lea rsi,[rel fcg_console_publish_int]
  mov edx,fcg_console_publish_int_len
+ jmp .append
+.emit_table:
+ lea rsi,[rel cp_publish_table]
+ mov edx,cp_publish_table_len
+ jmp .append
+.emit_tree:
+ lea rsi,[rel cp_publish_tree]
+ mov edx,cp_publish_tree_len
+ jmp .append
+.emit_struct:
+ mov rdi,rbx
+ lea rsi,[rel fsv_publish]
+ mov edx,fsv_publish_len
+ call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_WRITER_OFFSET]
+ mov rsi,[rsp]
+ sub rsi,FCG_TYPE_STRUCT_BASE
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel fsv_publish_tail]
+ mov edx,fsv_publish_tail_len
 .append:
  call fcg_append
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ lea rsi,[rel cp_console_release]
+ mov edx,cp_console_release_len
+ call fcg_append
+ jmp .done
+.bare_color:
+ mov rdi,rbx
+ mov rsi,r15
+ mov edx,1
+ call fcg_vector_error
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
  jmp .done
 .unsupported:
+ ; A receiver type failure is already owned by inference. Console must not
+ ; overwrite it with the generic unsupported-node/parser fallback.
+ cmp qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_NONE
+ jne .unsupported_status
  mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_UNSUPPORTED_NODE
+.unsupported_status:
  mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .done
+.parameter:
+ mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_PARAMETER_LIMIT
+ mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
  jmp .done
 .depth:
  mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_DEPTH
@@ -5213,8 +8272,8 @@ fcg_emit_scan_call:
  ret
 
 ; state*, zero-option Text count call, depth, emitted-call*, emitted-call-len.
-; This bounded composition is needed only so a function-local scanned Text
-; can use the already-public byteLength/codepointCount operations.
+; Every actual typed Text receiver can use public count methods. Preserve
+; dynamic descriptors returned by native owners; provenance is not a type gate.
 fcg_emit_text_count_call:
  push rbx
  push r12
@@ -5244,11 +8303,6 @@ fcg_emit_text_count_call:
  mov r15,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  test r15,r15
  jz .bad
- mov rdi,rbx
- mov rsi,r15
- call fcg_is_scan_result_reference
- test eax,eax
- jz .unsupported
  mov rdi,rbx
  mov rsi,r15
  lea rdx,[r13+1]
@@ -5906,7 +8960,7 @@ fcg_resolve_call:
  push r13
  push r14
  push r15
- sub rsp,128
+ sub rsp,144
  mov rbx,rdi
  mov r12,rsi
  mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_CALL_RECURSION_KIND_OFFSET],NEBOC_FUNCTION_RECURSION_CALL_ORDINARY
@@ -5980,6 +9034,7 @@ fcg_resolve_call:
  je .nested_pending
  cmp rdx,NEBOC_FUNCTION_CODEGEN_ERROR_NESTED_SURFACE
  je .nested_pending
+ mov qword [rsp+128],0      ; receiver matches: bit 0 wrong arity, bit 1 same arity
  mov qword [rsp+56],0       ; matched symbol
  mov qword [rsp+64],0       ; matched return type
  mov qword [rsp+72],0       ; candidate count
@@ -6012,7 +9067,7 @@ fcg_resolve_call:
  jz .candidate_advance
  mov rax,[rsp+88]
  cmp r14,[rax+NEBOC_AST_NODE_PAYLOAD1_OFFSET]
- jne .candidate_advance
+ jne .arity_candidate
  mov rdx,r14
  add rdx,2
  cmp rdx,[rax+NEBOC_AST_NODE_CHILD_COUNT_OFFSET]
@@ -6025,10 +9080,12 @@ fcg_resolve_call:
  cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_RECEIVER
  jne .bad_ast
  mov rdi,rbx
- mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
- call fcg_type_from_token
+ mov rax,[rsp+88]
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call fcg_decl_type_from_node
  cmp rax,[rsp]
  jne .candidate_advance
+ or qword [rsp+128],2
  mov r11,[rsp+88]
  mov rsi,[r11+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  mov rdi,rbx
@@ -6115,6 +9172,14 @@ fcg_resolve_call:
  mov [rsp+56],rax
  mov qword [rsp+64],NEBOC_TYPE_ID_INT
  mov qword [rsp+120],NEBOC_FUNCTION_RECURSION_CALL_SELF
+ jmp .candidate_advance
+.arity_candidate:
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,rbx
+ call fcg_decl_type_from_node
+ cmp rax,[rsp]
+ jne .candidate_advance
+ or qword [rsp+128],1
 .candidate_advance:
  inc qword [rsp+80]
 .candidate_next:
@@ -6175,7 +9240,16 @@ fcg_resolve_call:
  xor edx,edx
  jmp .done
 .undefined_public:
+ cmp qword [rsp+128],1
+ je .wrong_arity
  mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_UNDEFINED_CALL
+ jmp .undefined_span
+.wrong_arity:
+ mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_CALL_ARITY
+.undefined_span:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_capture_node_span
  xor eax,eax
  xor edx,edx
  jmp .done
@@ -6193,7 +9267,7 @@ fcg_resolve_call:
  xor eax,eax
  xor edx,edx
 .done:
- add rsp,128
+ add rsp,144
  pop r15
  pop r14
  pop r13
@@ -7123,7 +10197,30 @@ fcg_function_return_type:
  je .scalar_return
  cmp rdx,NEBOC_TYPE_ID_CHAR
  je .scalar_return
- mov rdi,rdx
+ ; The internal scalar ABI transports one qword in RAX/GPR argument slots.
+ ; Float retains its exact TypeId and binary64 bits across this boundary;
+ ; canonical numeric calls adapt those bits to XMM registers explicitly.
+ cmp rdx,NEBOC_TYPE_ID_FLOAT
+ je .scalar_return
+ cmp rdx,NEBOC_TYPE_ID_ORDERING
+ je .scalar_return
+ ; Synchronization handles own frame storage or borrow that storage.
+ ; Their caller ABI has no transfer protocol, so reject escape at typing.
+ cmp r15,FCG_TYPE_MUTEX_INT
+ jb .ordinary_return_type
+ cmp r15,FCG_TYPE_SYNC_GUARD
+ ja .ordinary_return_type
+ mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_TYPE_ASSERTION
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_capture_node_span
+ jmp .failed
+.ordinary_return_type:
+ mov rdi,r15
+ call fcg_aggregate_sret_type_decode
+ test eax,eax
+ jnz .scalar_return
+ mov rdi,r15
  call fcg_array_type_decode
  test eax,eax
  jnz .scalar_return
@@ -7186,6 +10283,88 @@ fcg_function_return_type:
  pop rbx
  ret
 
+; A candidate owner may inspect a receiver before it knows the type family.
+; This query cannot publish a name error for a different owner's namespace.
+; The selected owner still validates its actual receiver and argument nodes.
+fcg_probe_receiver_type:
+ push rbx
+ push r12
+ push r13
+ sub rsp,112
+ mov rbx,rdi
+ mov r12,rsi
+ ; Independent classifiers must not recursively re-infer the same receiver
+ ; once per candidate family at every level of a call chain. A fresh outer
+ ; query clears this private cache; no answer survives a statement, lowering
+ ; pass, binding mutation or another public request.
+ cmp qword [rbx+FCG_PROBE_ACTIVE],0
+ jne .cache_ready
+ lea rdi,[rbx+FCG_PROBE_CACHE]
+ mov ecx,(FCG_PROBE_CACHE_ENTRIES * FCG_PROBE_CACHE_RECORD_SIZE / 8)
+ xor eax,eax
+ cld
+ rep stosq
+.cache_ready:
+ inc qword [rbx+FCG_PROBE_ACTIVE]
+ mov rax,[rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET]
+ mov [rsp],rax
+ mov rax,[rbx+NEBOC_FUNCTION_CODEGEN_ERROR_START_OFFSET]
+ mov [rsp+8],rax
+ mov rax,[rbx+NEBOC_FUNCTION_CODEGEN_ERROR_END_OFFSET]
+ mov [rsp+16],rax
+ mov [rsp+32],r12
+ mov rax,[rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_DECL_OFFSET]
+ mov [rsp+40],rax
+ mov rax,[rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_SYMBOL_OFFSET]
+ mov [rsp+48],rax
+ mov rax,[rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_BLOCK_OFFSET]
+ mov [rsp+56],rax
+ mov rax,[rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_STATEMENT_OFFSET]
+ mov [rsp+64],rax
+ mov rax,[rbx+NEBOC_FUNCTION_CODEGEN_SCOPE_DEPTH_OFFSET]
+ mov [rsp+72],rax
+ mov rax,[rbx+FCG_ASSOC_DEPTH]
+ mov [rsp+80],rax
+ mov rax,[rbx+NEBOC_FUNCTION_CODEGEN_PREPARE_BINDING_COUNT_OFFSET]
+ mov [rsp+88],rax
+ mov r13,r12
+ and r13,FCG_PROBE_CACHE_ENTRIES-1
+ imul r13,FCG_PROBE_CACHE_RECORD_SIZE
+ lea r13,[rbx+r13+FCG_PROBE_CACHE]
+ cmp qword [r13+72],1
+ jne .infer
+ lea rsi,[rsp+32]
+ mov rdi,r13
+ mov ecx,8
+ repe cmpsq
+ jne .infer
+ mov rax,[r13+64]
+ jmp .restore
+.infer:
+ mov rdi,rbx
+ mov rsi,r12
+ mov edx,1
+ call fcg_infer_type
+ mov [r13+64],rax
+ lea rsi,[rsp+32]
+ mov rdi,r13
+ mov ecx,8
+ rep movsq
+ mov qword [r13+72],1
+.restore:
+ mov rcx,[rsp]
+ mov [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],rcx
+ mov rcx,[rsp+8]
+ mov [rbx+NEBOC_FUNCTION_CODEGEN_ERROR_START_OFFSET],rcx
+ mov rcx,[rsp+16]
+ mov [rbx+NEBOC_FUNCTION_CODEGEN_ERROR_END_OFFSET],rcx
+ dec qword [rbx+FCG_PROBE_ACTIVE]
+ add rsp,112
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
 ; state*, node_id, depth -> RAX TypeId or zero.
 fcg_infer_type:
  push rbx
@@ -7206,6 +10385,20 @@ fcg_infer_type:
  jz .bad
  mov r14,rax
  mov rax,[r14+NEBOC_AST_NODE_KIND_OFFSET]
+ cmp rax,NEBOC_AST_STRUCT_CONSTRUCTOR
+ je .struct_value
+ cmp rax,NEBOC_AST_BINDING_TERMINAL
+ je .struct_value
+ test qword [r14+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_NOMINAL_VARIANT_RECEIVER
+ jz .struct_checked
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_struct_field_info
+ test rax,rax
+ jnz .struct_value
+ mov rax,[r14+NEBOC_AST_NODE_KIND_OFFSET]
+.struct_checked:
  cmp rax,NEBOC_AST_INTEGER_LITERAL
  je .int
  cmp rax,NEBOC_AST_BOOL_LITERAL
@@ -7214,6 +10407,12 @@ fcg_infer_type:
  je .char
  cmp rax,NEBOC_AST_TEXT_LITERAL
  je .text
+ cmp rax,NEBOC_AST_INTERPOLATED_TEXT
+ je .text
+ cmp rax,NEBOC_AST_FLOAT_LITERAL
+ je .float
+ cmp rax,NEBOC_AST_MATH_CONSTANT
+ je .float
  cmp rax,NEBOC_AST_IDENTIFIER_EXPR
  je .identifier
  cmp rax,NEBOC_AST_UNARY_EXPR
@@ -7225,6 +10424,12 @@ fcg_infer_type:
  cmp rax,NEBOC_AST_RETURN_TERMINAL
  je .terminal
  jmp .bad
+.struct_value:
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,r13
+ call fcg_struct_expr_type
+ jmp .done
 .int:
  mov eax,NEBOC_TYPE_ID_INT
  jmp .done
@@ -7236,6 +10441,9 @@ fcg_infer_type:
  jmp .done
 .text:
  mov eax,NEBOC_TYPE_ID_TEXT
+ jmp .done
+.float:
+ mov eax,NEBOC_TYPE_ID_FLOAT
  jmp .done
 .identifier:
  mov rdi,rbx
@@ -7299,13 +10507,31 @@ fcg_infer_type:
  mov rsi,r12
  call fcg_capture_node_span
 .identifier_unresolved:
+ ; An unresolved value is a name-resolution error, including a top-level
+ ; callback that attempts to capture a caller's local. Preserve its real span.
+ mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_ASSIGNMENT_UNDECLARED
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_capture_node_span
  xor eax,eax
  jmp .done
 .identifier_resolved:
  mov rax,rdx
  jmp .done
 .unary:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_collection_binder_info
+ test eax,eax
+ jz .infer_unary_regular
+ mov eax,NEBOC_TYPE_ID_INT
+ jmp .done
+.infer_unary_regular:
  mov r15,[r14+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ cmp r15,NEBOC_TOKEN_REDUCTION_SUM
+ je .type_assert_bad
+ cmp r15,NEBOC_TOKEN_REDUCTION_PRODUCT
+ je .type_assert_bad
  mov rsi,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  test rsi,rsi
  jz .bad
@@ -7314,6 +10540,34 @@ fcg_infer_type:
  call fcg_infer_type
  test rax,rax
  jz .bad
+ NEBOC_CORE_ORF_CLASSIFY r15,rdx,.unary_not_lateral
+ cmp rdx,NEBOC_OPERATOR_ID_NSR_CORE_047
+ je .unary_lateral
+.unary_not_lateral:
+ cmp r15,NEBOC_TOKEN_POSTFIX_PERCENT
+ je .unary_percent
+ cmp r15,NEBOC_TOKEN_PER_MILLE
+ je .unary_per_mille
+ cmp r15,NEBOC_TOKEN_BASIS_POINTS
+ je .unary_basis_points
+ cmp r15,NEBOC_TOKEN_DEGREE
+ je .unary_angle
+ cmp r15,NEBOC_TOKEN_CELSIUS
+ je .unary_temperature
+ cmp r15,NEBOC_TOKEN_FAHRENHEIT
+ je .unary_temperature
+ cmp r15,NEBOC_TOKEN_SQUARE_ROOT
+ je .unary_exact_math
+ cmp r15,NEBOC_TOKEN_CUBE_ROOT
+ je .unary_exact_math
+ cmp r15,NEBOC_TOKEN_FOURTH_ROOT
+ je .unary_exact_math
+ cmp r15,NEBOC_TOKEN_POSTFIX_FACTORIAL
+ je .unary_exact_math
+ cmp r15,NEBOC_TOKEN_FLOOR_OPEN
+ je .unary_round_math
+ cmp r15,NEBOC_TOKEN_CEIL_OPEN
+ je .unary_round_math
  cmp r15,NEBOC_TOKEN_BANG
  je .unary_bool
  cmp r15,NEBOC_TOKEN_PLUS
@@ -7321,17 +10575,94 @@ fcg_infer_type:
  cmp r15,NEBOC_TOKEN_MINUS
  jne .bad
 .unary_int:
+ cmp rax,NEBOC_TYPE_ID_FLOAT
+ je .done
  cmp rax,NEBOC_TYPE_ID_INT
- jne .bad
+ jne .type_assert_bad
  mov eax,NEBOC_TYPE_ID_INT
  jmp .done
 .unary_bool:
  cmp rax,NEBOC_TYPE_ID_BOOL
- jne .bad
+ jne .type_assert_bad
  mov eax,NEBOC_TYPE_ID_BOOL
  jmp .done
+.unary_percent:
+ cmp rax,NEBOC_TYPE_ID_INT
+ jne .type_assert_bad
+ mov eax,NEBOC_TYPE_ID_PERCENT
+ jmp .done
+.unary_per_mille:
+ cmp rax,NEBOC_TYPE_ID_INT
+ jne .type_assert_bad
+ mov eax,NEBOC_TYPE_ID_PER_MILLE
+ jmp .done
+.unary_basis_points:
+ cmp rax,NEBOC_TYPE_ID_INT
+ jne .type_assert_bad
+ mov eax,NEBOC_TYPE_ID_BASIS_POINTS
+ jmp .done
+.unary_angle:
+ cmp rax,NEBOC_TYPE_ID_INT
+ jne .type_assert_bad
+ mov eax,NEBOC_TYPE_ID_ANGLE
+ jmp .done
+.unary_temperature:
+ cmp rax,NEBOC_TYPE_ID_INT
+ jne .type_assert_bad
+ mov eax,NEBOC_TYPE_ID_TEMPERATURE
+ jmp .done
+.unary_exact_math:
+ cmp rax,NEBOC_TYPE_ID_INT
+ jne .type_assert_bad
+ mov eax,NEBOC_TYPE_ID_INT
+ jmp .done
+.unary_round_math:
+ cmp rax,NEBOC_TYPE_ID_FLOAT
+ jne .type_assert_bad
+ mov eax,NEBOC_TYPE_ID_INT
+ jmp .done
+.unary_lateral:
+ mov [rsp],rax
+ mov rdi,rbx
+ mov rsi,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call fcg_node_ptr
+ test rax,rax
+ jz .bad
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rsi,rsi
+ jz .bad
+ mov rdi,rbx
+ lea rdx,[r13+1]
+ call fcg_infer_type
+ test rax,rax
+ jz .bad
+ mov rax,[rsp]
+ jmp .done
 .binary:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_linear_vector_info
+ test eax,eax
+ jz .infer_binary_not_linear_vector
+ mov rax,rcx
+ jmp .done
+.infer_binary_not_linear_vector:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_set_value_info
+ test eax,eax
+ jz .infer_binary_regular
+ mov rax,rcx
+ jmp .done
+.infer_binary_regular:
  mov r15,[r14+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ ; A set expression whose canonical finite-domain owner rejected the
+ ; operands is a semantic failure, not an unrecognized parsed expression.
+ cmp r15,NEBOC_TOKEN_SET_MEMBERSHIP
+ jb .infer_binary_operands
+ cmp r15,NEBOC_TOKEN_SET_CARTESIAN_PRODUCT
+ jbe .type_assert_bad
+.infer_binary_operands:
  mov rax,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  test rax,rax
  jz .bad
@@ -7359,6 +10690,34 @@ fcg_infer_type:
  test rax,rax
  jz .bad
  mov [rsp+24],rax
+ ; Float arithmetic and comparisons do not implicitly convert another
+ ; scalar type. Both operand owners have supplied material types here;
+ ; retain that causal type error instead of the generic parser fallback.
+ ; Power has the explicit Float/Int bridge from the canonical G123 owner.
+ ; It must not fall through to the subsequent uncertainty constructor.
+ cmp r15,NEBOC_TOKEN_CARET
+ je .power_type
+ cmp rax,[rsp+16]
+ je .binary_types_ready
+ cmp rax,NEBOC_TYPE_ID_FLOAT
+ je .type_assert_bad
+ cmp qword [rsp+16],NEBOC_TYPE_ID_FLOAT
+ je .type_assert_bad
+.binary_types_ready:
+ cmp r15,NEBOC_TOKEN_PLUS_MINUS
+ je .g131_uncertain_binary
+ cmp r15,NEBOC_TOKEN_APPROX_EQUAL
+ je .g131_uncertain_relation
+ cmp r15,NEBOC_TOKEN_NOT_APPROX_EQUAL
+ je .g131_uncertain_relation
+ cmp r15,NEBOC_TOKEN_EQUIVALENT
+ je .g131_uncertain_relation
+ cmp r15,NEBOC_TOKEN_PROPORTIONAL
+ je .g131_uncertain_relation
+ cmp r15,NEBOC_TOKEN_DIVIDES
+ je .g131_integer_relation
+ cmp r15,NEBOC_TOKEN_NOT_DIVIDES
+ je .g131_integer_relation
  cmp r15,NEBOC_TOKEN_AND_AND
  je .logical
  cmp r15,NEBOC_TOKEN_OR_OR
@@ -7375,6 +10734,10 @@ fcg_infer_type:
  je .relational
  cmp r15,NEBOC_TOKEN_GREATER_EQUAL
  je .relational
+ cmp r15,NEBOC_TOKEN_SPACESHIP
+ je .spaceship
+ cmp r15,NEBOC_TOKEN_XOR
+ je .xor
  cmp r15,NEBOC_TOKEN_PLUS
  je .arithmetic
  cmp r15,NEBOC_TOKEN_MINUS
@@ -7384,35 +10747,302 @@ fcg_infer_type:
  cmp r15,NEBOC_TOKEN_SLASH
  je .arithmetic
  cmp r15,NEBOC_TOKEN_PERCENT
- jne .bad
-.arithmetic:
+ je .arithmetic
+ cmp r15,NEBOC_TOKEN_CARET
+ je .power_type
+ jmp .bad
+.g131_uncertain_binary:
  cmp qword [rsp+16],NEBOC_TYPE_ID_INT
- jne .bad
+ jne .type_assert_bad
  cmp qword [rsp+24],NEBOC_TYPE_ID_INT
- jne .bad
+ jne .type_assert_bad
+ mov eax,NEBOC_TYPE_ID_UNCERTAIN_INT
+ jmp .done
+.g131_uncertain_relation:
+ cmp qword [rsp+16],NEBOC_TYPE_ID_UNCERTAIN_INT
+ jne .type_assert_bad
+ cmp qword [rsp+24],NEBOC_TYPE_ID_UNCERTAIN_INT
+ jne .type_assert_bad
+ mov eax,NEBOC_TYPE_ID_BOOL
+ jmp .done
+.g131_integer_relation:
+ cmp qword [rsp+16],NEBOC_TYPE_ID_INT
+ jne .type_assert_bad
+ cmp qword [rsp+24],NEBOC_TYPE_ID_INT
+ jne .type_assert_bad
+ mov eax,NEBOC_TYPE_ID_BOOL
+ jmp .done
+.power_type:
+ cmp qword [rsp+24],NEBOC_TYPE_ID_INT
+ jne .type_assert_bad
+ mov rax,[rsp+16]
+ cmp rax,NEBOC_TYPE_ID_INT
+ je .done
+ cmp rax,NEBOC_TYPE_ID_FLOAT
+ jne .type_assert_bad
+ jmp .done
+.arithmetic:
+ cmp qword [rsp+16],NEBOC_TYPE_ID_FLOAT
+ jne .arithmetic_not_float
+ cmp qword [rsp+24],NEBOC_TYPE_ID_FLOAT
+ jne .type_assert_bad
+ cmp r15,NEBOC_TOKEN_PLUS
+ je .float
+ cmp r15,NEBOC_TOKEN_MINUS
+ je .float
+ cmp r15,NEBOC_TOKEN_STAR
+ je .float
+ cmp r15,NEBOC_TOKEN_SLASH
+ je .float
+ jmp .type_assert_bad
+.arithmetic_not_float:
+ cmp qword [rsp+16],NEBOC_TYPE_ID_INT
+ jne .arithmetic_left_quantity
+ cmp qword [rsp+24],NEBOC_TYPE_ID_INT
+ je .arithmetic_int
+ cmp r15,NEBOC_TOKEN_STAR
+ jne .type_assert_bad
+ mov rax,[rsp+24]
+ cmp rax,NEBOC_TYPE_ID_PERCENT
+ jb .type_assert_bad
+ cmp rax,NEBOC_TYPE_ID_TEMPERATURE
+ ja .type_assert_bad
+ cmp rax,NEBOC_TYPE_ID_TEMPERATURE
+ je .type_assert_bad
+ jmp .done
+.arithmetic_left_quantity:
+ mov rax,[rsp+16]
+ cmp rax,NEBOC_TYPE_ID_PERCENT
+ jb .type_assert_bad
+ cmp rax,NEBOC_TYPE_ID_TEMPERATURE
+ ja .type_assert_bad
+ cmp rax,NEBOC_TYPE_ID_TEMPERATURE
+ je .type_assert_bad
+ cmp qword [rsp+24],NEBOC_TYPE_ID_INT
+ je .arithmetic_quantity_scalar
+ cmp rax,[rsp+24]
+ jne .type_assert_bad
+ cmp r15,NEBOC_TOKEN_PLUS
+ je .done
+ cmp r15,NEBOC_TOKEN_MINUS
+ jne .type_assert_bad
+ jmp .done
+.arithmetic_quantity_scalar:
+ cmp r15,NEBOC_TOKEN_STAR
+ je .done
+ cmp r15,NEBOC_TOKEN_SLASH
+ jne .type_assert_bad
+ jmp .done
+.arithmetic_int:
  mov eax,NEBOC_TYPE_ID_INT
+ jmp .done
+.xor:
+ mov rax,[rsp+16]
+ cmp rax,[rsp+24]
+ jne .type_assert_bad
+ cmp rax,NEBOC_TYPE_ID_BOOL
+ je .done
+ cmp rax,NEBOC_TYPE_ID_BYTES
+ je .done
+ cmp rax,NEBOC_TYPE_ID_INT
+ jne .type_assert_bad
+ jmp .done
+.spaceship:
+ mov rax,[rsp+16]
+ cmp rax,[rsp+24]
+ jne .type_assert_bad
+ cmp rax,NEBOC_TYPE_ID_BOOL
+ je .spaceship_result
+ cmp rax,NEBOC_TYPE_ID_INT
+ jne .type_assert_bad
+.spaceship_result:
+ mov eax,NEBOC_TYPE_ID_ORDERING
  jmp .done
 .equality:
  mov rax,[rsp+16]
  cmp rax,[rsp+24]
- jne .bad
+ je .comparison_bool
+ cmp rax,NEBOC_TYPE_ID_PERCENT
+ jb .type_assert_bad
+ cmp rax,NEBOC_TYPE_ID_BASIS_POINTS
+ ja .type_assert_bad
+ mov rax,[rsp+24]
+ cmp rax,NEBOC_TYPE_ID_PERCENT
+ jb .type_assert_bad
+ cmp rax,NEBOC_TYPE_ID_BASIS_POINTS
+ ja .type_assert_bad
+.comparison_bool:
  mov eax,NEBOC_TYPE_ID_BOOL
  jmp .done
 .relational:
- cmp qword [rsp+16],NEBOC_TYPE_ID_INT
- jne .bad
- cmp qword [rsp+24],NEBOC_TYPE_ID_INT
- jne .bad
+ mov rax,[rsp+16]
+ cmp rax,[rsp+24]
+ je .relational_same
+ cmp rax,NEBOC_TYPE_ID_PERCENT
+ jb .type_assert_bad
+ cmp rax,NEBOC_TYPE_ID_BASIS_POINTS
+ ja .type_assert_bad
+ mov rax,[rsp+24]
+ cmp rax,NEBOC_TYPE_ID_PERCENT
+ jb .type_assert_bad
+ cmp rax,NEBOC_TYPE_ID_BASIS_POINTS
+ ja .type_assert_bad
+ jmp .comparison_bool
+.relational_same:
+ cmp rax,NEBOC_TYPE_ID_FLOAT
+ je .comparison_bool
+ cmp rax,NEBOC_TYPE_ID_INT
+ je .comparison_bool
+ cmp rax,NEBOC_TYPE_ID_PERCENT
+ jb .type_assert_bad
+ cmp rax,NEBOC_TYPE_ID_TEMPERATURE
+ ja .type_assert_bad
  mov eax,NEBOC_TYPE_ID_BOOL
  jmp .done
 .logical:
  cmp qword [rsp+16],NEBOC_TYPE_ID_BOOL
- jne .bad
+ jne .type_assert_bad
  cmp qword [rsp+24],NEBOC_TYPE_ID_BOOL
- jne .bad
+ jne .type_assert_bad
  mov eax,NEBOC_TYPE_ID_BOOL
  jmp .done
 .call:
+ test qword [r14+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_CONTEXTUAL_OPTION
+ jnz .bad
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_scan_public_info
+ test eax,eax
+ jz .not_public_scan
+ mov rax,rcx
+ jmp .done
+.not_public_scan:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_color_public_info
+ test eax,eax
+ jz .not_public_color
+ mov rax,rcx
+ jmp .done
+.not_public_color:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_console_public_info
+ test eax,eax
+ jz .infer_not_public_console
+ mov rax,rcx
+ jmp .done
+.infer_not_public_console:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_visual_summary_info
+ test eax,eax
+ jz .infer_not_visual_summary
+ mov rax,rcx
+ jmp .done
+.infer_not_visual_summary:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_filesystem_public_info
+ test eax,eax
+ jz .infer_not_filesystem
+ mov rax,rcx
+ jmp .done
+.infer_not_filesystem:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_system_public_info
+ test eax,eax
+ jz .infer_not_system
+ mov rax,rcx
+ jmp .done
+.infer_not_system:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_tagged_public_info
+ test eax,eax
+ jz .infer_not_tagged
+ mov rax,rcx
+ jmp .done
+.infer_not_tagged:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_regex_public_info
+ test eax,eax
+ jz .infer_not_regex
+ mov rax,rcx
+ jmp .done
+.infer_not_regex:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_slash_public_info
+ test eax,eax
+ jz .infer_not_slash
+ mov rax,rcx
+ jmp .done
+.infer_not_slash:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_tensor_info
+ test eax,eax
+ jz .infer_not_tensor
+ mov rax,rcx
+ jmp .done
+.infer_not_tensor:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_matrix_info
+ test eax,eax
+ jz .infer_not_matrix
+ mov rax,rcx
+ jmp .done
+.infer_not_matrix:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_random_info
+ test eax,eax
+ jz .infer_not_random
+ mov rax,rcx
+ jmp .done
+.infer_not_random:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_vector_info
+ test eax,eax
+ jz .infer_not_vector
+ mov rax,rcx
+ jmp .done
+.infer_not_vector:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_assoc_info
+ test eax,eax
+ jz .infer_not_associative
+ mov rax,rcx
+ jmp .done
+.infer_not_associative:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_format_call_info
+ test eax,eax
+ jz .infer_not_format
+ mov rax,rcx
+ jmp .done
+.infer_not_format:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_nominal_unwrap_value
+ test rax,rax
+ jz .infer_not_nominal_unwrap
+ mov [rsp],rcx
+ mov rsi,rax
+ mov rdi,rbx
+ lea rdx,[r13+1]
+ call fcg_infer_type
+ cmp rax,[rsp]
+ jne .type_assert_bad
+ jmp .done
+.infer_not_nominal_unwrap:
  mov rdi,rbx
  mov rsi,r12
  mov rdx,r13
@@ -7424,6 +11054,11 @@ fcg_infer_type:
 .infer_call_not_tuple:
  test qword [r14+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
  jz .normal_call
+ mov rdi,rbx
+ mov rsi,[r14+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ call fcg_type_from_token
+ cmp rax,NEBOC_TYPE_ID_UNCERTAIN_INT
+ je .g131_constructor_type
  cmp qword [r14+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],1
  jne .bad
  mov rdi,rbx
@@ -7442,11 +11077,70 @@ fcg_infer_type:
  jne .type_assert_bad
  mov rax,[rsp]
  jmp .done
+.g131_constructor_type:
+ cmp qword [r14+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],2
+ je .g131_constructor_type_ok
+ cmp qword [r14+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],5
+ jne .bad
+.g131_constructor_type_ok:
+ mov eax,NEBOC_TYPE_ID_UNCERTAIN_INT
+ jmp .done
 .type_assert_bad:
+ cmp qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_NONE
+ jne .type_assert_failed
  mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_TYPE_ASSERTION
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_capture_node_span
+.type_assert_failed:
  xor eax,eax
  jmp .done
 .normal_call:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_is_console_call
+ test eax,eax
+ jz .not_console_receipt
+ mov rdi,rbx
+ mov rsi,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ lea rdx,[r13+1]
+ call fcg_infer_type
+ cmp rax,NEBOC_TYPE_ID_TEXT
+ je .console_receipt
+ cmp rax,NEBOC_TYPE_ID_INT
+ je .console_receipt
+ cmp rax,NEBOC_TYPE_ID_BOOL
+ jne .type_assert_bad
+.console_receipt:
+ mov eax,FCG_TYPE_CONSOLE_HANDLE
+ jmp .done
+.not_console_receipt:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_flow_assert_info
+ test eax,eax
+ jz .not_flow_assert
+ cmp eax,1
+ jne .type_assert_bad
+ mov eax,NEBOC_TYPE_ID_VOID
+ jmp .done
+.not_flow_assert:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_set_query_info
+ test eax,eax
+ jz .not_set_call
+ mov rax,rcx
+ jmp .done
+.not_set_call:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_g131_call_info
+ test eax,eax
+ jz .not_g131_call
+ mov rax,rcx
+ jmp .done
+.not_g131_call:
  mov rdi,rbx
  mov rsi,r12
  call fcg_buffer_call_info
@@ -7550,11 +11244,6 @@ fcg_infer_type:
 .text_count_call:
  mov r15,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  test r15,r15
- jz .bad
- mov rdi,rbx
- mov rsi,r15
- call fcg_is_scan_result_reference
- test eax,eax
  jz .bad
  mov rdi,rbx
  mov rsi,r15
@@ -8258,6 +11947,8 @@ fcg_validate_nested_expression:
  je .binary_arithmetic
  cmp r15,NEBOC_TOKEN_PERCENT
  je .binary_arithmetic
+ cmp r15,NEBOC_TOKEN_CARET
+ je .binary_arithmetic
  cmp r15,NEBOC_TOKEN_LESS
  je .binary_relation
  cmp r15,NEBOC_TOKEN_LESS_EQUAL
@@ -8266,6 +11957,10 @@ fcg_validate_nested_expression:
  je .binary_relation
  cmp r15,NEBOC_TOKEN_GREATER_EQUAL
  je .binary_relation
+ cmp r15,NEBOC_TOKEN_SPACESHIP
+ je .binary_spaceship
+ cmp r15,NEBOC_TOKEN_XOR
+ je .binary_xor
  cmp r15,NEBOC_TOKEN_EQUAL_EQUAL
  je .binary_equality
  cmp r15,NEBOC_TOKEN_BANG_EQUAL
@@ -8275,6 +11970,26 @@ fcg_validate_nested_expression:
  cmp rax,[rsp+24]
  jne .surface
  mov eax,NEBOC_TYPE_ID_BOOL
+ jmp .done
+.binary_xor:
+ mov rax,[rsp+16]
+ cmp rax,[rsp+24]
+ jne .surface
+ cmp rax,NEBOC_TYPE_ID_BOOL
+ je .done
+ cmp rax,NEBOC_TYPE_ID_INT
+ jne .surface
+ jmp .done
+.binary_spaceship:
+ mov rax,[rsp+16]
+ cmp rax,[rsp+24]
+ jne .surface
+ cmp rax,NEBOC_TYPE_ID_BOOL
+ je .binary_spaceship_result
+ cmp rax,NEBOC_TYPE_ID_INT
+ jne .surface
+.binary_spaceship_result:
+ mov eax,NEBOC_TYPE_ID_ORDERING
  jmp .done
 .binary_relation:
  cmp qword [rsp+16],NEBOC_TYPE_ID_INT
@@ -9018,12 +12733,13 @@ fcg_count_calls:
  push r13
  push r14
  push r15
- sub rsp,16
+ sub rsp,32
  mov rbx,rdi
  mov r12,rsi
  mov r13,rdx
  mov rax,[rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_STATEMENT_OFFSET]
  mov [rsp],rax
+ mov qword [rsp+8],0
  cmp r13,NEBOC_FUNCTION_CODEGEN_MAX_DEPTH
  jae .bad
  mov rdi,rbx
@@ -9033,6 +12749,21 @@ fcg_count_calls:
  jz .bad
  mov r14,rax
  xor r15d,r15d
+ ; Enter the same lexical block as emission before classifying calls on
+ ; nested bindings (Task handles, tagged results and other native values).
+ ; Statement identity alone cannot resolve a binding inside an if/loop body.
+ cmp qword [r14+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_BLOCK
+ jne .scope_ready
+ cmp r12,[rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_BLOCK_OFFSET]
+ je .scope_ready
+ mov rdi,rbx
+ mov rsi,r12
+ mov rdx,[rsp]
+ call fcg_scope_push
+ test eax,eax
+ jnz .bad
+ mov qword [rsp+8],1
+.scope_ready:
  ; Intrinsic classification for a bound receiver must observe the same exact
  ; lexical statement during planning that expression emission observes.  The
  ; recursive walk restores its caller's statement, so sibling scopes and
@@ -9065,6 +12796,13 @@ fcg_count_calls:
  cmp qword [r14+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
  jne .children
  test qword [r14+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
+ jnz .children
+ ; Frozen associative plans were typed in their real lexical scope. The
+ ; recursive ABI inventory must not reclassify a nested binding at root scope.
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_assoc_find_plan
+ test rax,rax
  jnz .children
  mov rdi,rbx
  mov rsi,r12
@@ -9106,9 +12844,16 @@ fcg_count_calls:
 .bad:
  mov rax,-1
 .done:
+ mov [rsp+16],rax
+ cmp qword [rsp+8],0
+ je .scope_restored
+ mov rdi,rbx
+ call fcg_scope_pop
+.scope_restored:
+ mov rax,[rsp+16]
  mov rdx,[rsp]
  mov [rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_STATEMENT_OFFSET],rdx
- add rsp,16
+ add rsp,32
  pop r15
  pop r14
  pop r13
@@ -9222,13 +12967,77 @@ fcg_decl_type_from_node:
  mov r13,rax
  mov rcx,[rax+NEBOC_AST_NODE_KIND_OFFSET]
  cmp rcx,NEBOC_AST_RECEIVER
- je .scalar
+ je .generic_flag
  cmp rcx,NEBOC_AST_PARAMETER
  jne .no
+.generic_flag:
  test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_GENERIC_PARAMETER
  jz .scalar
  mov rdi,rbx
- mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rsi,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ lea rdx,[rel mp_Matrix]
+ mov ecx,6
+ call fcg_token_matches_literal
+ test eax,eax
+ jz .tensor_generic
+ mov rdi,rbx
+ mov rsi,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ add rsi,2
+ call fcg_type_from_token
+ cmp rax,NEBOC_TYPE_ID_INT
+ je .matrix_int
+ cmp rax,NEBOC_TYPE_ID_FLOAT
+ jne .no
+ mov eax,FCG_TYPE_MATRIX_FLOAT
+ jmp .done
+.matrix_int:
+ mov eax,FCG_TYPE_MATRIX_INT
+ jmp .done
+.tensor_generic:
+ mov rdi,rbx
+ mov rsi,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ lea rdx,[rel tp_Tensor]
+ mov ecx,6
+ call fcg_token_matches_literal
+ test eax,eax
+ jz .list_generic
+ mov rdi,rbx
+ mov rsi,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ add rsi,2
+ call fcg_type_from_token
+ cmp rax,NEBOC_TYPE_ID_INT
+ je .tensor_int
+ cmp rax,NEBOC_TYPE_ID_BOOL
+ je .tensor_bool
+ cmp rax,NEBOC_TYPE_ID_FLOAT
+ jne .no
+ mov eax,FCG_TYPE_TENSOR_FLOAT
+ jmp .done
+.tensor_int:
+ mov eax,FCG_TYPE_TENSOR_INT
+ jmp .done
+.tensor_bool:
+ mov eax,FCG_TYPE_TENSOR_BOOL
+ jmp .done
+.list_generic:
+ mov rdi,rbx
+ mov rsi,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ lea rdx,[rel ac_list]
+ mov ecx,4
+ call fcg_token_matches_literal
+ test eax,eax
+ jz .slice_generic
+ mov rdi,rbx
+ mov rsi,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ add rsi,2
+ call fcg_type_from_token
+ cmp rax,NEBOC_TYPE_ID_INT
+ jne .no
+ mov eax,FCG_TYPE_NATIVE_LIST_INT
+ jmp .done
+.slice_generic:
+ mov rdi,rbx
+ mov rsi,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
  lea rdx,[rel fcg_type_slice]
  mov ecx,fcg_type_slice_len
  call fcg_token_matches_literal
@@ -9273,6 +13082,50 @@ fcg_type_from_token:
  push r13
  mov rbx,rdi
  mov r12,rsi
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel cp_Color]
+ mov ecx,5
+ call fcg_token_matches_literal
+ test eax,eax
+ jz .not_color
+ mov eax,FCG_TYPE_COLOR
+ jmp .done
+.not_color:
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel ac_data_Row]
+ mov ecx,3
+ call fcg_token_matches_literal
+ test eax,eax
+ jz .not_native_row
+ mov eax,FCG_TYPE_NATIVE_ROW_INT
+ jmp .done
+.not_native_row:
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel ac_data_Table]
+ mov ecx,5
+ call fcg_token_matches_literal
+ test eax,eax
+ jz .not_native_table
+ mov eax,FCG_TYPE_NATIVE_TABLE_INT
+ jmp .done
+.not_native_table:
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_uncertain_type]
+ mov ecx,fcg_name_uncertain_type_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jnz .uncertain
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_measurement_type]
+ mov ecx,fcg_name_measurement_type_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jnz .uncertain
  mov rdi,rbx
  call fcg_token_ptr
  test rax,rax
@@ -9331,6 +13184,13 @@ fcg_type_from_token:
  mov eax,NEBOC_TYPE_ID_TEXT
  jmp .done
 .check_bytes:
+ cmp dword [r10],0x616f6c46 ; Floa
+ jne .bytes_name
+ cmp byte [r10+4],'t'
+ jne .no
+ mov eax,NEBOC_TYPE_ID_FLOAT
+ jmp .done
+.bytes_name:
  cmp byte [r10],'B'
  jne .no
  cmp byte [r10+1],'y'
@@ -9342,6 +13202,9 @@ fcg_type_from_token:
  cmp byte [r10+4],'s'
  jne .no
  mov eax,NEBOC_TYPE_ID_BYTES
+ jmp .done
+.uncertain:
+ mov eax,NEBOC_TYPE_ID_UNCERTAIN_INT
  jmp .done
 .no:
  xor eax,eax
@@ -9387,6 +13250,83 @@ fcg_node_ptr:
 ; two-statement typed-binding pair `Type.name; value.name;`, RDX declared
 ; TypeId.  This is an internal composition bridge: it introduces no syntax
 ; and marks only the declaration half after adjacency, name and type agree.
+; Reuse the canonical ALL_CAPS classifier/SymbolId and const action owner.
+; Local ConstBinding initializers remain runtime-once, as required by G085.
+fcg_validate_const_binding:
+ push rbx
+ push r12
+ push r13
+ sub rsp,48
+ mov rbx,rdi
+ mov r12,rsi
+ call fcg_node_ptr
+ test rax,rax
+ jz .invalid
+ mov r13,rax
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_ASSIGNMENT_STMT
+ jne .name
+ mov rdi,rbx
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call fcg_node_ptr
+ test rax,rax
+ jz .invalid
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .ordinary
+.name:
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,rbx
+ call fcg_token_ptr
+ test rax,rax
+ jz .invalid
+ mov rsi,[rax+NEBOC_TOKEN_END_OFFSET]
+ sub rsi,[rax+NEBOC_TOKEN_START_OFFSET]
+ mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_SOURCE_OFFSET]
+ add rdi,[rax+NEBOC_TOKEN_START_OFFSET]
+ mov rdx,[rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_BLOCK_OFFSET]
+ mov rcx,rsp
+ call neboc_const_symbol_resolve
+ cmp eax,NEBOC_CONST_NAME_NOT_ALL_CAPS
+ je .ordinary
+ test eax,eax
+ jnz .invalid
+ mov esi,NEBOC_CONST_ACTION_WRITE
+ cmp qword [r13+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_ASSIGNMENT_STMT
+ je .action
+ mov rdi,rbx
+ mov rsi,[r13+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call fcg_node_ptr
+ test rax,rax
+ jz .invalid
+ mov esi,NEBOC_CONST_ACTION_READ
+ test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_MUTABLE_BINDING
+ jz .action
+ mov esi,NEBOC_CONST_ACTION_MARK_MUTABLE
+.action:
+ mov rdi,rsp
+ call neboc_const_validate_action
+ test eax,eax
+ mov edx,1 ; caller may retain ConstBinding classification for shadow checks
+ jz .done
+ mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_CONST_WRITE
+ jmp .error
+.ordinary:
+ xor eax,eax
+ xor edx,edx
+ jmp .done
+.invalid:
+ mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_TYPE_ASSERTION
+.error:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_capture_node_span
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+.done:
+ add rsp,48
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
 fcg_typed_binding_declaration_info:
  push rbx
  push r12
@@ -9469,10 +13409,27 @@ fcg_typed_binding_declaration_info:
  mov rcx,[rsp]
  mov [rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_STATEMENT_OFFSET],rcx
  cmp rax,r14
- jne .no
+ jne .incompatible_initializer
  or qword [r13+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPED_BINDING_DECLARATION
  mov rdx,r14
  mov eax,1
+ jmp .done
+.incompatible_initializer:
+ ; A recognized declaration followed by its same-name initializer is owned
+ ; even when the types disagree. Declining here reinterprets the type token
+ ; as an ordinary value name and loses the first causal type diagnostic.
+ test rax,rax
+ jnz .initializer_type_error
+ cmp qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],0
+ jne .initializer_error_ready
+.initializer_type_error:
+ mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_ASSIGNMENT_TYPE
+ mov rdi,rbx
+ mov rsi,[rsp+16]
+ call fcg_capture_node_span
+.initializer_error_ready:
+ mov rax,-1
+ xor edx,edx
  jmp .done
 .no:
  xor eax,eax
@@ -9502,6 +13459,7 @@ fcg_prepare_bindings:
  mov r13,rdx
  mov [rbx+NEBOC_FUNCTION_CODEGEN_PREPARE_PARAMETER_BASE_OFFSET],r13
  mov qword [rbx+NEBOC_FUNCTION_CODEGEN_PREPARE_BINDING_COUNT_OFFSET],0
+ mov qword [rbx+FCG_ASSOC_COUNT],0
  mov qword [rbx+NEBOC_FUNCTION_CODEGEN_MUTABLE_ARRAY_SLOT_COUNT_OFFSET],0
  mov rdi,rbx
  mov rsi,r12
@@ -9605,6 +13563,11 @@ fcg_prepare_block_bindings:
 .assignment:
  mov rdi,rbx
  mov rsi,r14
+ call fcg_validate_const_binding
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ mov rsi,r14
  lea rdx,[r13+1]
  call fcg_validate_assignment
  test eax,eax
@@ -9613,7 +13576,15 @@ fcg_prepare_block_bindings:
 .binding:
  mov rdi,rbx
  mov rsi,r14
+ call fcg_validate_const_binding
+ test eax,eax
+ jnz .done
+ mov [rsp+56],rdx
+ mov rdi,rbx
+ mov rsi,r14
  call fcg_typed_binding_declaration_info
+ cmp rax,-1
+ je .fail
  test eax,eax
  jnz .next
  mov rdi,rbx
@@ -9659,74 +13630,9 @@ fcg_prepare_block_bindings:
  mov rax,rcx
  jmp .binding_type_ok
 .start_binding_guard:
- ; The current public caller oracle permits a scalar call as the terminal
- ; start value, but it does not publish call-result storage followed by later
- ; reuse.  Keep that adjacent composition deferred while allowing ordinary
- ; direct start bindings and Void call sequences.
- cmp qword [rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_DECL_OFFSET],0
- jne .infer_binding_type_reload
- cmp qword [rsp+8],0
- je .infer_binding_type
- ; B01's direct typed Array result is the one bounded exception to the older
- ; start call-result-reuse guard. Resolve it exactly before applying that
- ; scalar guard; every non-Array call retains the prior rejection.
- mov rdi,rbx
- mov rsi,[rsp+48]
- call fcg_node_ptr
- test rax,rax
- jz .bad
- cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
- jne .start_call_result_guard
- ; Runtime intrinsics have no FunctionTable symbol to resolve.  Their exact
- ; result type is owned by fcg_infer_type below; do not run the speculative
- ; user-function resolver and leave a stale UNDEFINED_CALL diagnostic behind.
- mov rdi,rbx
- mov rsi,[rsp+48]
- call fcg_is_runtime_intrinsic_call
- test eax,eax
- jnz .infer_binding_type_reload
- mov rdi,rbx
- mov rsi,[rsp+48]
- call fcg_collection_result_as_slice_info
- test eax,eax
- jnz .infer_binding_type_reload
- ; C13-PRC-A3: a public Tuple constructor is a bounded compile-time value,
- ; not a user FunctionTable call result.  Its later projection is resolved
- ; from the immutable AST identity and therefore neither allocates result
- ; storage nor crosses the public call ABI.  Admit only the exact Tuple
- ; expression recognized by the shared tuple classifier before applying the
- ; historical start-scope call-result-reuse guard.
- mov rdi,rbx
- mov rsi,[rsp+48]
- xor edx,edx
- call fcg_tuple_expr_info
- test eax,eax
- jnz .infer_binding_type_reload
- mov rdi,rbx
- mov rsi,[rsp+48]
- call fcg_resolve_call
- test rax,rax
- jz .start_call_result_guard
- mov [rsp+24],rdx
- mov rdi,rdx
- call fcg_array_type_decode
- test eax,eax
- jnz .infer_binding_type_reload
- mov rdi,[rsp+24]
- call fcg_slice_type_decode
- test eax,eax
- jnz .infer_binding_type_reload
-.start_call_result_guard:
- mov rsi,[rsp+48]
- mov rdi,rbx
- xor edx,edx
- call fcg_count_calls
- cmp rax,-1
- je .type
- test rax,rax
- jnz .start_call_result_scope
- mov rsi,[rsp+48]
-.infer_binding_type_reload:
+ ; Bind a call result using the same exact type and lexical slot as any
+ ; other expression. Scalar results already cross the internal qword ABI;
+ ; subsequent source statements do not invalidate the caller-owned slot.
  mov rsi,[rsp+48]
 .infer_binding_type:
  mov rdi,rbx
@@ -9752,24 +13658,53 @@ fcg_prepare_block_bindings:
  jne .binding_type_ok
  jmp .type
 .function_binding_type:
+ cmp rax,FCG_TYPE_STRUCT_BASE
+ jb .function_binding_not_struct
+ cmp rax,FCG_TYPE_STRUCT_BASE+NEBOC_ST_MAX_DECLS
+ jb .binding_type_ok
+.function_binding_not_struct:
+ mov rdi,rax
+ call fcg_native_type_is_material
+ test eax,eax
+ mov rax,[rsp+24]
+ jnz .binding_type_ok
  cmp rax,NEBOC_TYPE_ID_INT
  je .binding_type_ok
  cmp rax,NEBOC_TYPE_ID_BOOL
  je .binding_type_ok
+ cmp rax,NEBOC_TYPE_ID_CHAR
+ je .binding_type_ok
+ cmp rax,NEBOC_TYPE_ID_FLOAT
+ je .binding_type_ok
+ cmp rax,NEBOC_TYPE_ID_BYTES
+ je .binding_type_ok
+ cmp rax,NEBOC_TYPE_ID_UNCERTAIN_INT
+ je .binding_type_ok
+ cmp rax,FCG_TEXTUAL_OPTION_INT
+ je .binding_type_ok
+ cmp rax,FCG_TEXTUAL_SPLIT
+ je .binding_type_ok
+ cmp rax,NEBOC_FUNCTION_TYPE_FORMAT_RESULT_TEXT
+ je .binding_type_ok
+ cmp rax,NEBOC_FUNCTION_TYPE_TEXT_RESULT_INT
+ jb .binding_not_text_result
+ cmp rax,NEBOC_FUNCTION_TYPE_TEXT_RESULT_SPLIT
+ jbe .binding_type_ok
+.binding_not_text_result:
  cmp rax,NEBOC_TYPE_ID_TEXT
  jne .type
- mov [rsp+56],rax
- mov rdi,rbx
- mov rsi,[rsp+48]
- call fcg_is_scan_call
- test eax,eax
- jz .type
- mov rax,[rsp+56]
 .binding_type_ok:
  mov [rsp+24],rax
+ mov rcx,rax
+ mov rdi,rbx
+ mov rsi,r14
+ mov rdx,[rsp+48]
+ call fcg_assoc_validate_binding
+ test eax,eax
+ jnz .fail
  ; Mutable function locals retain the current direct-local type boundary.
- ; Text is public here only as an immutable Scan result; Char/Float locals
- ; remain outside this function-local slice.
+ ; Immutable Char/Float/Text/Bytes are material; mutable ordinary-function
+ ; locals retain the existing Int/Bool profile.
  mov rax,[rsp+16]
  test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_MUTABLE_BINDING
  jz .binding_mutability_ok
@@ -9785,12 +13720,37 @@ fcg_prepare_block_bindings:
  call fcg_capture_node_span
  jmp .fail
 .binding_mutability_ok:
- ; Reject duplicate names against receiver, parameters and prior bindings.
+ ; Reject same-scope collisions and parameter/iterator collisions. Ordinary
+ ; outer locals may be shadowed in a child scope with a distinct owned slot;
+ ; ConstBinding retains the canonical no-shadow rule.
+ ; Collection declarations live in the canonical owner table, outside the
+ ; filtered scalar AST. They still occupy the same lexical namespace.
+ mov rdi,rbx
+ mov rsi,r14
+ call fcg_find_collection_binding_for_node
+ test rax,rax
+ jnz .duplicate
  mov rdi,rbx
  mov rsi,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
  call fcg_resolve_identifier
  test rax,rax
+ jz .new_slot
+ cmp qword [rsp+56],0
+ jne .duplicate
+ mov rdi,rbx
+ mov rsi,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdx,r14
+ mov rcx,r12
+ call fcg_find_prior_binding_in_block
+ test rax,rax
  jnz .duplicate
+ mov rdi,rbx
+ mov rsi,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdx,r14
+ call fcg_find_prior_binding
+ test rax,rax
+ jz .duplicate
+.new_slot:
  inc qword [rbx+NEBOC_FUNCTION_CODEGEN_PREPARE_BINDING_COUNT_OFFSET]
  mov rax,[rbx+NEBOC_FUNCTION_CODEGEN_PREPARE_PARAMETER_BASE_OFFSET]
  add rax,[rbx+NEBOC_FUNCTION_CODEGEN_PREPARE_BINDING_COUNT_OFFSET]
@@ -9868,6 +13828,27 @@ fcg_prepare_block_bindings:
  test eax,eax
  jnz .done
 .next:
+ ; Each expression is planned in its real lexical statement context, after
+ ; binding types are available. Nested blocks are planned by their own owner.
+ mov rdi,rbx
+ mov rsi,r14
+ call fcg_node_ptr
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+.plan_statement_children:
+ test rsi,rsi
+ jz .planned_statement
+ mov [rsp+40],rsi
+ mov rdi,rbx
+ xor edx,edx
+ call fcg_assoc_plan_expression
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
+ mov rsi,[rsp+40]
+ call fcg_node_ptr
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ jmp .plan_statement_children
+.planned_statement:
  mov r14,[rsp+8]
  jmp .loop
 .finish:
@@ -9876,9 +13857,9 @@ fcg_prepare_block_bindings:
  jmp .done
 .duplicate:
  mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_DUPLICATE_BINDING
- jmp .fail
-.start_call_result_scope:
- mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_UNSUPPORTED_NODE
+ mov rdi,rbx
+ mov rsi,r14
+ call fcg_capture_node_span
  jmp .fail
 .type:
  cmp qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_NONE
@@ -11042,11 +15023,9 @@ fcg_validate_assignment:
  mov [rsp+16],rax
  test rax,rax
  jz .operator_ok
+ NEBOC_CORE_ARITHMETIC_CLASSIFY_COMPOUND rax,rdx,.compound
+ mov [rsp+24],rdx
  cmp qword [rsp+8],NEBOC_TYPE_ID_INT
- jne .compound
- cmp rax,NEBOC_TOKEN_PLUS
- je .operator_ok
- cmp rax,NEBOC_TOKEN_MINUS
  jne .compound
 .operator_ok:
  mov rsi,[r14+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
@@ -11328,6 +15307,10 @@ fcg_emit_mutable_array_initializers_for_block:
  sub rsp,16
  mov rbx,rdi
  mov r12,rsi
+ mov edx,60
+ call fcg_assoc_emit_view_lifecycle
+ test eax,eax
+ jnz .done
  mov r13,[rbx+NEBOC_FUNCTION_CODEGEN_ARRAY_RANGE_OFFSET]
  test r13,r13
  jz .ok
@@ -12191,8 +16174,8 @@ fcg_emit_assignment:
  test eax,eax
  jnz .done
  mov rdi,rbx
- lea rsi,[rel fcg_push_rax]
- mov edx,fcg_push_rax_len
+ lea rsi,[rel fcg_assignment_save]
+ mov edx,fcg_assignment_save_len
  call fcg_append
  test eax,eax
  jnz .done
@@ -12216,23 +16199,61 @@ fcg_emit_assignment:
  test rax,rax
  jz .store
  mov rdi,rbx
- lea rsi,[rel fcg_restore_binary]
- mov edx,fcg_restore_binary_len
+ lea rsi,[rel fcg_assignment_restore]
+ mov edx,fcg_assignment_restore_len
  call fcg_append
  test eax,eax
  jnz .done
- or qword [rbx+NEBOC_FUNCTION_CODEGEN_TRAP_FLAGS_OFFSET],NEBOC_FUNCTION_CODEGEN_TRAP_OVERFLOW
  cmp qword [rsp+8],NEBOC_TOKEN_PLUS
  je .add
+ cmp qword [rsp+8],NEBOC_TOKEN_MINUS
+ je .subtract
+ cmp qword [rsp+8],NEBOC_TOKEN_STAR
+ je .multiply
+ cmp qword [rsp+8],NEBOC_TOKEN_SLASH
+ je .divide
+ cmp qword [rsp+8],NEBOC_TOKEN_PERCENT
+ je .remainder
+ cmp qword [rsp+8],NEBOC_TOKEN_CARET
+ je .power
+ jmp .bad
+.subtract:
+ or qword [rbx+NEBOC_FUNCTION_CODEGEN_TRAP_FLAGS_OFFSET],NEBOC_FUNCTION_CODEGEN_TRAP_OVERFLOW
  mov rdi,rbx
  lea rsi,[rel fcg_sub]
  mov edx,fcg_sub_len
  call fcg_append
  jmp .compound_done
 .add:
+ or qword [rbx+NEBOC_FUNCTION_CODEGEN_TRAP_FLAGS_OFFSET],NEBOC_FUNCTION_CODEGEN_TRAP_OVERFLOW
  mov rdi,rbx
  lea rsi,[rel fcg_add]
  mov edx,fcg_add_len
+ call fcg_append
+ jmp .compound_done
+.multiply:
+ or qword [rbx+NEBOC_FUNCTION_CODEGEN_TRAP_FLAGS_OFFSET],NEBOC_FUNCTION_CODEGEN_TRAP_OVERFLOW
+ mov rdi,rbx
+ lea rsi,[rel fcg_mul]
+ mov edx,fcg_mul_len
+ call fcg_append
+ jmp .compound_done
+.divide:
+ mov rdi,rbx
+ lea rsi,[rel fcg_runtime_div]
+ mov edx,fcg_runtime_div_len
+ call fcg_append
+ jmp .compound_done
+.remainder:
+ mov rdi,rbx
+ lea rsi,[rel fcg_runtime_rem]
+ mov edx,fcg_runtime_rem_len
+ call fcg_append
+ jmp .compound_done
+.power:
+ mov rdi,rbx
+ lea rsi,[rel fcg_runtime_power]
+ mov edx,fcg_runtime_power_len
  call fcg_append
 .compound_done:
  test eax,eax
@@ -12494,6 +16515,17 @@ fcg_emit_return_statement:
  jz .bad
  mov rax,[rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_RETURN_TYPE_OFFSET]
  mov rdi,rax
+ call fcg_aggregate_sret_type_decode
+ test eax,eax
+ jz .return_not_matrix
+ mov rdi,rbx
+ lea rdx,[r13+1]
+ call fcg_matrix_emit_return
+ test eax,eax
+ jnz .done
+ jmp .jump
+.return_not_matrix:
+ mov rdi,[rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_RETURN_TYPE_OFFSET]
  call fcg_array_type_decode
  test eax,eax
  jnz .array
@@ -13668,6 +17700,12 @@ fcg_emit_loop_control:
  dec rax
  mov r13,[rbx+NEBOC_FUNCTION_CODEGEN_LOOP_STACK_OFFSET+rax*8]
  mov rdi,rbx
+ mov rsi,r13
+ mov edx,59
+ call fcg_assoc_emit_view_lifecycle
+ test eax,eax
+ jnz .done
+ mov rdi,rbx
  mov rsi,r12
  call fcg_node_ptr
  test rax,rax
@@ -14079,10 +18117,22 @@ fcg_emit_nested_block:
 .emitted:
  test eax,eax
  jnz .done
+ mov rdi,rbx
+ mov rsi,r14
+ mov edx,65
+ call fcg_assoc_emit_view_lifecycle
+ test eax,eax
+ jnz .done
  inc qword [rsp]
  mov r14,r15
  jmp .loop
 .finish:
+ mov rdi,rbx
+ mov rsi,r12
+ mov edx,59
+ call fcg_assoc_emit_view_lifecycle
+ test eax,eax
+ jnz .done
  cmp qword [rsp],0
  jne .ok
  mov rdi,rbx
@@ -14152,6 +18202,31 @@ fcg_token_matches_literal:
 
 ; state*, identifier node -> EAX 1 after materializing exactly one caller-owned
 ; 40-byte Slice descriptor, zero when the identifier is not a local Slice.
+; Native public consumers also materialize local Slice descriptors. Reserve
+; their existing temporary slots even when there is no user Slice parameter;
+; otherwise descriptor writes overlap the mutable Array payload frame.
+fcg_needs_slice_temporaries:
+ mov rax,[rdi+NEBOC_FUNCTION_CODEGEN_HAS_SLICE_PARAMETERS_OFFSET]
+ test rax,rax
+ jnz .done
+ mov rdx,[rdi+NEBOC_FUNCTION_CODEGEN_ARRAY_RANGE_OFFSET]
+ test rdx,rdx
+ jz .done
+ mov rcx,[rdx+NEBOC_AR_BINDING_COUNT_OFFSET]
+ mov rdx,[rdx+NEBOC_AR_BINDINGS_OFFSET]
+.loop:
+ test rcx,rcx
+ jz .done
+ cmp qword [rdx+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_SLICE
+ je .needed
+ add rdx,NEBOC_AR_BIND_SIZE
+ dec rcx
+ jmp .loop
+.needed:
+ mov eax,1
+.done:
+ ret
+
 fcg_emit_slice_descriptor:
  push rbx
  push r12
@@ -14573,8 +18648,13 @@ fcg_find_collection_binding_for_node:
  call fcg_node_ptr
  test rax,rax
  jz .no
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ je .constructor_receiver
  cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ je .name_node
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_BINDING_STMT
  jne .no
+.name_node:
  mov r14,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
  mov rdi,rbx
  mov rsi,r14
@@ -14656,6 +18736,23 @@ fcg_find_collection_binding_for_node:
 .next:
  inc r15
  jmp .loop
+.constructor_receiver:
+ ; Immediate Range expressions carry the same immutable owner as named
+ ; values. Match the exact original constructor span, never a source name.
+ mov r14,[rax+NEBOC_AST_NODE_START_OFFSET]
+ xor r15d,r15d
+.constructor_scan:
+ cmp r15,[r13+NEBOC_AR_BINDING_COUNT_OFFSET]
+ jae .no
+ imul rax,r15,NEBOC_AR_BIND_SIZE
+ add rax,[r13+NEBOC_AR_BINDINGS_OFFSET]
+ cmp qword [rax+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_RANGE
+ jne .constructor_next
+ cmp r14,[rax+NEBOC_AR_BIND_SOURCE_OFFSET]
+ je .done
+.constructor_next:
+ inc r15
+ jmp .constructor_scan
 .no:
  xor eax,eax
 .done:
@@ -15403,10 +19500,13 @@ fcg_buffer_call_info:
  pop rbx
  ret
 
-; state*, authenticated Buffer call id, owner request* -> EAX 1, RCX Int and
-; RDX the result at this exact call boundary.  Replaying the already-validated
-; immutable owner prefix prevents every scalar binding from incorrectly
-; inheriting the request's final result while introducing no runtime state.
+; state*, authenticated Buffer call id, owner request* -> EAX 1, RCX exact
+; scalar TypeId and RDX the result at this exact call boundary. Replaying the
+; already-validated immutable owner prefix prevents every scalar binding from
+; incorrectly inheriting the request's final result. Option observations are
+; anchored to their exact Buffer.get initializer so two simultaneously-live
+; Options cannot overwrite one another. The semantic replay is also required
+; for freeze: the base parser intentionally does not discover frozen Bytes.
 fcg_buffer_result_at_call:
  push rbx
  push r12
@@ -15417,6 +19517,126 @@ fcg_buffer_result_at_call:
  mov rbx,rdi
  mov r12,rsi
  mov r13,rdx
+ mov [rsp+304],r12
+ mov qword [rsp+296],0
+ mov qword [rsp+312],0
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_is_some]
+ mov ecx,fcg_name_is_some_len
+ call fcg_call_name_matches
+ test eax,eax
+ jnz .option_is_some
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_is_none]
+ mov ecx,fcg_name_is_none_len
+ call fcg_call_name_matches
+ test eax,eax
+ jnz .option_is_none
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ test rax,rax
+ jz .target_ready
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .target_ready
+ cmp qword [rax+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ jne .target_ready
+ cmp qword [rax+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],2
+ jne .target_ready
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,rbx
+ lea rdx,[rel fcg_name_unwrap_or]
+ mov ecx,fcg_name_unwrap_or_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jz .target_ready
+ mov qword [rsp+296],3
+ ; Capture the exact bounded literal while R12 still names the outer call.
+ ; The method token is followed by `(` and the single Int token in the frozen
+ ; suffix grammar. The replay request occupies rsp+0..295 and cannot alias it.
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ add rsi,2
+ mov rdi,rbx
+ call fcg_token_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_INTEGER
+ jne .no
+ mov rax,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ mov [rsp+312],rax
+ jmp .option_target
+.option_is_some:
+ mov qword [rsp+296],1
+ jmp .option_target
+.option_is_none:
+ mov qword [rsp+296],2
+.option_target:
+ ; Follow only the receiver binding and require its initializer to be the
+ ; exact public get call. The outer observation may occur after other gets on
+ ; the same owner, so its own source boundary is not the Option's identity.
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rsi,rsi
+ jz .no
+ mov rdi,rbx
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .no
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdx,[rbx+NEBOC_FUNCTION_CODEGEN_CURRENT_STATEMENT_OFFSET]
+ test rdx,rdx
+ jz .no
+ mov rdi,rbx
+ call fcg_find_prior_binding
+ test rax,rax
+ jz .no
+ mov rdi,rbx
+ mov rsi,rax
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_BINDING_STMT
+ jne .no
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rsi,rsi
+ jz .no
+ mov rdi,rbx
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_BINDING_TERMINAL
+ jne .no
+ mov r12,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test r12,r12
+ jz .no
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .no
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,rbx
+ lea rdx,[rel fcg_name_bytes_get]
+ mov ecx,fcg_name_bytes_get_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jz .no
+.target_ready:
  mov rdi,rbx
  mov rsi,r12
  call fcg_node_ptr
@@ -15458,7 +19678,50 @@ fcg_buffer_result_at_call:
  jne .no
  cmp qword [rsp+NEBOC_BUFFER_DIAGNOSTIC_OFFSET],0
  jne .no
+ cmp qword [rsp+296],0
+ jne .semantic_ready
+ lea rdi,[rsp]
+ call neboc_buffer_analyze
+ test eax,eax
+ jnz .no
+ cmp qword [rsp+NEBOC_BUFFER_DIAGNOSTIC_OFFSET],0
+ jne .no
+.semantic_ready:
+ mov rax,[rsp+296]
+ cmp rax,1
+ je .return_is_some
+ cmp rax,2
+ je .return_is_none
+ cmp rax,3
+ je .return_unwrap_or
  mov rdx,[rsp+NEBOC_BUFFER_RESULT_OFFSET]
+ mov ecx,NEBOC_TYPE_ID_INT
+ mov eax,1
+ jmp .done
+.return_is_some:
+ cmp qword [rsp+NEBOC_BUFFER_OPTION_TAG_OFFSET],NEBOC_BUFFER_OPTION_SOME
+ sete dl
+ movzx edx,dl
+ mov ecx,NEBOC_TYPE_ID_BOOL
+ mov eax,1
+ jmp .done
+.return_is_none:
+ cmp qword [rsp+NEBOC_BUFFER_OPTION_TAG_OFFSET],NEBOC_BUFFER_OPTION_NONE
+ sete dl
+ movzx edx,dl
+ mov ecx,NEBOC_TYPE_ID_BOOL
+ mov eax,1
+ jmp .done
+.return_unwrap_or:
+ cmp qword [rsp+NEBOC_BUFFER_OPTION_TAG_OFFSET],NEBOC_BUFFER_OPTION_SOME
+ je .unwrap_payload
+ ; Materialize the authenticated fallback instead of inheriting the parser's
+ ; zero payload for None.
+ mov rdx,[rsp+312]
+ jmp .unwrap_ready
+.unwrap_payload:
+ mov rdx,[rsp+NEBOC_BUFFER_RESULT_OFFSET]
+.unwrap_ready:
  mov ecx,NEBOC_TYPE_ID_INT
  mov eax,1
  jmp .done
@@ -15546,15 +19809,443 @@ fcg_collection_result_as_slice_info:
  pop rbx
  ret
 
-; state*, call node -> EAX 1, RCX Int and RDX the exact constant reduction for
-; the existing bounded immutable Array/Slice.sum surface.
-fcg_collection_sum_info:
+; state*, authenticated Array/Slice/Range record, operation, argument0,
+; argument1 -> EAX 1, RCX Int, RDX exact checked value. Operations are
+; 1=sum, 2=product, 3=affine mapped sum, 4=remainder-filtered sum and
+; 5=deterministic opt-in sum.  The immutable domain is traversed once in
+; increasing logical index order; overflow never publishes a partial value.
+fcg_collection_fold_record:
  push rbx
  push r12
  push r13
  push r14
  push r15
  sub rsp,16
+ mov rbx,rdi
+ mov r12,rsi
+ mov r13,rdx
+ mov r14,rcx
+ mov r15,r8
+ cmp r13,1
+ jb .no
+ cmp r13,5
+ ja .no
+ cmp qword [r12+NEBOC_AR_BIND_TYPE_OFFSET],NEBOC_AR_TYPE_INT
+ je .type_ready
+ cmp qword [r12+NEBOC_AR_BIND_TYPE_OFFSET],NEBOC_AR_TYPE_RANGE_INT
+ jne .no
+.type_ready:
+ cmp r13,4
+ jne .not_filter
+ test r14,r14
+ jz .no
+.not_filter:
+ cmp r13,5
+ jne .policy_ready
+ test r14,r14
+ jle .no
+ cmp r14,64
+ ja .no
+.policy_ready:
+ mov qword [rsp],0
+ cmp r13,2
+ jne .identity_ready
+ mov qword [rsp],1
+.identity_ready:
+ xor r11d,r11d
+ mov r10,[r12+NEBOC_AR_BIND_COUNT_OFFSET]
+ cmp qword [r12+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_RANGE
+ je .range_loop
+ cmp qword [r12+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_ARRAY
+ je .stored_ready
+ cmp qword [r12+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_SLICE
+ jne .no
+.stored_ready:
+ mov rax,[rbx+NEBOC_FUNCTION_CODEGEN_ARRAY_RANGE_OFFSET]
+ test rax,rax
+ jz .no
+ mov r9,[rax+NEBOC_AR_VALUES_OFFSET]
+ mov r8,[rax+NEBOC_AR_VALUE_COUNT_OFFSET]
+ mov rcx,[r12+NEBOC_AR_BIND_DATA_INDEX_OFFSET]
+ mov rax,rcx
+ add rax,r10
+ jc .no
+ cmp rax,r8
+ ja .no
+.stored_loop:
+ cmp r11,r10
+ jae .yes
+ mov rax,[r9+rcx*8]
+ inc rcx
+ jmp .apply
+.range_loop:
+ cmp r11,r10
+ jae .yes
+ mov rax,[r12+NEBOC_AR_BIND_STEP_OFFSET]
+ imul rax,r11
+ jo .overflow
+ add rax,[r12+NEBOC_AR_BIND_START_OFFSET]
+ jo .overflow
+.apply:
+ mov [rsp+8],rax
+ cmp r13,2
+ je .product
+ cmp r13,3
+ je .mapped
+ cmp r13,4
+ je .filtered
+ add [rsp],rax
+ jo .overflow
+ jmp .next
+.product:
+ imul rax,[rsp]
+ jo .overflow
+ mov [rsp],rax
+ jmp .next
+.mapped:
+ imul rax,r14
+ jo .overflow
+ add rax,r15
+ jo .overflow
+ add [rsp],rax
+ jo .overflow
+ jmp .next
+.filtered:
+ cmp r14,-1
+ jne .divide
+ xor edx,edx
+ jmp .remainder_ready
+.divide:
+ cqo
+ idiv r14
+.remainder_ready:
+ cmp rdx,r15
+ jne .next
+ mov rax,[rsp+8]
+ add [rsp],rax
+ jo .overflow
+.next:
+ inc r11
+ cmp qword [r12+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_RANGE
+ je .range_loop
+ jmp .stored_loop
+.yes:
+ mov rdx,[rsp]
+ mov ecx,NEBOC_TYPE_ID_INT
+ mov eax,1
+ jmp .done
+.overflow:
+ mov qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_CONSTANT_OVERFLOW
+.no:
+ xor eax,eax
+ xor ecx,ecx
+ xor edx,edx
+.done:
+ add rsp,16
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; RDI finite membership mask -> RAX cardinality. This compiler-side helper is
+; deliberately baseline x86-64 and does not require the POPCNT extension.
+fcg_set_popcount_u64:
+ xor eax,eax
+.loop:
+ test rdi,rdi
+ jz .done
+ lea rdx,[rdi-1]
+ and rdi,rdx
+ inc rax
+ jmp .loop
+.done:
+ ret
+
+; state*, authenticated Array<Int,N> record -> EAX 1, RCX Set<Int>, RDX the
+; canonical membership mask. The source values are immutable semantic-owner
+; data; duplicates collapse and the bounded domain 0..62 keeps the value in a
+; single signed machine word without exposing that representation publicly.
+fcg_set_record_mask:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,16
+ mov rbx,rdi
+ mov r12,rsi
+ cmp qword [r12+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_ARRAY
+ jne .no
+ cmp qword [r12+NEBOC_AR_BIND_TYPE_OFFSET],NEBOC_AR_TYPE_INT
+ jne .no
+ mov r13,[r12+NEBOC_AR_BIND_COUNT_OFFSET]
+ cmp r13,63
+ ja .no
+ mov rax,[rbx+NEBOC_FUNCTION_CODEGEN_ARRAY_RANGE_OFFSET]
+ test rax,rax
+ jz .no
+ mov r15,[rax+NEBOC_AR_VALUES_OFFSET]
+ test r15,r15
+ jz .no
+ mov rcx,[r12+NEBOC_AR_BIND_DATA_INDEX_OFFSET]
+ mov rdx,rcx
+ add rdx,r13
+ jc .no
+ cmp rdx,[rax+NEBOC_AR_VALUE_COUNT_OFFSET]
+ ja .no
+ mov qword [rsp],0
+ xor r14d,r14d
+.value_loop:
+ cmp r14,r13
+ jae .yes
+ mov rax,[r15+rcx*8]
+ test rax,rax
+ js .no
+ cmp rax,62
+ ja .no
+ bts qword [rsp],rax
+ inc rcx
+ inc r14
+ jmp .value_loop
+.yes:
+ mov rdx,[rsp]
+ mov ecx,NEBOC_FUNCTION_TYPE_SET_INT
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+ xor ecx,ecx
+ xor edx,edx
+.done:
+ add rsp,16
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; state*, expression node -> EAX 1, RCX compiler-internal exact type and RDX
+; canonical value for G133 finite-set expressions. Set operands are immutable
+; Array<Int,N> bindings or the empty-set literal. Relations yield Bool and a
+; Cartesian product yields an opaque value whose only public query is its
+; checked cardinality.
+fcg_set_value_info:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,64
+ mov rbx,rdi
+ mov r12,rsi
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ mov r13,rax
+ mov rax,[r13+NEBOC_AST_NODE_KIND_OFFSET]
+ cmp rax,NEBOC_AST_SET_EMPTY_LITERAL
+ je .empty
+ cmp rax,NEBOC_AST_IDENTIFIER_EXPR
+ je .identifier
+ cmp rax,NEBOC_AST_BINARY_EXPR
+ jne .no
+ mov rax,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov [rsp],rax
+ mov r14,[r13+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test r14,r14
+ jz .no
+ mov rdi,rbx
+ mov rsi,r14
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ mov r15,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test r15,r15
+ jz .no
+ mov rax,[rsp]
+ cmp rax,NEBOC_TOKEN_SET_MEMBERSHIP
+ je .membership
+ cmp rax,NEBOC_TOKEN_SET_NON_MEMBERSHIP
+ je .membership
+ mov rdi,rbx
+ mov rsi,r14
+ call fcg_set_value_info
+ test eax,eax
+ jz .no
+ cmp rcx,NEBOC_FUNCTION_TYPE_SET_INT
+ jne .no
+ mov [rsp+8],rdx
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_set_value_info
+ test eax,eax
+ jz .no
+ cmp rcx,NEBOC_FUNCTION_TYPE_SET_INT
+ jne .no
+ mov [rsp+16],rdx
+ mov rax,[rsp]
+ cmp rax,NEBOC_TOKEN_SET_UNION
+ je .union
+ cmp rax,NEBOC_TOKEN_SET_INTERSECTION
+ je .intersection
+ cmp rax,NEBOC_TOKEN_SET_DIFFERENCE
+ je .difference
+ cmp rax,NEBOC_TOKEN_SET_SYMMETRIC_DIFFERENCE
+ je .symmetric_difference
+ cmp rax,NEBOC_TOKEN_SET_SUBSET
+ je .subset
+ cmp rax,NEBOC_TOKEN_SET_PROPER_SUBSET
+ je .proper_subset
+ cmp rax,NEBOC_TOKEN_SET_SUPERSET
+ je .superset
+ cmp rax,NEBOC_TOKEN_SET_PROPER_SUPERSET
+ je .proper_superset
+ cmp rax,NEBOC_TOKEN_SET_CARTESIAN_PRODUCT
+ je .cartesian
+ jmp .no
+.identifier:
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_find_collection_binding_for_node
+ test rax,rax
+ jz .no
+ mov rdi,rbx
+ mov rsi,rax
+ call fcg_set_record_mask
+ jmp .done
+.empty:
+ xor edx,edx
+ mov ecx,NEBOC_FUNCTION_TYPE_SET_INT
+ mov eax,1
+ jmp .done
+.membership:
+ mov rdi,rbx
+ mov rsi,r14
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_INTEGER_LITERAL
+ jne .no
+ mov rax,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ test rax,rax
+ js .no
+ cmp rax,62
+ ja .no
+ mov [rsp+24],rax
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_set_value_info
+ test eax,eax
+ jz .no
+ cmp rcx,NEBOC_FUNCTION_TYPE_SET_INT
+ jne .no
+ mov rcx,[rsp+24]
+ bt rdx,rcx
+ setc al
+ movzx edx,al
+ cmp qword [rsp],NEBOC_TOKEN_SET_NON_MEMBERSHIP
+ jne .relation_yes
+ xor edx,1
+ jmp .relation_yes
+.union:
+ mov rdx,[rsp+8]
+ or rdx,[rsp+16]
+ jmp .set_yes
+.intersection:
+ mov rdx,[rsp+8]
+ and rdx,[rsp+16]
+ jmp .set_yes
+.difference:
+ mov rdx,[rsp+16]
+ not rdx
+ and rdx,[rsp+8]
+ jmp .set_yes
+.symmetric_difference:
+ mov rdx,[rsp+8]
+ xor rdx,[rsp+16]
+ jmp .set_yes
+.subset:
+ mov rdx,[rsp+16]
+ not rdx
+ and rdx,[rsp+8]
+ sete dl
+ movzx edx,dl
+ jmp .relation_yes
+.proper_subset:
+ mov rax,[rsp+8]
+ cmp rax,[rsp+16]
+ je .relation_false
+ mov rdx,[rsp+16]
+ not rdx
+ and rdx,rax
+ sete dl
+ movzx edx,dl
+ jmp .relation_yes
+.superset:
+ mov rdx,[rsp+8]
+ not rdx
+ and rdx,[rsp+16]
+ sete dl
+ movzx edx,dl
+ jmp .relation_yes
+.proper_superset:
+ mov rax,[rsp+8]
+ cmp rax,[rsp+16]
+ je .relation_false
+ mov rdx,rax
+ not rdx
+ and rdx,[rsp+16]
+ sete dl
+ movzx edx,dl
+ jmp .relation_yes
+.relation_false:
+ xor edx,edx
+.relation_yes:
+ mov ecx,NEBOC_TYPE_ID_BOOL
+ mov eax,1
+ jmp .done
+.cartesian:
+ mov rdi,[rsp+8]
+ call fcg_set_popcount_u64
+ mov [rsp+32],rax
+ mov rdi,[rsp+16]
+ call fcg_set_popcount_u64
+ imul rax,[rsp+32]
+ jo .no
+ mov rdx,rax
+ mov ecx,NEBOC_FUNCTION_TYPE_SET_PRODUCT_INT
+ mov eax,1
+ jmp .done
+.set_yes:
+ mov ecx,NEBOC_FUNCTION_TYPE_SET_INT
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+ xor ecx,ecx
+ xor edx,edx
+.done:
+ add rsp,64
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; state*, call node -> EAX 1, RCX Int, RDX exact cardinality for a G133 set
+; or Cartesian product. The method has no arguments and therefore cannot hide
+; an unsupported value conversion behind a coincidental method spelling.
+fcg_set_query_info:
+ push rbx
+ push r12
+ push r13
+ sub rsp,8
  mov rbx,rdi
  mov r12,rsi
  mov rdi,rbx
@@ -15572,12 +20263,147 @@ fcg_collection_sum_info:
  cmp qword [r13+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],1
  jne .no
  mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_set_cardinality]
+ mov ecx,fcg_name_set_cardinality_len
+ call fcg_console_call_name_matches
+ test eax,eax
+ jz .no
+ mov rsi,[r13+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rsi,rsi
+ jz .no
+ mov rdi,rbx
+ call fcg_set_value_info
+ test eax,eax
+ jz .no
+ cmp rcx,NEBOC_FUNCTION_TYPE_SET_INT
+ je .set
+ cmp rcx,NEBOC_FUNCTION_TYPE_SET_PRODUCT_INT
+ jne .no
+ mov rax,rdx
+ jmp .yes
+.set:
+ mov rdi,rdx
+ call fcg_set_popcount_u64
+.yes:
+ mov rdx,rax
+ mov ecx,NEBOC_TYPE_ID_INT
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+ xor ecx,ecx
+ xor edx,edx
+.done:
+ add rsp,8
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; state*, call node -> EAX 1, RCX Int and RDX the exact constant reduction for
+; the bounded immutable Array/Slice canonical reduction methods.
+fcg_collection_sum_info:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ sub rsp,32
+ mov rbx,rdi
+ mov r12,rsi
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ mov r13,rax
+ cmp qword [r13+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ jne .no
+ test qword [r13+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_TYPE_CONSTRUCTOR
+ jnz .no
+ mov qword [rsp],0
+ mov qword [rsp+8],0
+ mov qword [rsp+16],0
+ mov rdi,rbx
  mov rsi,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
  lea rdx,[rel fcg_name_collection_sum]
  mov ecx,fcg_name_collection_sum_len
  call fcg_token_matches_literal
  test eax,eax
+ jnz .sum_name
+ mov rdi,rbx
+ mov rsi,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ lea rdx,[rel fcg_name_collection_sum_pairwise]
+ mov ecx,fcg_name_collection_sum_pairwise_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jnz .sum_name
+ mov rdi,rbx
+ mov rsi,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ lea rdx,[rel fcg_name_collection_sum_kahan]
+ mov ecx,fcg_name_collection_sum_kahan_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jnz .sum_name
+ mov rdi,rbx
+ mov rsi,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ lea rdx,[rel fcg_name_collection_sum_neumaier]
+ mov ecx,fcg_name_collection_sum_neumaier_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jnz .sum_name
+ mov rdi,rbx
+ mov rsi,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ lea rdx,[rel fcg_name_collection_product]
+ mov ecx,fcg_name_collection_product_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jnz .product_name
+ mov rdi,rbx
+ mov rsi,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ lea rdx,[rel fcg_name_collection_sum_mapped]
+ mov ecx,fcg_name_collection_sum_mapped_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jnz .mapped_name
+ mov rdi,rbx
+ mov rsi,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ lea rdx,[rel fcg_name_collection_sum_filtered]
+ mov ecx,fcg_name_collection_sum_filtered_len
+ call fcg_token_matches_literal
+ test eax,eax
+ jnz .filtered_name
+ mov rdi,rbx
+ mov rsi,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ lea rdx,[rel fcg_name_collection_sum_deterministic]
+ mov ecx,fcg_name_collection_sum_deterministic_len
+ call fcg_token_matches_literal
+ test eax,eax
  jz .no
+ mov qword [rsp],5
+ mov qword [rsp+8],1
+ jmp .shape
+.sum_name:
+ mov qword [rsp],1
+ jmp .shape
+.product_name:
+ mov qword [rsp],2
+ jmp .shape
+.mapped_name:
+ mov qword [rsp],3
+ mov qword [rsp+8],2
+ jmp .shape
+.filtered_name:
+ mov qword [rsp],4
+ mov qword [rsp+8],2
+.shape:
+ mov rax,[rsp+8]
+ cmp [r13+NEBOC_AST_NODE_PAYLOAD1_OFFSET],rax
+ jne .no
+ inc rax
+ cmp [r13+NEBOC_AST_NODE_CHILD_COUNT_OFFSET],rax
+ jne .no
  mov rdi,rbx
  mov rsi,[r13+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  call fcg_find_collection_binding_for_node
@@ -15591,38 +20417,131 @@ fcg_collection_sum_info:
 .kind_ready:
  cmp qword [r14+NEBOC_AR_BIND_TYPE_OFFSET],NEBOC_AR_TYPE_INT
  jne .no
- mov rax,[rbx+NEBOC_FUNCTION_CODEGEN_ARRAY_RANGE_OFFSET]
+ mov r15,[r13+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ cmp qword [rsp+8],0
+ jz .fold
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_node_ptr
  test rax,rax
  jz .no
- mov r15,[rax+NEBOC_AR_VALUES_OFFSET]
- mov r8,[rax+NEBOC_AR_VALUE_COUNT_OFFSET]
- mov r9,[r14+NEBOC_AR_BIND_DATA_INDEX_OFFSET]
- mov r10,[r14+NEBOC_AR_BIND_COUNT_OFFSET]
- mov rax,r9
- add rax,r10
- cmp rax,r8
- ja .no
- xor edx,edx
- xor ecx,ecx
-.sum:
- cmp rcx,r10
- jae .yes
- add rdx,[r15+r9*8]
- inc r9
- inc rcx
- jmp .sum
-.yes:
- mov ecx,NEBOC_TYPE_ID_INT
- mov eax,1
+ mov r15,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test r15,r15
+ jz .no
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_INTEGER_LITERAL
+ jne .no
+ mov rdx,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov [rsp+16],rdx
+ cmp qword [rsp+8],1
+ je .fold
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ mov r15,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test r15,r15
+ jz .no
+ mov rdi,rbx
+ mov rsi,r15
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_INTEGER_LITERAL
+ jne .no
+ mov rdx,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov [rsp+24],rdx
+.fold:
+ mov rdi,rbx
+ mov rsi,r14
+ mov rdx,[rsp]
+ mov rcx,[rsp+16]
+ mov r8,[rsp+24]
+ call fcg_collection_fold_record
+ test eax,eax
+ jnz .done
+ cmp qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_CONSTANT_OVERFLOW
+ jne .done
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_capture_node_span
+ xor eax,eax
  jmp .done
 .no:
  xor eax,eax
  xor ecx,ecx
  xor edx,edx
 .done:
- add rsp,16
+ add rsp,32
  pop r15
  pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; state*, unary node -> the exact Registry-owned `∑domain` / `∏domain`
+; reduction.  Only a semantic finite collection/range binding is accepted;
+; arbitrary scalar prefix expressions cannot enter this path.
+fcg_collection_binder_info:
+ push rbx
+ push r12
+ push r13
+ sub rsp,8
+ mov rbx,rdi
+ mov r12,rsi
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_node_ptr
+ test rax,rax
+ jz .no
+ mov r13,rax
+ cmp qword [r13+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_UNARY_EXPR
+ jne .no
+ mov rdx,[r13+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ cmp rdx,NEBOC_TOKEN_REDUCTION_SUM
+ je .sum
+ cmp rdx,NEBOC_TOKEN_REDUCTION_PRODUCT
+ jne .no
+ mov edx,2
+ jmp .binding
+.sum:
+ mov edx,1
+.binding:
+ mov [rsp],rdx
+ mov rsi,[r13+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rsi,rsi
+ jz .no
+ mov rdi,rbx
+ call fcg_find_collection_binding_for_node
+ test rax,rax
+ jz .no
+ mov rsi,rax
+ mov rdi,rbx
+ mov rdx,[rsp]
+ xor ecx,ecx
+ xor r8d,r8d
+ call fcg_collection_fold_record
+ test eax,eax
+ jnz .done
+ cmp qword [rbx+NEBOC_FUNCTION_CODEGEN_LAST_ERROR_OFFSET],NEBOC_FUNCTION_CODEGEN_ERROR_CONSTANT_OVERFLOW
+ jne .done
+ mov rdi,rbx
+ mov rsi,r12
+ call fcg_capture_node_span
+ xor eax,eax
+ jmp .done
+.no:
+ xor eax,eax
+ xor ecx,ecx
+ xor edx,edx
+.done:
+ add rsp,8
  pop r13
  pop r12
  pop rbx
@@ -16134,11 +21053,19 @@ fcg_collection_access_info:
  jne .no
  mov rdi,rbx
  mov rsi,[r14+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ call fcg_token_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RESERVED_LBRACKET
+ je .at_name
+ mov rdi,rbx
+ mov rsi,[r14+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
  lea rdx,[rel fcg_name_collection_at]
  mov ecx,fcg_name_collection_at_len
  call fcg_token_matches_literal
  test eax,eax
  jz .no
+.at_name:
  mov qword [rsp+40],2
  jmp .receiver
 .contains_name:
@@ -16242,6 +21169,24 @@ fcg_collection_access_info:
  mov eax,1
  jmp .done
 .at:
+ mov [rsp+16],rax
+ mov rdi,rbx
+ mov rsi,[r14+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ call fcg_token_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_RESERVED_LBRACKET
+ mov rax,[rsp+16]
+ jne .canonical_at
+ cmp qword [rax+NEBOC_AR_BIND_KIND_OFFSET],NEBOC_AR_KIND_ARRAY
+ jne .no
+ cmp qword [rax+NEBOC_AR_BIND_TYPE_OFFSET],NEBOC_AR_TYPE_INT
+ jne .no
+ cmp qword [rax+NEBOC_AR_BIND_COUNT_OFFSET],4
+ jne .no
+ test qword [rax+NEBOC_AR_BIND_FLAGS_OFFSET],NEBOC_AR_ARRAY_MUTABLE
+ jnz .no
+.canonical_at:
  mov rcx,[rax+NEBOC_AR_BIND_KIND_OFFSET]
  cmp rcx,NEBOC_AR_KIND_ARRAY
  je .at_kind_ok
@@ -17054,6 +21999,27 @@ fcg_buffer_call_is_scalar_value:
  call fcg_call_name_matches
  test eax,eax
  jnz .yes
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_is_some]
+ mov ecx,fcg_name_is_some_len
+ call fcg_call_name_matches
+ test eax,eax
+ jnz .yes
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_is_none]
+ mov ecx,fcg_name_is_none_len
+ call fcg_call_name_matches
+ test eax,eax
+ jnz .yes
+ mov rdi,rbx
+ mov rsi,r12
+ lea rdx,[rel fcg_name_unwrap_or]
+ mov ecx,fcg_name_unwrap_or_len
+ call fcg_call_name_matches
+ test eax,eax
+ jnz .yes
 .no:
  xor eax,eax
  jmp .done
@@ -17426,13 +22392,12 @@ fcg_emit_collection_data:
  inc r13
  jmp .canonical_slice_loop
 .slice_bindings:
- ; Local Slice payload aliases are needed only when this program crosses the
- ; new borrowed-Slice call boundary.  Without a Slice parameter the existing
- ; collection loop payloads above are already canonical; emitting aliases
- ; would perturb previously accepted NPT-LANG-18 Assembly for no semantic
- ; reason.
- cmp qword [rbx+NEBOC_FUNCTION_CODEGEN_HAS_SLICE_PARAMETERS_OFFSET],0
- je .text
+ ; Both ordinary borrowed parameters and native typed consumers need the
+ ; backing data referenced by their local Slice descriptor temporaries.
+ mov rdi,rbx
+ call fcg_needs_slice_temporaries
+ test rax,rax
+ jz .text
  xor r13d,r13d
 .slice_binding_loop:
  cmp r13,[r12+NEBOC_AR_BINDING_COUNT_OFFSET]
@@ -17769,4 +22734,38 @@ fcg_append:
  pop rbx
  ret
 
+%include "compiler/codegen/collections/x86_64/associative_codegen.inc"
+%include "compiler/codegen/scalars/x86_64/float_value_codegen.inc"
+
 section .note.GNU-stack noalloc noexec nowrite progbits
+
+%include "compiler/codegen/textual/x86_64/function_text_methods.inc"
+
+%include "compiler/codegen/textual/x86_64/function_format_methods.inc"
+
+%include "compiler/codegen/aggregates/x86_64/struct_public_codegen.inc"
+
+%include "compiler/codegen/collections/x86_64/numeric_vector_codegen.inc"
+%include "compiler/codegen/collections/x86_64/linear_vector_codegen.inc"
+
+%include "compiler/codegen/collections/x86_64/random_public_codegen.inc"
+%include "compiler/codegen/collections/x86_64/matrix_public_codegen.inc"
+%include "compiler/codegen/collections/x86_64/tensor_public_codegen.inc"
+%include "compiler/codegen/collections/x86_64/matrix_function_codegen.inc"
+
+%include "compiler/codegen/collections/x86_64/console_public_codegen.inc"
+
+%include "compiler/codegen/collections/x86_64/color_public_codegen.inc"
+
+%include "compiler/codegen/aggregates/x86_64/struct_render_metadata.inc"
+
+%include "compiler/codegen/textual/x86_64/function_scan_plan.inc"
+
+%include "compiler/codegen/collections/x86_64/visual_summary_public.inc"
+%include "compiler/codegen/collections/x86_64/filesystem_public_codegen.inc"
+%include "compiler/codegen/textual/x86_64/regex_public_codegen.inc"
+%include "compiler/codegen/textual/x86_64/slash_public_codegen.inc"
+
+%include "compiler/codegen/scalars/x86_64/tagged_public_codegen.inc"
+
+%include "compiler/codegen/collections/x86_64/system_public_codegen.inc"

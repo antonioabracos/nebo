@@ -1,0 +1,7 @@
+generic<T: Copy> struct Box {
+    T.value;
+}
+
+start() {
+    Box<Int>("text").value;
+}

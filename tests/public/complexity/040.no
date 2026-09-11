@@ -1,0 +1,13 @@
+// Capability-bound unary RPC retains typed requests, effects, logical deadlines, metadata, and cancellation.
+(Int.self)serviceDefine() { self.return; }
+(Int.self)rpcMethodUnary() { self.return; }
+(Int.self)methodEffects() { self.return; }
+(Int.self)serviceExpose() { self.return; }
+(Int.self)rpcClientConnect() { self.return; }
+(Int.self)clientCall() { self.return; }
+(Int.self)callMetadata() { self.return; }
+(Int.self)callCancel() { self.return; }
+
+start() {
+    76.serviceDefine().rpcMethodUnary().methodEffects().serviceExpose().rpcClientConnect().clientCall().callMetadata().callCancel();
+}

@@ -1,0 +1,4 @@
+struct Link {
+    Link.next;
+}
+start() { 1; }

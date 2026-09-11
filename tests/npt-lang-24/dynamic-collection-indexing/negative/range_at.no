@@ -1,0 +1,2 @@
+(Int.self)work() { Range.exclusive(0,2).values; 1.index; values.at(index).return; }
+start() { 0.work().return; }

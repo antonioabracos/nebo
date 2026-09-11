@@ -1,4 +1,4 @@
-; TREE-GRAPH-NODE-E-EDGE-F03 freestanding binary64 transcendental/classification profile
+; RF27-G14-F03 freestanding binary64 transcendental/classification profile
 bits 64
 default rel
 %define NEBO_TRANSCENDENTAL_IMPLEMENTATION 1
@@ -17,10 +17,12 @@ global nebo_math_cos_f64
 global nebo_math_tan_f64
 global nebo_math_exp_f64
 global nebo_math_log_f64
+global nebo_math_log2_f64
 global nebo_math_atan2_f64
 global nebo_math_floor_f64
 global nebo_math_ceil_f64
 global nebo_math_round_f64
+global nebo_math_round_mode_f64
 global nebo_float_classify_f64
 global nebo_float_approx_equal_f64
 
@@ -91,6 +93,24 @@ nebo_math_log_f64:
  mov eax,NEBO_NUMERIC_ERROR_DOMAIN
  ret
 
+nebo_math_log2_f64:
+ ucomisd xmm0,[rel tr_zero]
+ jp .log2_domain
+ jbe .log2_domain
+ sub rsp,16
+ movsd [rsp],xmm0
+ fld1
+ fld qword [rsp]
+ fyl2x
+ fstp qword [rsp+8]
+ movsd xmm0,[rsp+8]
+ add rsp,16
+ xor eax,eax
+ ret
+.log2_domain:
+ mov eax,NEBO_NUMERIC_ERROR_DOMAIN
+ ret
+
 ; xmm0=y xmm1=x
 nebo_math_atan2_f64:
  sub rsp,24
@@ -106,33 +126,44 @@ nebo_math_atan2_f64:
  ret
 
 ; Rounding functions accept finite values with magnitude below 2^63.
+; Every declared mode enforces that domain before changing floating state.
 nebo_math_floor_f64:
- ucomisd xmm0,xmm0
- jp round_domain
- cvttsd2si rax,xmm0
- cvtsi2sd xmm1,rax
- ucomisd xmm0,xmm1
- jae .floor_done
- subsd xmm1,[rel tr_one]
-.floor_done:
- movapd xmm0,xmm1
- xor eax,eax
- ret
-
+ mov edx,NEBO_ROUND_FLOOR
+ jmp nebo_math_round_mode_f64
 nebo_math_ceil_f64:
- ucomisd xmm0,xmm0
- jp round_domain
- cvttsd2si rax,xmm0
- cvtsi2sd xmm1,rax
- ucomisd xmm0,xmm1
- jbe .ceil_done
- addsd xmm1,[rel tr_one]
-.ceil_done:
- movapd xmm0,xmm1
+ mov edx,NEBO_ROUND_CEIL
+ jmp nebo_math_round_mode_f64
+nebo_math_round_f64:
+ mov edx,NEBO_ROUND_NEAREST_EVEN
+
+; xmm0=value, rdx=declared NEBO_ROUND_* mode. Save and restore the caller's
+; complete x87 control word; explicit nearest-even must not inherit ambient RC.
+nebo_math_round_mode_f64:
+ cmp rdx,NEBO_ROUND_TOWARD_ZERO
+ ja round_domain
+ movq rax,xmm0
+ mov rcx,0x7fffffffffffffff
+ and rax,rcx
+ mov rcx,0x43e0000000000000
+ cmp rax,rcx
+ jae round_domain
+ sub rsp,16
+ fnstcw [rsp]
+ movzx eax,word [rsp]
+ and eax,0xf3ff
+ shl edx,10
+ or eax,edx
+ mov [rsp+2],ax
+ movsd [rsp+8],xmm0
+ fld qword [rsp+8]
+ fldcw [rsp+2]
+ frndint
+ fstp qword [rsp+8]
+ fldcw [rsp]
+ movsd xmm0,[rsp+8]
+ add rsp,16
  xor eax,eax
  ret
-
-X87_UNARY nebo_math_round_f64, frndint
 round_domain:
  mov eax,NEBO_NUMERIC_ERROR_DOMAIN
  ret
@@ -181,6 +212,19 @@ nebo_float_approx_equal_f64:
  jp .approx_false
  ucomisd xmm1,xmm1
  jp .approx_false
+ ; Exact IEEE equality handles signed zero and equal infinities before any
+ ; subtraction. A distinct infinity never becomes equal through an infinite
+ ; intermediate tolerance product. NaN inputs were rejected above.
+ ucomisd xmm0,xmm1
+ je .approx_true
+ movq rax,xmm0
+ and rax,[rel tr_abs_mask]
+ cmp rax,[rel tr_exp_mask]
+ jae .approx_false
+ movq rax,xmm1
+ and rax,[rel tr_abs_mask]
+ cmp rax,[rel tr_exp_mask]
+ jae .approx_false
  movapd xmm4,xmm0
  subsd xmm4,xmm1
  movq rax,xmm4

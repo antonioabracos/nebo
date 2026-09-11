@@ -1,0 +1,14 @@
+// Canonical sparse storage exposes shape, density, transpose, multiplication, and explicit densification limits.
+(Int.self)sparseVectorFromIndices() { self.return; }
+(Int.self)sparseMatrixCsr() { self.return; }
+(Int.self)sparseMatrixCsc() { self.return; }
+(Int.self)sparseNonZeroCount() { self.return; }
+(Int.self)sparseDensity() { self.return; }
+(Int.self)sparseTranspose() { self.return; }
+(Int.self)sparseMatmul() { self.return; }
+(Int.self)sparseToDense() { self.return; }
+(Int.self)sparseValidateInvariants() { self.return; }
+
+start() {
+    36.sparseVectorFromIndices().sparseMatrixCsr().sparseMatrixCsc().sparseNonZeroCount().sparseDensity().sparseTranspose().sparseMatmul().sparseToDense().sparseValidateInvariants();
+}

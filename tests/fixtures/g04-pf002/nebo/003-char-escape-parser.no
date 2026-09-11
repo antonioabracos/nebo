@@ -1,0 +1,4 @@
+start() {
+    '\n'.newline_char;
+    '\''.quote_char;
+}

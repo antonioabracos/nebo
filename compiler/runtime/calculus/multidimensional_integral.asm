@@ -11,9 +11,14 @@ global integrate_grid_i64
 ; rdi=cell samples,rsi=count,rdx=cell-volume numerator,rcx=positive denominator,
 ; r8=dimension (2|3),r9=result[status,numerator,denominator,evaluations,dimension].
 integrate_grid_i64:
-    test rdi, rdi
-    jz .domain
     test r9, r9
+    jz .domain_return
+    mov qword [r9], 0
+    mov qword [r9 + 8], 0
+    mov qword [r9 + 16], 0
+    mov qword [r9 + 24], 0
+    mov qword [r9 + 32], 0
+    test rdi, rdi
     jz .domain
     test rsi, rsi
     jz .domain
@@ -46,8 +51,6 @@ integrate_grid_i64:
     mov rax, INTEGRAL_ERR_OVERFLOW
     ret
 .domain:
-    test r9, r9
-    jz .domain_return
     mov qword [r9], INTEGRAL_ERR_DOMAIN
 .domain_return:
     mov rax, INTEGRAL_ERR_DOMAIN

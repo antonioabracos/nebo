@@ -1,0 +1,5 @@
+start() {
+    7.value;
+    value.deferDrop().bad;
+    0;
+}

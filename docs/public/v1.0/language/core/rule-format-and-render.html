@@ -1,0 +1,20 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>format and render</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>format and render</h1><p>Format/interpolation arguments retain lexical evaluation and typed domain checks. Admitted FormatPlan/RenderPlan profiles preserve exact text and node effects; interpolation expressions must be pure.</p><pre>Identity: N1-format-and-render (NORMATIVE_RULE)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: EDITION_1_BOUNDED_NORMATIVE</pre><h2>Syntax or signature</h2><pre>N1-format-and-render — EDITION_1_BOUNDED_NORMATIVE</pre><h2>Scope and constraints</h2><p>Format/interpolation arguments retain lexical evaluation and typed domain checks. Admitted FormatPlan/RenderPlan profiles preserve exact text and node effects; interpolation expressions must be pure.</p><h2>Use and remediation</h2><p>Follow the admitted forms in the individual syntax and operator references. Keep source order and type identity; make imports and capability grants explicit. A native supplemental contract does not introduce source constructors or widen target support.</p><h2>Executed examples</h2><h3>interpolation:silent; expected 23</h3><pre><code>start(){&quot;${17+29}&quot;;23.return;}</code></pre><p>Oracle: {&quot;independent_builds&quot;: 2, &quot;process_exit&quot;: 23, &quot;runtime_sha256&quot;: &quot;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855&quot;}</p><h2>Rejected examples</h2><h3>interpolation:missing-name; expected NEBO-FORMAT-003</h3><pre><code>start(){&quot;${absent}&quot;;23.return;}</code></pre><p>Oracle: {&quot;artifact_publication&quot;: &quot;REJECTED&quot;, &quot;compiler_exit&quot;: 1, &quot;diagnostic&quot;: &quot;NEBO-FORMAT-003&quot;}</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;case_id&quot;: &quot;format:native-format_plan_native&quot;,
+    &quot;category&quot;: &quot;native-owner&quot;,
+    &quot;exit&quot;: 0
+  },
+  {
+    &quot;case_id&quot;: &quot;format:native-g059_runtime_test&quot;,
+    &quot;category&quot;: &quot;native-owner&quot;,
+    &quot;exit&quot;: 0
+  },
+  {
+    &quot;case_id&quot;: &quot;format:native-g060_runtime_test&quot;,
+    &quot;category&quot;: &quot;native-owner&quot;,
+    &quot;exit&quot;: 0
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a> <a href="syntax-program.html">syntax-program</a> <a href="syntax-ordinary_program.html">syntax-ordinary_program</a> <a href="syntax-declaration.html">syntax-declaration</a> <a href="syntax-entry.html">syntax-entry</a></nav><h2>Provenance</h2><ul><li>docs/public/v1.0/language/specification/NORMATIVE-RULE-REGISTRY.tsv — SHA-256 2d2d4324cf615c0970e3dca2f4197cde9e32b445e0337dd8179967dc0cff2d16</li><li>sdk/contracts/stdlib/STDLIB-STABLE-CATALOG.tsv — SHA-256 a66eec0cbb7f0a99f20ae489208f1ba1106cd2c327e475daf406d615e3e55bab</li><li>tests/rf204/G170/interpolation_test.py — SHA-256 54716aea543d4dd9d1b212acd63e1819d4e6b54b6bef5a597f0b50fab2d9a68a</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

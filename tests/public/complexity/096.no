@@ -1,0 +1,7 @@
+// Keeps X11 and Wayland target availability explicit when no host adapter is bound.
+start() {
+    RenderPlan;
+    1406;
+    output.stdout().stderr().target("linux-x86_64").plain().visual().headlessEvent();
+    lifecycle.event("backend.availability").payload("x11-wayland-conditional").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

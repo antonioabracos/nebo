@@ -1,0 +1,1 @@
+start(){if(true){0.return;}else{1.return;}}

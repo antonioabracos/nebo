@@ -1,0 +1,43 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Void</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>Void</h1><p>No-payload result identity; no Void(...) constructor is admitted.</p><pre>Identity: type:Void (INTRINSIC_TYPE)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: NATIVE_DEFINITION_ONLY</pre><h2>Syntax or signature</h2><pre>Void
+Native TypeId: 1 (not SymbolId)</pre><h2>Logical layout</h2><p>Zero logical payload; no storage ownership.</p><h2>Construction and members</h2><p>Effect-only statement result; use explicit Int return at the program entry.</p><h2>Protocols and ownership</h2><p>No payload is owned or borrowed. This identity does not grant a public constructor, Copy implementation or callable drop member.</p><h2>Errors, limits and target</h2><p>Use x86_64 Linux System V ELF for the executed examples. Incompatible types reject before publication; bounds and ownership checks precede an invalid read, mutation or drop. Internal descriptor layouts are not portable ABI promises.</p><h2>Execution boundary</h2><p>This entry defines syntax, metadata or a restricted profile. It does not introduce a callable constructor. The observations below verify its stated boundary; no source execution is inferred from a catalog entry.</p><h2>Negative example applicability</h2><p>No distinct source trigger is asserted for this definition. The associated native/CLI boundary tests below are supplementary evidence, not a fabricated source rejection.</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;case_id&quot;: &quot;compatibility-native:datalayout&quot;,
+    &quot;category&quot;: &quot;target&quot;,
+    &quot;fields&quot;: [
+      0,
+      8,
+      8,
+      8,
+      8,
+      1,
+      1,
+      1,
+      16,
+      8,
+      8,
+      8,
+      8,
+      8,
+      16,
+      1,
+      127,
+      1,
+      819825426,
+      0
+    ],
+    &quot;mutated_fields&quot;: 20,
+    &quot;observed_sha256&quot;: &quot;55227e2060e563b7900c358bd6beedcaddb0064280b3be036a443ab29098afcd&quot;
+  },
+  {
+    &quot;base&quot;: 0,
+    &quot;case_id&quot;: &quot;types:type-1&quot;,
+    &quot;category&quot;: &quot;native-type&quot;,
+    &quot;flags&quot;: 1,
+    &quot;kind&quot;: 1,
+    &quot;observed_sha256&quot;: &quot;698bdc7f7bcf2e25a572179df9363572e0119450db2dcd6c67a54cf5eef03be4&quot;,
+    &quot;type_id&quot;: 1
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a> <a href="type-Bool.html">type-Bool</a> <a href="type-Int.html">type-Int</a> <a href="type-Text.html">type-Text</a> <a href="type-Console.html">type-Console</a></nav><h2>Provenance</h2><ul><li>compiler/semantic/types/type_table.inc — SHA-256 a104864da8c77b21c4186ba1cdcf8d40800c464a8edbcccf31fc1ed57b4cf528</li><li>compiler/semantic/types/type_table.asm — SHA-256 1c04c832d2df1cd5900cf37fa73aa91884c79d7754d1e85c8ce29fa473e227b3</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

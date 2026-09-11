@@ -1,0 +1,7 @@
+generic<T: Comparable> struct Ordered {
+    T.value;
+}
+
+start() {
+    Ordered<Char>('x').value;
+}

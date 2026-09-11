@@ -1,0 +1,8 @@
+NEBO-PROTOCOL-SCHEMA-V1
+protocol Invalid 1
+message Input
+field 1 required i64 value 1
+field 1 optional bool duplicate 1
+message Output
+field 1 required i64 value 1
+rpc 1 unary Call Input Output

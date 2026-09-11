@@ -1,0 +1,2 @@
+(Int.self)work() { Array<Int,2> [4,9].values; Range.exclusive(0,2).indices; 0.total.mutable; for (index in indices) { total += values.at(index); } total.return; }
+start() { 0.work().return; }

@@ -1,0 +1,25 @@
+// These receiver-first callbacks are parsed and evaluated by their bodies;
+// collection algorithms never dispatch on a callback or fixture name.
+(Int.self)addThree() {
+    (self + 3).return;
+}
+
+(Int.self)greaterThanFour() {
+    (self > 4).return;
+}
+
+(Int.self)ascending(Int.other) {
+    (self <=> other).return;
+}
+
+start() {
+    List<Int>.from([5, 2, 2, 7]).items;
+    items.find(greaterThanFour).found;
+    items.contains(7).hasSeven;
+    items.map(addThree).mapped;
+    mapped.filter(greaterThanFour).selected;
+    selected.retain(greaterThanFour);
+    selected.sort(ascending);
+    selected.deduplicate();
+    selected.at(0);
+}

@@ -1,0 +1,11 @@
+start() {
+    "Restore Lifecycle Probe".console();
+    42.console();
+    true.console();
+
+    "First: ".console().scan().first;
+    first.console();
+
+    "Second: ".console().scan().second;
+    second.console();
+}

@@ -5,6 +5,7 @@ default rel
 
 global neboc_runtime_char_literal
 global neboc_runtime_text_byte_length
+global neboc_runtime_text_contract
 global neboc_runtime_text_codepoint_count
 global neboc_runtime_char_codepoint
 global neboc_runtime_bytes_empty
@@ -30,6 +31,14 @@ neboc_runtime_char_literal:
 align 16
 neboc_runtime_text_byte_length:
  mov rax,[rdi+NEBO_RUNTIME_TEXT_DESCRIPTOR_LENGTH_OFFSET]
+ cld
+ ret
+align 16
+neboc_runtime_text_contract:
+ mov eax,NEBO_RUNTIME_TEXT_ABI_VERSION
+ mov edx,NEBO_TEXT_CHAR_BYTES_RUNTIME_TEXT_DESCRIPTOR_SIZE
+ mov ecx,NEBO_RUNTIME_TEXT_ENCODING_UTF8
+ mov r8d,NEBO_RUNTIME_TEXT_FLAGS_LITERAL
  cld
  ret
 align 16

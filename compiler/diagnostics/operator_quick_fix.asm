@@ -12,18 +12,44 @@ NEBOC_ABI_FUNCTION neboc_operator_quick_fix
  test r8,r8
  jz .invalid
  cmp rdi,NEBOC_OPERATOR_DIAG_CATEGORY_RESERVED
- je .eligible
+ je .reserved
  cmp rdi,NEBOC_OPERATOR_DIAG_CATEGORY_REJECTED
  jne .source
+.rejected:
+ cmp rsi,NEBOC_OPERATOR_CATALOG_RESERVED_LAST
+ jbe .source
+ jmp .eligible
+.reserved:
+ cmp rsi,NEBOC_OPERATOR_CATALOG_DOMAIN_LAST
+ jbe .source
+ cmp rsi,NEBOC_OPERATOR_CATALOG_RESERVED_LAST
+ ja .source
 .eligible:
  test rsi,rsi
  jz .source
- cmp rsi,NEBOC_OPERATOR_REGISTRY_ENTRY_COUNT
+ cmp rsi,NEBOC_OPERATOR_CATALOG_ENTRY_COUNT
  ja .source
  test rcx,rcx
  jz .source
  mov qword [r8+NEBOC_OPERATOR_FIX_KIND_OFFSET],NEBOC_OPERATOR_FIX_KIND_REPLACE_SPELLING
- mov qword [r8+NEBOC_OPERATOR_FIX_SAFE_OFFSET],1
+ ; Replacement text is never automatic.  G145 marks only five exact spelling
+ ; substitutions as semantically safe; contextual or intent-changing guidance
+ ; remains explicitly manual.
+ xor eax,eax
+ cmp rsi,NEBOC_OPERATOR_CATALOG_RESERVED_LAST+3
+ je .safe
+ cmp rsi,NEBOC_OPERATOR_CATALOG_RESERVED_LAST+12
+ je .safe
+ cmp rsi,NEBOC_OPERATOR_CATALOG_RESERVED_LAST+13
+ je .safe
+ cmp rsi,NEBOC_OPERATOR_CATALOG_RESERVED_LAST+15
+ je .safe
+ cmp rsi,NEBOC_OPERATOR_CATALOG_RESERVED_LAST+25
+ jne .safe_ready
+.safe:
+ mov eax,1
+.safe_ready:
+ mov [r8+NEBOC_OPERATOR_FIX_SAFE_OFFSET],rax
  mov qword [r8+NEBOC_OPERATOR_FIX_AUTOMATIC_OFFSET],0
  mov [r8+NEBOC_OPERATOR_FIX_REGISTRY_ID_OFFSET],rsi
  mov [r8+NEBOC_OPERATOR_FIX_OFFENDING_CODEPOINT_OFFSET],rdx

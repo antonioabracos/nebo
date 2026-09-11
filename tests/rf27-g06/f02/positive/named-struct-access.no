@@ -1,0 +1,9 @@
+struct Point {
+    Int.x;
+    Int.y;
+}
+
+start() {
+    Point { x: 4, y: 9 }.point;
+    point.y;
+}

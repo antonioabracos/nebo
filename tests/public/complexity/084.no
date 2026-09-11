@@ -1,0 +1,6 @@
+// Serializes plot, graph, and dashboard views without granting renderer authority.
+start() {
+    RenderPlan;
+    1304;
+    protocol.event("console.plot2d").event("console.graph").event("console.dashboard").payload("visual-views").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

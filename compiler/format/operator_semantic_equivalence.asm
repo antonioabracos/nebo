@@ -7,7 +7,9 @@ default rel
 %include "compiler/format/symbol_style_profile.inc"
 
 section .text
-; operator_semantic_equivalence(before_kinds*, after_kinds*, count, out*)
+; operator_semantic_equivalence(before_records*, after_records*, count, out*)
+; Each record is {canonical token kind, semantic payload}.  Source spelling,
+; byte offsets and provenance flags are intentionally excluded.
 NEBOC_ABI_FUNCTION neboc_operator_semantic_equivalence
  test rdi,rdi
  jz .invalid
@@ -22,8 +24,18 @@ NEBOC_ABI_FUNCTION neboc_operator_semantic_equivalence
 .loop:
  cmp r9,rdx
  jae .store
- mov r10,[rdi+r9*8]
- cmp r10,[rsi+r9*8]
+ mov rax,r9
+ shl rax,4
+ mov r10,[rdi+rax+NEBOC_FORMAT_SEMANTIC_TOKEN_KIND_OFFSET]
+ cmp r10,[rsi+rax+NEBOC_FORMAT_SEMANTIC_TOKEN_KIND_OFFSET]
+ jne .source
+ xor r8,r10
+ mov rax,0x100000001b3
+ imul r8,rax
+ mov rax,r9
+ shl rax,4
+ mov r10,[rdi+rax+NEBOC_FORMAT_SEMANTIC_TOKEN_PAYLOAD_OFFSET]
+ cmp r10,[rsi+rax+NEBOC_FORMAT_SEMANTIC_TOKEN_PAYLOAD_OFFSET]
  jne .source
  xor r8,r10
  mov rax,0x100000001b3

@@ -1,342 +1,325 @@
-#!/usr/bin/env python3
-"""Structural migration planner with fail-closed apply and rollback."""
+"""Verified native-token migrations with bounded, recoverable local publication.
+
+The native lexer owns spelling, module/.ni owners own project identities, and
+identical native executables prove the admitted mechanical transformation.
+Preview never publishes. Multi-file apply has a durable undo journal; readers
+must not mistake a sequence of atomic file replacements for snapshot isolation.
+"""
 from __future__ import annotations
-import argparse, base64, hashlib, json, os, tempfile
-from dataclasses import dataclass, asdict
-from pathlib import Path
+import argparse, base64, contextlib, dataclasses, fcntl, hashlib, json, os, secrets, stat, subprocess, sys, tempfile
+from pathlib import Path, PurePosixPath
+from compiler.sdk.token_tooling import TokenModel, LITERAL_KINDS
+from compiler.sdk.operator_tooling import OperatorRegistry
+from compiler.sdk.prelude import PreludeMigration, PreludeInterface, PreludeProfile, TARGET
 
-@dataclass(frozen=True)
-class Token:
-    kind: str; value: str; start: int; end: int
+ROOT = Path(__file__).resolve().parents[2]
+COMPILER = ROOT / 'build/bin/neboc'
+MAX_FILE = 1 << 20
+MAX_TOTAL = 4 << 20
+MAX_FILES = 32
+MAX_JOURNAL = 16 << 20
+class MigrationError(ValueError):
+    def __init__(self, code, detail=''):
+        self.code = 'NEBO_MIG_' + code
+        super().__init__(detail or code)
+def require(ok, code):
+    if not ok: raise MigrationError(code)
+def sha(data): return hashlib.sha256(data).hexdigest()
+def canonical(obj): return json.dumps(obj, sort_keys=True, ensure_ascii=False, separators=(',', ':'), allow_nan=False).encode()+b'\n'
+def unique(pairs):
+    d={}
+    for k,v in pairs:
+        require(k not in d, 'DUPLICATE_FIELD'); d[k]=v
+    return d
+def decode(data): return json.loads(data, object_pairs_hook=unique)
+def relative(name):
+    require(isinstance(name,str) and name and not name.startswith('/') and '\x00' not in name, 'PATH')
+    p=PurePosixPath(name)
+    require(str(p)==name and all(x not in ('.','..') for x in p.parts), 'PATH')
+    return p.parts
 
-@dataclass(frozen=True)
-class Edit:
-    rule_id: str; symbol_id: str; start: int; end: int; before: str; after: str
-
-@dataclass(frozen=True)
-class Conflict:
-    rule_id: str
-    symbol_id: str
-    start: int
-    end: int
-    legacy_form: str
-    reason: str
-    disposition: str = "MANUAL_REVIEW"
-
-def tokenize(source: str) -> list[Token]:
-    """Tokenize enough structure for migration without parsing Nebo semantics."""
-    out=[]; i=0
-    while i < len(source):
-        c=source[i]
-        if c.isspace(): i+=1; continue
-        if source.startswith("//", i):
-            end=source.find("\n", i); end=len(source) if end < 0 else end
-            out.append(Token("comment", source[i:end], i, end)); i=end; continue
-        if source.startswith("/*", i):
-            marker=source.find("*/", i+2); end=len(source) if marker < 0 else marker+2
-            out.append(Token("comment", source[i:end], i, end)); i=end; continue
-        if c in "\"'":
-            quote=c; j=i+1
-            while j < len(source):
-                if source[j]=="\\": j=min(j+2,len(source)); continue
-                if source[j]==quote: j+=1; break
-                j+=1
-            out.append(Token("string", source[i:j], i, j)); i=j; continue
-        if c.isalpha() or c=="_":
-            j=i+1
-            while j < len(source) and (source[j].isalnum() or source[j]=="_"): j+=1
-            out.append(Token("ident", source[i:j], i, j)); i=j; continue
-        if c.isdigit():
-            j=i+1
-            while j < len(source) and (source[j].isalnum() or source[j] in {"_","."}): j+=1
-            out.append(Token("number", source[i:j], i, j)); i=j; continue
-        out.append(Token("punct", c, i, i+1)); i+=1
-    return out
-
-RULES = {
- "NEBO-MIG-IMPORT-001": ("nebo.legacy.io", "nebo.std.console", "nebo://module/std.console"),
- "NEBO-MIG-OPERATOR-001": ("xor", "⊻", "nebo://operator/xor"),
- "NEBO-MIG-TEXT-001": ("Text.bytes", "Text.utf8", "nebo://std/text/utf8"),
- "NEBO-MIG-SCAN-001": ("Scan.line", "Scan.read_line", "nebo://std/scan/read_line"),
- "NEBO-MIG-API-001": ("legacy_fetch", "fetch", "nebo://api/net/fetch"),
-}
-
-CONSOLE_RULE_ID = "NEBO-MIG-CONSOLE-001"
-CONSOLE_SYMBOL_ID = "nebo://prelude/console"
-OPEN_TO_CLOSE = {"(": ")", "[": "]", "{": "}"}
-CLOSE_TO_OPEN = {close: opening for opening, close in OPEN_TO_CLOSE.items()}
-
-def _semantic_tokens(tokens: list[Token]) -> list[Token]:
-    return [token for token in tokens if token.kind not in {"comment", "string"}]
-
-def _old_parts(old: str) -> list[str]:
-    parts=[]; pos=0
-    while pos < len(old):
-        if old[pos].isalnum() or old[pos]=="_":
-            end=pos+1
-            while end < len(old) and (old[end].isalnum() or old[end]=="_"): end+=1
-            parts.append(old[pos:end]); pos=end
-        else: parts.append(old[pos]); pos+=1
-    return parts
-
-def _plan_generic(source: str, all_tokens: list[Token]) -> list[Edit]:
-    tokens=_semantic_tokens(all_tokens); values=[token.value for token in tokens]; edits=[]
-    for rule,(old,new,symbol) in RULES.items():
-        if rule==CONSOLE_RULE_ID: continue
-        parts=_old_parts(old)
-        for index in range(0,len(tokens)-len(parts)+1):
-            if values[index:index+len(parts)]!=parts: continue
-            previous=values[index-1] if index else ""
-            following_index=index+len(parts)
-            following=values[following_index] if following_index<len(values) else ""
-            if old=="xor":
-                if not previous or not following or previous in {"(","[","{",",",";","="} or following in {")","]","}",",",";"}: continue
-            elif old=="nebo.legacy.io":
-                if index==0 or previous!="use": continue
-            elif old in {"Text.bytes","Scan.line"}:
-                if following!="(": continue
-            elif old=="legacy_fetch":
-                if previous=="." or following!="(": continue
-            start=tokens[index].start; end=tokens[index+len(parts)-1].end
-            edits.append(Edit(rule,symbol,start,end,source[start:end],new))
-    return edits
-
-def _previous_noncomment(tokens: list[Token], index: int) -> int|None:
-    index-=1
-    while index>=0:
-        if tokens[index].kind!="comment": return index
-        index-=1
-    return None
-
-def _next_noncomment(tokens: list[Token], index: int) -> int|None:
-    index+=1
-    while index<len(tokens):
-        if tokens[index].kind!="comment": return index
-        index+=1
-    return None
-
-def _matching_close(tokens: list[Token], opening_index: int) -> tuple[int|None,str|None]:
-    stack=[]
-    for index in range(opening_index,len(tokens)):
-        token=tokens[index]
-        if token.kind!="punct": continue
-        if token.value in OPEN_TO_CLOSE: stack.append(token.value); continue
-        if token.value in CLOSE_TO_OPEN:
-            if not stack or stack[-1]!=CLOSE_TO_OPEN[token.value]: return None,"MALFORMED_DELIMITER_NESTING"
-            stack.pop()
-            if not stack: return index,None
-    return None,"UNTERMINATED_LEGACY_CALL"
-
-def _receiver_safe(tokens: list[Token]) -> bool:
-    """Return whether postfix .console() binds to the complete argument."""
-    code=[token for token in tokens if token.kind!="comment"]
-    if not code: return False
-    first=code[0]
-    if first.kind in {"ident","number","string"}: position=1
-    elif first.kind=="punct" and first.value=="(":
-        closing,error=_matching_close(code,0)
-        if error: return False
-        if closing==len(code)-1 and not _receiver_safe(code[1:closing]): return False
-        position=closing+1
-    else: return False
-    while position<len(code):
-        token=code[position]
-        if token.kind=="punct" and token.value==".":
-            if position+1>=len(code) or code[position+1].kind!="ident": return False
-            position+=2; continue
-        if token.kind=="punct" and token.value in {"(","["}:
-            closing,error=_matching_close(code,position)
-            if error: return False
-            position=closing+1; continue
-        return False
-    return True
-
-def _requires_lexical_binding(tokens: list[Token]) -> bool:
-    """Match only product boundaries that cannot bind .console() directly."""
-    code=[token for token in tokens if token.kind!="comment"]
-    if not code: return False
-    if code[0].kind=="punct" and code[0].value=="(":
-        closing,error=_matching_close(code,0)
-        if not error and closing==len(code)-1:
-            return _requires_lexical_binding(code[1:closing])
-    stack=[]; top_level_calls=0
-    for index,token in enumerate(code):
-        if token.kind!="punct": continue
-        if token.value in OPEN_TO_CLOSE:
-            if not stack and token.value in {"(","["}: top_level_calls+=1
-            stack.append(token.value); continue
-        if token.value in CLOSE_TO_OPEN:
-            if stack and stack[-1]==CLOSE_TO_OPEN[token.value]: stack.pop()
-            continue
-        if stack or token.value==".": continue
-        if index==0 and token.value in {"+","-","!","~"}: continue
-        return True
-    return top_level_calls>1
-
-def _render_span(source: str, start: int, end: int, edits: list[Edit]) -> str:
-    out=[]; cursor=start
-    for edit in sorted(edits,key=lambda item:(item.start,item.end,item.rule_id)):
-        if not (start<=edit.start<=edit.end<=end): raise ValueError("NEBO-MIG-0004 edit outside structural span")
-        if cursor>edit.start: raise ValueError("NEBO-MIG-0004 overlapping semantic edits")
-        if source[edit.start:edit.end]!=edit.before: raise ValueError("NEBO-MIG-0003 stale edit precondition")
-        out.extend((source[cursor:edit.start],edit.after)); cursor=edit.end
-    out.append(source[cursor:end]); return "".join(out)
-
-def _top_level_commas(tokens: list[Token]) -> int:
-    stack=[]; commas=0
-    for token in tokens:
-        if token.kind!="punct": continue
-        if token.value in OPEN_TO_CLOSE: stack.append(token.value)
-        elif token.value in CLOSE_TO_OPEN:
-            if stack and stack[-1]==CLOSE_TO_OPEN[token.value]: stack.pop()
-        elif token.value=="," and not stack: commas+=1
-    return commas
-
-def _nested_legacy_call(tokens: list[Token]) -> bool:
-    for index,token in enumerate(tokens):
-        if token.kind!="ident" or token.value!="print": continue
-        previous=_previous_noncomment(tokens,index); following=_next_noncomment(tokens,index)
-        if previous is not None and tokens[previous].value==".": continue
-        if following is not None and tokens[following].value=="(": return True
-    return False
-
-def _console_conflict(source: str, start: int, end: int, reason: str) -> Conflict:
-    return Conflict(CONSOLE_RULE_ID,CONSOLE_SYMBOL_ID,start,end,source[start:end],reason)
-
-def _plan_console(source: str, tokens: list[Token], generic_edits: list[Edit]) -> tuple[list[Edit],list[Conflict],list[tuple[int,int]]]:
-    # Tombstone: `print` is neither current nor legacy Nebo. Preserve the
-    # historical implementation below for traceability, but never dispatch it.
-    return [], [], []
-
-    edits=[]; conflicts=[]; owned_spans=[]; covered_until=-1
-    occupied={token.value for token in tokens if token.kind=="ident"}; binding_index=0
-    for index,token in enumerate(tokens):
-        if token.start<covered_until or token.kind!="ident" or token.value!="print": continue
-        previous=_previous_noncomment(tokens,index)
-        if previous is not None and tokens[previous].value==".": continue
-        opening_index=_next_noncomment(tokens,index)
-        if opening_index is None or tokens[opening_index].value!="(": continue
-        closing_index,delimiter_error=_matching_close(tokens,opening_index)
-        if closing_index is None:
-            end=len(source); conflicts.append(_console_conflict(source,token.start,end,delimiter_error or "MALFORMED_LEGACY_CALL")); owned_spans.append((token.start,end)); covered_until=end; continue
-        opening=tokens[opening_index]; closing=tokens[closing_index]; end=closing.end
-        argument_tokens=tokens[opening_index+1:closing_index]
-        argument_code=[item for item in argument_tokens if item.kind!="comment"]
-        reason=None
-        if not argument_code: reason="ZERO_ARGUMENTS"
-        elif _top_level_commas(argument_tokens): reason="MULTIPLE_ARGUMENTS"
-        elif _nested_legacy_call(argument_tokens): reason="NESTED_LEGACY_CONSOLE_CALL"
-        else:
-            following=_next_noncomment(tokens,closing_index)
-            if following is not None and tokens[following].value=="{": reason="DECLARATION_LIKE_FORM"
-            elif following is not None and tokens[following].value==".": reason="CHAINED_LEGACY_RESULT"
-        if reason:
-            conflicts.append(_console_conflict(source,token.start,end,reason)); owned_spans.append((token.start,end)); covered_until=end; continue
-        contained=[edit for edit in generic_edits if opening.end<=edit.start and edit.end<=closing.start]
-        migrated_argument=_render_span(source,opening.end,closing.start,contained)
-        interstitial=source[token.end:opening.start]
-        leading=source[opening.end:argument_code[0].start]
-        trailing=source[argument_code[-1].end:closing.start]
-        receiver=interstitial+migrated_argument
-        postfix_safe=_receiver_safe(argument_tokens)
-        requires_binding=_requires_lexical_binding(argument_tokens)
-        if not requires_binding:
-            needs_grouping=bool(interstitial or leading or trailing)
-            needs_grouping=needs_grouping or not postfix_safe
-            replacement=f"({receiver}).console()" if needs_grouping else f"{receiver}.console()"
-        else:
-            while True:
-                binding=f"nebo_mig_console_value_{binding_index}"
-                binding_index+=1
-                if binding not in occupied: break
-            occupied.add(binding)
-            line_start=source.rfind("\n",0,token.start)+1
-            line_prefix=source[line_start:token.start]
-            indentation=line_prefix if not line_prefix.strip() else ""
-            replacement=f"({receiver}).{binding};\n{indentation}{binding}.console()"
-        edits.append(Edit(CONSOLE_RULE_ID,CONSOLE_SYMBOL_ID,token.start,closing.end,source[token.start:closing.end],replacement))
-        owned_spans.append((token.start,closing.end)); covered_until=closing.end
-    return edits,conflicts,owned_spans
-
-def plan_text_with_conflicts(source: str) -> tuple[list[Edit],list[Conflict]]:
-    tokens=tokenize(source)
-    # `print` is invalid non-Nebo source, not a migration entry point.  Fail
-    # closed for the complete source before any independent rule can produce a
-    # partial edit around that invalid token.  Comments and strings are trivia
-    # and therefore do not suppress otherwise valid non-print migrations.
-    if any(token.kind=="ident" and token.value=="print" for token in _semantic_tokens(tokens)):
-        return [],[]
-    generic_edits=_plan_generic(source,tokens)
-    console_edits,conflicts,owned_spans=_plan_console(source,tokens,generic_edits)
-    edits=[edit for edit in generic_edits if not any(start<=edit.start and edit.end<=end for start,end in owned_spans)]
-    edits.extend(console_edits); edits.sort(key=lambda item:(item.start,item.end,item.rule_id))
-    for left,right in zip(edits,edits[1:]):
-        if left.end>right.start: raise ValueError("NEBO-MIG-0004 overlapping semantic edits")
-    conflicts.sort(key=lambda item:(item.start,item.end,item.reason))
-    return edits,conflicts
-
-def plan_text(source: str) -> list[Edit]:
-    edits,_=plan_text_with_conflicts(source); return edits
-
-def render(source: str, edits: list[Edit]) -> str:
-    return _render_span(source,0,len(source),edits)
-
-def plan_files(paths: list[Path]) -> list[dict]:
-    result=[]
-    for path in sorted(paths, key=lambda p:str(p)):
-        source=path.read_text(encoding="utf-8"); edits,conflicts=plan_text_with_conflicts(source)
-        result.append({"path":str(path), "sha256_before":hashlib.sha256(source.encode()).hexdigest(),
-                       "edits":[asdict(e) for e in edits], "conflicts":[asdict(c) for c in conflicts],
-                       "candidate":render(source, edits)})
-    return result
-
-def _atomic(path: Path, data: str) -> None:
-    fd,name=tempfile.mkstemp(prefix=".nebo-migrate-", dir=path.parent)
+@contextlib.contextmanager
+def parent_fd(root, name):
+    parts=relative(name)
+    fd=os.open(root,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
     try:
-        with os.fdopen(fd,"w",encoding="utf-8",newline="") as h: h.write(data); h.flush(); os.fsync(h.fileno())
-        os.replace(name,path)
+        for part in parts[:-1]:
+            nxt=os.open(part,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW,dir_fd=fd)
+            os.close(fd);fd=nxt
+        yield fd,parts[-1]
+    finally:os.close(fd)
+def read_at(fd,name,limit=MAX_FILE):
+    child=os.open(name,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK,dir_fd=fd)
+    try:
+        info=os.fstat(child)
+        require(stat.S_ISREG(info.st_mode) and info.st_nlink==1 and info.st_size<=limit,'FILE_BOUND_OR_LINK')
+        with os.fdopen(child,'rb',closefd=False) as f:data=f.read(limit+1)
+        require(len(data)==info.st_size and len(data)<=limit,'FILE_CHANGED')
+        return data,info
+    finally:os.close(child)
+def read(root,name,limit=MAX_FILE):
+    with parent_fd(root,name) as (fd,leaf):return read_at(fd,leaf,limit)
+def atomic(fd,name,data,mode,*,exclusive=False):
+    tmp='.nebo-migrate-'+secrets.token_hex(12)
+    child=os.open(tmp,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,mode,dir_fd=fd)
+    try:
+        with os.fdopen(child,'wb') as f:
+            os.fchmod(f.fileno(),mode); f.write(data); f.flush(); os.fsync(f.fileno())
+        if exclusive:
+            os.link(tmp,name,src_dir_fd=fd,dst_dir_fd=fd,follow_symlinks=False)
+        else:os.replace(tmp,name,src_dir_fd=fd,dst_dir_fd=fd)
+        os.fsync(fd)
     finally:
-        if os.path.exists(name): os.unlink(name)
+        try:os.unlink(tmp,dir_fd=fd)
+        except FileNotFoundError:pass
 
-def apply_plan(plan: list[dict], journal: Path, fail_after: int|None=None) -> None:
-    conflict_count=sum(len(item.get("conflicts",[])) for item in plan)
-    if conflict_count: raise ValueError("NEBO-MIG-1001 manual review required; zero files changed")
-    changed=[item for item in plan if item["edits"]]
-    if not changed: return
-    if journal.exists(): raise ValueError("NEBO-MIG-0005 rollback journal already exists")
-    originals=[]
-    for item in changed:
-        path=Path(item["path"]); source=path.read_text(encoding="utf-8")
-        if hashlib.sha256(source.encode()).hexdigest()!=item["sha256_before"]: raise ValueError("NEBO-MIG-0003 stale file")
-        originals.append((path,source))
-    def journal_data(state: str) -> dict:
-        return {"format":"nebo-migrate-journal-v1","state":state,"files":[{"path":str(p),"sha256":hashlib.sha256(s.encode()).hexdigest(),"content_b64":base64.b64encode(s.encode()).decode()} for p,s in originals]}
-    _atomic(journal,json.dumps(journal_data("PREPARED"),sort_keys=True,indent=2)+"\n")
+def native(arguments,code):
+    # Bounded output files prevent pipe deadlocks and unbounded capture.
+    with tempfile.TemporaryFile() as out,tempfile.TemporaryFile() as err:
+        p=subprocess.run([str(COMPILER),*map(str,arguments)],cwd=ROOT,stdin=subprocess.DEVNULL,
+            stdout=out,stderr=err,timeout=35,env={'PATH':'/usr/bin:/bin','LC_ALL':'C','PYTHONDONTWRITEBYTECODE':'1'})
+        require(out.tell()+err.tell()<=MAX_FILE,'COMPILER_OUTPUT_BOUND')
+        out.seek(0);err.seek(0);data=out.read();diagnostic=err.read()
+    if p.returncode or diagnostic:raise MigrationError(code,diagnostic.decode(errors='replace')[:2048])
+    return data
+
+@dataclasses.dataclass(frozen=True)
+class Edit:
+    rule_id:str; symbol_id:str; start:int; end:int; before:str; after:str
+@dataclasses.dataclass(frozen=True)
+class Conflict:
+    rule_id:str; symbol_id:str; start:int; end:int; legacy_form:str; reason:str
+    disposition:str='MANUAL_REVIEW'
+
+def tokens(data):
+    m=TokenModel.scan(data)
+    require(not m.errors and not m.status,'LEXER')
+    return [t for t in m.tokens if t.kind!=1]
+# Read-only compatibility projection for provenance consumers; no synthetic APIs.
+RULES = {'NEBO-MIG-'+e['id']:(e['lexeme'],e['canonical_ascii'],e['id'])
+         for e in OperatorRegistry().entries if e['cls']=='UNICODE_ALIAS'}
+
+def plan_text_with_conflicts(source):
+    data=source.encode(); registry=OperatorRegistry(); result=[]
+    aliases={e['lexeme']:e for e in registry.entries if e['cls']=='UNICODE_ALIAS'}
+    for t in tokens(data):
+        if t.kind in LITERAL_KINDS:continue
+        spelling=data[t.start:t.end].decode(); e=aliases.get(spelling)
+        if e is None:continue
+        replacement=e['canonical_ascii']; other=tokens(replacement.encode())
+        require(len(other)==1 and other[0].kind==t.kind,'ALIAS_TOKEN_IDENTITY')
+        result.append(Edit('NEBO-MIG-'+e['id'],e['id'],t.start,t.end,spelling,replacement))
+    return result,[]
+def plan_text(source):return plan_text_with_conflicts(source)[0]
+def render(source,edits):
+    data=source.encode(); out=bytearray(); cursor=0
+    for e in sorted(edits,key=lambda e:e.start):
+        require(type(e.start) is int and type(e.end) is int and cursor<=e.start<=e.end<=len(data),'EDIT_SPAN')
+        require(data[e.start:e.end]==e.before.encode(),'EDIT_STALE')
+        out+=data[cursor:e.start]+e.after.encode();cursor=e.end
+    return (out+data[cursor:]).decode()
+def one_edit(before,after,rule,symbol):
+    """Smallest UTF-8 span; no formatting outside the owner-produced edit."""
+    if before==after:return []
+    a,b=before.decode(),after.decode();left=0;right=0
+    while left<min(len(a),len(b)) and a[left]==b[left]:left+=1
+    while right<min(len(a)-left,len(b)-left) and a[-right-1]==b[-right-1]:right+=1
+    end=len(a)-right; b_end=len(b)-right
+    return [Edit(rule,symbol,len(a[:left].encode()),len(a[:end].encode()),a[left:end],b[left:b_end])]
+
+def verification(base,names,profile,workspace=None):
+    from compiler.migration.project import graph, workspace_check
+    if workspace: workspace_check(base,workspace)
+    models={n:tokens((base/n).read_bytes()) for n in names}
+    modules=all(ts and (base/n).read_bytes()[ts[0].start:ts[0].end]==b'module' for n,ts in models.items())
+    infos=graph(base,names) if modules else {}
+    entries=[n for n in names if int(infos[n]['module.startRefs'])] if modules else names
+    require(entries and (not modules or len(entries)==1),'ENTRY')
+    proofs={}
+    with tempfile.TemporaryDirectory(prefix='nebo-migrate-compile-') as directory:
+        out=Path(directory)
+        for i,name in enumerate(entries):
+            args=[base/name]
+            if modules:
+                for unit in names:
+                    if unit!=name:args+=['--unit',base/unit]
+            if profile=='no-prelude':args+=['--no-prelude']
+            native(['check',*args],'VERIFY_SOURCE')
+            asm=out/(str(i)+'.asm');elf=out/(str(i)+'.elf')
+            native(['emit-asm',*args,'-o',asm],'VERIFY_EMIT')
+            native(['build',*args,'-o',elf],'VERIFY_BUILD')
+            payload=elf.read_bytes();require(payload[:4]==b'\x7fELF','VERIFY_ELF')
+            proofs[name]={'elf_sha256':sha(payload),'asm_sha256':sha(asm.read_bytes())}
+    return proofs
+
+def plan_files(paths,*,root=None,profile='keep',from_profile='default',rename=None,module_rename=None,
+               workspace=None,package_rename=None,allow_api_change=False):
+    require(profile in ('keep','default','no-prelude') and from_profile in ('default','no-prelude'),'PROFILE')
+    require(not (rename and module_rename),'RENAME_COMPOSITION')
+    paths=list(map(Path,paths))
+    if root is None:
+        require(paths,'INPUTS');root=Path(os.path.commonpath([str(p.absolute().parent) for p in paths]))
+    root=Path(os.path.abspath(root));require(root.resolve()==root,'PATH')
+    from compiler.migration.project import project_inputs, project_edits
+    if workspace:
+        require(not paths,'WORKSPACE_OR_PATHS')
+        names,metadata=project_inputs(root,workspace)
+    else:
+        names=[p.absolute().relative_to(root).as_posix() for p in paths];metadata=[]
+    require(1<=len(names)<=MAX_FILES and len(names)==len(set(names)),'INPUTS')
+    allnames=sorted([*names,*metadata]);require(len(allnames)==len(set(allnames)),'INPUTS')
+    names=sorted(names);original={};modes={};identities=set()
+    for n in allnames:
+        data,st=read(root,n);identity=(st.st_dev,st.st_ino)
+        require(identity not in identities,'DUPLICATE_INPUT');identities.add(identity)
+        require(stat.S_IMODE(st.st_mode)<=0o777,'FILE_MODE')
+        data.decode('utf-8');original[n]=data;modes[n]=stat.S_IMODE(st.st_mode)
+    require(sum(map(len,original.values()))<=MAX_TOTAL,'TOTAL_BOUND')
+    settings=dict(profile=profile,from_profile=from_profile,rename=rename,module_rename=module_rename,
+        workspace=workspace,package_rename=package_rename,allow_api_change=allow_api_change)
+    edits={n:[] for n in allnames};candidate=dict(original);identities_report=[]
+    with tempfile.TemporaryDirectory(prefix='nebo-migrate-plan-') as raw:
+        stage=Path(raw)
+        for n,d in original.items():(stage/n).parent.mkdir(parents=True,exist_ok=True);(stage/n).write_bytes(d)
+        input_profile=from_profile
+        try:before_proof=verification(stage,names,from_profile,workspace)
+        except MigrationError as error:
+            if error.code!='NEBO_MIG_VERIFY_SOURCE' or profile=='keep' or profile==from_profile:raise
+            # Idempotent profile migration: the target owner must request zero
+            # profile edits before a program already under that profile is admitted.
+            current=PreludeMigration.plan('1','1',[stage/n for n in names],profile=profile)
+            if any(r.collisions or r.before!=r.after for r in current):raise error
+            before_proof=verification(stage,names,profile,workspace);input_profile=profile
+        if rename or module_rename or package_rename:
+            require(allow_api_change,'API_CHANGE_REQUIRES_EXPLICIT_FLAG')
+            edits,identities_report=project_edits(stage,names,metadata,rename,module_rename,package_rename,workspace)
+            for n in allnames:candidate[n]=render(original[n].decode(),edits[n]).encode()
+        else:
+            for n in names:
+                edits[n]=plan_text(original[n].decode());candidate[n]=render(original[n].decode(),edits[n]).encode()
+        # Prelude edits compose after exact aliases, preserving source byte spans.
+        for n,d in candidate.items():(stage/n).write_bytes(d)
+        if profile!='keep':
+            interface=PreludeInterface.load(PreludeProfile.forEdition('1'),TARGET)
+            identities_report.extend({'kind':'prelude','symbol_id':r['symbolId'],'name':r['name']} for r in interface.symbol_records)
+            rows=PreludeMigration.plan('1','1',[stage/n for n in names],profile=profile)
+            require(not any(r.collisions for r in rows),'PRELUDE_COLLISION')
+            for n,row in zip(names,rows):
+                candidate[n]=row.after
+                edits[n]=one_edit(original[n],row.after,'NEBO-MIG-PRELUDE-001','std.prelude:1')
+                (stage/n).write_bytes(row.after)
+        after_proof=verification(stage,names,from_profile if profile=='keep' else profile,workspace)
+        require(before_proof.keys()==after_proof.keys(),'ENTRY_DRIFT')
+        require(all(before_proof[n]['elf_sha256']==after_proof[n]['elf_sha256'] for n in before_proof),'SEMANTIC_DRIFT')
+    files=[dict(path=n,role='source' if n in names else 'metadata',sha256_before=sha(original[n]),
+                sha256_after=sha(candidate[n]),mode=modes[n],edits=[dataclasses.asdict(e) for e in edits[n]],
+                candidate=candidate[n].decode()) for n in allnames]
+    body=dict(schema=2,root=str(root),settings=settings,files=files,identities=identities_report,
+        verification={'before':before_proof,'after':after_proof,'binary_equivalent':True,'executed':False,'input_profile':input_profile,'output_profile':from_profile if profile=='keep' else profile})
+    body['plan_id']=sha(canonical(body));return body
+
+def recompute(plan):
+    require(type(plan) is dict and set(plan)=={'schema','root','settings','files','identities','verification','plan_id'} and plan.get('schema')==2,'PLAN_SCHEMA')
+    require(type(plan['files']) is list and 1<=len(plan['files'])<=MAX_FILES+4,'PLAN_SCHEMA')
+    body={k:v for k,v in plan.items() if k!='plan_id'}
+    require(plan.get('plan_id')==sha(canonical(body)),'PLAN_DIGEST')
+    names=[r['path'] for r in plan['files'] if r['role']=='source'];root=Path(plan['root'])
+    for r in plan['files']:
+        data,st=read(root,r['path']);require(sha(data)==r['sha256_before'] and stat.S_IMODE(st.st_mode)==r['mode'],'PLAN_STALE')
+    current=plan_files([] if plan['settings']['workspace'] else [root/n for n in names],root=root,**plan['settings'])
+    require(current==plan,'PLAN_FORGED_OR_STALE')
+    return current
+
+def apply_plan(plan,journal,*,fail_after=None):
+    require(type(plan) is dict and isinstance(plan.get('root'),str),'PLAN_SCHEMA')
+    root=Path(plan['root']);journal=Path(journal).absolute();name=journal.relative_to(root).as_posix();relative(name)
+    require(name not in {r['path'] for r in plan['files']},'JOURNAL_INPUT_COLLISION')
+    with contextlib.ExitStack() as stack:
+        lock=os.open(root,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+        stack.callback(os.close,lock);fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        plan=recompute(plan)
+        changed=[r for r in plan['files'] if r['sha256_before']!=r['sha256_after']]
+        if not changed:return 0
+        jfd,jleaf=stack.enter_context(parent_fd(root,name))
+        try:os.stat(jleaf,dir_fd=jfd,follow_symlinks=False)
+        except FileNotFoundError:pass
+        else:raise MigrationError('JOURNAL_EXISTS')
+        handles={};rows=[]
+        for r in plan['files']:
+            fd,leaf=stack.enter_context(parent_fd(root,r['path']));data,st=read_at(fd,leaf)
+            require(sha(data)==r['sha256_before'] and stat.S_IMODE(st.st_mode)==r['mode'],'PLAN_STALE')
+            handles[r['path']]=(fd,leaf)
+            if r in changed:rows.append(dict(path=r['path'],mode=r['mode'],before_sha256=sha(data),after_sha256=r['sha256_after'],
+                before=base64.b64encode(data).decode(),after=base64.b64encode(r['candidate'].encode()).decode()))
+        record={'schema':2,'state':'PREPARED','files':rows}
+        atomic(jfd,jleaf,canonical(record),0o600,exclusive=True)
+        published=[]
+        try:
+            for r in changed:
+                for other in plan['files']:
+                    expected=other['sha256_after'] if other['path'] in published else other['sha256_before']
+                    fd,leaf=handles[other['path']];data,st=read_at(fd,leaf)
+                    require(sha(data)==expected and stat.S_IMODE(st.st_mode)==other['mode'],'CONCURRENT_EDIT')
+                fd,leaf=handles[r['path']];atomic(fd,leaf,r['candidate'].encode(),r['mode']);published.append(r['path'])
+                if fail_after==len(published):raise OSError('injected publication failure')
+            record['state']='COMMITTED';atomic(jfd,jleaf,canonical(record),0o600)
+        except BaseException:
+            # Keep PREPARED journal if rollback itself fails or a writer changed an output.
+            for r in rows:
+                fd,leaf=handles[r['path']];data,_=read_at(fd,leaf)
+                require(sha(data) in (r['before_sha256'],r['after_sha256']),'RECOVERY_CONFLICT')
+            for r in reversed(rows):
+                atomic(*handles[r['path']],base64.b64decode(r['before']),r['mode'])
+            os.unlink(jleaf,dir_fd=jfd);os.fsync(jfd);raise
+    return len(changed)
+
+def rollback(journal,*,root=None):
+    journal=Path(journal).absolute();root=Path(root).absolute() if root else journal.parent
+    name=journal.relative_to(root).as_posix()
+    with contextlib.ExitStack() as stack:
+        lock=os.open(root,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW);stack.callback(os.close,lock)
+        fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        jfd,jleaf=stack.enter_context(parent_fd(root,name));raw,_=read_at(jfd,jleaf,MAX_JOURNAL)
+        record=decode(raw);require(type(record) is dict and set(record)=={'schema','state','files'} and type(record['schema']) is int and record['schema']==2 and record['state'] in ('PREPARED','COMMITTED'),'JOURNAL_SCHEMA')
+        rows=record['files'];require(type(rows) is list and 1<=len(rows)<=MAX_FILES+4,'JOURNAL_BOUND')
+        paths=set();prepared=[];total=0
+        for r in rows:
+            require(type(r) is dict and set(r)=={'path','mode','before_sha256','after_sha256','before','after'},'JOURNAL_SCHEMA')
+            require(all(isinstance(r[k],str) for k in ('path','before','after','before_sha256','after_sha256')),'JOURNAL_SCHEMA')
+            relative(r['path']);require(r['path'] not in paths and r['path']!=name,'JOURNAL_PATH');paths.add(r['path'])
+            require(type(r['mode']) is int and 0<=r['mode']<=0o777,'JOURNAL_MODE')
+            before=base64.b64decode(r['before'],validate=True);after=base64.b64decode(r['after'],validate=True)
+            total+=len(before)+len(after)
+            require(max(len(before),len(after))<=MAX_FILE and total<=2*MAX_TOTAL,'JOURNAL_BOUND')
+            require(sha(before)==r['before_sha256'] and sha(after)==r['after_sha256'],'JOURNAL_DIGEST')
+            fd,leaf=stack.enter_context(parent_fd(root,r['path']));data,st=read_at(fd,leaf)
+            require(data in (before,after) and stat.S_IMODE(st.st_mode)==r['mode'],'ROLLBACK_STALE')
+            prepared.append((fd,leaf,before,r['mode']))
+        for fd,leaf,before,mode in prepared:atomic(fd,leaf,before,mode)
+        os.unlink(jleaf,dir_fd=jfd);os.fsync(jfd)
+    return len(prepared)
+
+def main(argv=None):
+    parser=argparse.ArgumentParser(prog='neboc migrate',description='Preview verified source edits; --apply publishes a recoverable local transaction.')
+    parser.add_argument('paths',nargs='*',type=Path);parser.add_argument('--root',type=Path,default=Path.cwd())
+    parser.add_argument('--profile',choices=('keep','default','no-prelude'),default='keep')
+    parser.add_argument('--from-profile',choices=('default','no-prelude'),default='default')
+    parser.add_argument('--rename',help='native ModuleId:SymbolId:newName (decimal IDs)')
+    parser.add_argument('--rename-module');parser.add_argument('--workspace');parser.add_argument('--rename-package')
+    parser.add_argument('--allow-api-change',action='store_true');parser.add_argument('--journal',default='.nebo-migrate-journal.json')
+    mode=parser.add_mutually_exclusive_group();mode.add_argument('--apply',action='store_true');mode.add_argument('--rollback',action='store_true')
+    args=parser.parse_args(argv)
     try:
-        for index,item in enumerate(changed):
-            if fail_after is not None and index==fail_after: raise OSError("injected apply failure")
-            _atomic(Path(item["path"]),item["candidate"])
-        _atomic(journal,json.dumps(journal_data("COMMITTED"),sort_keys=True,indent=2)+"\n")
-    except BaseException:
-        for path,source in originals: _atomic(path,source)
-        if journal.exists(): journal.unlink()
-        raise
-
-def rollback(journal: Path) -> None:
-    data=json.loads(journal.read_text(encoding="utf-8")); originals=[]
-    if data.get("format")!="nebo-migrate-journal-v1": raise ValueError("NEBO-MIG-0006 unsupported rollback journal")
-    for item in data["files"]: originals.append((Path(item["path"]),base64.b64decode(item["content_b64"]).decode()))
-    for path,source in originals: _atomic(path,source)
-    journal.unlink()
-
-def main() -> None:
-    p=argparse.ArgumentParser(prog="neboc migrate"); p.add_argument("paths",nargs="*",type=Path); p.add_argument("--apply",action="store_true"); p.add_argument("--journal",type=Path,default=Path(".nebo-migrate-journal.json")); p.add_argument("--rollback",action="store_true")
-    a=p.parse_args()
-    if a.rollback: rollback(a.journal); print(json.dumps({"state":"ROLLED_BACK"},sort_keys=True)); return
-    plan=plan_files(a.paths); public=[{k:v for k,v in item.items() if k!="candidate"} for item in plan]
-    conflict_count=sum(len(item["conflicts"]) for item in plan)
-    print(json.dumps({"mode":"APPLY" if a.apply else "PREVIEW","files":public,"edits":sum(len(x["edits"]) for x in plan),"conflicts":conflict_count,"manual_review_required":bool(conflict_count)},sort_keys=True,indent=2))
-    if a.apply:
-        if conflict_count: raise SystemExit(2)
-        apply_plan(plan,a.journal)
-if __name__=="__main__": main()
+        require(not Path(args.journal).is_absolute(),'PATH');relative(args.journal)
+        journal=args.root/args.journal
+        if args.rollback:
+            require(not args.paths and not args.workspace and not args.rename and not args.rename_module and not args.rename_package and args.profile=='keep','ROLLBACK_OPTIONS')
+            print(canonical(dict(schema=2,mode='rollback',restored=rollback(journal,root=args.root))).decode(),end='');return 0
+        paths=[p if p.is_absolute() else args.root/p for p in args.paths]
+        plan=plan_files(paths,root=args.root,profile=args.profile,from_profile=args.from_profile,rename=args.rename,
+            module_rename=args.rename_module,workspace=args.workspace,package_rename=args.rename_package,allow_api_change=args.allow_api_change)
+        applied=apply_plan(plan,journal) if args.apply else 0
+        print(canonical(dict(schema=2,mode='apply' if args.apply else 'preview',applied=applied,plan=plan)).decode(),end='');return 0
+    except (ValueError,OSError,RuntimeError,subprocess.SubprocessError) as e:
+        print(canonical(dict(code=getattr(e,'code','NEBO_MIG_INPUT_OR_OWNER'),phase='migration',message=str(e)[:2048])).decode(),end='',file=sys.stderr);return 2
+if __name__=='__main__':raise SystemExit(main())

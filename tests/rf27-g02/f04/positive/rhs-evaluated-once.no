@@ -1,0 +1,6 @@
+start() {
+  40.counter.mutable;
+  2.delta;
+  counter += delta;
+  counter;
+}

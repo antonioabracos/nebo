@@ -1,0 +1,8 @@
+start() {
+    Buffer.zeroed(4).codes;
+    codes.get(0).someZero;
+    codes.get(4).none;
+    someZero.isSome().someZeroTag;
+    none.isNone().noneTag;
+    someZero.unwrapOr(99).return;
+}

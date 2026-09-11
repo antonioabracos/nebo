@@ -1,0 +1,15 @@
+# std.set reference
+
+- [std.set — ∈](symbol-6d6b6ab9478a23e5e503c042.md)
+- [std.set — ∉](symbol-b42706e891f5607a73cb573a.md)
+- [std.set — ∪](symbol-441cd9343bb9792f2a30dd2b.md)
+- [std.set — ∩](symbol-1d25c638f7eae27b1acc7904.md)
+- [std.set — ∖](symbol-e6aac400d0188a0f5f6fd90d.md)
+- [std.set — △](symbol-2dfeb1de31c2d139532b37c1.md)
+- [std.set — ⊆](symbol-ade8cd491b826f12ea982227.md)
+- [std.set — ⊂](symbol-34a695d76228ebdf57e87da4.md)
+- [std.set — ⊇](symbol-69d18df74b95da3e608d10b6.md)
+- [std.set — ⊃](symbol-dc47f7040220d4421244293f.md)
+- [std.set — ×](symbol-2e3812c0b15903b90b76e4a1.md)
+- [std.set — ∅](symbol-65bdc89d6580e8b747fefeb2.md)
+- [std.set — std.set](symbol-eeab7e7f0e257b6a2f13212f.md)

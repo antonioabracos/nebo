@@ -1,0 +1,5 @@
+start() {
+  Option<Int>(Some(4)).source;
+  source.orElse(9).recovered;
+  recovered.get().return;
+}

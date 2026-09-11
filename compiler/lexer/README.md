@@ -6,7 +6,7 @@ Integers: checked signed 64-bit magnitude
 Text: UTF-8 bytes with \\n \\r \\t \\\\ \\" escapes
 Raw/multiline Text: absent
 Line comments: // discarded
-Block comments: rejected
+Block comments: nested trivia, maximum depth 64
 Token payloads: pointer-free
 Fuzz: bounded deterministic corpus
 ```

@@ -1,0 +1,13 @@
+// Grounding keeps claims, contradictions, citations, scopes, and redacted audits explicit.
+(Int.self)knowledgeContext() { self.return; }
+(Int.self)knowledgeVerifyClaim() { self.return; }
+(Int.self)knowledgeDetectContradictions() { self.return; }
+(Int.self)generationGround() { self.return; }
+(Int.self)generationCitations() { self.return; }
+(Int.self)aiPolicyRequireGrounding() { self.return; }
+(Int.self)agentKnowledgeScope() { self.return; }
+(Int.self)groundingAudit() { self.return; }
+
+start() {
+    119.knowledgeContext().knowledgeVerifyClaim().knowledgeDetectContradictions().generationGround().generationCitations().aiPolicyRequireGrounding().agentKnowledgeScope().groundingAudit();
+}

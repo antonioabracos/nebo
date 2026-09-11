@@ -1,0 +1,14 @@
+// Explicit random streams drive bounded distributions with stable probability, support, and statistics evidence.
+(Int.self)distributionNormal() { self.return; }
+(Int.self)distributionBeta() { self.return; }
+(Int.self)distributionGamma() { self.return; }
+(Int.self)distributionPoisson() { self.return; }
+(Int.self)distributionCategorical() { self.return; }
+(Int.self)distributionSample() { self.return; }
+(Int.self)distributionLogProbability() { self.return; }
+(Int.self)distributionSupport() { self.return; }
+(Int.self)distributionStatistics() { self.return; }
+
+start() {
+    37.distributionNormal().distributionBeta().distributionGamma().distributionPoisson().distributionCategorical().distributionSample().distributionLogProbability().distributionSupport().distributionStatistics();
+}

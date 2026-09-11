@@ -1,0 +1,4 @@
+enum Message { Empty, Textual(Text) }
+start() {
+    Message.Textual("bounded").discriminant().return;
+}

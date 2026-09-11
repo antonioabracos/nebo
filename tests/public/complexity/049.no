@@ -1,0 +1,13 @@
+// Simulation-only robot models expose frames, kinematics, planning, and limit checks.
+(Int.self)poseOf() { self.return; }
+(Int.self)transformBetween() { self.return; }
+(Int.self)robotModelLoad() { self.return; }
+(Int.self)robotForwardKinematics() { self.return; }
+(Int.self)robotInverseKinematics() { self.return; }
+(Int.self)trajectoryPlan() { self.return; }
+(Int.self)trajectorySample() { self.return; }
+(Int.self)trajectoryValidate() { self.return; }
+
+start() {
+    109.poseOf().transformBetween().robotModelLoad().robotForwardKinematics().robotInverseKinematics().trajectoryPlan().trajectorySample().trajectoryValidate();
+}

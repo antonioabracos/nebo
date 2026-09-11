@@ -1,0 +1,4 @@
+start() {
+    Tensor<Int>.fromBuffer(notASlice, Tuple.of(2, 3)).tensor;
+    0;
+}

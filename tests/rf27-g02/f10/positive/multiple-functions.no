@@ -1,0 +1,15 @@
+(Int.self)left() {
+    1.return;
+}
+
+(Int.self)right() {
+    2.return;
+}
+
+start() {
+    if (true) {
+        0.left().return;
+    } else {
+        0.right().return;
+    }
+}

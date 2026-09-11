@@ -1,0 +1,9 @@
+(Int.self)subtractFive() {
+    (self - 5).return;
+}
+
+start() {
+    List<Int>.from([17, 23]).items;
+    items.map(subtractFive).mapped;
+    mapped.at(0);
+}

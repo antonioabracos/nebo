@@ -1,0 +1,6 @@
+start() {
+  true.enabled.mutable;
+  if (enabled = false) {
+    enabled;
+  }
+}

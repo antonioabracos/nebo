@@ -1,4 +1,4 @@
-; MACHINE-LEARNING-NEURON-NETWORK-E-MODEL-F01 bounded NEBODB01 v1 header and catalog identity contract.
+; RF46-G32-F01 bounded NEBODB01 v1 header and catalog identity contract.
 bits 64
 default rel
 %include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"

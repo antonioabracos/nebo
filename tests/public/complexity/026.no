@@ -1,0 +1,14 @@
+// Calibration, utility, tail risk, uncertainty, and authenticated reports expose decisions without causal claims.
+(Int.self)forecastCalibrate() { self.return; }
+(Int.self)forecastBrierScore() { self.return; }
+(Int.self)forecastLogScore() { self.return; }
+(Int.self)decisionExpectedUtility() { self.return; }
+(Int.self)decisionChoose() { self.return; }
+(Int.self)riskValueAtRisk() { self.return; }
+(Int.self)riskConditionalValueAtRisk() { self.return; }
+(Int.self)uncertaintyDecompose() { self.return; }
+(Int.self)probabilisticReportCli() { self.return; }
+
+start() {
+    145.forecastCalibrate().forecastBrierScore().forecastLogScore().decisionExpectedUtility().decisionChoose().riskValueAtRisk().riskConditionalValueAtRisk().uncertaintyDecompose().probabilisticReportCli();
+}

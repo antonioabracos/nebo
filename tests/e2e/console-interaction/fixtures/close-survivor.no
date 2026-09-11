@@ -1,0 +1,7 @@
+start() {
+    "Janela A: ".console().a;
+    "Janela B: ".console().b;
+    a.scan().valorA;
+    b.scan().valorB;
+    // Conformance driver closes a; b must continue.
+}

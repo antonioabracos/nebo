@@ -1,0 +1,9 @@
+start() {
+    Buffer.zeroed(4).noise;
+    noise.set(3, 99).noiseOld;
+    noise.freeze().noiseFrozen;
+    Buffer.zeroed(4).packet;
+    packet.set(3, 44).old;
+    packet.freeze().frozen;
+    frozen.at(3).return;
+}

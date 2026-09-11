@@ -1,0 +1,4 @@
+start() {
+    Option<Int>(None()).value;
+    value.unwrapOr().fallback;
+}

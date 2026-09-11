@@ -1,15 +1,17 @@
-; TREE-GRAPH-NODE-E-EDGE-F04 bounded generic Vector<Int|Float,N> runtime
+; RF27-G14-F04 bounded generic Vector<Int|Float,N> runtime
 bits 64
 default rel
 %define NEBO_VECTOR_IMPLEMENTATION 1
 %include "runtime/numeric/vector.inc"
 section .text
 global nebo_vector_i64_copy
+global nebo_vector_i64_filled
 global nebo_vector_i64_at
 global nebo_vector_i64_add
 global nebo_vector_i64_scale
 global nebo_vector_i64_dot
 global nebo_vector_f64_copy
+global nebo_vector_f64_filled
 global nebo_vector_f64_at
 global nebo_vector_f64_add
 global nebo_vector_f64_scale
@@ -32,6 +34,48 @@ vector_validate_two:
 .arg: mov eax,NEBO_NUMERIC_ERROR_ARGUMENT
  ret
 .bounds: mov eax,NEBO_NUMERIC_ERROR_BOUNDS
+ ret
+
+; out rdi, N rsi, value rdx. The constructor owns its output storage.
+nebo_vector_i64_filled:
+ test rdi,rdi
+ jz .ifill_arg
+ test rsi,rsi
+ jz .ifill_bounds
+ cmp rsi,NEBO_NUMERIC_MAX_VECTOR
+ ja .ifill_bounds
+ xor ecx,ecx
+.ifill_loop:
+ mov [rdi+rcx*8],rdx
+ inc rcx
+ cmp rcx,rsi
+ jb .ifill_loop
+ xor eax,eax
+ ret
+.ifill_arg: mov eax,NEBO_NUMERIC_ERROR_ARGUMENT
+ ret
+.ifill_bounds: mov eax,NEBO_NUMERIC_ERROR_BOUNDS
+ ret
+
+; out rdi, N rsi, value xmm0.
+nebo_vector_f64_filled:
+ test rdi,rdi
+ jz .ffill_arg
+ test rsi,rsi
+ jz .ffill_bounds
+ cmp rsi,NEBO_NUMERIC_MAX_VECTOR
+ ja .ffill_bounds
+ xor ecx,ecx
+.ffill_loop:
+ movsd [rdi+rcx*8],xmm0
+ inc rcx
+ cmp rcx,rsi
+ jb .ffill_loop
+ xor eax,eax
+ ret
+.ffill_arg: mov eax,NEBO_NUMERIC_ERROR_ARGUMENT
+ ret
+.ffill_bounds: mov eax,NEBO_NUMERIC_ERROR_BOUNDS
  ret
 
 ; out rdi, input rsi, N rdx

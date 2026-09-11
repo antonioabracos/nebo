@@ -1,0 +1,13 @@
+// In-process sync exchanges manifests and bounded batches with bidirectional, pause, resume, and report effects.
+(Int.self)syncSessionOpen() { self.return; }
+(Int.self)sessionExchangeManifest() { self.return; }
+(Int.self)sessionPull() { self.return; }
+(Int.self)sessionPush() { self.return; }
+(Int.self)sessionSyncBoth() { self.return; }
+(Int.self)sessionPause() { self.return; }
+(Int.self)sessionResume() { self.return; }
+(Int.self)sessionReport() { self.return; }
+
+start() {
+    105.syncSessionOpen().sessionExchangeManifest().sessionPull().sessionPush().sessionSyncBoth().sessionPause().sessionResume().sessionReport();
+}

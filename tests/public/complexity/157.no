@@ -1,0 +1,7 @@
+// Reconciles the RF116 inventory through one receiver-first closeout plan.
+start() {
+    RenderPlan;
+    3601;
+    output.stdout().stderr().target("rf116-closeout").plain().visual().headlessEvent();
+    lifecycle.event("integration-conformance").payload("inventory-reconciliation").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

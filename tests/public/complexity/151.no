@@ -1,0 +1,7 @@
+// Event values and JSONL streams retain deterministic payload identities.
+start() {
+    RenderPlan;
+    3505;
+    output.stdout().stderr().target("console-abi-service").plain().visual().headlessEvent();
+    lifecycle.event("renderer-plugin").payload("event-text-bool-float-none-stream-jsonl").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

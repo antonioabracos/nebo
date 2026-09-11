@@ -1,0 +1,2 @@
+callable closed(Int.value) capture copy 5 { capture.return; }
+start() { closed.call(7).drop().return; }

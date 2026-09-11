@@ -1,0 +1,1 @@
+start() { Tuple.of(1, 2).pair; pair.at<2>().return; }

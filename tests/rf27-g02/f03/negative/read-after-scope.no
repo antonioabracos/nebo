@@ -1,0 +1,8 @@
+start() {
+  if (true) {
+    true.local.mutable;
+  } else {
+    false;
+  }
+  local;
+}

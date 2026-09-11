@@ -28,6 +28,34 @@ NEBOC_ABI_FUNCTION neboc_module_root_discover
  jb .escape
  cmp rcx,NEBOC_MODULE_MAX_TEXT
  ja .limit
+ cmp byte [rdi],'/'
+ jne .bad_source
+ cmp byte [rdx],'/'
+ jne .bad_source
+ mov r9,rdi
+ add r9,rsi
+ jc .invalid_argument
+ mov r10,rdx
+ add r10,rcx
+ jc .invalid_argument
+ mov r11,r8
+ add r11,NEBOC_ROOT_SIZE
+ jc .invalid_argument
+ cmp rdi,r11
+ jae .workspace_range_ok
+ cmp r8,r9
+ jb .invalid_argument
+.workspace_range_ok:
+ cmp rdx,r11
+ jae .root_range_ok
+ cmp r8,r10
+ jb .invalid_argument
+.root_range_ok:
+ cmp rsi,1
+ je .workspace_tail_ok
+ cmp byte [rdi+rsi-1],'/'
+ je .bad_source
+.workspace_tail_ok:
  xor r9d,r9d
 .prefix:
  cmp r9,rsi
@@ -40,6 +68,8 @@ NEBOC_ABI_FUNCTION neboc_module_root_discover
 .prefix_done:
  mov r10,rsi
  cmp rcx,rsi
+ je .relative_ready
+ cmp rsi,1
  je .relative_ready
  cmp byte [rdx+rsi],'/'
  jne .escape

@@ -1,0 +1,7 @@
+// Retention, permission bits, and audit capability are checked before publication.
+start() {
+    RenderPlan;
+    3408;
+    output.stdout().stderr().target("export-privacy-service").plain().visual().headlessEvent();
+    lifecycle.event("privacy-audited").payload("retention-permission-audit-gates").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

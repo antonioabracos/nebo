@@ -1,4 +1,4 @@
-; MACHINE-LEARNING-NEURON-NETWORK-E-MODEL-F03 bounded typed scan/filter/project/limit/collect kernel.
+; RF46-G32-F03 bounded typed scan/filter/project/limit/collect kernel.
 bits 64
 default rel
 %include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"

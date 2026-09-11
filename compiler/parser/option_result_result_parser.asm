@@ -12,6 +12,8 @@ default rel
 extern neboc_result_layout
 
 section .rodata
+rp_n_console: db 'console'
+rp_n_console_len equ $-rp_n_console
 rp_n_result: db 'Result'
 rp_n_result_len equ $-rp_n_result
 rp_n_array: db 'Array'
@@ -40,6 +42,14 @@ rp_n_map_err: db 'mapErr'
 rp_n_map_err_len equ $-rp_n_map_err
 rp_n_and_then: db 'andThen'
 rp_n_and_then_len equ $-rp_n_and_then
+rp_n_expect: db 'expect'
+rp_n_expect_len equ $-rp_n_expect
+rp_n_expect_err: db 'expectErr'
+rp_n_expect_err_len equ $-rp_n_expect_err
+rp_n_unwrap_or: db 'unwrapOr'
+rp_n_unwrap_or_len equ $-rp_n_unwrap_or
+rp_n_or_else: db 'orElse'
+rp_n_or_else_len equ $-rp_n_or_else
 rp_n_drop: db 'drop'
 rp_n_drop_len equ $-rp_n_drop
 rp_n_eager: db 'eager'
@@ -64,6 +74,18 @@ rpe_n_format_hash: db 'formatHash'
 rpe_n_format_hash_len equ $-rpe_n_format_hash
 rpe_n_code: db 'code'
 rpe_n_code_len equ $-rpe_n_code
+rpe_n_message: db 'message'
+rpe_n_message_len equ $-rpe_n_message
+rpe_n_length: db 'length'
+rpe_n_length_len equ $-rpe_n_length
+rpe_n_cause_option: db 'cause'
+rpe_n_cause_option_len equ $-rpe_n_cause_option
+rpe_n_is_some: db 'isSome'
+rpe_n_is_some_len equ $-rpe_n_is_some
+rpe_n_to_diagnostic: db 'toDiagnostic'
+rpe_n_to_diagnostic_len equ $-rpe_n_to_diagnostic
+rpe_n_span: db 'Span'
+rpe_n_span_len equ $-rpe_n_span
 rpe_n_category: db 'category'
 rpe_n_category_len equ $-rpe_n_category
 rpe_n_source: db 'sourceId'
@@ -256,6 +278,30 @@ rp_scan_marker:
  mov rax,rbx
  lea rsi,[rel rp_n_and_then]
  mov edx,rp_n_and_then_len
+ call rp_token_match
+ test eax,eax
+ jnz .mark
+ mov rax,rbx
+ lea rsi,[rel rp_n_expect]
+ mov edx,rp_n_expect_len
+ call rp_token_match
+ test eax,eax
+ jnz .mark
+ mov rax,rbx
+ lea rsi,[rel rp_n_expect_err]
+ mov edx,rp_n_expect_err_len
+ call rp_token_match
+ test eax,eax
+ jnz .mark
+ mov rax,rbx
+ lea rsi,[rel rp_n_unwrap_or]
+ mov edx,rp_n_unwrap_or_len
+ call rp_token_match
+ test eax,eax
+ jnz .mark
+ mov rax,rbx
+ lea rsi,[rel rp_n_or_else]
+ mov edx,rp_n_or_else_len
  call rp_token_match
  test eax,eax
  jnz .mark
@@ -783,7 +829,14 @@ rp_parse_statement:
  xor r15d,r15d
  call rp_peek_kind
  cmp eax,NEBOC_TOKEN_IDENTIFIER
- jne .syntax
+ je .owned_statement
+ xor r13d,r13d
+ call rp_scalar_statement
+ test eax,eax
+ jnz .fail
+ mov r15d,1
+ jmp .suffix
+.owned_statement:
  lea rsi,[rel rp_n_result]
  mov edx,rp_n_result_len
  call rp_match_current
@@ -812,6 +865,14 @@ rp_parse_statement:
  cmp eax,NEBOC_TOKEN_IDENTIFIER
  jne .syntax
  mov r14,[r12+NEBOC_RESULT_CURSOR_OFFSET]
+ lea rsi,[rel rp_n_console]
+ mov edx,rp_n_console_len
+ call rp_match_current
+ test eax,eax
+ jnz .console
+ ; A scalar observation is a scalar; never reuse its old container receiver.
+ test r15d,r15d
+ jnz .syntax
  lea rsi,[rel rp_n_is_ok]
  mov edx,rp_n_is_ok_len
  call rp_match_current
@@ -847,6 +908,26 @@ rp_parse_statement:
  call rp_match_current
  test eax,eax
  jnz .and_then
+ lea rsi,[rel rp_n_expect]
+ mov edx,rp_n_expect_len
+ call rp_match_current
+ test eax,eax
+ jnz .expect
+ lea rsi,[rel rp_n_expect_err]
+ mov edx,rp_n_expect_err_len
+ call rp_match_current
+ test eax,eax
+ jnz .expect_err
+ lea rsi,[rel rp_n_unwrap_or]
+ mov edx,rp_n_unwrap_or_len
+ call rp_match_current
+ test eax,eax
+ jnz .unwrap_or
+ lea rsi,[rel rp_n_or_else]
+ mov edx,rp_n_or_else_len
+ call rp_match_current
+ test eax,eax
+ jnz .or_else
  lea rsi,[rel rp_n_drop]
  mov edx,rp_n_drop_len
  call rp_match_current
@@ -893,6 +974,41 @@ rp_parse_statement:
 .get_err:
  mov ebx,NEBOC_OPTION_RESULT_PLAN_RESULT_TAG_ERR
  mov rax,[r13+NEBOC_RESULT_BIND_ERR_TYPE_OFFSET]
+ jmp .extract
+.expect:
+ mov ebx,NEBOC_OPTION_RESULT_PARSER_RESULT_TAG_OK
+ mov rax,[r13+NEBOC_RESULT_BIND_OK_TYPE_OFFSET]
+ jmp .expect_extract
+.expect_err:
+ mov ebx,NEBOC_OPTION_RESULT_PLAN_RESULT_TAG_ERR
+ mov rax,[r13+NEBOC_RESULT_BIND_ERR_TYPE_OFFSET]
+.expect_extract:
+ mov [rsp+16],rax
+ call .check_live
+ jne .use_after
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call rp_expect
+ test eax,eax
+ jnz .fail
+ call rp_peek_kind
+ cmp eax,NEBOC_TOKEN_TEXT
+ jne .syntax
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_RPAREN
+ call rp_expect
+ test eax,eax
+ jnz .fail
+ cmp [r13+NEBOC_RESULT_BIND_TAG_OFFSET],rbx
+ jne .wrong_side
+ cmp qword [rsp+16],NEBOC_RESULT_TYPE_ARRAY_INT
+ je .callback_type
+ mov rax,[r13+NEBOC_RESULT_BIND_VALUE_OFFSET]
+ mov [r12+NEBOC_RESULT_OUTPUT_VALUE_OFFSET],rax
+ mov rax,[rsp+16]
+ mov [r12+NEBOC_RESULT_OUTPUT_TYPE_OFFSET],rax
+ mov r15d,1
+ jmp .suffix
 .extract:
  mov [rsp+16],rax
  call .check_live
@@ -908,6 +1024,35 @@ rp_parse_statement:
  mov rax,[r13+NEBOC_RESULT_BIND_VALUE_OFFSET]
  mov [r12+NEBOC_RESULT_OUTPUT_VALUE_OFFSET],rax
  mov rax,[rsp+16]
+ mov [r12+NEBOC_RESULT_OUTPUT_TYPE_OFFSET],rax
+ mov r15d,1
+ jmp .suffix
+.unwrap_or:
+ call .check_live
+ jne .use_after
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call rp_expect
+ test eax,eax
+ jnz .fail
+ mov rdi,[r13+NEBOC_RESULT_BIND_OK_TYPE_OFFSET]
+ cmp rdi,NEBOC_RESULT_TYPE_ARRAY_INT
+ je .callback_type
+ call rp_parse_scalar_value
+ test edx,edx
+ jnz .callback_type
+ mov [rsp],rax
+ mov edi,NEBOC_TOKEN_RPAREN
+ call rp_expect
+ test eax,eax
+ jnz .fail
+ mov rax,[rsp]
+ cmp qword [r13+NEBOC_RESULT_BIND_TAG_OFFSET],NEBOC_OPTION_RESULT_PARSER_RESULT_TAG_OK
+ jne .unwrap_ready
+ mov rax,[r13+NEBOC_RESULT_BIND_VALUE_OFFSET]
+.unwrap_ready:
+ mov [r12+NEBOC_RESULT_OUTPUT_VALUE_OFFSET],rax
+ mov rax,[r13+NEBOC_RESULT_BIND_OK_TYPE_OFFSET]
  mov [r12+NEBOC_RESULT_OUTPUT_TYPE_OFFSET],rax
  mov r15d,1
  jmp .suffix
@@ -1020,6 +1165,71 @@ rp_parse_statement:
  mov [r13+NEBOC_RESULT_BIND_VALUE_HASH_OFFSET],rax
  inc qword [r12+NEBOC_RESULT_CALLBACK_COUNT_OFFSET]
  jmp .suffix
+.or_else:
+ call .check_live
+ jne .use_after
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call rp_expect
+ test eax,eax
+ jnz .fail
+ lea rsi,[rel rp_n_eager]
+ mov edx,rp_n_eager_len
+ call rp_match_current
+ test eax,eax
+ jnz .lazy
+ lea rsi,[rel rp_n_ok]
+ mov edx,rp_n_ok_len
+ call rp_match_current
+ test eax,eax
+ jnz .or_ok
+ lea rsi,[rel rp_n_err]
+ mov edx,rp_n_err_len
+ call rp_match_current
+ test eax,eax
+ jz .callback_type
+ mov qword [rsp+8],NEBOC_OPTION_RESULT_PLAN_RESULT_TAG_ERR
+ mov rax,[r13+NEBOC_RESULT_BIND_ERR_TYPE_OFFSET]
+ jmp .or_variant
+.or_ok:
+ mov qword [rsp+8],NEBOC_OPTION_RESULT_PARSER_RESULT_TAG_OK
+ mov rax,[r13+NEBOC_RESULT_BIND_OK_TYPE_OFFSET]
+.or_variant:
+ mov [rsp+16],rax
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call rp_expect
+ test eax,eax
+ jnz .fail
+ cmp qword [rsp+16],NEBOC_RESULT_TYPE_ARRAY_INT
+ je .callback_type
+ mov rdi,[rsp+16]
+ call rp_parse_scalar_value
+ test edx,edx
+ jnz .callback_type
+ mov [rsp],rax
+ mov edi,NEBOC_TOKEN_RPAREN
+ call rp_expect
+ test eax,eax
+ jnz .fail
+ mov edi,NEBOC_TOKEN_RPAREN
+ call rp_expect
+ test eax,eax
+ jnz .fail
+ mov rsi,r13
+ call rp_clone_binding
+ test rax,rax
+ jz .fail
+ mov r13,rax
+ cmp qword [r13+NEBOC_RESULT_BIND_TAG_OFFSET],NEBOC_OPTION_RESULT_PLAN_RESULT_TAG_ERR
+ jne .suffix
+ mov rax,[rsp+8]
+ mov [r13+NEBOC_RESULT_BIND_TAG_OFFSET],rax
+ mov rax,[rsp]
+ mov [r13+NEBOC_RESULT_BIND_VALUE_OFFSET],rax
+ mov [r13+NEBOC_RESULT_BIND_VALUE_HASH_OFFSET],rax
+ inc qword [r12+NEBOC_RESULT_CALLBACK_COUNT_OFFSET]
+ jmp .suffix
 .drop:
  call .check_live
  jne .use_after
@@ -1037,8 +1247,26 @@ rp_parse_statement:
  test r15d,r15d
  jz .use_after
  inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ mov qword [r12+NEBOC_RESULT_RETURNED_OFFSET],1
+ call rp_peek_kind
+ cmp eax,NEBOC_TOKEN_SEMICOLON
+ jne .syntax
+ jmp .complete
+.console:
+ test r15d,r15d
+ jz .syntax
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ call rp_expect_empty_call
+ test eax,eax
+ jnz .fail
+ call rp_record_console
+ test eax,eax
+ jnz .fail
  jmp .suffix
 .complete:
+ test r13,r13
+ jz .scalar_complete
+
  mov rax,[r13+NEBOC_RESULT_BIND_LAYOUT_SIZE_OFFSET]
  cmp rax,[r12+NEBOC_RESULT_LAYOUT_SIZE_OFFSET]
  jbe .align
@@ -1051,6 +1279,9 @@ rp_parse_statement:
 .tag:
  mov rax,[r13+NEBOC_RESULT_BIND_TAG_OFFSET]
  mov [r12+NEBOC_RESULT_ACTIVE_TAG_OFFSET],rax
+ xor eax,eax
+ jmp .done
+.scalar_complete:
  xor eax,eax
  jmp .done
 .wrong_side:
@@ -1156,6 +1387,13 @@ rp_hash:
  imul rax,rcx
  xor rax,[r12+NEBOC_RESULT_ERROR_CAUSE_DEPTH_OFFSET]
  imul rax,rcx
+ mov rdx,NEBOC_RESULT_RETURNED_OFFSET
+.effects:
+ xor rax,[r12+rdx]
+ imul rax,rcx
+ add rdx,8
+ cmp rdx,NEBOC_RESULT_AUTH_END
+ jb .effects
  ret
 
 ; The canonical operator registry promotes `?` to NEBOC_TOKEN_QUESTION and
@@ -1657,10 +1895,36 @@ rpp_parse_program:
  call rp_expect
  test eax,eax
  jnz .syntax
+.call_suffix:
  mov edi,NEBOC_TOKEN_DOT
  call rp_expect
  test eax,eax
  jnz .syntax
+ lea rsi,[rel rp_n_map]
+ mov edx,rp_n_map_len
+ call rp_match_current
+ test eax,eax
+ jnz .call_map
+ lea rsi,[rel rp_n_map_err]
+ mov edx,rp_n_map_err_len
+ call rp_match_current
+ test eax,eax
+ jnz .call_map_err
+ lea rsi,[rel rp_n_and_then]
+ mov edx,rp_n_and_then_len
+ call rp_match_current
+ test eax,eax
+ jnz .call_and_then
+ lea rsi,[rel rp_n_or_else]
+ mov edx,rp_n_or_else_len
+ call rp_match_current
+ test eax,eax
+ jnz .call_or_else
+ lea rsi,[rel rp_n_unwrap_or]
+ mov edx,rp_n_unwrap_or_len
+ call rp_match_current
+ test eax,eax
+ jnz .call_unwrap_or
  lea rsi,[rel rp_n_get]
  mov edx,rp_n_get_len
  call rp_match_current
@@ -1683,6 +1947,123 @@ rpp_parse_program:
  jz .syntax
  mov r15d,4
  jmp .observer
+.call_map:
+ mov ebx,NEBOC_OPTION_RESULT_PARSER_RESULT_TAG_OK
+ mov rax,[r14+NEBOC_RESULT_BIND_OK_TYPE_OFFSET]
+ jmp .call_transform
+.call_map_err:
+ mov ebx,NEBOC_OPTION_RESULT_PLAN_RESULT_TAG_ERR
+ mov rax,[r14+NEBOC_RESULT_BIND_ERR_TYPE_OFFSET]
+.call_transform:
+ mov [rsp+16],rax
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call rp_expect
+ test eax,eax
+ jnz .syntax
+ cmp qword [rsp+16],NEBOC_RESULT_TYPE_ARRAY_INT
+ je .context_error
+ mov rdi,[rsp+16]
+ call rp_parse_scalar_value
+ test edx,edx
+ jnz .context_error
+ mov [rsp],rax
+ mov edi,NEBOC_TOKEN_RPAREN
+ call rp_expect
+ test eax,eax
+ jnz .syntax
+ cmp [r14+NEBOC_RESULT_BIND_TAG_OFFSET],rbx
+ jne .call_suffix
+ mov rax,[rsp]
+ mov [r14+NEBOC_RESULT_BIND_VALUE_OFFSET],rax
+ mov [r14+NEBOC_RESULT_BIND_VALUE_HASH_OFFSET],rax
+ inc qword [r12+NEBOC_RESULT_CALLBACK_COUNT_OFFSET]
+ jmp .call_suffix
+.call_and_then:
+ mov ebx,NEBOC_OPTION_RESULT_PARSER_RESULT_TAG_OK
+ jmp .call_result_transform
+.call_or_else:
+ mov ebx,NEBOC_OPTION_RESULT_PLAN_RESULT_TAG_ERR
+.call_result_transform:
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call rp_expect
+ test eax,eax
+ jnz .syntax
+ lea rsi,[rel rp_n_ok]
+ mov edx,rp_n_ok_len
+ call rp_match_current
+ test eax,eax
+ jnz .call_result_ok
+ lea rsi,[rel rp_n_err]
+ mov edx,rp_n_err_len
+ call rp_match_current
+ test eax,eax
+ jz .context_error
+ mov qword [rsp+8],NEBOC_OPTION_RESULT_PLAN_RESULT_TAG_ERR
+ mov rax,[r14+NEBOC_RESULT_BIND_ERR_TYPE_OFFSET]
+ jmp .call_result_variant
+.call_result_ok:
+ mov qword [rsp+8],NEBOC_OPTION_RESULT_PARSER_RESULT_TAG_OK
+ mov rax,[r14+NEBOC_RESULT_BIND_OK_TYPE_OFFSET]
+.call_result_variant:
+ mov [rsp+16],rax
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call rp_expect
+ test eax,eax
+ jnz .syntax
+ cmp qword [rsp+16],NEBOC_RESULT_TYPE_ARRAY_INT
+ je .context_error
+ mov rdi,[rsp+16]
+ call rp_parse_scalar_value
+ test edx,edx
+ jnz .context_error
+ mov [rsp],rax
+ mov edi,NEBOC_TOKEN_RPAREN
+ call rp_expect
+ test eax,eax
+ jnz .syntax
+ mov edi,NEBOC_TOKEN_RPAREN
+ call rp_expect
+ test eax,eax
+ jnz .syntax
+ cmp [r14+NEBOC_RESULT_BIND_TAG_OFFSET],rbx
+ jne .call_suffix
+ mov rax,[rsp+8]
+ mov [r14+NEBOC_RESULT_BIND_TAG_OFFSET],rax
+ mov rax,[rsp]
+ mov [r14+NEBOC_RESULT_BIND_VALUE_OFFSET],rax
+ mov [r14+NEBOC_RESULT_BIND_VALUE_HASH_OFFSET],rax
+ inc qword [r12+NEBOC_RESULT_CALLBACK_COUNT_OFFSET]
+ jmp .call_suffix
+.call_unwrap_or:
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call rp_expect
+ test eax,eax
+ jnz .syntax
+ mov rdi,[r14+NEBOC_RESULT_BIND_OK_TYPE_OFFSET]
+ cmp rdi,NEBOC_RESULT_TYPE_ARRAY_INT
+ je .context_error
+ call rp_parse_scalar_value
+ test edx,edx
+ jnz .context_error
+ mov [rsp],rax
+ mov edi,NEBOC_TOKEN_RPAREN
+ call rp_expect
+ test eax,eax
+ jnz .syntax
+ mov rax,[rsp]
+ cmp qword [r14+NEBOC_RESULT_BIND_TAG_OFFSET],NEBOC_OPTION_RESULT_PARSER_RESULT_TAG_OK
+ jne .call_unwrap_ready
+ mov rax,[r14+NEBOC_RESULT_BIND_VALUE_OFFSET]
+.call_unwrap_ready:
+ mov [r12+NEBOC_RESULT_OUTPUT_VALUE_OFFSET],rax
+ mov rax,[r14+NEBOC_RESULT_BIND_OK_TYPE_OFFSET]
+ mov [r12+NEBOC_RESULT_OUTPUT_TYPE_OFFSET],rax
+ mov r15d,5
+ jmp .observer_terminal
 .observer_get: mov r15d,1
  jmp .observer
 .observer_get_err: mov r15d,2
@@ -1693,6 +2074,7 @@ rpp_parse_program:
  call rp_expect_empty_call
  test eax,eax
  jnz .syntax
+.observer_terminal:
  mov edi,NEBOC_TOKEN_DOT
  call rp_expect
  test eax,eax
@@ -1723,6 +2105,8 @@ rpp_parse_program:
  jne .continued
  mov qword [r12+NEBOC_RESULT_EARLY_RETURN_OFFSET],1
 .continued:
+ cmp r15d,5
+ je .success
  cmp r15d,1
  je .get
  cmp r15d,2
@@ -2539,6 +2923,24 @@ rpe_scan_error:
  test eax,eax
  jnz .mark
  mov rax,rbx
+ lea rsi,[rel rpe_n_message]
+ mov edx,rpe_n_message_len
+ call rp_token_match
+ test eax,eax
+ jnz .mark
+ mov rax,rbx
+ lea rsi,[rel rpe_n_cause_option]
+ mov edx,rpe_n_cause_option_len
+ call rp_token_match
+ test eax,eax
+ jnz .mark
+ mov rax,rbx
+ lea rsi,[rel rpe_n_to_diagnostic]
+ mov edx,rpe_n_to_diagnostic_len
+ call rp_token_match
+ test eax,eax
+ jnz .mark
+ mov rax,rbx
  lea rsi,[rel rpe_n_category]
  mov edx,rpe_n_category_len
  call rp_token_match
@@ -2706,6 +3108,7 @@ rpe_parse_constructor:
  mov qword [r13+NEBOC_ERROR_BIND_CONTEXT_HASH_OFFSET],0
  mov qword [r13+NEBOC_ERROR_BIND_CONTEXT_COUNT_OFFSET],0
  mov qword [r13+NEBOC_ERROR_BIND_CAUSE_DEPTH_OFFSET],0
+ mov qword [r13+NEBOC_ERROR_BIND_MESSAGE_LENGTH_OFFSET],0
  mov qword [r13+NEBOC_RESULT_BIND_LAYOUT_SIZE_OFFSET],NEBOC_ERROR_LAYOUT_SIZE
  mov qword [r13+NEBOC_RESULT_BIND_LAYOUT_ALIGN_OFFSET],NEBOC_ERROR_LAYOUT_ALIGN
  inc qword [r12+NEBOC_RESULT_ERROR_COUNT_OFFSET]
@@ -2733,7 +3136,14 @@ rpe_parse_statement:
  xor r15d,r15d
  call rp_peek_kind
  cmp eax,NEBOC_TOKEN_IDENTIFIER
- jne .syntax
+ je .owned_statement
+ xor r13d,r13d
+ call rp_scalar_statement
+ test eax,eax
+ jnz .fail
+ mov r15d,1
+ jmp .suffix
+.owned_statement:
  lea rsi,[rel rpe_n_error]
  mov edx,rpe_n_error_len
  call rp_match_current
@@ -2762,6 +3172,14 @@ rpe_parse_statement:
  cmp eax,NEBOC_TOKEN_IDENTIFIER
  jne .syntax
  mov r14,[r12+NEBOC_RESULT_CURSOR_OFFSET]
+ lea rsi,[rel rp_n_console]
+ mov edx,rp_n_console_len
+ call rp_match_current
+ test eax,eax
+ jnz .console
+ ; A scalar observation is a scalar; never reuse its old container receiver.
+ cmp r15d,1
+ je .syntax
  lea rsi,[rel rpe_n_with_context]
  mov edx,rpe_n_with_context_len
  call rp_match_current
@@ -2782,6 +3200,31 @@ rpe_parse_statement:
  call rp_match_current
  test eax,eax
  jnz .observe_code
+ lea rsi,[rel rpe_n_message]
+ mov edx,rpe_n_message_len
+ call rp_match_current
+ test eax,eax
+ jnz .message
+ lea rsi,[rel rpe_n_cause_option]
+ mov edx,rpe_n_cause_option_len
+ call rp_match_current
+ test eax,eax
+ jnz .cause_option
+ lea rsi,[rel rpe_n_is_some]
+ mov edx,rpe_n_is_some_len
+ call rp_match_current
+ test eax,eax
+ jnz .cause_is_some
+ lea rsi,[rel rpe_n_to_diagnostic]
+ mov edx,rpe_n_to_diagnostic_len
+ call rp_match_current
+ test eax,eax
+ jnz .to_diagnostic
+ lea rsi,[rel rpe_n_length]
+ mov edx,rpe_n_length_len
+ call rp_match_current
+ test eax,eax
+ jnz .message_length
  lea rsi,[rel rpe_n_category]
  mov edx,rpe_n_category_len
  call rp_match_current
@@ -2847,11 +3290,27 @@ rpe_parse_statement:
  call rp_expect
  test eax,eax
  jnz .fail
+ call rp_peek_kind
+ cmp eax,NEBOC_TOKEN_TEXT
+ jne .context_integer
+ mov rax,[r12+NEBOC_RESULT_CURSOR_OFFSET]
+ call rp_token_ptr
+ mov rdx,[rax+NEBOC_TOKEN_PAYLOAD_OFFSET]
+ mov [rsp],rdx
+ mov eax,edx
+ mov [rsp+24],rax
+ mov qword [rsp+32],1
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ jmp .context_ready
+.context_integer:
  mov edi,NEBOC_RESULT_TYPE_INT
  call rp_parse_scalar_value
  test edx,edx
  jnz .invariant
  mov [rsp],rax
+ mov qword [rsp+24],0
+ mov qword [rsp+32],0
+.context_ready:
  mov edi,NEBOC_TOKEN_RPAREN
  call rp_expect
  test eax,eax
@@ -2871,6 +3330,12 @@ rpe_parse_statement:
  mov rcx,1099511628211
  imul rax,rcx
  mov [r13+NEBOC_ERROR_BIND_CONTEXT_HASH_OFFSET],rax
+ mov rax,[rsp+24]
+ mov [r13+NEBOC_ERROR_BIND_MESSAGE_LENGTH_OFFSET],rax
+ mov rax,[rsp]
+ mov [r13+NEBOC_ERROR_BIND_CONTEXT_LITERAL_OFFSET],rax
+ mov rax,[rsp+32]
+ mov [r13+NEBOC_ERROR_BIND_CONTEXT_TEXT_OFFSET],rax
  inc qword [r13+NEBOC_ERROR_BIND_CONTEXT_COUNT_OFFSET]
  mov rax,[r13+NEBOC_ERROR_BIND_CONTEXT_COUNT_OFFSET]
  cmp rax,[r12+NEBOC_RESULT_ERROR_CONTEXT_COUNT_OFFSET]
@@ -2929,6 +3394,134 @@ rpe_parse_statement:
  cmp rax,[r12+NEBOC_RESULT_ERROR_CAUSE_DEPTH_OFFSET]
  jbe .suffix
  mov [r12+NEBOC_RESULT_ERROR_CAUSE_DEPTH_OFFSET],rax
+ jmp .suffix
+.message:
+ call .check_live
+ jne .invariant
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ call rp_expect_empty_call
+ test eax,eax
+ jnz .fail
+ mov rax,[r13+NEBOC_ERROR_BIND_CATEGORY_OFFSET]
+ cmp rax,1
+ je .message_filesystem
+ cmp rax,2
+ je .message_process
+ cmp rax,3
+ je .message_network
+ cmp rax,4
+ je .message_http
+ mov eax,5                         ; "error"
+ jmp .message_context
+.message_filesystem:
+ mov eax,10                        ; "filesystem"
+ jmp .message_context
+.message_process:
+ mov eax,7                         ; "process"
+ jmp .message_context
+.message_network:
+ mov eax,7                         ; "network"
+ jmp .message_context
+.message_http:
+ mov eax,4                         ; "http"
+.message_context:
+ mov rdx,[r13+NEBOC_ERROR_BIND_MESSAGE_LENGTH_OFFSET]
+ test rdx,rdx
+ jz .message_ready
+ add rax,2                         ; canonical ": " separator
+ add rax,rdx
+.message_ready:
+ mov [r12+NEBOC_RESULT_OUTPUT_VALUE_OFFSET],rax
+ mov qword [r12+NEBOC_RESULT_OUTPUT_TYPE_OFFSET],NEBOC_RESULT_TYPE_TEXT
+ mov r15d,2                        ; Text value awaiting an observable
+ jmp .suffix
+.message_length:
+ cmp r15d,2
+ jne .invariant
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ call rp_expect_empty_call
+ test eax,eax
+ jnz .fail
+ mov qword [r12+NEBOC_RESULT_OUTPUT_TYPE_OFFSET],NEBOC_RESULT_TYPE_INT
+ mov r15d,1
+ jmp .suffix
+.cause_option:
+ call .check_live
+ jne .invariant
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ call rp_expect_empty_call
+ test eax,eax
+ jnz .fail
+ xor eax,eax
+ cmp qword [r13+NEBOC_ERROR_BIND_CAUSE_OFFSET],0
+ setne al
+ mov [r12+NEBOC_RESULT_OUTPUT_VALUE_OFFSET],rax
+ mov qword [r12+NEBOC_RESULT_OUTPUT_TYPE_OFFSET],NEBOC_RESULT_TYPE_OPTION_ERROR
+ mov r15d,3                        ; Option<Error> awaiting an observer
+ jmp .suffix
+.cause_is_some:
+ cmp r15d,3
+ jne .invariant
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ call rp_expect_empty_call
+ test eax,eax
+ jnz .fail
+ mov qword [r12+NEBOC_RESULT_OUTPUT_TYPE_OFFSET],NEBOC_RESULT_TYPE_BOOL
+ mov r15d,1
+ jmp .suffix
+.to_diagnostic:
+ call .check_live
+ jne .invariant
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call rp_expect
+ test eax,eax
+ jnz .fail
+ lea rsi,[rel rpe_n_span]
+ mov edx,rpe_n_span_len
+ call rp_match_current
+ test eax,eax
+ jz .syntax
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ mov edi,NEBOC_TOKEN_LPAREN
+ call rp_expect
+ test eax,eax
+ jnz .fail
+ mov edi,NEBOC_RESULT_TYPE_INT
+ call rp_parse_scalar_value
+ test edx,edx
+ jnz .invariant
+ mov [rsp],rax
+ mov edi,NEBOC_TOKEN_COMMA
+ call rp_expect
+ test eax,eax
+ jnz .fail
+ mov edi,NEBOC_RESULT_TYPE_INT
+ call rp_parse_scalar_value
+ test edx,edx
+ jnz .invariant
+ mov [rsp+8],rax
+ mov rdx,[rsp]
+ cmp rdx,rax
+ ja .invariant
+ mov edi,NEBOC_TOKEN_RPAREN
+ call rp_expect
+ test eax,eax
+ jnz .fail
+ mov edi,NEBOC_TOKEN_RPAREN
+ call rp_expect
+ test eax,eax
+ jnz .fail
+ mov rsi,r13
+ call rp_clone_binding
+ test rax,rax
+ jz .invariant
+ mov r13,rax
+ inc qword [r12+NEBOC_RESULT_ERROR_COUNT_OFFSET]
+ mov rax,[rsp]
+ mov [r13+NEBOC_ERROR_BIND_SPAN_START_OFFSET],rax
+ mov rax,[rsp+8]
+ mov [r13+NEBOC_ERROR_BIND_SPAN_END_OFFSET],rax
  jmp .suffix
 .format_hash:
  call .check_live
@@ -3008,11 +3601,39 @@ rpe_parse_statement:
  test r15d,r15d
  jz .invariant
  inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ mov qword [r12+NEBOC_RESULT_RETURNED_OFFSET],1
+ call rp_peek_kind
+ cmp eax,NEBOC_TOKEN_SEMICOLON
+ jne .syntax
+ jmp .complete
+.console:
+ test r15d,r15d
+ jz .syntax
+ inc qword [r12+NEBOC_RESULT_CURSOR_OFFSET]
+ call rp_expect_empty_call
+ test eax,eax
+ jnz .fail
+ call rp_record_console
+ test eax,eax
+ jnz .fail
+ ; Publishing consumes the temporary Text observation; implicit start has
+ ; the same zero result as the general Console effect path.
+ cmp r15d,2
+ jne .suffix
+ mov qword [r12+NEBOC_RESULT_OUTPUT_TYPE_OFFSET],NEBOC_RESULT_TYPE_INT
+ mov qword [r12+NEBOC_RESULT_OUTPUT_VALUE_OFFSET],0
+ mov r15d,1
  jmp .suffix
 .complete:
+ test r13,r13
+ jz .scalar_complete
+
  mov qword [r12+NEBOC_RESULT_LAYOUT_SIZE_OFFSET],NEBOC_ERROR_LAYOUT_SIZE
  mov qword [r12+NEBOC_RESULT_LAYOUT_ALIGN_OFFSET],NEBOC_ERROR_LAYOUT_ALIGN
  mov qword [r12+NEBOC_RESULT_ACTIVE_TAG_OFFSET],NEBOC_OPTION_RESULT_PLAN_RESULT_TAG_ERR
+ xor eax,eax
+ jmp .done
+.scalar_complete:
  xor eax,eax
  jmp .done
 .erasure:
@@ -3052,6 +3673,8 @@ rpe_parse_program:
  call rp_peek_kind
  cmp eax,NEBOC_TOKEN_RBRACE
  je .close
+ cmp qword [r12+NEBOC_RESULT_RETURNED_OFFSET],0
+ jne .syntax
  call rpe_parse_statement
  test eax,eax
  jnz .done
@@ -3067,8 +3690,12 @@ rpe_parse_program:
  jne .syntax
  cmp qword [r12+NEBOC_RESULT_ERROR_COUNT_OFFSET],0
  je .invariant
- cmp qword [r12+NEBOC_RESULT_OUTPUT_TYPE_OFFSET],NEBOC_RESULT_TYPE_INT
+ mov rax,[r12+NEBOC_RESULT_OUTPUT_TYPE_OFFSET]
+ cmp rax,NEBOC_RESULT_TYPE_INT
+ je .output_ready
+ cmp rax,NEBOC_RESULT_TYPE_BOOL
  jne .invariant
+.output_ready:
  call rp_cleanup
  call rp_hash
  mov [r12+NEBOC_RESULT_SEMANTIC_HASH_OFFSET],rax
@@ -3096,6 +3723,10 @@ NEBOC_ABI_FUNCTION neboc_result_recognize
  push r14
  push r15
  mov r12,rdi
+ lea rdi,[r12+NEBOC_RESULT_RETURNED_OFFSET]
+ mov ecx,(NEBOC_RESULT_AUTH_END-NEBOC_RESULT_RETURNED_OFFSET)/8
+ xor eax,eax
+ rep stosq
  mov qword [r12+NEBOC_RESULT_FOUND_OFFSET],0
  mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_RESULT_DIAGNOSTIC_OFFSET],0
  mov qword [r12+NEBOC_RESULT_ERROR_TOKEN_OFFSET],0
@@ -3193,6 +3824,8 @@ NEBOC_ABI_FUNCTION neboc_result_recognize
  call rp_peek_kind
  cmp eax,NEBOC_TOKEN_RBRACE
  je .close
+ cmp qword [r12+NEBOC_RESULT_RETURNED_OFFSET],0
+ jne .syntax
  call rp_parse_statement
  test eax,eax
  jnz .done
@@ -3229,5 +3862,178 @@ NEBOC_ABI_FUNCTION neboc_result_recognize
  ret
 .invalid_direct:
  NEBOC_ABI_RETURN_STATUS NEBOC_STATUS_INVALID_ARGUMENT
+
+
+; The same native scalar parser used for container payloads also owns an
+; independent scalar statement. Container values/layouts remain untouched.
+%undef call
+rp_scalar_statement:
+ push rbx
+ call rp_peek_kind
+ mov ebx,NEBOC_RESULT_TYPE_INT
+ cmp eax,NEBOC_TOKEN_INTEGER
+ je .literal
+ mov ebx,NEBOC_RESULT_TYPE_CHAR
+ cmp eax,NEBOC_TOKEN_CHAR
+ je .literal
+ mov ebx,NEBOC_RESULT_TYPE_BOOL
+ cmp eax,NEBOC_TOKEN_KW_TRUE
+ je .literal
+ cmp eax,NEBOC_TOKEN_KW_FALSE
+ jne .syntax
+.literal:
+ mov edi,ebx
+ call rp_parse_scalar_value
+ test edx,edx
+ jnz .syntax
+ mov [r12+NEBOC_RESULT_OUTPUT_VALUE_OFFSET],rax
+ mov [r12+NEBOC_RESULT_OUTPUT_TYPE_OFFSET],rbx
+ xor eax,eax
+ pop rbx
+ ret
+.syntax:
+ mov esi,NEBOC_RESULT_DIAG_SYNTAX
+ call rp_error
+ pop rbx
+ ret
+
+; A typed scalar effect is recorded at its exact source call interval.
+rp_record_console:
+ push rbx
+ mov rax,[r12+NEBOC_RESULT_OUTPUT_TYPE_OFFSET]
+ cmp rax,NEBOC_RESULT_TYPE_INT
+ je .typed
+ cmp rax,NEBOC_RESULT_TYPE_BOOL
+ je .typed
+ cmp rax,NEBOC_RESULT_TYPE_TEXT
+ jne .syntax
+.typed:
+ mov rbx,[r12+NEBOC_RESULT_EFFECT_COUNT_OFFSET]
+ cmp rbx,32
+ jae .limit
+ shl rbx,5
+ lea rbx,[r12+rbx+NEBOC_RESULT_EFFECTS_OFFSET]
+ mov [rbx],rax
+ mov rax,[r12+NEBOC_RESULT_OUTPUT_VALUE_OFFSET]
+ cmp qword [rbx],NEBOC_RESULT_TYPE_TEXT
+ jne .value_ready
+ call rpe_materialize_message
+ test edx,edx
+ jnz .limit
+.value_ready:
+ mov [rbx+8],rax
+ mov rax,r14
+ call rp_token_ptr
+ mov rax,[rax+NEBOC_TOKEN_START_OFFSET]
+ mov [rbx+16],rax
+ mov rax,[r12+NEBOC_RESULT_CURSOR_OFFSET]
+ dec rax
+ call rp_token_ptr
+ mov rax,[rax+NEBOC_TOKEN_END_OFFSET]
+ mov [rbx+24],rax
+ inc qword [r12+NEBOC_RESULT_EFFECT_COUNT_OFFSET]
+ xor eax,eax
+ pop rbx
+ ret
+.limit:
+ mov esi,NEBOC_RESULT_DIAG_LAYOUT
+ call rp_error
+ pop rbx
+ ret
+.syntax:
+ mov esi,NEBOC_RESULT_DIAG_SYNTAX
+ call rp_error
+ pop rbx
+ ret
+
+
+; Fold the native Error message into an owned typed Text constant. Lexer bytes
+; are copied, never inferred from a token hash. The plan remains pointerless.
+; r12=request, r13=live Error; rax=packed length:pool-offset, edx=status.
+rpe_materialize_message:
+ push rbx
+ push r14
+ push r15
+ test r13,r13
+ jz .bad
+ mov r14,[r12+NEBOC_RESULT_TEXT_USED_OFFSET]
+ mov r15,[r12+NEBOC_RESULT_OUTPUT_VALUE_OFFSET]
+ mov rax,r14
+ add rax,r15
+ jc .bad
+ cmp rax,NEBOC_RESULT_TEXT_CAPACITY
+ ja .bad
+ lea rdi,[r12+r14+NEBOC_RESULT_TEXT_BYTES_OFFSET]
+ mov rax,[r13+NEBOC_ERROR_BIND_CATEGORY_OFFSET]
+ lea rsi,[rel rpe_message_error]
+ mov ecx,5
+ cmp rax,1
+ jne .process
+ lea rsi,[rel rpe_message_filesystem]
+ mov ecx,10
+ jmp .base
+.process:
+ cmp rax,2
+ jne .network
+ lea rsi,[rel rpe_message_process]
+ mov ecx,7
+ jmp .base
+.network:
+ cmp rax,3
+ jne .http
+ lea rsi,[rel rpe_message_network]
+ mov ecx,7
+ jmp .base
+.http:
+ cmp rax,4
+ jne .base
+ lea rsi,[rel rpe_message_http]
+ mov ecx,4
+.base:
+ rep movsb
+ mov rcx,[r13+NEBOC_ERROR_BIND_MESSAGE_LENGTH_OFFSET]
+ test rcx,rcx
+ jz .ready
+ cmp qword [r13+NEBOC_ERROR_BIND_CONTEXT_TEXT_OFFSET],1
+ jne .bad
+ mov rdx,[r13+NEBOC_ERROR_BIND_CONTEXT_LITERAL_OFFSET]
+ mov eax,edx
+ cmp rax,rcx
+ jne .bad
+ shr rdx,32
+ add rax,rdx
+ jc .bad
+ cmp rax,[r12+NEBOC_RESULT_LITERAL_LENGTH_OFFSET]
+ ja .bad
+ mov rsi,[r12+NEBOC_RESULT_LITERAL_BYTES_OFFSET]
+ test rsi,rsi
+ jz .bad
+ add rsi,rdx
+ mov word [rdi],0x203a
+ add rdi,2
+ rep movsb
+.ready:
+ mov rax,r14
+ add rax,r15
+ mov [r12+NEBOC_RESULT_TEXT_USED_OFFSET],rax
+ mov rax,r15
+ shl rax,32
+ or rax,r14
+ xor edx,edx
+ jmp .done
+.bad:
+ mov edx,1
+.done:
+ pop r15
+ pop r14
+ pop rbx
+ ret
+
+section .rodata
+rpe_message_error: db 'error'
+rpe_message_filesystem: db 'filesystem'
+rpe_message_process: db 'process'
+rpe_message_network: db 'network'
+rpe_message_http: db 'http'
 
 section .note.GNU-stack noalloc noexec nowrite progbits

@@ -1,0 +1,11 @@
+(Int.self)measure(Int.bias, Slice<Int>.left, Slice<Bool>.right) {
+    (bias + left.length() + right.length()).return;
+}
+(Int.self)work() {
+    Array<Int,2> [1,2].a;
+    Array<Bool,3> [true,false,true].b;
+    a.asSlice().left;
+    b.asSlice().right;
+    self.measure(4,left,right).return;
+}
+start() { 0.work().return; }

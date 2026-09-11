@@ -1,0 +1,3 @@
+(Int.self)owner(){ (Int.self)helper(){ self.return; } self.helper(); self.return; }
+(Int.self)sibling(){ self.helper().return; }
+start(){ 7.sibling().return; }

@@ -54,4 +54,50 @@ nebo_reduce_struct_i64_field_sum:
     mov edx, NEBO_QUANTITY_ERR_OVERFLOW
     ret
 
+; Same validated Matrix/Tensor/Column record traversal with checked product.
+global nebo_reduce_struct_i64_field_product
+nebo_reduce_struct_i64_field_product:
+    cmp rsi, NEBO_REDUCTION_MAX_COUNT
+    ja .product_domain
+    test rsi, rsi
+    jz .product_empty
+    test rdi, rdi
+    jz .product_domain
+    cmp rdx, 8
+    jb .product_domain
+    mov r9, rdx
+    sub r9, 8
+    cmp rcx, r9
+    ja .product_domain
+    mov r9, rdx
+    mov r10, rcx
+    mov r11, r8
+    lea rax, [rdi + r10]
+    xor ecx, ecx
+.product_loop:
+    imul r11, [rax]
+    jo .product_overflow
+    inc rcx
+    cmp rcx, rsi
+    jae .product_done
+    add rax, r9
+    jc .product_overflow
+    jmp .product_loop
+.product_done:
+    mov rax, r11
+    xor edx, edx
+    ret
+.product_empty:
+    mov rax, r8
+    xor edx, edx
+    ret
+.product_domain:
+    xor eax, eax
+    mov edx, NEBO_QUANTITY_ERR_DOMAIN
+    ret
+.product_overflow:
+    xor eax, eax
+    mov edx, NEBO_QUANTITY_ERR_OVERFLOW
+    ret
+
 section .note.GNU-stack noalloc noexec nowrite progbits

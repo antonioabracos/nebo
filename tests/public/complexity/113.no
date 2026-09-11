@@ -1,0 +1,7 @@
+// Terminal progress paths distinguish finish, failure, and cancellation.
+start() {
+    RenderPlan;
+    3104;
+    output.stdout().stderr().target("observability-service").plain().visual().headlessEvent();
+    lifecycle.event("log-progress-timeline").payload("progress-terminal-states").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

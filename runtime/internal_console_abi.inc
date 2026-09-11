@@ -1,15 +1,160 @@
-%ifndef nebo_abi_interno_runtime_assembly_capabilities_e_renderer_plugins_INTERNAL_CONTRACTS_INC
-%define nebo_abi_interno_runtime_assembly_capabilities_e_renderer_plugins_INTERNAL_CONTRACTS_INC 1
-%define NEBO_INTERNAL_ERR_INVALID -22
-%define NEBO_INTERNAL_ERR_BOUNDS -75
-%define abi_interno_runtime_assembly_capabilities_e_renderer_plugins_internal_type_abi_registry_CONTRACT 1
-%define abi_interno_runtime_assembly_capabilities_e_renderer_plugins_options_functions_CONTRACT 1
-%define abi_interno_runtime_assembly_capabilities_e_renderer_plugins_render_functions_CONTRACT 1
-%define abi_interno_runtime_assembly_capabilities_e_renderer_plugins_emit_functions_CONTRACT 1
-%define abi_interno_runtime_assembly_capabilities_e_renderer_plugins_event_stream_functions_CONTRACT 1
-%define abi_interno_runtime_assembly_capabilities_e_renderer_plugins_window_facade_functions_CONTRACT 1
-%define abi_interno_runtime_assembly_capabilities_e_renderer_plugins_effects_capability_registry_CONTRACT 1
-%define abi_interno_runtime_assembly_capabilities_e_renderer_plugins_renderer_plugin_abi_CONTRACT 1
-%define abi_interno_runtime_assembly_capabilities_e_renderer_plugins_portability_no_c_no_libc_CONTRACT 1
-%define abi_interno_runtime_assembly_capabilities_e_renderer_plugins_closeout_CONTRACT 1
+%ifndef NEBO_INTERNAL_CONSOLE_ABI_INC
+%define NEBO_INTERNAL_CONSOLE_ABI_INC 1
+
+; G115 versioned, pointer-free receipt ABI for internal Console renderers.
+%define NEBO_G115_OK 0
+%define NEBO_G115_ERROR_INVALID -22
+%define NEBO_G115_ERROR_BOUNDS -75
+%define NEBO_G115_ERROR_VERSION -76
+%define NEBO_G115_ERROR_CAPABILITY -77
+%define NEBO_G115_ERROR_STATE -78
+%define NEBO_G115_ERROR_ABI -79
+%define NEBO_G115_ERROR_INTEGRITY -80
+%define NEBO_G115_ERROR_UNSUPPORTED -81
+
+; Kept for the P06 compatibility caller while it migrates to the G115 ABI.
+%define NEBO_INTERNAL_ERR_INVALID NEBO_G115_ERROR_INVALID
+%define NEBO_INTERNAL_ERR_BOUNDS NEBO_G115_ERROR_BOUNDS
+
+%define NEBO_G115_REQUEST_VERSION 1
+%define NEBO_G115_PLUGIN_ABI_VERSION 1
+%define NEBO_G115_PLUGIN_LAYOUT_HASH 0x4731313541424931
+%define NEBO_G115_MAX_PAYLOAD_UNITS 4096
+
+%define NEBO_G115_TARGET_HEADLESS 1
+%define NEBO_G115_TARGET_LIVE 2
+
+%define NEBO_G115_CAP_OPTIONS 0x01
+%define NEBO_G115_CAP_RENDER 0x02
+%define NEBO_G115_CAP_EMIT 0x04
+%define NEBO_G115_CAP_EVENT 0x08
+%define NEBO_G115_CAP_WINDOW 0x10
+%define NEBO_G115_CAP_PLUGIN 0x20
+%define NEBO_G115_CAP_WRITE 0x40
+%define NEBO_G115_CAP_ALL 0x7f
+
+%define NEBO_G115_FLAG_PLUGIN_TRUSTED 0x01
+%define NEBO_G115_FLAG_JSONL_NORMALIZED 0x02
+%define NEBO_G115_FLAG_NO_C_NO_LIBC 0x04
+%define NEBO_G115_FLAG_ALL 0x07
+%define NEBO_G115_REQUIRED_FLAGS (NEBO_G115_FLAG_PLUGIN_TRUSTED|NEBO_G115_FLAG_NO_C_NO_LIBC)
+
+%define NEBO_G115_PLUGIN_UNLOADED 0
+%define NEBO_G115_PLUGIN_LOADED 1
+%define NEBO_G115_PLUGIN_ACTIVE 2
+%define NEBO_G115_PLUGIN_CLOSED 3
+
+%define NEBO_G115_MATURITY_INTERNAL_ASSEMBLY_CONSOLE_ABI_GREEN 1
+%define NEBO_G115_MATURITY_MULTITARGET_RENDERER_PLUGIN_GREEN 2
+
+; Borrowed request. Only the optional payload pointer is address-bearing.
+%define NEBO_G115_REQUEST_VERSION_OFFSET 0
+%define NEBO_G115_REQUEST_TARGET_OFFSET 8
+%define NEBO_G115_REQUEST_CAPABILITIES_OFFSET 16
+%define NEBO_G115_REQUEST_EFFECTS_OFFSET 24
+%define NEBO_G115_REQUEST_PAYLOAD_DIGEST_OFFSET 32
+%define NEBO_G115_REQUEST_PAYLOAD_UNITS_OFFSET 40
+%define NEBO_G115_REQUEST_GENERATION_OFFSET 48
+%define NEBO_G115_REQUEST_OWNER_GENERATION_OFFSET 56
+%define NEBO_G115_REQUEST_PLUGIN_ABI_OFFSET 64
+%define NEBO_G115_REQUEST_PLUGIN_LAYOUT_OFFSET 72
+%define NEBO_G115_REQUEST_PLUGIN_ID_OFFSET 80
+%define NEBO_G115_REQUEST_PLUGIN_STATE_OFFSET 88
+%define NEBO_G115_REQUEST_FLAGS_OFFSET 96
+%define NEBO_G115_REQUEST_VALUE_OFFSET 104
+%define NEBO_G115_REQUEST_PAYLOAD_POINTER_OFFSET 112
+%define NEBO_G115_REQUEST_RESERVED_OFFSET 120
+%define NEBO_G115_REQUEST_SIZE 128
+
+; Owned receipt: no pointers, stable 16-qword layout.
+%define NEBO_G115_RECEIPT_OPERATION_OFFSET 0
+%define NEBO_G115_RECEIPT_TARGET_OFFSET 8
+%define NEBO_G115_RECEIPT_RESULT_DIGEST_OFFSET 16
+%define NEBO_G115_RECEIPT_AUDIT_DIGEST_OFFSET 24
+%define NEBO_G115_RECEIPT_CAPABILITIES_OFFSET 32
+%define NEBO_G115_RECEIPT_EFFECTS_OFFSET 40
+%define NEBO_G115_RECEIPT_PAYLOAD_UNITS_OFFSET 48
+%define NEBO_G115_RECEIPT_GENERATION_OFFSET 56
+%define NEBO_G115_RECEIPT_PLUGIN_STATE_OFFSET 64
+%define NEBO_G115_RECEIPT_PLUGIN_HANDLE_OFFSET 72
+%define NEBO_G115_RECEIPT_PLUGIN_ABI_OFFSET 80
+%define NEBO_G115_RECEIPT_PLUGIN_LAYOUT_OFFSET 88
+%define NEBO_G115_RECEIPT_MATURITY_OFFSET 96
+%define NEBO_G115_RECEIPT_VALUE_OFFSET 104
+%define NEBO_G115_RECEIPT_PLUGIN_ID_OFFSET 112
+%define NEBO_G115_RECEIPT_FLAGS_OFFSET 120
+%define NEBO_G115_RECEIPT_SIZE 128
+
+; Exact catalogue order, used as the stable operation identity.
+%define NEBO_G115_OP_EMIT_PLOT2D 1
+%define NEBO_G115_OP_EMIT_TABLE 2
+%define NEBO_G115_OP_EMIT_TEXT 3
+%define NEBO_G115_OP_EMIT_VALUE 4
+%define NEBO_G115_OP_EVENT_MAKE_TEXT 5
+%define NEBO_G115_OP_EVENT_STREAM 6
+%define NEBO_G115_OP_EVENT_STREAM_WRITE_JSONL 7
+%define NEBO_G115_OP_EVENT_VALUE_BOOL 8
+%define NEBO_G115_OP_EVENT_VALUE_FLOAT 9
+%define NEBO_G115_OP_EVENT_VALUE_NONE 10
+%define NEBO_G115_OP_EVENT_VALUE_TEXT 11
+%define NEBO_G115_OP_OPTION_MODEL 12
+%define NEBO_G115_OP_OPTIONS_DEFAULT 13
+%define NEBO_G115_OP_OPTIONS_INIT 14
+%define NEBO_G115_OP_OPTIONS_PLOT_LINE 15
+%define NEBO_G115_OP_OPTIONS_VALIDATE 16
+%define NEBO_G115_OP_OPTIONS_X 17
+%define NEBO_G115_OP_OPTIONS_Y 18
+%define NEBO_G115_OP_PRINT_EVENT 19
+%define NEBO_G115_OP_PRINT_TEXT 20
+%define NEBO_G115_OP_REGISTRY 21
+%define NEBO_G115_OP_RENDER_KV 22
+%define NEBO_G115_OP_RENDER_PLAN_IS_SAFE 23
+%define NEBO_G115_OP_RENDER_PLOT_BAR 24
+%define NEBO_G115_OP_RENDER_PLOT_LINE 25
+%define NEBO_G115_OP_RENDER_PLOT_POINTS 26
+%define NEBO_G115_OP_RENDER_SECTION 27
+%define NEBO_G115_OP_RENDER_SUMMARY 28
+%define NEBO_G115_OP_RENDER_TABLE 29
+%define NEBO_G115_OP_RENDER_TEXT 30
+%define NEBO_G115_OP_WRITE_STDOUT 31
+%define NEBO_G115_OPERATION_COUNT 31
+
+%define NEBO_G115_PLUGIN_OP_LOAD 40
+%define NEBO_G115_PLUGIN_OP_CALL 41
+%define NEBO_G115_PLUGIN_OP_UNLOAD 42
+
+%ifndef NEBO_G115_CONSOLE_ABI_IMPLEMENTATION
+extern nebo_console_emit_plot2d
+extern nebo_console_emit_table
+extern nebo_console_emit_text
+extern nebo_console_emit_value
+extern nebo_console_event_make_text
+extern nebo_console_event_stream
+extern nebo_console_event_stream_write_jsonl
+extern nebo_console_event_value_bool
+extern nebo_console_event_value_float
+extern nebo_console_event_value_none
+extern nebo_console_event_value_text
+extern nebo_console_options_plot_line
+extern nebo_console_options_x
+extern nebo_console_options_y
+extern nebo_console_print_event
+extern nebo_console_print_text
+extern nebo_console_render_kv
+extern nebo_console_render_plot_bar
+extern nebo_console_render_plot_line
+extern nebo_console_render_plot_points
+extern nebo_console_render_section
+extern nebo_console_render_summary
+extern nebo_console_render_table
+extern nebo_console_render_text
+extern nebo_console_write_stdout
+extern nebo_g115_abi_registry_snapshot
+extern nebo_g115_capability_registry_validate
+extern nebo_g115_observation_commit
+extern nebo_g115_renderer_plugin_load
+extern nebo_g115_renderer_plugin_call
+extern nebo_g115_renderer_plugin_unload
+%endif
+
 %endif

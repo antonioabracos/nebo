@@ -1,0 +1,2 @@
+generic<T> (T.value)hold() where T: Copy { value.return; }
+start() { 41.hold(); }

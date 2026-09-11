@@ -1,0 +1,4 @@
+start() {
+    Option<Int>(Some(1)).value;
+    Option<Int>(None()).value;
+}

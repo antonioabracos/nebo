@@ -1,0 +1,2 @@
+// Independent atomic runtime case.
+start() { Int.scan().value; value.console(); 0.return; }

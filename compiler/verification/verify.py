@@ -37,11 +37,20 @@ class OptimizationPass:
     required: tuple[str, ...] = ("validated-ir",)
     preserved: tuple[str, ...] = ("types", "effects", "ownership", "origins")
 
+    @classmethod
+    def new(cls, name: str, transform: Callable[[IrModule], IrModule]) -> "OptimizationPass":
+        return cls(name, 1, transform)
+
     def verify(self, before: IrModule, after: IrModule) -> VerificationResult:
         return verify_equivalence(before, after)
 
-    def fuzz(self, corpus: Iterable[tuple[IrModule, IrModule]]) -> tuple[VerificationResult, ...]:
-        return tuple(verify_equivalence(before, after) for before, after in corpus)
+    def fuzz(
+        self, corpus: Iterable[IrModule] | Iterable[tuple[IrModule, IrModule]],
+        generator: Callable[[IrModule], IrModule] | None = None,
+    ) -> tuple[VerificationResult, ...]:
+        if generator is not None:
+            return tuple(verify_equivalence(before, generator(before)) for before in corpus)  # type: ignore[arg-type]
+        return tuple(verify_equivalence(before, after) for before, after in corpus)  # type: ignore[misc]
 
 
 def _evaluate(module: IrModule, arguments: dict[int, int], max_steps: int = 1_000_000) -> int:
@@ -103,6 +112,7 @@ class Pipeline:
     def __init__(self) -> None:
         self._passes: list[OptimizationPass] = []
         self._last_results: tuple[VerificationResult, ...] = ()
+        self._last_input: IrModule | None = None
 
     def add(self, optimization_pass: OptimizationPass) -> None:
         if not optimization_pass.name or optimization_pass.version != 1 or any(item.name == optimization_pass.name for item in self._passes):
@@ -110,6 +120,7 @@ class Pipeline:
         self._passes.append(optimization_pass)
 
     def run(self, module: IrModule) -> IrModule:
+        self._last_input = module
         current = module
         results = []
         for optimization_pass in self._passes:
@@ -134,8 +145,14 @@ class Pipeline:
             current = candidate
         return None
 
-    def determinism_report(self, module: IrModule) -> str:
+    def determinism_report(self, module: IrModule | None = None) -> str:
+        module = module or self._last_input
+        if module is None:
+            raise IrError("NG46_F0601", "pipeline has no input for determinism report")
         first = self.run(module).serialize()
         second = self.run(module).serialize()
         status = "PASS" if first == second else "DIVERGED"
         return f"pipeline-determinism={status}\nresult-sha256={hashlib.sha256(first).hexdigest()}\n"
+
+    bisectFailure = bisect_failure
+    determinismReport = determinism_report

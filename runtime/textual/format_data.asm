@@ -23,6 +23,7 @@ global lint_text
 %define CONTRACT    1
 %define INTERNAL    2
 %define EXTERNAL    3
+%define PUBLIC      4
 
 section .text
 
@@ -33,6 +34,8 @@ format_front_state:
     cmp rdi, 44
     ja .invalid
     mov eax, CONTRACT
+    cmp rdi, 35
+    jae .public
     cmp rdi, 21
     je .external
     cmp rdi, 22
@@ -75,6 +78,9 @@ format_front_state:
     ret
 .external:
     mov eax, EXTERNAL
+    ret
+.public:
+    mov eax, PUBLIC
     ret
 .invalid:
     mov eax, INVALID
@@ -190,8 +196,6 @@ format_detect:
 ; quotes are accepted and delimiters/newlines inside quotes are ignored.
 delimited_scan:
     xor eax, eax
-    xor r10d, r10d
-    xor r11d, r11d
     test rsi, rsi
     jz .delim_ok_empty
     cmp rsi, 4096
@@ -209,6 +213,8 @@ delimited_scan:
     mov qword [rsp - 16], 0      ; total fields
     mov qword [rsp - 24], 0      ; records
     mov qword [rsp - 32], 1      ; current fields
+    mov qword [rsp - 40], 1      ; at field start
+    mov qword [rsp - 48], 0      ; just closed a quoted field
     xor r9d, r9d
 .delim_loop:
     cmp r9, rsi
@@ -217,7 +223,7 @@ delimited_scan:
     cmp r8b, '"'
     jne .delim_not_quote
     cmp qword [rsp - 8], 0
-    je .delim_open_quote
+    je .delim_open_quote_check
     lea r10, [r9 + 1]
     cmp r10, rsi
     jae .delim_close_quote
@@ -227,19 +233,39 @@ delimited_scan:
     jmp .delim_loop
 .delim_open_quote:
     mov qword [rsp - 8], 1
+    mov qword [rsp - 40], 0
+    mov qword [rsp - 48], 0
     inc r9
     jmp .delim_loop
+.delim_open_quote_check:
+    cmp qword [rsp - 40], 1
+    jne .delim_syntax
+    jmp .delim_open_quote
 .delim_close_quote:
     mov qword [rsp - 8], 0
+    mov qword [rsp - 48], 1
     inc r9
     jmp .delim_loop
 .delim_not_quote:
     cmp qword [rsp - 8], 0
     jne .delim_next
+    cmp qword [rsp - 48], 0
+    je .delim_classify
     cmp r8b, dl
     je .delim_field
     cmp r8b, 10
     je .delim_record
+    cmp r8b, 13
+    je .delim_record
+    jmp .delim_syntax
+.delim_classify:
+    cmp r8b, dl
+    je .delim_field
+    cmp r8b, 10
+    je .delim_record
+    cmp r8b, 13
+    je .delim_record
+    mov qword [rsp - 40], 0
 .delim_next:
     inc r9
     jmp .delim_loop
@@ -248,6 +274,8 @@ delimited_scan:
     mov r10, [rsp - 32]
     cmp r10, rcx
     ja .delim_limit
+    mov qword [rsp - 40], 1
+    mov qword [rsp - 48], 0
     inc r9
     jmp .delim_loop
 .delim_record:
@@ -255,12 +283,25 @@ delimited_scan:
     add [rsp - 16], r10
     inc qword [rsp - 24]
     mov qword [rsp - 32], 1
+    mov qword [rsp - 40], 1
+    mov qword [rsp - 48], 0
+    cmp r8b, 13
+    jne .delim_record_advance
+    lea r10, [r9 + 1]
+    cmp r10, rsi
+    jae .delim_record_advance
+    cmp byte [rdi + r10], 10
+    jne .delim_record_advance
+    inc r9
+.delim_record_advance:
     inc r9
     jmp .delim_loop
 .delim_end:
     cmp qword [rsp - 8], 0
     jne .delim_syntax
     cmp byte [rdi + rsi - 1], 10
+    je .delim_return
+    cmp byte [rdi + rsi - 1], 13
     je .delim_return
     mov r10, [rsp - 32]
     add [rsp - 16], r10
@@ -669,6 +710,7 @@ lint_text:
 .lint_ok:
     xor eax, eax
     ret
+
 .lint_empty:
     xor eax, eax
     mov edx, 1
@@ -679,3 +721,5 @@ lint_text:
 .lint_limit:
     mov eax, LIMIT
     ret
+
+section .note.GNU-stack noalloc noexec nowrite progbits

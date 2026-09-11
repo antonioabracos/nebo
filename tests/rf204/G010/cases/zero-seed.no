@@ -1,0 +1,2 @@
+// Zero is ordinary source data, independent of the explicit process return.
+start(){0;Table.fromColumns([Tuple.of("age",Column<Int>.from([17]))]).table;Dataset.fromTables([table]).dataset;dataset.collect().rows;rows.at(0).get("age").expect("age").console();0.return;}

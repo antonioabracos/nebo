@@ -43,6 +43,9 @@ global nebo_runtime_live_scan_roundtrip
 global nebo_runtime_live_console_set_title
 global nebo_runtime_live_console_set_icon
 global nebo_runtime_live_console_metadata_snapshot
+global nebo_runtime_live_available
+global nebo_runtime_live_input_security
+global nebo_runtime_live_input_wipe
 
 %define SYS_READ 0
 %define SYS_CLOSE 3
@@ -139,6 +142,7 @@ live_submission_context: resb NEBO_SUBMISSION_CONTEXT_SIZE
 live_native_bridge: resb NEBO_NATIVE_INPUT_BRIDGE_SIZE
 live_editor_ptr: resq 1
 live_input_ready: resq 1
+live_input_security: resq 1
 live_chrome_region: resd 1
 live_chrome_action: resd 1
 live_resize_direction_value: resd 1
@@ -146,6 +150,36 @@ live_pointer_x: resq 1
 live_pointer_y: resq 1
 
 section .text
+; Internal acquisition bridge: zero means a usable local display, one means
+; no display (the caller may use stdin); other values are real backend errors.
+nebo_runtime_live_available:
+ jmp live_adapter_prepare
+
+nebo_runtime_live_input_security:
+ mov [rel live_input_security],rdi
+ ret
+
+nebo_runtime_live_input_wipe:
+ ; The editor arena belongs to one synchronous acquisition. A new anonymous
+ ; console can reuse input slot numbers; stale resolved editor handles must
+ ; not be mistaken for the new registry's pending input.
+ lea rdi,[rel live_editors]
+ mov ecx,NEBO_LIVE_INPUT_CAPACITY*NEBO_TEXT_EDIT_RECORD_SIZE/8
+ xor eax,eax
+ cld
+ rep stosq
+ mov qword [rel live_editor_ptr],0
+ mov qword [rel live_input_ready],0
+ lea rdi,[rel live_editor_text]
+ mov ecx,NEBO_LIVE_INPUT_CAPACITY*NEBO_LIVE_INPUT_TEXT_STRIDE/8
+ xor eax,eax
+ cld
+ rep stosq
+ lea rdi,[rel live_submission_values]
+ mov ecx,NEBO_LIVE_INPUT_CAPACITY*NEBO_LIVE_INPUT_TEXT_STRIDE/8
+ rep stosq
+ ret
+
 ; Initialize the bounded metadata store and default geometry exactly once.
 live_metadata_init:
  cmp qword [rel live_metadata_initialized],0
@@ -423,6 +457,8 @@ nebo_runtime_live_finalize:
  test rax,rax
  jz .final_bad
  mov [rel live_document],rax
+ cmp qword [rel live_state],NEBO_LIVE_STATE_CLOSED
+ je .final_headless
  mov rdi,r12
  call live_adapter_prepare
  cmp eax,NEBO_LIVE_STATUS_HEADLESS
@@ -687,6 +723,12 @@ live_present_document:
  call live_metadata_fill_config
  mov rdi,r12
  mov rsi,r13
+ ; No-echo/security input is never sent to the renderer. Semantic validation
+ ; still consumes the immutable native submission through the caller bridge.
+ test qword [rel live_input_security],1|2|4|16|64
+ jz .render_editor_ready
+ xor esi,esi
+.render_editor_ready:
  lea rdx,[rel live_surface]
  mov rcx,[rel live_surface_pixels]
  mov r8,[rel live_surface_capacity]

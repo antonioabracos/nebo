@@ -1,0 +1,2 @@
+// Supply-chain payload: compare native effects after inventory, archive and rebuild.
+start(){List<Int>.from([73]).left;List<Int>.from([31,138]).right;(left.at(0)+right.at(1)).return;}

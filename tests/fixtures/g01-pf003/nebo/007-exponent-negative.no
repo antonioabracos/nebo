@@ -1,0 +1,4 @@
+start() {
+    1e2;
+    0.return;
+}

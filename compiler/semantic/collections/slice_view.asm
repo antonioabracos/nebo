@@ -70,6 +70,10 @@ NEBOC_ABI_FUNCTION neboc_slice_create
  mov rax,[r12+NEBOC_AR_BINDING_COUNT_OFFSET]
  mov [rbx+NEBOC_AR_BIND_STEP_OFFSET],rax
  mov qword [rbx+NEBOC_AR_BIND_FLAGS_OFFSET],NEBOC_AR_SLICE_LIVE
+ mov rax,[r12+NEBOC_AR_CURSOR_OFFSET]
+ inc rax
+ mov [rbx+NEBOC_AR_SLICE_CREATED_TOKEN_OFFSET],rax
+ mov qword [rbx+NEBOC_AR_SLICE_RELEASE_TOKEN_OFFSET],0
  inc qword [r13+NEBOC_AR_BIND_END_OFFSET]
  jc .internal
  inc qword [r12+NEBOC_AR_CONSTRUCT_COUNT_OFFSET]
@@ -146,6 +150,10 @@ NEBOC_ABI_FUNCTION neboc_slice_subslice
  mov rax,[r12+NEBOC_AR_BINDING_COUNT_OFFSET]
  mov [rbx+NEBOC_AR_BIND_STEP_OFFSET],rax
  mov qword [rbx+NEBOC_AR_BIND_FLAGS_OFFSET],NEBOC_AR_SLICE_LIVE
+ mov rax,[r12+NEBOC_AR_CURSOR_OFFSET]
+ inc rax
+ mov [rbx+NEBOC_AR_SLICE_CREATED_TOKEN_OFFSET],rax
+ mov qword [rbx+NEBOC_AR_SLICE_RELEASE_TOKEN_OFFSET],0
  mov rax,[rsp+8]
  inc qword [rax+NEBOC_AR_BIND_END_OFFSET]
  jc .internal
@@ -269,7 +277,6 @@ NEBOC_ABI_FUNCTION neboc_slice_sum
  mov r12,rdi
  mov r13,rsi
  mov r14,rdx
- mov qword [r14],0
  call neboc_slice_view_validate
  test eax,eax
  jnz .done
@@ -284,6 +291,58 @@ NEBOC_ABI_FUNCTION neboc_slice_sum
  add rax,rbx
  mov rdx,[r12+NEBOC_AR_VALUES_OFFSET]
  add r15,[rdx+rax*8]
+ jo .range
+ inc rbx
+ jmp .loop
+.store:
+ mov [r14],r15
+ inc qword [r12+NEBOC_AR_ACCESS_COUNT_OFFSET]
+ xor eax,eax
+ jmp .done
+.type:
+ mov esi,NEBOC_AR_DIAG_TYPE
+ jmp .error
+.range:
+ mov esi,NEBOC_AR_DIAG_RANGE
+.error:
+ mov rdi,r12
+ call slice_error
+.done:
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+.invalid_direct:
+ NEBOC_ABI_RETURN_STATUS NEBOC_STATUS_INVALID_ARGUMENT
+
+; product(request*, Int slice*, out_value*) -- checked source-order product.
+NEBOC_ABI_FUNCTION neboc_slice_product
+ test rdx,rdx
+ jz .invalid_direct
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ call neboc_slice_view_validate
+ test eax,eax
+ jnz .done
+ cmp qword [r13+NEBOC_AR_BIND_TYPE_OFFSET],NEBOC_AR_TYPE_INT
+ jne .type
+ xor ebx,ebx
+ mov r15d,1
+.loop:
+ cmp rbx,[r13+NEBOC_AR_BIND_COUNT_OFFSET]
+ jae .store
+ mov rax,[r13+NEBOC_AR_BIND_DATA_INDEX_OFFSET]
+ add rax,rbx
+ mov rdx,[r12+NEBOC_AR_VALUES_OFFSET]
+ imul r15,[rdx+rax*8]
  jo .range
  inc rbx
  jmp .loop
@@ -327,6 +386,9 @@ NEBOC_ABI_FUNCTION neboc_slice_release
  je .internal
  dec qword [rax+NEBOC_AR_BIND_END_OFFSET]
  mov qword [r13+NEBOC_AR_BIND_FLAGS_OFFSET],NEBOC_AR_SLICE_RELEASED
+ mov rax,[r12+NEBOC_AR_CURSOR_OFFSET]
+ inc rax
+ mov [r13+NEBOC_AR_SLICE_RELEASE_TOKEN_OFFSET],rax
  xor eax,eax
  jmp .done
 .internal:

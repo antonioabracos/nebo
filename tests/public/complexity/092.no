@@ -1,0 +1,7 @@
+// Selects plain, headless, and ANSI-compatible deterministic rendering behavior.
+start() {
+    RenderPlan;
+    1402;
+    output.stdout().stderr().target("plain-ansi").plain().visual().headlessEvent();
+    lifecycle.event("renderer.selected").payload("headless-software").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

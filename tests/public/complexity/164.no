@@ -1,0 +1,7 @@
+// Separates executed headless evidence from live-contract and hardware claims.
+start() {
+    RenderPlan;
+    3608;
+    output.stdout().stderr().target("rf116-closeout").plain().visual().headlessEvent();
+    lifecycle.event("integration-conformance").payload("target-live-headless-conformance").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

@@ -1,4 +1,4 @@
-; TREE-GRAPH-NODE-E-EDGE-F02 bounded scalar fundamentals, no libc/libm
+; RF27-G14-F02 bounded scalar fundamentals, no libc/libm
 bits 64
 default rel
 %define NEBO_SCALAR_IMPLEMENTATION 1
@@ -12,6 +12,7 @@ scalar_abs_mask dq 0x7fffffffffffffff
 
 section .text
 global nebo_math_min_i64
+global nebo_math_max_i64
 global nebo_math_abs_i64
 global nebo_math_clamp_i64
 global nebo_math_sqrt_f64
@@ -23,6 +24,13 @@ nebo_math_min_i64:
     mov rax,rdi
     cmp rdi,rsi
     cmovg rax,rsi
+    ret
+
+; (rdi, rsi) -> rax, exact signed maximum
+nebo_math_max_i64:
+    mov rax,rdi
+    cmp rdi,rsi
+    cmovl rax,rsi
     ret
 
 ; rdi -> status eax, result rdx

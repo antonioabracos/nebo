@@ -1,0 +1,5 @@
+start() {
+    8.value;
+    value.withBit(0, true).changed;
+    value.bitXor(8).proof;
+}

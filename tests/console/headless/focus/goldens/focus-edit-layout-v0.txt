@@ -1,0 +1,8 @@
+MF047 FocusManager ABI v0
+FocusStorage=32
+FocusManager=144
+TextEditRecord=96
+CaretUnit=UTF8_BYTE_BOUNDARY
+FocusOrder=DOCUMENT_SOURCE_ORDER
+OneFocusPerConsole=YES
+ResolvedInputsFocusable=NO

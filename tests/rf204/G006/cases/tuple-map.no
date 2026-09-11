@@ -1,0 +1,4 @@
+struct Pair { Int.first; Int.second; }
+(Int.self)addTwo() { (self + 2).return; }
+(Int.self)addThree() { (self + 3).return; }
+start() { Tuple.of(4, 9).p; p.mapEach(addTwo, addThree).q; q.toStruct<Pair>().r; r.second; }

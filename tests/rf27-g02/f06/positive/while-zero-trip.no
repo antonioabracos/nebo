@@ -1,0 +1,7 @@
+start() {
+  false.running.mutable;
+  while (running) {
+    running = false;
+  }
+  running;
+}

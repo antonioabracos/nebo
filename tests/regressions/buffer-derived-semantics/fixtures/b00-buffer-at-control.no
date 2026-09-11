@@ -1,0 +1,5 @@
+start() {
+    Buffer.zeroed(4).codes;
+    codes.set(2, 103).old;
+    codes.at(2).return;
+}

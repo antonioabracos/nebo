@@ -1,0 +1,2 @@
+(Int.self)sum(Int.a = true) { (self + a).return; }
+start() { 1.sum().return; }

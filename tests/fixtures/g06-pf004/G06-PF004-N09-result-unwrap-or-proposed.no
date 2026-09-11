@@ -1,0 +1,4 @@
+start() {
+    Result<Float, Int>(Err(7)).result;
+    result.unwrapOr(1.5).value;
+}

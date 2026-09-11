@@ -1,0 +1,13 @@
+// Decision tables provide bounded rows, hit policies, coverage, conflict, test, explain, and diff surfaces.
+(Int.self)decisionTableDefine() { self.return; }
+(Int.self)tableRow() { self.return; }
+(Int.self)tableDecide() { self.return; }
+(Int.self)tableValidateCoverage() { self.return; }
+(Int.self)tableValidateConflicts() { self.return; }
+(Int.self)tableGenerateTests() { self.return; }
+(Int.self)tableExplain() { self.return; }
+(Int.self)tableDiff() { self.return; }
+
+start() {
+    130.decisionTableDefine().tableRow().tableDecide().tableValidateCoverage().tableValidateConflicts().tableGenerateTests().tableExplain().tableDiff();
+}

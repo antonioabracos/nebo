@@ -29,6 +29,10 @@ NEBOC_ABI_FUNCTION neboc_result_propagation
  mov [rdx+NEBOC_EVAL_PLAN_RESERVED_OFFSET],rdi
  test rdi,rdi
  jz .ok
+ ; The contextual Result owner closes its bounded operand lifetime before the
+ ; exact-E early-return edge.  Recording that edge here makes the cleanup
+ ; obligation observable to lowering rather than leaving it as a comment.
+ mov qword [rdx+NEBOC_EVAL_PLAN_CLEANUP_COUNT_OFFSET],1
  or qword [rdx+NEBOC_EVAL_PLAN_FLAGS_OFFSET],NEBOC_EVAL_PLAN_FLAG_EARLY_RETURN
 .ok:
  xor eax,eax

@@ -2,6 +2,7 @@
 %define NEBO_STATISTICS_INC 1
 %include "compiler/semantic/numeric/numeric_contract.inc"
 %ifndef NEBO_STATISTICS_IMPLEMENTATION
+extern nebo_vector_statistics_call
 extern nebo_stats_sum_i64
 extern nebo_stats_sum_f64
 extern nebo_stats_mean_f64

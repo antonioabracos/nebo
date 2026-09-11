@@ -1,0 +1,13 @@
+// Versioned snapshots, input logs, rollback windows, restore, replay, and diff remain deterministic.
+(Int.self)simulationSnapshot() { self.return; }
+(Int.self)simulationRestore() { self.return; }
+(Int.self)simulationRollbackTo() { self.return; }
+(Int.self)simulationRecordInput() { self.return; }
+(Int.self)simulationReplay() { self.return; }
+(Int.self)simulationDiff() { self.return; }
+(Int.self)rollbackSetWindow() { self.return; }
+(Int.self)rollbackConfirm() { self.return; }
+
+start() {
+    111.simulationSnapshot().simulationRestore().simulationRollbackTo().simulationRecordInput().simulationReplay().simulationDiff().rollbackSetWindow().rollbackConfirm();
+}

@@ -1,0 +1,7 @@
+// Closeout composes all four domains under one deterministic, failure-atomic profile.
+start() {
+    RenderPlan;
+    3310;
+    output.stdout().stderr().target("domain-visual-service").plain().visual().headlessEvent();
+    lifecycle.event("domain-visual").payload("domain-visual-closeout").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

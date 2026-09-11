@@ -1,0 +1,4 @@
+type alias Rune = Char;
+start() {
+    'A'.return;
+}

@@ -1,0 +1,4 @@
+start() {
+    Int.counter;
+    "forty-two".counter;
+}

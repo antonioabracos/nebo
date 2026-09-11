@@ -7,7 +7,7 @@
 
 ; CONTROLO-DE-FLUXO-ESTRUTURADO-F08 bounded native Canvas chart ABI. The ABI borrows immutable
 ; binary64 arrays or an existing funcoes_lambdas_callbacks_e_referencias Matrix descriptor. It never owns or
-; duplicates Matrix/Dataset storage. Public .no Chart syntax is not activated.
+; duplicates Matrix/Dataset storage. G018 source syntax lowers into this owner.
 %define NEBO_CHART_VERSION 1
 %define NEBO_CHART_MAGIC 0x4e42434831384638
 
@@ -192,7 +192,7 @@
 %define NEBO_CHART_ERROR_UNSUPPORTED 19
 %define NEBO_CHART_ERROR_COUNT 20
 
-; F08 operation identifiers. Native ABI is active; source-language syntax is not.
+; F08 operation identifiers shared by the native ABI and G018 source vertical.
 %define NEBO_CHART_OP_INIT 1
 %define NEBO_CHART_OP_VALIDATE 2
 %define NEBO_CHART_OP_LINE 3

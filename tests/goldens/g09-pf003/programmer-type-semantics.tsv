@@ -1,0 +1,15 @@
+case_id	area	expectation	status
+G09-SEM-01	nominal-product	resolved immutable nominal product produces stable identity	PASS
+G09-SEM-02	nominal-sum	resolved immutable nominal sum produces stable identity	PASS
+G09-SEM-03	field-access	field projection retains nominal subject identity	PASS
+G09-SEM-04	generic-bool	Scalar accepts Bool specialization	PASS
+G09-SEM-05	generic-int	Scalar accepts Int specialization	PASS
+G09-SEM-06	generic-float	Scalar accepts Float specialization	PASS
+G09-SEM-07	generic-char	Scalar accepts Char specialization at bound 32	PASS
+G09-SEM-08	nominal-identity	zero nominal identity is rejected	PASS
+G09-SEM-09	resolved-state	incomplete resolution flags are rejected	PASS
+G09-SEM-10	constraint	PositiveInt is not a Scalar specialization in the frozen profile	PASS
+G09-SEM-11	recursion	by-value depth above eight is rejected	PASS
+G09-SEM-12	resource-limit	instantiation count above thirty-two is rejected	PASS
+G09-SEM-13	span	inverted source span is rejected	PASS
+G09-SEM-14	determinism	identical semantic input yields identical identity and hash	PASS

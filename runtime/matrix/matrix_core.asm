@@ -7,14 +7,209 @@ section .rodata
 align 8
 matrix_one dq 1.0
 section .text
+global nebo_matrix_zeros_f64
+global nebo_matrix_filled_f64
+global nebo_matrix_from_rows_f64
+global nebo_matrix_from_buffer_f64
+global nebo_matrix_rows
+global nebo_matrix_columns
+global nebo_matrix_layout
 global nebo_matrix_identity_f64
 global nebo_matrix_at_f64
+global nebo_matrix_get_f64
 global nebo_matrix_set_f64
 global nebo_matrix_row_view
 global nebo_matrix_column_view
 global nebo_matrix_slice_view
 global nebo_matrix_transpose_view
 global nebo_matrix_contiguous_f64
+global nebo_matrix_trace_f64
+global nebo_matrix_is_square
+
+; desc rdi, storage rsi, rows rdx, columns rcx, storage-id r8.
+nebo_matrix_zeros_f64:
+ push r12
+ push r13
+ push r14
+ push r15
+ push rbx
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ mov r15,rcx
+ mov rbx,r8
+ mov r8d,NEBO_MATRIX_DTYPE_F64
+ mov r9,rbx
+ call nebo_matrix_init_owned
+ test eax,eax
+ jnz .zeros_ret
+ mov rcx,r14
+ imul rcx,r15
+ xor edx,edx
+.zeros_loop:
+ cmp rdx,rcx
+ jae .zeros_ok
+ mov qword [r13+rdx*8],0
+ inc rdx
+ jmp .zeros_loop
+.zeros_ok:
+ xor eax,eax
+.zeros_ret:
+ pop rbx
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ ret
+
+; desc rdi, storage rsi, rows rdx, columns rcx, storage-id r8, fill xmm0.
+nebo_matrix_filled_f64:
+ push r12
+ push r13
+ push r14
+ push r15
+ push rbx
+ push rbp
+ sub rsp,8
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ mov r15,rcx
+ mov rbp,r8
+ movq rbx,xmm0
+ mov r8d,NEBO_MATRIX_DTYPE_F64
+ mov r9,rbp
+ call nebo_matrix_init_owned
+ test eax,eax
+ jnz .filled_ret
+ mov rcx,r14
+ imul rcx,r15
+ xor edx,edx
+.filled_loop:
+ cmp rdx,rcx
+ jae .filled_ok
+ mov [r13+rdx*8],rbx
+ inc rdx
+ jmp .filled_loop
+.filled_ok:
+ xor eax,eax
+.filled_ret:
+ add rsp,8
+ pop rbp
+ pop rbx
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ ret
+
+; desc rdi, destination storage rsi, source rdx, rows rcx, columns r8,
+; storage-id r9.  The bounded public profile copies and owns row-major data.
+nebo_matrix_from_rows_f64:
+nebo_matrix_from_buffer_f64:
+ push r12
+ push r13
+ push r14
+ push r15
+ push rbx
+ push rbp
+ sub rsp,8
+ mov r12,rdi
+ mov r13,rsi
+ mov r14,rdx
+ mov r15,rcx
+ mov rbx,r8
+ mov rbp,r9
+ test r14,r14
+ jnz .copy_source_ready
+ mov rax,r15
+ imul rax,rbx
+ test rax,rax
+ jnz .copy_argument
+.copy_source_ready:
+ mov rdx,r15
+ mov rcx,rbx
+ mov r8d,NEBO_MATRIX_DTYPE_F64
+ mov r9,rbp
+ call nebo_matrix_init_owned
+ test eax,eax
+ jnz .copy_ret
+ mov rcx,r15
+ imul rcx,rbx
+ xor edx,edx
+.copy_loop:
+ cmp rdx,rcx
+ jae .copy_ok
+ mov rax,[r14+rdx*8]
+ mov [r13+rdx*8],rax
+ inc rdx
+ jmp .copy_loop
+.copy_ok:
+ xor eax,eax
+.copy_ret:
+ add rsp,8
+ pop rbp
+ pop rbx
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ ret
+.copy_argument:
+ mov eax,NEBO_NUMERIC_ERROR_ARGUMENT
+ jmp .copy_ret
+
+nebo_matrix_rows:
+ push r12
+ mov r12,rdi
+ call nebo_matrix_validate
+ test eax,eax
+ jnz .rows_ret
+ mov rdx,[r12+NEBO_MATRIX_ROWS]
+.rows_ret:
+ pop r12
+ ret
+
+nebo_matrix_columns:
+ push r12
+ mov r12,rdi
+ call nebo_matrix_validate
+ test eax,eax
+ jnz .columns_ret
+ mov rdx,[r12+NEBO_MATRIX_COLS]
+.columns_ret:
+ pop r12
+ ret
+
+; Returns row-major=1, column-major=2 or strided=3 in rdx.
+nebo_matrix_layout:
+ push r12
+ mov r12,rdi
+ call nebo_matrix_validate
+ test eax,eax
+ jnz .layout_ret
+ mov rax,[r12+NEBO_MATRIX_COLS]
+ cmp [r12+NEBO_MATRIX_ROW_STRIDE],rax
+ jne .layout_column
+ cmp qword [r12+NEBO_MATRIX_COL_STRIDE],1
+ jne .layout_strided
+ mov edx,1
+ jmp .layout_ok
+.layout_column:
+ cmp qword [r12+NEBO_MATRIX_ROW_STRIDE],1
+ jne .layout_strided
+ mov rax,[r12+NEBO_MATRIX_ROWS]
+ cmp [r12+NEBO_MATRIX_COL_STRIDE],rax
+ jne .layout_strided
+ mov edx,2
+ jmp .layout_ok
+.layout_strided:
+ mov edx,3
+.layout_ok:
+ xor eax,eax
+.layout_ret:
+ pop r12
+ ret
 
 nebo_matrix_identity_f64:
  push r12
@@ -92,6 +287,10 @@ nebo_matrix_at_f64:
  jmp .at_ret
 .at_bounds: mov eax,NEBO_NUMERIC_ERROR_BOUNDS
  jmp .at_ret
+
+; Safe get shares the checked access contract and status channel.
+nebo_matrix_get_f64:
+ jmp nebo_matrix_at_f64
 
 ; desc rdi row rsi col rdx value xmm0
 nebo_matrix_set_f64:
@@ -347,4 +546,59 @@ nebo_matrix_contiguous_f64:
  jmp .cont_ret
 .cont_contract: mov eax,NEBO_NUMERIC_ERROR_CONTRACT
  jmp .cont_ret
+
+nebo_matrix_trace_f64:
+ push r12
+ push rbx
+ sub rsp,8
+ mov r12,rdi
+ call nebo_matrix_validate
+ test eax,eax
+ jnz .trace_ret
+ cmp qword [r12+NEBO_MATRIX_DTYPE],NEBO_MATRIX_DTYPE_F64
+ jne .trace_contract
+ mov rcx,[r12+NEBO_MATRIX_ROWS]
+ cmp rcx,[r12+NEBO_MATRIX_COLS]
+ jne .trace_shape
+ xorpd xmm0,xmm0
+ xor ebx,ebx
+.trace_loop:
+ cmp rbx,rcx
+ jae .trace_ok
+ mov rax,rbx
+ imul rax,[r12+NEBO_MATRIX_ROW_STRIDE]
+ mov rdx,rbx
+ imul rdx,[r12+NEBO_MATRIX_COL_STRIDE]
+ add rax,rdx
+ mov rdx,[r12+NEBO_MATRIX_DATA]
+ addsd xmm0,[rdx+rax*8]
+ inc rbx
+ jmp .trace_loop
+.trace_ok:
+ xor eax,eax
+.trace_ret:
+ add rsp,8
+ pop rbx
+ pop r12
+ ret
+.trace_contract:
+ mov eax,NEBO_NUMERIC_ERROR_CONTRACT
+ jmp .trace_ret
+.trace_shape:
+ mov eax,NEBO_NUMERIC_ERROR_SHAPE
+ jmp .trace_ret
+
+nebo_matrix_is_square:
+ push r12
+ mov r12,rdi
+ call nebo_matrix_validate
+ test eax,eax
+ jnz .square_ret
+ xor edx,edx
+ mov rcx,[r12+NEBO_MATRIX_ROWS]
+ cmp rcx,[r12+NEBO_MATRIX_COLS]
+ sete dl
+.square_ret:
+ pop r12
+ ret
 section .note.GNU-stack noalloc noexec nowrite progbits

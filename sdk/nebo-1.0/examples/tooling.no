@@ -1,0 +1,2 @@
+// Editor formatting and documentation examples must preserve the live loop.
+start(){List<Int>.from([11,19,23]).values;0.index.mutable;0.total.mutable;while(index<values.length()){total+=values.at(index);index+=1;}total.return;}

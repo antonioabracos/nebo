@@ -1,0 +1,5 @@
+start() {
+    "Ola Nebo".console();
+    42.console();
+    true.console();
+}

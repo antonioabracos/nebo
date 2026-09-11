@@ -1,0 +1,4 @@
+start() {
+    42.toFloat().implicit_value;
+    Int(42).toFloat().explicit_value;
+}

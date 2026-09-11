@@ -1,0 +1,7 @@
+start() {
+    if (true) {
+        5;
+    } else {
+        9;
+    }
+}

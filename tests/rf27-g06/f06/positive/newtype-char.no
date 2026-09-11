@@ -1,0 +1,4 @@
+newtype Letter(Char);
+start() {
+    Letter('A').unwrap().return;
+}

@@ -1,0 +1,5 @@
+start() {
+    Char.letter;
+    'A'.letter;
+    letter.codepoint();
+}

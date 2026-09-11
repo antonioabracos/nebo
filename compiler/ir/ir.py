@@ -40,6 +40,9 @@ class PassContract:
     def preserved_analyses(self) -> tuple[str, ...]:
         return self.preserved
 
+    requiredAnalyses = required_analyses
+    preservedAnalyses = preserved_analyses
+
 
 class IrModule:
     FORMAT = "NEBO-IR-V1"

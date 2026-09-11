@@ -1,0 +1,6 @@
+start() {
+    List<Int>.from([5, 8]).items;
+    items.iterator().first;
+    items.iterator().second;
+    first.next();
+}

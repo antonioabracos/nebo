@@ -3,10 +3,14 @@
 %include "compiler/semantic/tensor/tensor_contract.inc"
 %ifndef NEBO_TENSOR_VIEWS_IMPLEMENTATION
 extern nebo_tensor_at_f64
+extern nebo_tensor_at_bits
 extern nebo_tensor_set_f64
+extern nebo_tensor_slice_view
+extern nebo_tensor_select_view
 extern nebo_tensor_narrow_view
 extern nebo_tensor_permute_view
 extern nebo_tensor_reshape_view
 extern nebo_tensor_contiguous_f64
+extern nebo_tensor_contiguous_bits
 %endif
 %endif

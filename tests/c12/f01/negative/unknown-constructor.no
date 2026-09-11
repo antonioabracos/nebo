@@ -1,0 +1,4 @@
+start() {
+    Tensor<Int>.identity(Tuple.of(2, 2)).tensor;
+    0;
+}

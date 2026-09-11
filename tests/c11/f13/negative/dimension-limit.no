@@ -1,0 +1,4 @@
+start() {
+    Matrix<Int>.filled(9, 1, 7).matrix;
+    matrix.sum();
+}

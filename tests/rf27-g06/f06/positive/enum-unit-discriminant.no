@@ -1,0 +1,4 @@
+enum State { Idle, Ready, Done }
+start() {
+    State.Ready.discriminant().return;
+}

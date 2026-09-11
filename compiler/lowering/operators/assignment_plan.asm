@@ -12,6 +12,8 @@ section .text
 NEBOC_ABI_FUNCTION neboc_assignment_plan
  test rdx,rdx
  jz .invalid
+ cmp rdi,NEBOC_STATUS_COUNT
+ jae .source
  cmp rsi,NEBOC_EVAL_PLAN_MAX_CLEANUPS
  ja .limit
  mov qword [rdx+NEBOC_EVAL_PLAN_KIND_OFFSET],NEBOC_EVAL_PLAN_KIND_ASSIGNMENT
@@ -31,6 +33,9 @@ NEBOC_ABI_FUNCTION neboc_assignment_plan
  ret
 .typed_failure:
  mov eax,edi
+ ret
+.source:
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
  ret
 .limit:
  mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
@@ -52,8 +57,11 @@ NEBOC_ABI_FUNCTION neboc_assignment_commit
  jne .commit_failure
  cmp qword [rdi+NEBOC_EVAL_PLAN_STORE_COUNT_OFFSET],1
  jne .commit_source
+ cmp qword [rdi+NEBOC_EVAL_PLAN_RESERVED_OFFSET],0
+ jne .commit_source
  mov rax,[rdi+NEBOC_EVAL_PLAN_AUXILIARY_OFFSET]
  mov [rsi],rax
+ mov qword [rdi+NEBOC_EVAL_PLAN_RESERVED_OFFSET],1
  xor eax,eax
  ret
 .commit_failure:

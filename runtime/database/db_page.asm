@@ -1,4 +1,4 @@
-; MACHINE-LEARNING-NEURON-NETWORK-E-MODEL-F02 checked pages, rollback journal core, and isolated file I/O.
+; RF46-G32-F02 checked pages, rollback journal core, and isolated file I/O.
 bits 64
 default rel
 %include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"

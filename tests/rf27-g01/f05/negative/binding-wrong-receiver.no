@@ -1,0 +1,4 @@
+start() {
+    false.value;
+    value.shiftLeft(1).result;
+}

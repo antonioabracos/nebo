@@ -1,0 +1,2 @@
+callable letter(Char.value) capture none { value.return; }
+start() { callback(letter, 'z').return; }

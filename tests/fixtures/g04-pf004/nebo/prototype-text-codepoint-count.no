@@ -1,0 +1,1 @@
+start() { "Olá 😀".codepointCount().n; 0; }

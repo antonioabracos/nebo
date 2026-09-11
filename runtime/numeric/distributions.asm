@@ -1,4 +1,4 @@
-; TREE-GRAPH-NODE-E-EDGE-F06 explicit-PRNG bounded distributions
+; RF27-G14-F06 explicit-PRNG bounded distributions
 bits 64
 default rel
 %define NEBO_DISTRIBUTIONS_IMPLEMENTATION 1
@@ -17,6 +17,7 @@ section .text
 global nebo_distribution_uniform01_f64
 global nebo_distribution_uniform_f64
 global nebo_distribution_normal_f64
+global nebo_distribution_normal_params_f64
 global nebo_distribution_bernoulli
 global nebo_distribution_categorical
 global nebo_distribution_shuffle_i64
@@ -34,12 +35,27 @@ nebo_distribution_uniform01_f64:
 
 ; Random* rdi, low xmm0, high xmm1 -> bounded uniform.
 nebo_distribution_uniform_f64:
+ movq rax,xmm0
+ and rax,[rel dist_exp_mask]
+ cmp rax,[rel dist_exp_mask]
+ je .uniform_domain
+ movq rax,xmm1
+ and rax,[rel dist_exp_mask]
+ cmp rax,[rel dist_exp_mask]
+ je .uniform_domain
  ucomisd xmm0,xmm0
  jp .uniform_domain
  ucomisd xmm1,xmm1
  jp .uniform_domain
  ucomisd xmm0,xmm1
  jae .uniform_domain
+ ; A finite span is part of the bounded binary64 distribution profile.
+ movapd xmm2,xmm1
+ subsd xmm2,xmm0
+ movq rax,xmm2
+ and rax,[rel dist_exp_mask]
+ cmp rax,[rel dist_exp_mask]
+ je .uniform_domain
  sub rsp,16
  movsd [rsp],xmm0
  movsd [rsp+8],xmm1
@@ -88,6 +104,37 @@ nebo_distribution_normal_f64:
  add rsp,16
 .normal_ret:
  pop r12
+ ret
+
+; Random* rdi, mean xmm0, standard deviation xmm1 -> N(mean,stddev).
+nebo_distribution_normal_params_f64:
+ movq rax,xmm0
+ and rax,[rel dist_exp_mask]
+ cmp rax,[rel dist_exp_mask]
+ je .normal_params_domain
+ movq rax,xmm1
+ and rax,[rel dist_exp_mask]
+ cmp rax,[rel dist_exp_mask]
+ je .normal_params_domain
+ ucomisd xmm0,xmm0
+ jp .normal_params_domain
+ ucomisd xmm1,xmm1
+ jp .normal_params_domain
+ ucomisd xmm1,[rel dist_zero]
+ jbe .normal_params_domain
+ sub rsp,16
+ movsd [rsp],xmm0
+ movsd [rsp+8],xmm1
+ call nebo_distribution_normal_f64
+ test eax,eax
+ jnz .normal_params_ret
+ mulsd xmm0,[rsp+8]
+ addsd xmm0,[rsp]
+.normal_params_ret:
+ add rsp,16
+ ret
+.normal_params_domain:
+ mov eax,NEBO_NUMERIC_ERROR_DOMAIN
  ret
 
 ; Random* rdi, probability xmm0 -> status eax, bool rdx.
@@ -146,6 +193,10 @@ nebo_distribution_categorical:
  jb .cat_sum
  ucomisd xmm4,[rel dist_zero]
  jbe .cat_domain
+ movq rax,xmm4
+ and rax,[rel dist_exp_mask]
+ cmp rax,[rel dist_exp_mask]
+ je .cat_domain
  mov rdi,r12
  call nebo_distribution_uniform01_f64
  test eax,eax

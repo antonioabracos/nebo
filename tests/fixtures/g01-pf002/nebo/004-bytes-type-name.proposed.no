@@ -1,0 +1,4 @@
+// G01-PF002 reserves the type name only; no Bytes literal/API is approved here.
+start() {
+    Bytes(0).payload;
+}

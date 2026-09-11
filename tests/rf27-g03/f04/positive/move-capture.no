@@ -1,0 +1,2 @@
+callable take(Int.value) capture move 9 { capture.return; }
+start() { take.call(1).drop().return; }

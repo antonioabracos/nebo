@@ -1,0 +1,5 @@
+start() {
+  Option<Int>(Some(1)).value;
+  value.map(eager).mapped;
+  mapped.get().return;
+}

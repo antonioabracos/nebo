@@ -1,0 +1,9 @@
+(Text.self)addOne() {
+    (self + 1).return;
+}
+
+start() {
+    List<Int>.from([4, 7]).items;
+    items.map(addOne).mapped;
+    mapped.at(0);
+}

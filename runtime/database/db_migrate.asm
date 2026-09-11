@@ -1,4 +1,4 @@
-; MACHINE-LEARNING-NEURON-NETWORK-E-MODEL-F06 bounded compatible schema migration and streaming transfer core.
+; RF46-G32-F06 bounded compatible schema migration and streaming transfer core.
 bits 64
 default rel
 %include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"

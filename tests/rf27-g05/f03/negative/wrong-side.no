@@ -1,0 +1,4 @@
+start() {
+  Result<Int,Bool>(Err(true)).value;
+  value.get().return;
+}

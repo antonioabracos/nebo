@@ -14,10 +14,12 @@
 %define NEBOC_PLAN_CLEANUP_ORDER_HASH_OFFSET 80
 %define NEBOC_PLAN_CLOSED_OWNER_COUNT_OFFSET 88
 %define NEBOC_PLAN_SAFETY_PROOF_HASH_OFFSET 96
-%define neboc_text_char_unicode_e_bytes_PLAN_HASH_OFFSET 104
-%define neboc_text_char_unicode_e_bytes_PLAN_HASHED_BYTES 104
-%define neboc_text_char_unicode_e_bytes_PLAN_SIZE 112
-%define neboc_text_char_unicode_e_bytes_PLAN_QWORDS 14
+%define NEBOC_PLAN_EVENT_COUNT_OFFSET 104
+%define NEBOC_PLAN_EVENTS_OFFSET 112
+%define neboc_text_char_unicode_e_bytes_PLAN_HASH_OFFSET (112+128*48)
+%define neboc_text_char_unicode_e_bytes_PLAN_HASHED_BYTES (112+128*48)
+%define neboc_text_char_unicode_e_bytes_PLAN_SIZE (120+128*48)
+%define neboc_text_char_unicode_e_bytes_PLAN_QWORDS (15+128*6)
 %define neboc_text_char_unicode_e_bytes_PLAN_MAGIC 0x52463432504c4e31
 
 %endif

@@ -18,5 +18,8 @@
  extern nebo_socket_address_new
  extern nebo_hostname_parse
  extern nebo_hostname_format
+ extern nebo_parse_port
+ extern nebo_dns_resolve_local
+ extern nebo_socket_address_format
 %endif
 %endif

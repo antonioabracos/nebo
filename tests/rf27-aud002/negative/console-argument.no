@@ -1,0 +1,4 @@
+start() {
+    1.numero;
+    numero.console(2);
+}

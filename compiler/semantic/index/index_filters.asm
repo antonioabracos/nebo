@@ -1,71 +1,48 @@
-; PROJECT-SYMBOL-INDEX-E-CARREGAMENTO-INCREMENTAL-DE-INTERFACES-F06: Edition/target/visibility/effect/capability filters
-; Bounded native developer-experience/prelude/trivia kernel.
-; rdi=input bytes, rsi=length, rdx=caller-owned 24-byte result.
-; Success publishes digest, length, and stable operation tag atomically.
-; Failure publishes nothing. No allocation, I/O, libc, network, or effects.
+; RF166-G160-F06: edition, target, visibility, effect and capability filters.
 bits 64
 default rel
-
+%include "compiler/semantic/index/symbol_index.inc"
 global neboc_index_filter
-
-%define DOC_MAX_INPUT 4096
-%define DOC_TAG 6
-%define hover_FNV_OFFSET 0xcbf29ce484222325
-%define hover_FNV_PRIME  0x100000001b3
-
 section .text
 align 16
 neboc_index_filter:
-    test rdi, rdi
-    jz .argument
-    test rdx, rdx
-    jz .argument
-    test rdx, 7
-    jnz .argument
-    test rsi, rsi
-    jz .length
-    cmp rsi, DOC_MAX_INPUT
-    ja .length
-    lea rax, [rdi + rsi]
-    cmp rax, rdi
-    jb .length
-
-    mov rax, hover_FNV_OFFSET
-    mov r8, hover_FNV_PRIME
-    xor ecx, ecx
-.scan:
-    cmp rcx, rsi
-    jae .publish
-    movzx r9d, byte [rdi + rcx]
-    test r9b, r9b
-    jz .encoding
-    cmp r9b, 0x7f
-    ja .encoding
-    xor rax, r9
-    imul rax, r8
-    inc rcx
-    jmp .scan
+ INDEX_VALIDATE_REQUEST NEBOC_INDEX_OP_FILTER,.validated
+.validated:
+ INDEX_REQUIRE_FLAGS NEBOC_INDEX_FLAG_PRIVATE_FILTERED|NEBOC_INDEX_FLAG_NO_CAPABILITY_GRANT|NEBOC_INDEX_FLAG_DEADLINE,.policy
+ mov rax,[rdi+NEBOC_INDEX_FILTERED_ENTRIES_OFFSET]
+ cmp rax,[rdi+NEBOC_INDEX_PUBLIC_ENTRIES_OFFSET]
+ ja .mismatch
+ mov rcx,[rdi+NEBOC_INDEX_PUBLIC_ENTRIES_OFFSET]
+ sub rcx,rax
+ mov rax,[rdi+NEBOC_INDEX_RESULT_ENTRIES_OFFSET]
+ cmp rax,rcx
+ ja .mismatch
+ mov r8,[rdi+NEBOC_INDEX_QUERY_LIMIT_OFFSET]
+ test r8,r8
+ jz .limit
+ cmp r8,NEBOC_INDEX_MAX_QUERY_RESULTS
+ ja .limit
+ cmp rax,r8
+ ja .limit
+ mov rdx,[rdi+NEBOC_INDEX_NAME_QUERY_OFFSET]
+ or rdx,[rdi+NEBOC_INDEX_RECEIVER_QUERY_OFFSET]
+ or rdx,[rdi+NEBOC_INDEX_MODULE_QUERY_OFFSET]
+ jnz .bounded_query
+ cmp rcx,r8
+ cmova rcx,r8
+ cmp rax,rcx
+ jne .mismatch
+ jmp .publish
+.bounded_query:
 .publish:
-    xor rax, DOC_TAG
-    mov qword [rdx], rax
-    mov qword [rdx + 8], rsi
-    mov qword [rdx + 16], DOC_TAG
-    xor eax, eax
-    xor edx, edx
-    ret
-.argument:
-    mov eax, 1
-    mov edx, 1
-    ret
-.length:
-    mov eax, 2
-    mov edx, 2
-    ret
-.encoding:
-    mov eax, 3
-    mov edx, 3
-    ret
-.keyword:
-    mov eax, 4
-    mov edx, 4
-    ret
+ INDEX_PUBLISH [rdi+NEBOC_INDEX_COLD_DIGEST_OFFSET],0
+.policy:
+ mov eax,NEBOC_INDEX_STATUS_POLICY
+ ret
+.mismatch:
+ mov eax,NEBOC_INDEX_STATUS_MISMATCH
+ ret
+.limit:
+ mov eax,NEBOC_INDEX_STATUS_LIMIT
+ ret
+section .note.GNU-stack noalloc noexec nowrite progbits

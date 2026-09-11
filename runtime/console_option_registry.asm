@@ -8,7 +8,13 @@ global nebo_option_registry_validate
 global nebo_option_registry_lookup
 global nebo_option_registry_validate_names
 global nebo_option_registry_lookup_name
+global nebo_console_registry
 section .text
+; G089 internal ABI spelling for the canonical named registry lookup.
+; rdi=entries, rsi=count, rdx=name, rcx=name_len, r8=out schema pointer.
+nebo_console_registry:
+    jmp nebo_option_registry_lookup_name
+
 ; rdi=schema entries, rsi=count.
 nebo_option_registry_validate:
     test rdi, rdi

@@ -1,0 +1,13 @@
+// DMA commits only at a successful deadline while logical timers and the watchdog retain lifecycle effects.
+(Int.self)dmaChannelOpen() { self.return; }
+(Int.self)dmaTransfer() { self.return; }
+(Int.self)dmaAwait() { self.return; }
+(Int.self)timerAfter() { self.return; }
+(Int.self)timerPeriodic() { self.return; }
+(Int.self)timerCancel() { self.return; }
+(Int.self)watchdogStart() { self.return; }
+(Int.self)watchdogFeed() { self.return; }
+
+start() {
+    110.dmaChannelOpen().dmaTransfer().dmaAwait().timerAfter().timerPeriodic().timerCancel().watchdogStart().watchdogFeed();
+}

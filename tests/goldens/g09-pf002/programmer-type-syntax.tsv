@@ -1,0 +1,11 @@
+shape_id	construct	canonical_shape	state
+G09-S01	struct declaration	struct Name { Type.field; }	FROZEN
+G09-S02	multi-field struct	struct Name { Type.first; Type.second; }	FROZEN
+G09-S03	struct literal	Name { field: value }	FROZEN
+G09-S04	field access	binding.field	FROZEN
+G09-S05	unit enum	enum Name { First; Second; }	FROZEN
+G09-S06	unit variant	Name.Variant	FROZEN
+G09-S07	payload variant	Name.Variant(value)	FROZEN
+G09-S08	generic struct	struct Name<T: Scalar> { T.field; }	FROZEN
+G09-S09	generic enum	enum Name<T: Scalar> { None; Some(T); }	FROZEN
+G09-S10	generic construction	Name<Int> { field: value } / Name<Int>.Variant(value)	FROZEN

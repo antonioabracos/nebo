@@ -1,0 +1,4 @@
+enum State { Idle, Idle }
+start() {
+    State.Idle.discriminant().return;
+}

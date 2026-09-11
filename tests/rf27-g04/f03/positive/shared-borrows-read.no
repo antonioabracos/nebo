@@ -1,0 +1,11 @@
+start() {
+    21.owner;
+    owner.borrowShared().first;
+    owner.borrowShared().second;
+    first.read().firstValue;
+    second.read().secondValue;
+    owner.copy().ownerRead;
+    first.release().firstDone;
+    second.release().secondDone;
+    owner;
+}

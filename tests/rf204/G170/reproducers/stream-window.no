@@ -1,0 +1,1 @@
+start(){Stream<Int>.from([17,29,71]).source;source.window(2).windows;windows.next().expect("window").at(1).console();23.return;}

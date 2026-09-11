@@ -1,0 +1,5 @@
+6|duplicate-console-binding
+7|scan-binding-required
+8|invalid-scan-receiver
+9|ambiguous-console-chain
+10|invalid-route-terminal-type

@@ -1,0 +1,3 @@
+callable first(Int.value) capture copy 1 { sum.return; }
+callable second(Int.value) capture copy 20 { sum.return; }
+start() { second.call(2).drop().return; }

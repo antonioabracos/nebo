@@ -1,0 +1,13 @@
+case	expected	result
+same-SymbolId-read	clean	PASS
+homonymous-distinct-SymbolId	warning	PASS
+successor-live-out-store	clean	PASS
+explicit-side-effect-import	clean	PASS
+public-reexport	clean	PASS
+reachability-root	clean	PASS
+unknown-reachability	clean	PASS
+intentional-underscore	policy-suppressed	PASS
+scoped-exact-suppression	policy-suppressed	PASS
+incomplete-analysis	no-warning	PASS
+effectful-fix	manual-only	PASS
+signature-fix	manual-only	PASS

@@ -1,0 +1,9 @@
+proof_id	syntax	operation
+G12-PF002-S01	Column<Int> [1, 2, 3, 4].values	literal
+G12-PF002-S02	values[0]	index
+G12-PF002-S03	values[3]	index
+G12-PF002-S04	values.len	len
+G12-PF002-S05	values.sum()	sum
+G12-PF002-S06	values.min()	min
+G12-PF002-S07	values.max()	max
+G12-PF002-S08	values.countMissing()	count_missing

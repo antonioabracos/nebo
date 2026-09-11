@@ -1,0 +1,13 @@
+// State-space simulation and bounded identification publish structural diagnostics.
+(Int.self)stateSpaceDefine() { self.return; }
+(Int.self)modelSimulate() { self.return; }
+(Int.self)modelStep() { self.return; }
+(Int.self)modelControllable() { self.return; }
+(Int.self)modelObservable() { self.return; }
+(Int.self)modelDiscretize() { self.return; }
+(Int.self)systemIdentificationFit() { self.return; }
+(Int.self)identificationResidualReport() { self.return; }
+
+start() {
+    92.stateSpaceDefine().modelSimulate().modelStep().modelControllable().modelObservable().modelDiscretize().systemIdentificationFit().identificationResidualReport();
+}

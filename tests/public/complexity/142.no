@@ -1,0 +1,7 @@
+// Allow and deny decisions are explicit bounded policy results, never implicit grants.
+start() {
+    RenderPlan;
+    3405;
+    output.stdout().stderr().target("export-privacy-service").plain().visual().headlessEvent();
+    lifecycle.event("privacy-audited").payload("allow-deny-policy-decisions").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

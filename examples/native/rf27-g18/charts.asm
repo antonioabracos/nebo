@@ -3,7 +3,7 @@ default rel
 %include "runtime/charts/charts.inc"
 
 ; CONTROLO-DE-FLUXO-ESTRUTURADO-F08 public bounded-native chart composition example.
-; Source-language .no Chart syntax remains inactive.
+; The G018 source vertical now reaches the same bounded chart owners.
 section .rodata align=8
 line_x: dq 0.0,1.0,2.0,3.0,4.0
 line_y: dq 1.0,4.0,2.0,5.0,3.0

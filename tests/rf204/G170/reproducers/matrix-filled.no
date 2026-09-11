@@ -1,0 +1,2 @@
+// Typed Matrix values must reach native storage and preserve the explicit return.
+start(){Matrix<Float>.filled(2,3,1.5).m;m.at(1,2).v;"${v:fixed(2)}".console();23.return;}

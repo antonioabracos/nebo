@@ -25,6 +25,7 @@ tc_dash_z: db '-z',0
 tc_noexecstack: db 'noexecstack',0
 tc_build_id_none: db '--build-id=none',0
 tc_discard_all: db '-x',0
+tc_gc_sections: db '--gc-sections',0
 tc_dash_e: db '-e',0
 tc_start: db '_start',0
 
@@ -388,7 +389,7 @@ NEBOC_ABI_FUNCTION neboc_toolchain_build_linker_invocation
  xor eax,eax
  rep stosq
  mov qword [r11+NEBOC_TOOLCHAIN_INVOCATION_KIND_OFFSET],NEBOC_TOOLCHAIN_KIND_LINKER
- mov qword [r11+NEBOC_TOOLCHAIN_INVOCATION_ARGC_OFFSET],14
+ mov qword [r11+NEBOC_TOOLCHAIN_INVOCATION_ARGC_OFFSET],15
  mov rax,[rbx+NEBOC_TOOLCHAIN_LINKER_PTR_OFFSET]
  mov rdx,[rbx+NEBOC_TOOLCHAIN_LINKER_LEN_OFFSET]
  TC_ARG r11,0,rax,rdx
@@ -417,6 +418,8 @@ NEBOC_ABI_FUNCTION neboc_toolchain_build_linker_invocation
  TC_ARG r11,11,rax,rdx
  TC_ARG r11,12,r12,r13
  TC_ARG r11,13,r14,r15
+ lea rax,[rel tc_gc_sections]
+ TC_ARG r11,14,rax,13
  mov rax,[rsp]
  mov [r11+NEBOC_TOOLCHAIN_INVOCATION_OUTPUT_PTR_OFFSET],rax
  mov rax,[rsp+8]

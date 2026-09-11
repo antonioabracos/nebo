@@ -35,6 +35,10 @@ n_unwrap: db "unwrap"
 n_unwrap_len equ $-n_unwrap
 option_result_vertical_parser_n_get: db "get"
 n_get_len equ $-option_result_vertical_parser_n_get
+n_index_of: db "indexOf"
+n_index_of_len equ $-n_index_of
+n_last_index_of: db "lastIndexOf"
+n_last_index_of_len equ $-n_last_index_of
 n_null: db "null"
 n_null_len equ $-n_null
 n_try: db "try"
@@ -69,6 +73,24 @@ n_text: db "Text"
 n_text_len equ $-n_text
 n_bytes: db "Bytes"
 n_bytes_len equ $-n_bytes
+n_checked_add: db "checkedAdd"
+n_checked_add_len equ $-n_checked_add
+n_checked_div: db "checkedDiv"
+n_checked_div_len equ $-n_checked_div
+n_checked_shift: db "checkedShift"
+n_checked_shift_len equ $-n_checked_shift
+n_next: db "next"
+n_next_len equ $-n_next
+n_parse_int: db "parseInt"
+n_parse_int_len equ $-n_parse_int
+n_parse_float: db "parseFloat"
+n_parse_float_len equ $-n_parse_float
+n_parse_bool: db "parseBool"
+n_parse_bool_len equ $-n_parse_bool
+n_split_checked: db "splitChecked"
+n_split_checked_len equ $-n_split_checked
+n_replace_all_checked: db "replaceAllChecked"
+n_replace_all_checked_len equ $-n_replace_all_checked
 
 section .text
 
@@ -130,8 +152,9 @@ g06p_token_match:
  ret
 
 ; request*, observer token index -> 1 when the current statement is a bounded
-; cli_driver Bytes.get chain. Such observers are lowered through the canonical option_result_null_externo_e_erros_tipados
-; runtime ABI by text_char_unicode_e_bytes and must not be claimed by the token-level option_result_null_externo_e_erros_tipados grammar.
+; cli_driver Bytes.get or Text index query chain. Such observers are lowered
+; through the canonical Option runtime ABI by text_char_unicode_e_bytes and
+; must not be claimed by the token-level Option/Result grammar.
 g06p_statement_has_get:
  push rbx
  push r12
@@ -162,10 +185,146 @@ g06p_statement_has_get:
  mov ecx,n_get_len
  call g06p_token_match
  test eax,eax
+ jnz .yes
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_index_of]
+ mov ecx,n_index_of_len
+ call g06p_token_match
+ test eax,eax
+ jnz .yes
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_last_index_of]
+ mov ecx,n_last_index_of_len
+ call g06p_token_match
+ test eax,eax
  jz .scan
+.yes:
  mov eax,1
  jmp .done
 .no: xor eax,eax
+.done:
+ add rsp,8
+ pop r12
+ pop rbx
+ ret
+
+; request*, observer token index -> 1 when isSome observes a G002 checked
+; arithmetic/iterator Option<Int>.  Those register aggregates are validated
+; and lowered by the binding vertical, not by the legacy container grammar.
+g06p_statement_has_g002_option:
+ push rbx
+ push r12
+ sub rsp,8
+ mov r12,rdi
+ mov rbx,rsi
+.scan:
+ test rbx,rbx
+ jz .no
+ dec rbx
+ mov rdi,r12
+ mov rsi,rbx
+ call g06p_token_ptr
+ test rax,rax
+ jz .no
+ mov rcx,[rax+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rcx,NEBOC_TOKEN_SEMICOLON
+ je .no
+ cmp rcx,NEBOC_TOKEN_LBRACE
+ je .no
+ cmp rcx,NEBOC_TOKEN_RBRACE
+ je .no
+ cmp rcx,NEBOC_TOKEN_IDENTIFIER
+ jne .scan
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_checked_add]
+ mov ecx,n_checked_add_len
+ call g06p_token_match
+ test eax,eax
+ jnz .yes
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_checked_div]
+ mov ecx,n_checked_div_len
+ call g06p_token_match
+ test eax,eax
+ jnz .yes
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_checked_shift]
+ mov ecx,n_checked_shift_len
+ call g06p_token_match
+ test eax,eax
+ jnz .yes
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_next]
+ mov ecx,n_next_len
+ call g06p_token_match
+ test eax,eax
+ jz .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ add rsp,8
+ pop r12
+ pop rbx
+ ret
+
+; request*, observer token index -> 1 when a Result observer consumes one of
+; the Text G056 producers.  The expression AST, textual semantic owner and
+; textual code generator share the canonical Result ABI for these chains;
+; the older token-level Result grammar must therefore leave them untouched.
+g06p_statement_has_g056_result:
+ push rbx
+ push r12
+ sub rsp,8
+ mov r12,rdi
+ mov rbx,rsi
+.scan:
+ test rbx,rbx
+ jz .no
+ dec rbx
+ mov rdi,r12
+ mov rsi,rbx
+ call g06p_token_ptr
+ test rax,rax
+ jz .no
+ mov rcx,[rax+NEBOC_TOKEN_KIND_OFFSET]
+ cmp rcx,NEBOC_TOKEN_SEMICOLON
+ je .no
+ cmp rcx,NEBOC_TOKEN_LBRACE
+ je .no
+ cmp rcx,NEBOC_TOKEN_RBRACE
+ je .no
+ cmp rcx,NEBOC_TOKEN_IDENTIFIER
+ jne .scan
+ %macro G056_RESULT_PRODUCER 2
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel %1]
+ mov ecx,%2
+ call g06p_token_match
+ test eax,eax
+ jnz .yes
+ %endmacro
+ G056_RESULT_PRODUCER n_parse_int,n_parse_int_len
+ G056_RESULT_PRODUCER n_parse_float,n_parse_float_len
+ G056_RESULT_PRODUCER n_parse_bool,n_parse_bool_len
+ G056_RESULT_PRODUCER n_split_checked,n_split_checked_len
+ G056_RESULT_PRODUCER n_replace_all_checked,n_replace_all_checked_len
+ %unmacro G056_RESULT_PRODUCER 2
+ jmp .scan
+.yes:
+ mov eax,1
+ jmp .done
+.no:
+ xor eax,eax
 .done:
  add rsp,8
  pop r12
@@ -445,6 +604,16 @@ g06p_detect_owner:
  mov rdi,r12
  mov rsi,r13
  call g06p_statement_has_get
+ test eax,eax
+ jnz .next
+ mov rdi,r12
+ mov rsi,r13
+ call g06p_statement_has_g002_option
+ test eax,eax
+ jnz .next
+ mov rdi,r12
+ mov rsi,r13
+ call g06p_statement_has_g056_result
  test eax,eax
  jnz .next
  mov r15d,1

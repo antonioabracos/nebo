@@ -1,0 +1,13 @@
+// Versioned coordinate systems make projection, model, bearing, containment, path length, and buffers explicit.
+(Int.self)geoCoordinateOf() { self.return; }
+(Int.self)crsParse() { self.return; }
+(Int.self)projectionConvert() { self.return; }
+(Int.self)geoDistance() { self.return; }
+(Int.self)geoBearingTo() { self.return; }
+(Int.self)geoPolygonContains() { self.return; }
+(Int.self)geoPathLength() { self.return; }
+(Int.self)geoBuffer() { self.return; }
+
+start() {
+    110.geoCoordinateOf().crsParse().projectionConvert().geoDistance().geoBearingTo().geoPolygonContains().geoPathLength().geoBuffer();
+}

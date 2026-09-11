@@ -1,0 +1,6 @@
+start() {
+    1.5.esquerda;
+    2.5.direita;
+    (esquerda + direita).resultado;
+    resultado.console();
+}

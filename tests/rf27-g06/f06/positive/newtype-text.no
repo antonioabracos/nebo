@@ -1,0 +1,4 @@
+newtype Label(Text);
+start() {
+    Label("bounded").unwrap().byteLength().return;
+}

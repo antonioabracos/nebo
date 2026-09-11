@@ -1,0 +1,7 @@
+Program
+  FunctionDecl name-token=5 params=1
+    Receiver type-token=1 name-token=3
+    Parameter type-token=7 name-token=9
+    Block tokens=0
+  StartDecl
+    Block tokens=0

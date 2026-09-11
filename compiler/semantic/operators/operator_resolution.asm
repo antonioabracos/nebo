@@ -8,6 +8,7 @@ default rel
 
 section .text
 extern neboc_operator_known_implementations
+extern neboc_operator_substitute_type
 
 ; resolve_exact(request*) copies exactly one admissible candidate to OUTPUT.
 ; On every failure OUTPUT and OUTPUT_INDEX/MATCH_COUNT remain unchanged; only
@@ -18,6 +19,7 @@ NEBOC_ABI_FUNCTION neboc_operator_resolve_exact
  push r13
  push r14
  push r15
+ sub rsp,16
  mov r12,rdi
  test r12,r12
  jz .invalid_argument
@@ -43,6 +45,7 @@ NEBOC_ABI_FUNCTION neboc_operator_resolve_exact
  xor ebx,ebx
  xor r15d,r15d
  xor r11d,r11d
+ xor r9d,r9d
  mov r8d,NEBOC_OPERATOR_DIAG_NO_EXACT_CANDIDATE
 .scan:
  cmp rbx,r14
@@ -66,11 +69,37 @@ NEBOC_ABI_FUNCTION neboc_operator_resolve_exact
  jnz .next
  test rdx,NEBOC_OPERATOR_IMPL_FLAG_EXACT_TYPES
  jz .next
+ test rdx,NEBOC_OPERATOR_IMPL_FLAG_COHERENT
+ jz .incoherent
+ mov rcx,rdx
+ and rcx,NEBOC_OPERATOR_IMPL_FLAG_BUILTIN|NEBOC_OPERATOR_IMPL_FLAG_USER
+ cmp rcx,NEBOC_OPERATOR_IMPL_FLAG_BUILTIN
+ je .owner_valid
+ cmp rcx,NEBOC_OPERATOR_IMPL_FLAG_USER
+ jne .incoherent
+ mov rcx,[rax+NEBOC_OPERATOR_IMPL_OWNER_TYPE_OFFSET]
+ cmp rcx,[rax+NEBOC_OPERATOR_IMPL_LEFT_TYPE_OFFSET]
+ je .owner_valid
+ cmp rcx,[rax+NEBOC_OPERATOR_IMPL_RIGHT_TYPE_OFFSET]
+ jne .incoherent
+.owner_valid:
+ cmp qword [rax+NEBOC_OPERATOR_IMPL_RESULT_TYPE_OFFSET],0
+ je .incoherent
+ cmp qword [rax+NEBOC_OPERATOR_IMPL_OWNER_TYPE_OFFSET],0
+ je .incoherent
+ cmp qword [rax+NEBOC_OPERATOR_IMPL_SYMBOL_ID_OFFSET],0
+ je .incoherent
+ cmp qword [rax+NEBOC_OPERATOR_IMPL_CONSTRAINTS_OFFSET],NEBOC_OPERATOR_MAX_CONSTRAINTS
+ ja .limit
+ cmp qword [rax+NEBOC_OPERATOR_IMPL_SPECIFICITY_OFFSET],0
+ je .incoherent
  mov rdx,[rax+NEBOC_OPERATOR_IMPL_REQUIRED_CAPABILITIES_OFFSET]
  mov rcx,[r12+NEBOC_OPERATOR_RESOLVE_AVAILABLE_CAPABILITIES_OFFSET]
  not rcx
  test rdx,rcx
  jz .effects
+ cmp r8d,NEBOC_OPERATOR_DIAG_CAPABILITY_MISSING
+ jae .next
  mov r8d,NEBOC_OPERATOR_DIAG_CAPABILITY_MISSING
  jmp .next
 .effects:
@@ -79,12 +108,29 @@ NEBOC_ABI_FUNCTION neboc_operator_resolve_exact
  not rcx
  test rdx,rcx
  jz .matched
+ cmp r8d,NEBOC_OPERATOR_DIAG_EFFECT_FORBIDDEN
+ jae .next
  mov r8d,NEBOC_OPERATOR_DIAG_EFFECT_FORBIDDEN
  jmp .next
 .matched:
+ mov rcx,[rax+NEBOC_OPERATOR_IMPL_SPECIFICITY_OFFSET]
+ test r11d,r11d
+ jz .new_best
+ cmp rcx,r9
+ ja .new_best
+ jne .next
  inc r11d
+ jmp .next
+.new_best:
+ mov r9,rcx
  mov r15,rax
  mov r10,rbx
+ mov r11d,1
+ jmp .next
+.incoherent:
+ cmp r8d,NEBOC_OPERATOR_DIAG_COHERENCE_VIOLATION
+ jae .next
+ mov r8d,NEBOC_OPERATOR_DIAG_COHERENCE_VIOLATION
 .next:
  inc rbx
  jmp .scan
@@ -94,6 +140,14 @@ NEBOC_ABI_FUNCTION neboc_operator_resolve_exact
  jz .resolution_failure
  cmp r11d,1
  jne .ambiguous
+ mov [rsp+8],r10
+ mov rdi,[r15+NEBOC_OPERATOR_IMPL_RESULT_TYPE_OFFSET]
+ mov rsi,[r12+NEBOC_OPERATOR_RESOLVE_SUBSTITUTIONS_OFFSET]
+ mov rdx,[r12+NEBOC_OPERATOR_RESOLVE_SUBSTITUTION_COUNT_OFFSET]
+ lea rcx,[rsp]
+ call neboc_operator_substitute_type
+ test eax,eax
+ jnz .substitution_failure
  mov rax,[r12+NEBOC_OPERATOR_RESOLVE_OUTPUT_OFFSET]
  %assign field 0
  %rep 11
@@ -101,10 +155,16 @@ NEBOC_ABI_FUNCTION neboc_operator_resolve_exact
   mov [rax+field],rdx
   %assign field field+8
  %endrep
+ mov rdx,[rsp]
+ mov [rax+NEBOC_OPERATOR_IMPL_RESULT_TYPE_OFFSET],rdx
+ mov r10,[rsp+8]
  mov [r12+NEBOC_OPERATOR_RESOLVE_OUTPUT_INDEX_OFFSET],r10
  mov qword [r12+NEBOC_OPERATOR_RESOLVE_MATCH_COUNT_OFFSET],1
  mov qword [r12+NEBOC_OPERATOR_RESOLVE_DIAGNOSTIC_OFFSET],NEBOC_OPERATOR_DIAG_NONE
  xor eax,eax
+ jmp .done
+.substitution_failure:
+ mov [r12+NEBOC_OPERATOR_RESOLVE_DIAGNOSTIC_OFFSET],rdx
  jmp .done
 .ambiguous:
  mov r8d,NEBOC_OPERATOR_DIAG_AMBIGUOUS_CANDIDATE
@@ -126,6 +186,7 @@ NEBOC_ABI_FUNCTION neboc_operator_resolve_exact
 .invalid_argument:
  mov eax,NEBOC_STATUS_INVALID_ARGUMENT
 .done:
+ add rsp,16
  pop r15
  pop r14
  pop r13
@@ -138,6 +199,17 @@ NEBOC_ABI_FUNCTION neboc_operator_resolution_limits
  mov edx,NEBOC_OPERATOR_MAX_CONSTRAINTS
  mov ecx,NEBOC_OPERATOR_RESOLVE_SIZE
  mov r8d,NEBOC_OPERATOR_IMPL_SIZE
+ ret
+
+; Versioned internal ABI descriptor for OperatorKind/OperatorProtocol,
+; candidate, resolution, and lowering records.
+NEBOC_ABI_FUNCTION neboc_operator_protocol_schema
+ mov eax,NEBOC_OPERATOR_PROTOCOL_SCHEMA_VERSION
+ mov edx,NEBOC_OPERATOR_PROTOCOL_COUNT
+ mov ecx,NEBOC_OPERATOR_KIND_COUNT
+ mov r8d,NEBOC_OPERATOR_IMPL_SIZE
+ mov r9d,NEBOC_OPERATOR_RESOLVE_SIZE
+ mov r10d,NEBOC_OPERATOR_LOWER_SIZE
  ret
 
 ; resolve_builtin_type(protocol, left_type, right_type, out_type*) resolves the

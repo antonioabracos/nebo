@@ -1,15 +1,22 @@
 {
+  "archive_prefix": "nebo-sdk/",
+  "composition": "nebo.sdk-composition.v1",
   "directories": [
     "bin",
-    "libexec/nebo",
-    "share/nebo/freeze",
-    "share/nebo/sdk",
+    "build/bin",
+    "build/obj",
+    "compiler",
+    "tools",
+    "sdk/interfaces/prelude",
+    "sdk/nebo-1.0",
     "share/doc/nebo",
-    "share/examples"
+    "share/man/man1",
+    "share/examples",
+    "share/nebo"
   ],
   "format": "NEBO-SDK-LAYOUT-v1",
   "manifest": "MANIFEST.json",
   "path_policy": "relative-posix-no-symlink",
   "root": ".",
-  "version": "1.0.1"
+  "version": "1.1.0"
 }

@@ -1,0 +1,13 @@
+case_id	kind	input	expected
+G09-LAYOUT-01	product	Int	field=0 size=8 align=8
+G09-LAYOUT-02	product	Int,Int	fields=0,8 size=16 align=8
+G09-LAYOUT-03	product	Char,Int,Bool	fields=0,8,16 size=24 align=8
+G09-LAYOUT-04	product	Bool,Bool,Bool	fields=0,1,2 size=3 align=1
+G09-LAYOUT-05	sum	unit,unit	tag=0:4 payload=8 size=8 align=8
+G09-LAYOUT-06	sum	unit,Int	tag=0:4 payload=8 size=16 align=8
+G09-LAYOUT-07	sum	payload16	tag=0:4 payload=8 size=24 align=8
+G09-LAYOUT-08	negative	member count 0 or 9	REJECT
+G09-LAYOUT-09	negative	variant count 1 or 9	REJECT
+G09-LAYOUT-10	negative	non-power-of-two or payload alignment above 8	REJECT
+G09-LAYOUT-11	negative	missing representation flag	REJECT
+G09-LAYOUT-12	runtime	copy zero padding and tag helpers	ALLOCATION_FREE

@@ -1,0 +1,2 @@
+callable take(Int.value) capture move 9 { sum.return; }
+start() { take.call(7).return; }

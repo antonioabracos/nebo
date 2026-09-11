@@ -1,0 +1,190 @@
+{
+  "modules": [
+    {
+      "availability": "BOUNDED_PUBLIC",
+      "capabilities": [
+        "console"
+      ],
+      "editions": [
+        "1"
+      ],
+      "effects": [
+        "console",
+        "input"
+      ],
+      "exports": [
+        "console",
+        "scan"
+      ],
+      "importGrantsCapabilities": false,
+      "layer": "STDLIB",
+      "name": "std.console",
+      "since": "Edition 1",
+      "stability": "stable",
+      "targets": [
+        "x86_64-systemv-elf-linux"
+      ]
+    },
+    {
+      "availability": "BOUNDED_PUBLIC",
+      "capabilities": [],
+      "editions": [
+        "1"
+      ],
+      "effects": [],
+      "exports": [
+        "Eq",
+        "Error",
+        "IntoIterator",
+        "Iterator",
+        "Option",
+        "Ord",
+        "Ordering",
+        "Range",
+        "Result"
+      ],
+      "importGrantsCapabilities": false,
+      "layer": "STDLIB",
+      "name": "std.core",
+      "since": "Edition 1",
+      "stability": "stable",
+      "targets": [
+        "x86_64-systemv-elf-linux"
+      ]
+    },
+    {
+      "availability": "TARGET_GATED",
+      "capabilities": [
+        "device"
+      ],
+      "editions": [
+        "1"
+      ],
+      "effects": [
+        "device"
+      ],
+      "exports": [
+        "Device"
+      ],
+      "importGrantsCapabilities": false,
+      "layer": "DOMAIN_PACK",
+      "name": "std.devices",
+      "since": "Edition 1",
+      "stability": "experimental",
+      "targets": [
+        "x86_64-systemv-elf-linux"
+      ]
+    },
+    {
+      "availability": "BOUNDED_PUBLIC",
+      "capabilities": [
+        "filesystem"
+      ],
+      "editions": [
+        "1"
+      ],
+      "effects": [
+        "filesystem"
+      ],
+      "exports": [
+        "File",
+        "Path"
+      ],
+      "importGrantsCapabilities": false,
+      "layer": "STDLIB",
+      "name": "std.fs",
+      "since": "Edition 1",
+      "stability": "stable",
+      "targets": [
+        "x86_64-systemv-elf-linux"
+      ]
+    },
+    {
+      "availability": "TARGET_GATED",
+      "capabilities": [
+        "network"
+      ],
+      "editions": [
+        "1"
+      ],
+      "effects": [
+        "network"
+      ],
+      "exports": [
+        "Socket",
+        "TcpStream"
+      ],
+      "importGrantsCapabilities": false,
+      "layer": "STDLIB",
+      "name": "std.net",
+      "since": "Edition 1",
+      "stability": "stable",
+      "targets": [
+        "x86_64-systemv-elf-linux"
+      ]
+    },
+    {
+      "availability": "BOUNDED_PUBLIC",
+      "capabilities": [],
+      "editions": [
+        "1"
+      ],
+      "effects": [],
+      "exports": [
+        "Regex"
+      ],
+      "importGrantsCapabilities": false,
+      "layer": "STDLIB",
+      "name": "std.regex",
+      "since": "Edition 1",
+      "stability": "stable",
+      "targets": [
+        "x86_64-systemv-elf-linux"
+      ]
+    },
+    {
+      "availability": "BOUNDED_PUBLIC",
+      "capabilities": [],
+      "editions": [
+        "1"
+      ],
+      "effects": [],
+      "exports": [
+        "Matrix",
+        "Tensor"
+      ],
+      "importGrantsCapabilities": false,
+      "layer": "DOMAIN_PACK",
+      "name": "std.scientific",
+      "since": "Edition 1",
+      "stability": "experimental",
+      "targets": [
+        "x86_64-systemv-elf-linux"
+      ]
+    },
+    {
+      "availability": "EXCLUDED_1_0",
+      "capabilities": [
+        "console"
+      ],
+      "editions": [
+        "1"
+      ],
+      "effects": [
+        "console"
+      ],
+      "exports": [
+        "Chart"
+      ],
+      "importGrantsCapabilities": false,
+      "layer": "DOMAIN_PACK",
+      "name": "std.visual",
+      "since": "Edition 1",
+      "stability": "experimental",
+      "targets": [
+        "x86_64-systemv-elf-linux"
+      ]
+    }
+  ],
+  "schema": 1
+}

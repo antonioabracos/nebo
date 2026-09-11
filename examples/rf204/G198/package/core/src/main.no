@@ -1,0 +1,2 @@
+// Independent public value carried through the package interface.
+module core; export public token = 42;

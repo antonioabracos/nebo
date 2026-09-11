@@ -1,0 +1,3 @@
+start() {
+    ByteString.empty().invalid_alias;
+}

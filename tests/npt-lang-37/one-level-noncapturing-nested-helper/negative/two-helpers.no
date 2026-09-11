@@ -1,0 +1,2 @@
+(Int.self)outer(){ (Int.self)left(){ self.return; } (Int.self)right(){ self.return; } self.left().return; }
+start(){ 7.outer().return; }

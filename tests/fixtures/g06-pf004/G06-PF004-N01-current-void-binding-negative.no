@@ -1,0 +1,6 @@
+vazio() {
+}
+
+start() {
+    vazio().valor;
+}

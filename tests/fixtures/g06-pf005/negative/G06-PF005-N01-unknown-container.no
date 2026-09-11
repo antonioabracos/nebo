@@ -1,0 +1,3 @@
+start() {
+    MaybeValue<Int>(Some(1)).value;
+}

@@ -1,0 +1,5 @@
+start() {
+    Option<Char>(None()).maybe;
+    maybe.isNone().absent;
+    maybe.unwrapOr('x').value;
+}

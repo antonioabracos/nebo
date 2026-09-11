@@ -1,0 +1,5 @@
+// The actual template and typed arguments determine the published Text.
+start() {
+    "Olá %s %d".format("Nebo", 29).console();
+    23.return;
+}

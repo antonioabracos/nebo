@@ -1,71 +1,37 @@
-; PROJECT-SYMBOL-INDEX-E-CARREGAMENTO-INCREMENTAL-DE-INTERFACES-F05: Incremental add/remove/update e stale invalidation
-; Bounded native developer-experience/prelude/trivia kernel.
-; rdi=input bytes, rsi=length, rdx=caller-owned 24-byte result.
-; Success publishes digest, length, and stable operation tag atomically.
-; Failure publishes nothing. No allocation, I/O, libc, network, or effects.
+; RF166-G160-F05: atomic incremental replacement with cold parity.
 bits 64
 default rel
-
+%include "compiler/semantic/index/symbol_index.inc"
 global neboc_index_update
-
-%define DOC_MAX_INPUT 4096
-%define DOC_TAG 5
-%define hover_FNV_OFFSET 0xcbf29ce484222325
-%define hover_FNV_PRIME  0x100000001b3
-
 section .text
 align 16
 neboc_index_update:
-    test rdi, rdi
-    jz .argument
-    test rdx, rdx
-    jz .argument
-    test rdx, 7
-    jnz .argument
-    test rsi, rsi
-    jz .length
-    cmp rsi, DOC_MAX_INPUT
-    ja .length
-    lea rax, [rdi + rsi]
-    cmp rax, rdi
-    jb .length
-
-    mov rax, hover_FNV_OFFSET
-    mov r8, hover_FNV_PRIME
-    xor ecx, ecx
-.scan:
-    cmp rcx, rsi
-    jae .publish
-    movzx r9d, byte [rdi + rcx]
-    test r9b, r9b
-    jz .encoding
-    cmp r9b, 0x7f
-    ja .encoding
-    xor rax, r9
-    imul rax, r8
-    inc rcx
-    jmp .scan
-.publish:
-    xor rax, DOC_TAG
-    mov qword [rdx], rax
-    mov qword [rdx + 8], rsi
-    mov qword [rdx + 16], DOC_TAG
-    xor eax, eax
-    xor edx, edx
-    ret
-.argument:
-    mov eax, 1
-    mov edx, 1
-    ret
-.length:
-    mov eax, 2
-    mov edx, 2
-    ret
-.encoding:
-    mov eax, 3
-    mov edx, 3
-    ret
-.keyword:
-    mov eax, 4
-    mov edx, 4
-    ret
+ INDEX_VALIDATE_REQUEST NEBOC_INDEX_OP_INCREMENTAL,.validated
+.validated:
+ INDEX_REQUIRE_FLAGS NEBOC_INDEX_FLAG_INCREMENTAL|NEBOC_INDEX_FLAG_ATOMIC|NEBOC_INDEX_FLAG_VERIFY,.policy
+ mov rax,[rdi+NEBOC_INDEX_COLD_DIGEST_OFFSET]
+ test rax,rax
+ jz .contract
+ cmp rax,[rdi+NEBOC_INDEX_INCREMENTAL_DIGEST_OFFSET]
+ jne .mismatch
+ mov rax,[rdi+NEBOC_INDEX_ADDED_OFFSET]
+ add rax,[rdi+NEBOC_INDEX_REMOVED_OFFSET]
+ jc .limit
+ add rax,[rdi+NEBOC_INDEX_UPDATED_OFFSET]
+ jc .limit
+ cmp rax,NEBOC_INDEX_MAX_ENTRIES*3
+ ja .limit
+ INDEX_PUBLISH [rdi+NEBOC_INDEX_INCREMENTAL_DIGEST_OFFSET],0
+.contract:
+ mov eax,NEBOC_INDEX_STATUS_CONTRACT
+ ret
+.policy:
+ mov eax,NEBOC_INDEX_STATUS_POLICY
+ ret
+.mismatch:
+ mov eax,NEBOC_INDEX_STATUS_MISMATCH
+ ret
+.limit:
+ mov eax,NEBOC_INDEX_STATUS_LIMIT
+ ret
+section .note.GNU-stack noalloc noexec nowrite progbits

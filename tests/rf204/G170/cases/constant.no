@@ -1,0 +1,2 @@
+// Independent atomic runtime case.
+start() { 13.LIMIT; LIMIT.return; }

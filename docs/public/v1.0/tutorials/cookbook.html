@@ -1,0 +1,12 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Input, text and independent collections</title><link rel="stylesheet" href="../assets/style.css"></head><body><a href="#main">Skip to content</a><nav aria-label="Home"><a href="../index.html">Nebo documentation home</a></nav><main id="main"><h1>Input, text and independent collections</h1><p>A typed scripted Scan result is stored in one Dict. A second Dict uses the same key with a different value, demonstrating independent instances. The retained Console document contains 43 followed by 61; process status is 47.</p><p>Mock input makes this recipe reproducible without keyboard or network. For real input, follow the current Scan reference and cancellation/privacy rules. Imports only grant visibility. The executor must separately authorize filesystem, network or device effects.</p><h2>Complete Nebo source</h2><pre><code>// Input is scripted; dictionaries have independent state.
+start(){&quot;Count&quot;.scan(.int(),.mock(&quot;43&quot;)).n;Dict&lt;Int,Int&gt;.new().a;Dict&lt;Int,Int&gt;.new().b;a.insert(7,n);b.insert(7,61);a.get(7).expect(&quot;a&quot;).console();b.get(7).expect(&quot;b&quot;).console();47.return;}
+</code></pre><h2>Inputs and independent expectations</h2><pre>{
+  &quot;expected_exit&quot;: 47,
+  &quot;kinds&quot;: [
+    4,
+    4
+  ],
+  &quot;text&quot;: {
+    &quot;bytes_hex&quot;: &quot;34333631&quot;
+  }
+}</pre></main></body></html>

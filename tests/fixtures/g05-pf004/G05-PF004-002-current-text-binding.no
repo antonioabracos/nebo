@@ -1,0 +1,5 @@
+start() {
+    "Nebo".label;
+    Text("Nebo").expected;
+    if (label == expected) { 0; } else { 1; }
+}

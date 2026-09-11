@@ -1,0 +1,15 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>source encoding</title></head><body><a href="#main">Skip to content</a><main id="main"><h1>source encoding</h1><p>Source must be valid UTF-8. Invalid sequences, executable bidi controls and confusable spellings reject; byte offsets are measured in the original bytes. Formatting must preserve literal and comment payloads.</p><pre>Identity: N1-source-encoding (NORMATIVE_RULE)
+Edition: 1
+Target: x86_64-systemv-elf-linux
+Availability: EDITION_1_BOUNDED_NORMATIVE</pre><h2>Syntax or signature</h2><pre>N1-source-encoding — EDITION_1_BOUNDED_NORMATIVE</pre><h2>Scope and constraints</h2><p>Source must be valid UTF-8. Invalid sequences, executable bidi controls and confusable spellings reject; byte offsets are measured in the original bytes. Formatting must preserve literal and comment payloads.</p><h2>Use and remediation</h2><p>Follow the admitted forms in the individual syntax and operator references. Keep source order and type identity; make imports and capability grants explicit. A native supplemental contract does not introduce source constructors or widen target support.</p><h2>Executed examples</h2><h3>source:S01; expected 22</h3><pre><code>// Comments and raw Unicode text preserve their exact payload bytes.
+start(){/* outer /* inner */ comment */0x1d.value;&quot;Ω雪&quot;.byteLength().console();r&quot;two  spaces&quot;.byteLength().console();(value − 7).return;}
+</code></pre><p>Oracle: {&quot;console_text_utf8&quot;: &quot;511&quot;, &quot;independent_builds&quot;: 2, &quot;kinds&quot;: [4, 4], &quot;process_exit&quot;: 22, &quot;runtime_sha256&quot;: &quot;e7280983006af53de23e93c5147696b797b5a1cab84e56ed5b388a77e96db0bb&quot;}</p><h2>Rejected examples</h2><h3>lexical:unicode-0; expected NEBO_SOURCE_BIDI_CONTROL</h3><pre><code>start(){(17‪7).return;}</code></pre><p>Oracle: {&quot;artifact_publication&quot;: &quot;REJECTED&quot;, &quot;compiler_exit&quot;: 1, &quot;diagnostic&quot;: &quot;NEBO_SOURCE_BIDI_CONTROL&quot;}</p><h2>Additional observations and limits</h2><pre>[
+  {
+    &quot;case_id&quot;: &quot;formatter:multiline-preserve&quot;,
+    &quot;formatted_sha256&quot;: &quot;43a0bbd8e2c010d0994b3a9432cfd45009ae0b06fdc3d701421b4d02365e9ef8&quot;
+  },
+  {
+    &quot;case_id&quot;: &quot;formatter:raw-preserve&quot;,
+    &quot;formatted_sha256&quot;: &quot;c49ae1de58acd7d1a2babd369d620af0f315b6a454c8328265fbebc9a977c546&quot;
+  }
+]</pre><nav aria-label="Related entries"><a href="index.html">Index</a> <a href="syntax-program.html">syntax-program</a> <a href="syntax-ordinary_program.html">syntax-ordinary_program</a> <a href="syntax-declaration.html">syntax-declaration</a> <a href="syntax-entry.html">syntax-entry</a></nav><h2>Provenance</h2><ul><li>docs/public/v1.0/language/specification/NORMATIVE-RULE-REGISTRY.tsv — SHA-256 2d2d4324cf615c0970e3dca2f4197cde9e32b445e0337dd8179967dc0cff2d16</li><li>tests/rf204/G170/harness.py — SHA-256 6a31e65687ed1199e30e8fc2220bc41e5e5d94429d5bc9800018e338d4fa85b0</li></ul></main></body></html>

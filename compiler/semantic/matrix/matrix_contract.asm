@@ -6,6 +6,7 @@ default rel
 section .text
 global nebo_matrix_init_owned
 global nebo_matrix_validate
+global nebo_matrix_validate_finite_f64
 global nebo_matrix_validate_view_owner
 ; rdi desc rsi data rdx rows rcx cols r8 dtype r9 storage id
 nebo_matrix_init_owned:
@@ -95,6 +96,12 @@ nebo_matrix_validate:
  je .v_owned
  cmp rcx,NEBO_MATRIX_FLAG_VIEW
  jne .v_contract
+ ; Empty views have no addressable element. A transposed zero-width owner
+ ; legitimately carries a zero stride; bounds checks reject every access.
+ cmp qword [rdi+NEBO_MATRIX_ROWS],0
+ je .v_ok
+ cmp qword [rdi+NEBO_MATRIX_COLS],0
+ je .v_ok
  cmp qword [rdi+NEBO_MATRIX_ROW_STRIDE],0
  je .v_shape
  cmp qword [rdi+NEBO_MATRIX_COL_STRIDE],0
@@ -113,6 +120,52 @@ nebo_matrix_validate:
 .v_contract: mov eax,NEBO_NUMERIC_ERROR_CONTRACT
  ret
 .v_shape: mov eax,NEBO_NUMERIC_ERROR_SHAPE
+ ret
+
+; Algebra-domain preflight over logical strides, before publishing output.
+; General Matrix arithmetic retains its independent IEEE propagation policy.
+nebo_matrix_validate_finite_f64:
+ push rbx
+ mov rbx,rdi
+ call nebo_matrix_validate
+ test eax,eax
+ jnz .done
+ cmp qword [rbx+NEBO_MATRIX_DTYPE],NEBO_MATRIX_DTYPE_F64
+ jne .contract
+ xor r8d,r8d
+.row:
+ cmp r8,[rbx+NEBO_MATRIX_ROWS]
+ jae .ok
+ xor r9d,r9d
+.column:
+ cmp r9,[rbx+NEBO_MATRIX_COLS]
+ jae .next_row
+ mov rax,r8
+ imul rax,[rbx+NEBO_MATRIX_ROW_STRIDE]
+ mov rcx,r9
+ imul rcx,[rbx+NEBO_MATRIX_COL_STRIDE]
+ add rax,rcx
+ mov rdx,[rbx+NEBO_MATRIX_DATA]
+ mov rax,[rdx+rax*8]
+ shr rax,52
+ and eax,0x7ff
+ cmp eax,0x7ff
+ je .domain
+ inc r9
+ jmp .column
+.next_row:
+ inc r8
+ jmp .row
+.ok:
+ xor eax,eax
+ jmp .done
+.domain:
+ mov eax,NEBO_NUMERIC_ERROR_DOMAIN
+ jmp .done
+.contract:
+ mov eax,NEBO_NUMERIC_ERROR_CONTRACT
+.done:
+ pop rbx
  ret
 
 ; rdi view, rsi owner validates same storage and live generation.

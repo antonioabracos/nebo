@@ -1,0 +1,2 @@
+struct Pair { Int.left; Int.right; }
+start() { Pair { left: 3, right: 5 }.a; Pair { left: 7, right: 13 }.b; b.right; }

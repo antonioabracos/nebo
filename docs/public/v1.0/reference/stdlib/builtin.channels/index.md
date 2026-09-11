@@ -1,0 +1,16 @@
+# builtin.channels reference
+
+- [builtin.channels — CancellationToken](symbol-0e3f01bbad3c440efadf8842.md)
+- [builtin.channels — Channel](symbol-3ed9d83388d412f99b1c874a.md)
+- [builtin.channels — CancellationToken.cancel](symbol-409aac5868ff0f2d51d81d89.md)
+- [builtin.channels — CancellationToken.isCancelled](symbol-cd90eb6d1ed3abc7b7d90206.md)
+- [builtin.channels — CancellationToken.new](symbol-7e399f75346fcc67e5487b7a.md)
+- [builtin.channels — CancellationToken.throwIfCancelled](symbol-7e637e337f845a0e26ac2694.md)
+- [builtin.channels — Channel.bounded](symbol-9286b510e7998bb8be1993ce.md)
+- [builtin.channels — Channel.close](symbol-05a8ad14675a3ada31bd7edf.md)
+- [builtin.channels — Channel.receive](symbol-c47ca88b4926d26206e873b4.md)
+- [builtin.channels — Channel.send](symbol-a1f63e04b942fabc239fc389.md)
+- [builtin.channels — Channel.tryReceive](symbol-95bd356d42a3173147d0e951.md)
+- [builtin.channels — Channel.trySend](symbol-2efd3055f978a6a43f7227bc.md)
+- [builtin.channels — Channel.unbuffered](symbol-cefdc8b3526d7a0280ae6fbc.md)
+- [builtin.channels — builtin.channels](symbol-32dff80ce6d51967c19cd1e0.md)

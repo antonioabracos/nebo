@@ -1,17 +1,52 @@
 {
-  "bounded_internal_tools": [],
+  "bounded_internal_tools": [
+    {
+      "operations": [
+        "five instruction forms",
+        "ELF64 relocatable writer",
+        "static exit linker"
+      ],
+      "owner": "compiler/sdk/toolchain.py",
+      "production_compiler_uses_external_assembler_linker": true,
+      "profile": "static-exit-x86_64-v1"
+    }
+  ],
   "external_tools": [
     {
       "bundled": false,
       "discovery": "PATH",
+      "fingerprint": "PROVENANCE.json",
       "name": "nasm"
     },
     {
       "bundled": false,
       "discovery": "PATH",
+      "fingerprint": "PROVENANCE.json",
       "name": "ld"
+    },
+    {
+      "bundled": false,
+      "discovery": "PATH",
+      "fingerprint": "PROVENANCE.json",
+      "name": "python3"
+    },
+    {
+      "bundled": false,
+      "discovery": "PATH",
+      "fingerprint": "PROVENANCE.json",
+      "name": "ninja"
     }
   ],
   "format": "NEBO-TOOLCHAIN-TCB-v1",
+  "native_tools": [
+    "nebo-token-scan",
+    "nebo-comment-scan",
+    "nebo-doc-parser",
+    "nebo-doc-record",
+    "nebo-doc-validator",
+    "nebo-doc-examples",
+    "nebo-docs",
+    "interface_codec_probe"
+  ],
   "network_required": false
 }

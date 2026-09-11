@@ -1,0 +1,13 @@
+// Logical scenes use versioned templates and capability-gated local resources with bounded streaming.
+(Int.self)sceneNew() { self.return; }
+(Int.self)sceneTemplateFromWorld() { self.return; }
+(Int.self)sceneInstantiate() { self.return; }
+(Int.self)sceneLoad() { self.return; }
+(Int.self)sceneStream() { self.return; }
+(Int.self)sceneUnload() { self.return; }
+(Int.self)sceneDependencies() { self.return; }
+(Int.self)sceneMemoryReport() { self.return; }
+
+start() {
+    128.sceneNew().sceneTemplateFromWorld().sceneInstantiate().sceneLoad().sceneStream().sceneUnload().sceneDependencies().sceneMemoryReport();
+}

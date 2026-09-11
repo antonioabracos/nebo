@@ -164,7 +164,7 @@ NEBOC_ABI_FUNCTION neboc_stream_next
  push r15
  push rbp
  push rbx
- sub rsp,16
+ sub rsp,24 ; keep SysV call alignment across source callback bridges
  mov r12,rdi
  mov r13,rsi
  mov r14,rdx
@@ -239,7 +239,7 @@ NEBOC_ABI_FUNCTION neboc_stream_next
  jmp .sn_done
 .sn_source: mov eax,NEBOC_STATUS_INVALID_SOURCE
 .sn_done:
- add rsp,16
+ add rsp,24
  pop rbx
  pop rbp
  pop r15
@@ -261,7 +261,7 @@ NEBOC_ABI_FUNCTION neboc_stream_consume
  push r13
  push r14
  push r15
- sub rsp,32
+ sub rsp,40 ; native next and consumer calls require aligned RSP
  mov r12,rdi
  mov r13,rsi
  mov r14,rdx
@@ -285,7 +285,7 @@ NEBOC_ABI_FUNCTION neboc_stream_consume
  jmp .sco_loop
 .sco_ok: xor eax,eax
 .sco_done:
- add rsp,32
+ add rsp,40
  pop r15
  pop r14
  pop r13

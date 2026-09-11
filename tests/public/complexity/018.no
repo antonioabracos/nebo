@@ -1,0 +1,13 @@
+// ODE trajectories expose fixed and adaptive RK policies, directed events, samples, steps, and error reports.
+(Int.self)odeProblemDefine() { self.return; }
+(Int.self)odeSolve() { self.return; }
+(Int.self)odeMethodRk4() { self.return; }
+(Int.self)odeMethodAdaptiveRk() { self.return; }
+(Int.self)odeEvent() { self.return; }
+(Int.self)trajectorySample() { self.return; }
+(Int.self)trajectorySteps() { self.return; }
+(Int.self)trajectoryErrorReport() { self.return; }
+
+start() {
+    87.odeProblemDefine().odeSolve().odeMethodRk4().odeMethodAdaptiveRk().odeEvent().trajectorySample().trajectorySteps().trajectoryErrorReport();
+}

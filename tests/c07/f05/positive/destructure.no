@@ -1,0 +1,1 @@
+start() { Tuple.of(4, 5, 6).triple; triple.destructure(first, _, last); last.return; }

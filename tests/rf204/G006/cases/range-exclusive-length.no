@@ -1,0 +1,4 @@
+start() {
+    Range.exclusive(2, 10).stepBy(2).progression;
+    progression.length().return;
+}

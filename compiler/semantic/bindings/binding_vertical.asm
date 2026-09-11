@@ -5,12 +5,18 @@ default rel
 %include "compiler/support/status/status_codes.inc"
 %include "compiler/tokens/token.inc"
 %include "compiler/tokens/token_kind.inc"
+%include "compiler/tokens/operator_registry.inc"
+%include "compiler/semantic/operators/core_option_range_flow_registry.inc"
 %include "compiler/ast/ast_node.inc"
 %include "compiler/semantic/types/type_table.inc"
 %include "compiler/parser/binding_definite_assignment_contract.inc"
 %include "compiler/parser/text_char_bytes_api_contract.inc"
 %include "compiler/parser/mutable_assignment_parser.inc"
 %include "compiler/semantic/bindings/binding_vertical.inc"
+%include "compiler/semantic/operators/core_arithmetic_registry.inc"
+%include "compiler/semantic/operators/core_power_xor_ordering_registry.inc"
+
+extern neboc_name_is_all_caps
 
 section .rodata
 n_void: db "Void"
@@ -35,6 +41,50 @@ n_scan: db "scan"
 n_scan_len equ $-n_scan
 n_to_float: db "toFloat"
 n_to_float_len equ $-n_to_float
+n_sqrt: db "sqrt"
+n_sqrt_len equ $-n_sqrt
+n_cube_root: db "cubeRoot"
+n_cube_root_len equ $-n_cube_root
+n_fourth_root: db "fourthRoot"
+n_fourth_root_len equ $-n_fourth_root
+n_factorial: db "factorial"
+n_factorial_len equ $-n_factorial
+n_floor: db "floor"
+n_floor_len equ $-n_floor
+n_ceil: db "ceil"
+n_ceil_len equ $-n_ceil
+n_uncertain_type: db "Uncertain"
+n_uncertain_type_len equ $-n_uncertain_type
+n_measurement_type: db "Measurement"
+n_measurement_type_len equ $-n_measurement_type
+n_approx_equals: db "approxEquals"
+n_approx_equals_len equ $-n_approx_equals
+n_equivalent_to: db "equivalentTo"
+n_equivalent_to_len equ $-n_equivalent_to
+n_divides: db "divides"
+n_divides_len equ $-n_divides
+n_proportional_to: db "proportionalTo"
+n_proportional_to_len equ $-n_proportional_to
+n_add_worst_case: db "addWorstCase"
+n_add_worst_case_len equ $-n_add_worst_case
+n_add_independent: db "addIndependent"
+n_add_independent_len equ $-n_add_independent
+n_add_correlated: db "addCorrelated"
+n_add_correlated_len equ $-n_add_correlated
+n_add_interval: db "addInterval"
+n_add_interval_len equ $-n_add_interval
+n_measured_value: db "measuredValue"
+n_measured_value_len equ $-n_measured_value
+n_uncertainty: db "uncertainty"
+n_uncertainty_len equ $-n_uncertainty
+n_unit_code: db "unitCode"
+n_unit_code_len equ $-n_unit_code
+n_quality: db "quality"
+n_quality_len equ $-n_quality
+n_confidence: db "confidence"
+n_confidence_len equ $-n_confidence
+n_separator_codepoint: db "separatorCodepoint"
+n_separator_codepoint_len equ $-n_separator_codepoint
 n_is_finite: db "isFinite"
 n_is_finite_len equ $-n_is_finite
 n_is_nan: db "isNaN"
@@ -71,6 +121,52 @@ n_test_bit: db "testBit"
 n_test_bit_len equ $-n_test_bit
 n_with_bit: db "withBit"
 n_with_bit_len equ $-n_with_bit
+n_swap: db "swap"
+n_swap_len equ $-n_swap
+n_replace: db "replace"
+n_replace_len equ $-n_replace
+n_checked_add: db "checkedAdd"
+n_checked_add_len equ $-n_checked_add
+n_wrapping_add: db "wrappingAdd"
+n_wrapping_add_len equ $-n_wrapping_add
+n_saturating_add: db "saturatingAdd"
+n_saturating_add_len equ $-n_saturating_add
+n_checked_div: db "checkedDiv"
+n_checked_div_len equ $-n_checked_div
+n_checked_shift: db "checkedShift"
+n_checked_shift_len equ $-n_checked_shift
+n_overflowing_mul: db "overflowingMul"
+n_overflowing_mul_len equ $-n_overflowing_mul
+n_get: db "get"
+n_get_len equ $-n_get
+n_is_some: db "isSome"
+n_is_some_len equ $-n_is_some
+n_value: db "value"
+n_value_len equ $-n_value
+n_overflowed: db "overflowed"
+n_overflowed_len equ $-n_overflowed
+n_exclusive: db "exclusive"
+n_exclusive_len equ $-n_exclusive
+n_range: db "Range"
+n_range_len equ $-n_range
+n_iterator: db "iterator"
+n_iterator_len equ $-n_iterator
+n_next: db "next"
+n_next_len equ $-n_next
+n_size_hint: db "sizeHint"
+n_size_hint_len equ $-n_size_hint
+n_lower: db "lower"
+n_lower_len equ $-n_lower
+n_upper: db "upper"
+n_upper_len equ $-n_upper
+n_unreachable: db "unreachable"
+n_unreachable_len equ $-n_unreachable
+n_assert: db "assert"
+n_assert_len equ $-n_assert
+n_assume: db "assume"
+n_assume_len equ $-n_assume
+n_flow: db "flow"
+n_flow_len equ $-n_flow
 
 section .text
 NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
@@ -120,6 +216,8 @@ NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
  mov qword [r12+NEBOC_VERTICAL_BRANCH_SNAPSHOT_COUNT_OFFSET],0
  mov qword [r12+NEBOC_VERTICAL_LOOP_DEPTH_OFFSET],0
  mov qword [r12+NEBOC_VERTICAL_LOOP_SNAPSHOT_COUNT_OFFSET],0
+ mov qword [r12+NEBOC_VERTICAL_LOOP_VALUE_SEEN_OFFSET],0
+ mov qword [r12+NEBOC_VERTICAL_LOOP_PLAIN_BREAK_SEEN_OFFSET],0
  mov rax,[r12+NEBOC_VERTICAL_SYMBOLS_OFFSET]
  mov [r12+NEBOC_VERTICAL_ROOT_SYMBOLS_OFFSET],rax
  cmp qword [r12+NEBOC_VERTICAL_MAX_DEPTH_OFFSET],0
@@ -146,6 +244,10 @@ NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
  je .scan_binding
  cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_EXPRESSION_STMT
  je .scan_expression
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CALL_EXPR
+ je .scan_g002_call
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_RETURN_STMT
+ je .scan_core_return
  cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_ASSIGNMENT_STMT
  je .scan_found
  cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_WHILE_STMT
@@ -156,8 +258,140 @@ NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
  je .scan_found
  cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_CONTINUE_STMT
  je .scan_found
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_DO_WHILE_STMT
+ je .scan_found
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_DEFER_STMT
+ je .scan_found
  cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IF_STMT
  je .scan_if
+ jmp .scan_next
+.scan_core_return:
+ ; Raw checked Int arithmetic can be the entire start() result.  Recognize the
+ ; closed scalar expression, but leave call/Bytes/Char/Float returns to their
+ ; established semantic verticals.
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rsi,rsi
+ jz .internal
+ mov rdi,r12
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_RETURN_TERMINAL
+ jne .internal
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rsi,rsi
+ jz .internal
+ mov rdi,r12
+ xor edx,edx
+ call g05v_core_discarded_expr_type
+ cmp rax,-1
+ je .scan_semantic_error
+ test rax,rax
+ jnz .scan_found
+ jmp .scan_next
+.scan_g002_call:
+ ; A return-only program has no binding or statement marker to classify it.
+ ; Claim only the public G002 entry operations; matching every call would steal
+ ; established receiver families such as Bytes/Console from their owners.
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov [rsp+40],rsi
+ mov rdi,r12
+ lea rdx,[rel n_swap]
+ mov ecx,n_swap_len
+ call g05v_token_match
+ test eax,eax
+ jnz .scan_found
+ mov rdi,r12
+ mov rsi,[rsp+40]
+ lea rdx,[rel n_replace]
+ mov ecx,n_replace_len
+ call g05v_token_match
+ test eax,eax
+ jnz .scan_found
+ mov rdi,r12
+ mov rsi,[rsp+40]
+ lea rdx,[rel n_checked_add]
+ mov ecx,n_checked_add_len
+ call g05v_token_match
+ test eax,eax
+ jnz .scan_found
+ mov rdi,r12
+ mov rsi,[rsp+40]
+ lea rdx,[rel n_checked_div]
+ mov ecx,n_checked_div_len
+ call g05v_token_match
+ test eax,eax
+ jnz .scan_found
+ mov rdi,r12
+ mov rsi,[rsp+40]
+ lea rdx,[rel n_checked_shift]
+ mov ecx,n_checked_shift_len
+ call g05v_token_match
+ test eax,eax
+ jnz .scan_found
+ mov rdi,r12
+ mov rsi,[rsp+40]
+ lea rdx,[rel n_wrapping_add]
+ mov ecx,n_wrapping_add_len
+ call g05v_token_match
+ test eax,eax
+ jnz .scan_found
+ mov rdi,r12
+ mov rsi,[rsp+40]
+ lea rdx,[rel n_saturating_add]
+ mov ecx,n_saturating_add_len
+ call g05v_token_match
+ test eax,eax
+ jnz .scan_found
+ mov rdi,r12
+ mov rsi,[rsp+40]
+ lea rdx,[rel n_overflowing_mul]
+ mov ecx,n_overflowing_mul_len
+ call g05v_token_match
+ test eax,eax
+ jnz .scan_found
+ mov rdi,r12
+ mov rsi,[rsp+40]
+ lea rdx,[rel n_exclusive]
+ mov ecx,n_exclusive_len
+ call g05v_token_match
+ test eax,eax
+ jnz .scan_found
+ mov rdi,r12
+ mov rsi,[rsp+40]
+ lea rdx,[rel n_iterator]
+ mov ecx,n_iterator_len
+ call g05v_token_match
+ test eax,eax
+ jnz .scan_found
+ mov rdi,r12
+ mov rsi,[rsp+40]
+ lea rdx,[rel n_size_hint]
+ mov ecx,n_size_hint_len
+ call g05v_token_match
+ test eax,eax
+ jnz .scan_found
+ mov rdi,r12
+ mov rsi,[rsp+40]
+ lea rdx,[rel n_unreachable]
+ mov ecx,n_unreachable_len
+ call g05v_token_match
+ test eax,eax
+ jnz .scan_found
+ mov rdi,r12
+ mov rsi,[rsp+40]
+ lea rdx,[rel n_assert]
+ mov ecx,n_assert_len
+ call g05v_token_match
+ test eax,eax
+ jnz .scan_found
+ mov rdi,r12
+ mov rsi,[rsp+40]
+ lea rdx,[rel n_assume]
+ mov ecx,n_assume_len
+ call g05v_token_match
+ test eax,eax
+ jnz .scan_found
  jmp .scan_next
 .scan_if:
  mov qword [rsp+32],1
@@ -168,6 +402,8 @@ NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
  mov qword [rsp+8],1
  cmp qword [rsp+16],0
  jne .scan_found
+ test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_EXPLICIT_CONST_BINDING
+ jnz .scan_found
  test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_MUTABLE_BINDING
  jnz .scan_found
  mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
@@ -470,9 +706,8 @@ NEBOC_ABI_FUNCTION neboc_binding_vertical_recognize
 ; semantic vertical owns the expression, or -1 after a typed diagnostic.
 ;
 ; This classifier-side check is deliberately limited to the closed public
-; Int/Bool/Text operator table.  It prevents value-discard from becoming a
-; typecheck bypass without preempting Float, Char, Bytes or receiver-call
-; verticals whose representation and operator contracts are separate.
+; scalar operator table. It prevents value-discard from becoming a typecheck
+; bypass without preempting receiver-call verticals.
 g05v_core_discarded_expr_type:
  push rbx
  push r12
@@ -494,6 +729,10 @@ g05v_core_discarded_expr_type:
  mov rax,[r15+NEBOC_AST_NODE_KIND_OFFSET]
  cmp rax,NEBOC_AST_INTEGER_LITERAL
  je .int
+ cmp rax,NEBOC_AST_FLOAT_LITERAL
+ je .float
+ cmp rax,NEBOC_AST_MATH_CONSTANT
+ je .float
  cmp rax,NEBOC_AST_TEXT_LITERAL
  je .text
  cmp rax,NEBOC_AST_BOOL_LITERAL
@@ -515,6 +754,34 @@ g05v_core_discarded_expr_type:
  test rax,rax
  jz .unowned
  mov rcx,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ cmp rcx,NEBOC_TOKEN_POSTFIX_PERCENT
+ je .unary_percent
+ cmp rcx,NEBOC_TOKEN_PER_MILLE
+ je .unary_per_mille
+ cmp rcx,NEBOC_TOKEN_BASIS_POINTS
+ je .unary_basis_points
+ cmp rcx,NEBOC_TOKEN_DEGREE
+ je .unary_angle
+ cmp rcx,NEBOC_TOKEN_CELSIUS
+ je .unary_temperature
+ cmp rcx,NEBOC_TOKEN_FAHRENHEIT
+ je .unary_temperature
+ cmp rcx,NEBOC_TOKEN_SQUARE_ROOT
+ je .unary_exact_math
+ cmp rcx,NEBOC_TOKEN_CUBE_ROOT
+ je .unary_exact_math
+ cmp rcx,NEBOC_TOKEN_FOURTH_ROOT
+ je .unary_exact_math
+ cmp rcx,NEBOC_TOKEN_POSTFIX_FACTORIAL
+ je .unary_exact_math
+ cmp rcx,NEBOC_TOKEN_FLOOR_OPEN
+ je .unary_round_math
+ cmp rcx,NEBOC_TOKEN_CEIL_OPEN
+ je .unary_round_math
+ NEBOC_CORE_ORF_CLASSIFY rcx,rdx,.unary_not_lateral
+ cmp rdx,NEBOC_OPERATOR_ID_NSR_CORE_047
+ je .unary_lateral
+.unary_not_lateral:
  cmp rcx,NEBOC_TOKEN_MINUS
  je .unary_minus
  cmp rcx,NEBOC_TOKEN_BANG
@@ -526,6 +793,58 @@ g05v_core_discarded_expr_type:
  cmp rax,NEBOC_BIND_TYPE_INT
  jne .type_error_unary
  jmp .int
+.unary_exact_math:
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .type_error_unary
+ jmp .int
+.unary_round_math:
+ cmp rax,NEBOC_BIND_TYPE_FLOAT
+ jne .type_error_unary
+ jmp .int
+.unary_percent:
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .type_error_unary
+ mov eax,NEBOC_BIND_TYPE_PERCENT
+ jmp .done
+.unary_per_mille:
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .type_error_unary
+ mov eax,NEBOC_BIND_TYPE_PER_MILLE
+ jmp .done
+.unary_basis_points:
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .type_error_unary
+ mov eax,NEBOC_BIND_TYPE_BASIS_POINTS
+ jmp .done
+.unary_angle:
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .type_error_unary
+ mov eax,NEBOC_BIND_TYPE_ANGLE
+ jmp .done
+.unary_temperature:
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .type_error_unary
+ mov eax,NEBOC_BIND_TYPE_TEMPERATURE
+ jmp .done
+.unary_lateral:
+ mov [rsp],rax
+ mov rdi,r12
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rsi,rsi
+ jz .internal
+ mov rdi,r12
+ lea rdx,[r14+1]
+ call g05v_core_discarded_expr_type
+ cmp rax,-1
+ je .done
+ test rax,rax
+ jz .type_error_unary
+ mov rax,[rsp]
+ jmp .done
 .binary:
  mov rbx,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  test rbx,rbx
@@ -556,6 +875,24 @@ g05v_core_discarded_expr_type:
  jz .unowned
  mov [rsp+8],rax
  mov rcx,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ cmp rcx,NEBOC_TOKEN_PLUS_MINUS
+ je .binary_uncertain_construct
+ cmp rcx,NEBOC_TOKEN_APPROX_EQUAL
+ je .binary_uncertain_relation
+ cmp rcx,NEBOC_TOKEN_NOT_APPROX_EQUAL
+ je .binary_uncertain_relation
+ cmp rcx,NEBOC_TOKEN_EQUIVALENT
+ je .binary_uncertain_relation
+ cmp rcx,NEBOC_TOKEN_PROPORTIONAL
+ je .binary_uncertain_relation
+ cmp rcx,NEBOC_TOKEN_DIVIDES
+ je .binary_divides
+ cmp rcx,NEBOC_TOKEN_NOT_DIVIDES
+ je .binary_divides
+ cmp qword [rsp],NEBOC_BIND_TYPE_PERCENT
+ jae .binary_quantity
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_PERCENT
+ jae .binary_quantity
  cmp rcx,NEBOC_TOKEN_PLUS
  je .binary_int
  cmp rcx,NEBOC_TOKEN_MINUS
@@ -585,11 +922,49 @@ g05v_core_discarded_expr_type:
  cmp rcx,NEBOC_TOKEN_GREATER
  je .binary_order
  cmp rcx,NEBOC_TOKEN_GREATER_EQUAL
+ je .binary_order
+ cmp rcx,NEBOC_TOKEN_SPACESHIP
  jne .type_error_binary
-.binary_order:
+ mov rax,[rsp]
+ cmp rax,[rsp+8]
+ jne .type_error_binary
+ cmp rax,NEBOC_BIND_TYPE_INT
+ je .ordering
+ cmp rax,NEBOC_BIND_TYPE_BOOL
+ je .ordering
+ cmp rax,NEBOC_BIND_TYPE_BYTES
+ jne .type_error_binary
+.ordering:
+ mov eax,NEBOC_BIND_TYPE_ORDERING
+ jmp .done
+.binary_uncertain_construct:
  cmp qword [rsp],NEBOC_BIND_TYPE_INT
  jne .type_error_binary
  cmp qword [rsp+8],NEBOC_BIND_TYPE_INT
+ jne .type_error_binary
+ mov eax,NEBOC_BIND_TYPE_UNCERTAIN_INT
+ jmp .done
+.binary_uncertain_relation:
+ cmp qword [rsp],NEBOC_BIND_TYPE_UNCERTAIN_INT
+ jne .type_error_binary
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_UNCERTAIN_INT
+ jne .type_error_binary
+ jmp .bool
+.binary_divides:
+ cmp qword [rsp],NEBOC_BIND_TYPE_INT
+ jne .type_error_binary
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_INT
+ jne .type_error_binary
+ jmp .bool
+.binary_order:
+ mov rax,[rsp]
+ cmp rax,[rsp+8]
+ jne .type_error_binary
+ cmp rax,NEBOC_BIND_TYPE_INT
+ je .bool
+ cmp rax,NEBOC_BIND_TYPE_BOOL
+ je .bool
+ cmp rax,NEBOC_BIND_TYPE_BYTES
  jne .type_error_binary
  jmp .bool
 .binary_equal:
@@ -624,6 +999,94 @@ g05v_core_discarded_expr_type:
  cmp qword [rsp+8],NEBOC_BIND_TYPE_INT
  jne .type_error_binary
  jmp .int
+.binary_quantity:
+ cmp qword [rsp],NEBOC_BIND_TYPE_TEMPERATURE
+ ja .type_error_binary
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_TEMPERATURE
+ ja .type_error_binary
+ cmp qword [rsp],NEBOC_BIND_TYPE_TEMPERATURE
+ je .binary_temperature
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_TEMPERATURE
+ je .binary_temperature
+ cmp rcx,NEBOC_TOKEN_EQUAL_EQUAL
+ je .binary_quantity_compare
+ cmp rcx,NEBOC_TOKEN_BANG_EQUAL
+ je .binary_quantity_compare
+ cmp rcx,NEBOC_TOKEN_LESS
+ je .binary_quantity_compare
+ cmp rcx,NEBOC_TOKEN_LESS_EQUAL
+ je .binary_quantity_compare
+ cmp rcx,NEBOC_TOKEN_GREATER
+ je .binary_quantity_compare
+ cmp rcx,NEBOC_TOKEN_GREATER_EQUAL
+ je .binary_quantity_compare
+ cmp rcx,NEBOC_TOKEN_PLUS
+ je .binary_quantity_same
+ cmp rcx,NEBOC_TOKEN_MINUS
+ je .binary_quantity_same
+ cmp rcx,NEBOC_TOKEN_STAR
+ je .binary_quantity_multiply
+ cmp rcx,NEBOC_TOKEN_SLASH
+ jne .type_error_binary
+ cmp qword [rsp],NEBOC_BIND_TYPE_PERCENT
+ jb .type_error_binary
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_INT
+ jne .type_error_binary
+ mov rax,[rsp]
+ jmp .done
+.binary_temperature:
+ cmp qword [rsp],NEBOC_BIND_TYPE_TEMPERATURE
+ jne .type_error_binary
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_TEMPERATURE
+ jne .type_error_binary
+ cmp rcx,NEBOC_TOKEN_EQUAL_EQUAL
+ je .bool
+ cmp rcx,NEBOC_TOKEN_BANG_EQUAL
+ je .bool
+ cmp rcx,NEBOC_TOKEN_LESS
+ je .bool
+ cmp rcx,NEBOC_TOKEN_LESS_EQUAL
+ je .bool
+ cmp rcx,NEBOC_TOKEN_GREATER
+ je .bool
+ cmp rcx,NEBOC_TOKEN_GREATER_EQUAL
+ je .bool
+ jmp .type_error_binary
+.binary_quantity_compare:
+ mov rax,[rsp]
+ cmp rax,[rsp+8]
+ je .bool
+ cmp rax,NEBOC_BIND_TYPE_PERCENT
+ jb .type_error_binary
+ cmp rax,NEBOC_BIND_TYPE_BASIS_POINTS
+ ja .type_error_binary
+ mov rax,[rsp+8]
+ cmp rax,NEBOC_BIND_TYPE_PERCENT
+ jb .type_error_binary
+ cmp rax,NEBOC_BIND_TYPE_BASIS_POINTS
+ ja .type_error_binary
+ jmp .bool
+.binary_quantity_same:
+ mov rax,[rsp]
+ cmp rax,[rsp+8]
+ jne .type_error_binary
+ cmp rax,NEBOC_BIND_TYPE_PERCENT
+ jb .type_error_binary
+ jmp .done
+.binary_quantity_multiply:
+ cmp qword [rsp],NEBOC_BIND_TYPE_INT
+ je .binary_quantity_multiply_right
+ cmp qword [rsp],NEBOC_BIND_TYPE_PERCENT
+ jb .type_error_binary
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_INT
+ jne .type_error_binary
+ mov rax,[rsp]
+ jmp .done
+.binary_quantity_multiply_right:
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_PERCENT
+ jb .type_error_binary
+ mov rax,[rsp+8]
+ jmp .done
 .type_error_unary:
  mov rdx,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
  jmp .type_error
@@ -637,6 +1100,9 @@ g05v_core_discarded_expr_type:
  jmp .done
 .int:
  mov eax,NEBOC_BIND_TYPE_INT
+ jmp .done
+.float:
+ mov eax,NEBOC_BIND_TYPE_FLOAT
  jmp .done
 .text:
  mov eax,NEBOC_BIND_TYPE_TEXT
@@ -691,6 +1157,7 @@ g05v_analyze_block:
  call g05v_node_ptr
  test rax,rax
  jz .internal
+ mov [rsp+8],rax
  mov r15,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
  mov rcx,[rax+NEBOC_AST_NODE_KIND_OFFSET]
  cmp rcx,NEBOC_AST_BINDING_STMT
@@ -705,10 +1172,16 @@ g05v_analyze_block:
  je .while
  cmp rcx,NEBOC_AST_LOOP_STMT
  je .loop_stmt
+ cmp rcx,NEBOC_AST_DO_WHILE_STMT
+ je .loop_stmt
  cmp rcx,NEBOC_AST_BREAK_STMT
  je .break
  cmp rcx,NEBOC_AST_CONTINUE_STMT
  je .continue
+ cmp rcx,NEBOC_AST_DEFER_STMT
+ je .defer
+ cmp rcx,NEBOC_AST_RETURN_STMT
+ je .return
  jmp .next
 .binding:
  mov rdi,r12
@@ -764,12 +1237,68 @@ g05v_analyze_block:
 .break:
  cmp qword [r12+NEBOC_VERTICAL_LOOP_DEPTH_OFFSET],0
  je .break_outside
+ mov rax,[rsp+8]
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rsi,rsi
+ jz .plain_break
+ mov rdi,r12
+ lea rdx,[r14+1]
+ call g05v_expr_type
+ cmp rax,-1
+ je .error_passthrough
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .break_value_error
+ cmp qword [r12+NEBOC_VERTICAL_LOOP_PLAIN_BREAK_SEEN_OFFSET],0
+ jne .break_value_error
+ mov qword [r12+NEBOC_VERTICAL_LOOP_VALUE_SEEN_OFFSET],1
+ jmp .break_terminal
+.plain_break:
+ cmp qword [r12+NEBOC_VERTICAL_LOOP_VALUE_SEEN_OFFSET],0
+ jne .break_value_error
+ mov qword [r12+NEBOC_VERTICAL_LOOP_PLAIN_BREAK_SEEN_OFFSET],1
+.break_terminal:
  mov qword [rsp],1
  inc qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_OPERATION_COUNT_OFFSET]
  jmp .next
 .continue:
  cmp qword [r12+NEBOC_VERTICAL_LOOP_DEPTH_OFFSET],0
  je .continue_outside
+ mov qword [rsp],1
+ inc qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_OPERATION_COUNT_OFFSET]
+ jmp .next
+.defer:
+ mov rax,[rsp+8]
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rsi,rsi
+ jz .internal
+ mov rdi,r12
+ lea rdx,[r14+1]
+ call g05v_expr_type
+ cmp rax,-1
+ je .error_passthrough
+ inc qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_OPERATION_COUNT_OFFSET]
+ jmp .next
+.return:
+ mov rax,[rsp+8]
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rsi,rsi
+ jz .internal
+ mov rdi,r12
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_RETURN_TERMINAL
+ jne .internal
+ mov rsi,[rax+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rsi,rsi
+ jz .internal
+ mov rdi,r12
+ lea rdx,[r14+1]
+ call g05v_expr_type
+ cmp rax,-1
+ je .error_passthrough
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .break_value_error
  mov qword [rsp],1
  inc qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_OPERATION_COUNT_OFFSET]
  jmp .next
@@ -790,6 +1319,15 @@ g05v_analyze_block:
  jmp .done
 .continue_outside:
  mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],NEBOC_DIAG_CONTINUE_OUTSIDE_LOOP
+ mov rcx,[rax+NEBOC_AST_NODE_START_OFFSET]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_START_OFFSET],rcx
+ mov rcx,[rax+NEBOC_AST_NODE_END_OFFSET]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_END_OFFSET],rcx
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .done
+.break_value_error:
+ mov rax,[rsp+8]
+ mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],NEBOC_DIAG_BREAK_VALUE
  mov rcx,[rax+NEBOC_AST_NODE_START_OFFSET]
  mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_START_OFFSET],rcx
  mov rcx,[rax+NEBOC_AST_NODE_END_OFFSET]
@@ -824,7 +1362,7 @@ g05v_analyze_loop:
  push r13
  push r14
  push r15
- sub rsp,80
+ sub rsp,128
  mov r12,rdi
  mov r13,rsi
  mov r14,rdx
@@ -838,11 +1376,29 @@ g05v_analyze_loop:
  mov [rsp],rax
  cmp rax,NEBOC_AST_WHILE_STMT
  je .while
+ cmp rax,NEBOC_AST_DO_WHILE_STMT
+ je .do_while
  cmp rax,NEBOC_AST_LOOP_STMT
  jne .internal
  mov rbx,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  test rbx,rbx
  jz .internal
+ jmp .body_ready
+.do_while:
+ mov rbx,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rbx,rbx
+ jz .internal
+ mov [rsp+8],rbx
+ mov rdi,r12
+ mov rsi,rbx
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ mov rbx,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rbx,rbx
+ jz .internal
+ mov [rsp+104],rbx
+ mov rbx,[rsp+8]
  jmp .body_ready
 .while:
  mov rbx,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
@@ -866,6 +1422,12 @@ g05v_analyze_loop:
  jz .internal
 .body_ready:
  mov [rsp+8],rbx
+ mov rax,[r12+NEBOC_VERTICAL_LOOP_VALUE_SEEN_OFFSET]
+ mov [rsp+72],rax
+ mov rax,[r12+NEBOC_VERTICAL_LOOP_PLAIN_BREAK_SEEN_OFFSET]
+ mov [rsp+80],rax
+ mov qword [r12+NEBOC_VERTICAL_LOOP_VALUE_SEEN_OFFSET],0
+ mov qword [r12+NEBOC_VERTICAL_LOOP_PLAIN_BREAK_SEEN_OFFSET],0
  mov rax,[r12+NEBOC_VERTICAL_SYMBOLS_OFFSET]
  mov [rsp+16],rax
  mov rax,[r12+NEBOC_VERTICAL_SYMBOL_COUNT_OFFSET]
@@ -903,6 +1465,36 @@ g05v_analyze_loop:
  lea rdx,[r14+1]
  call g05v_analyze_block
  mov [rsp+40],rax
+ test eax,eax
+ jnz .do_condition_done
+ cmp qword [rsp],NEBOC_AST_DO_WHILE_STMT
+ jne .do_condition_done
+ ; A post-test loop executes its body before reading the condition. Validate
+ ; against that live state so assignments made by the mandatory first
+ ; iteration participate in definite assignment.
+ mov rdi,r12
+ mov rsi,[rsp+104]
+ lea rdx,[r14+1]
+ call g05v_expr_type
+ cmp rax,NEBOC_BIND_TYPE_BOOL
+ je .do_condition_done
+ cmp rax,-1
+ je .do_condition_failed
+ mov rdi,r12
+ mov esi,NEBOC_DIAG_WHILE_CONDITION_TYPE
+ xor edx,edx
+ call g05v_set_error
+.do_condition_failed:
+ mov qword [rsp+40],NEBOC_STATUS_INVALID_SOURCE
+.do_condition_done:
+ mov rax,[r12+NEBOC_VERTICAL_LOOP_VALUE_SEEN_OFFSET]
+ mov [rsp+88],rax
+ mov rax,[r12+NEBOC_VERTICAL_LOOP_PLAIN_BREAK_SEEN_OFFSET]
+ mov [rsp+96],rax
+ mov rax,[rsp+72]
+ mov [r12+NEBOC_VERTICAL_LOOP_VALUE_SEEN_OFFSET],rax
+ mov rax,[rsp+80]
+ mov [r12+NEBOC_VERTICAL_LOOP_PLAIN_BREAK_SEEN_OFFSET],rax
  dec qword [r12+NEBOC_VERTICAL_LOOP_DEPTH_OFFSET]
  test eax,eax
  jnz .restore_preheader
@@ -928,8 +1520,73 @@ g05v_analyze_loop:
  mov rax,[rsp+40]
  test eax,eax
  jnz .done
+ cmp qword [rsp],NEBOC_AST_DO_WHILE_STMT
+ jne .post_test_state_ready
+ ; Only preheader bindings escape the lexical body, but their state after the
+ ; mandatory iteration is the state observed after the do-while.
+ mov rdi,[rsp+56]
+ mov rsi,[rsp+16]
+ mov rdx,[rsp+24]
+ call g05v_copy_records
+.post_test_state_ready:
+ ; Only an explicit receiver-first loop result may consume `break value`.
+ ; Plain while/do loops and unbound loops reject discarded break payloads.
+ cmp qword [rsp],NEBOC_AST_LOOP_STMT
+ jne .non_value_loop
+ mov rax,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ cmp rax,-1
+ je .unbound_loop
+ cmp qword [rsp+88],1
+ jne .break_value_contract
+ cmp qword [rsp+96],0
+ jne .break_value_contract
+ mov [rsp+112],rax
+ mov rdi,r12
+ mov rsi,rax
+ call g05v_find_symbol
+ test rax,rax
+ jnz .break_value_contract
+ mov rdi,r12
+ mov rsi,[rsp+112]
+ mov edx,NEBOC_BIND_TYPE_INT
+ mov ecx,NEBOC_BIND_STATE_INITIALIZED
+ mov r8,r14
+ mov r9,NEBOC_SYMBOL_FLAG_IMMUTABLE|NEBOC_SYMBOL_FLAG_DIRECT|NEBOC_SYMBOL_FLAG_DEFINITE
+ call g05v_add_symbol
+ test rax,rax
+ jz .internal
+ ; The loop body codegen snapshot must know the result slot even though the
+ ; name becomes visible only after the loop semantically.
+ mov rdi,rax
+ mov rsi,[rsp+64]
+ imul rsi,NEBOC_SYMBOL_RECORD_SIZE
+ add rsi,[rsp+56]
+ mov edx,1
+ call g05v_copy_records
+ inc qword [rsp+64]
+ mov rax,[r12+NEBOC_VERTICAL_LOOP_BODY_COUNTS_OFFSET]
+ mov rcx,[rsp+48]
+ mov rdx,[rsp+64]
+ mov [rax+rcx*8],rdx
+ jmp .loop_contract_ready
+.unbound_loop:
+ cmp qword [rsp+88],0
+ jne .break_value_contract
+ jmp .loop_contract_ready
+.non_value_loop:
+ cmp qword [rsp+88],0
+ jne .break_value_contract
+.loop_contract_ready:
  inc qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_OPERATION_COUNT_OFFSET]
  xor eax,eax
+ jmp .done
+.break_value_contract:
+ mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],NEBOC_DIAG_BREAK_VALUE
+ mov rcx,[r15+NEBOC_AST_NODE_START_OFFSET]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_START_OFFSET],rcx
+ mov rcx,[r15+NEBOC_AST_NODE_END_OFFSET]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_END_OFFSET],rcx
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
  jmp .done
 .condition_type:
  ; The condition AST, not token zero, is the causal semantic span.
@@ -959,7 +1616,7 @@ g05v_analyze_loop:
  mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_INTERNAL
  mov eax,NEBOC_STATUS_INTERNAL_ERROR
 .done:
- add rsp,80
+ add rsp,128
  pop r15
  pop r14
  pop r13
@@ -1008,6 +1665,33 @@ g05v_analyze_binding:
  mov rsi,[rsp+8]
  call g05v_find_symbol
  mov [rsp+32],rax
+ mov rax,[rsp]
+ test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_EXPLICIT_CONST_BINDING
+ jz .implicit_form
+ ; Explicit compatibility form carries the declared type token in payload1,
+ ; while its child remains the real initializer expression.  Validate both
+ ; here, then share the ordinary initialized-binding path.
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD1_OFFSET]
+ mov rdi,r12
+ call g05v_type_token_ref
+ test rax,rax
+ jz .mismatch
+ cmp rax,NEBOC_BIND_TYPE_VOID
+ je .void
+ mov [rsp+24],rax
+ mov rdi,r12
+ mov rsi,[rsp+16]
+ mov rdx,r14
+ call g05v_expr_type
+ cmp rax,-1
+ je .error_passthrough
+ test rax,rax
+ jz .internal
+ cmp rax,[rsp+24]
+ jne .mismatch
+ mov [rsp+40],rax
+ jmp .direct_value_ready
+.implicit_form:
  cmp qword [rsp+24],0
  jne .typed
  ; Direct binding or one-shot initialization.
@@ -1020,6 +1704,7 @@ g05v_analyze_binding:
  test rax,rax
  jz .internal
  mov [rsp+40],rax
+.direct_value_ready:
  mov rbx,[rsp+32]
  mov rax,[rsp]
  test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_MUTABLE_BINDING
@@ -1053,10 +1738,21 @@ g05v_analyze_binding:
  xor eax,eax
  jmp .done
 .direct:
+ mov rdi,r12
+ mov rsi,[rsp+8]
+ call g05v_name_is_all_caps
+ mov [rsp+48],rax
+ mov rax,[rsp]
+ test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_EXPLICIT_CONST_BINDING
+ jz .const_category_ready
+ mov qword [rsp+48],1
+.const_category_ready:
  mov r9,NEBOC_SYMBOL_FLAG_IMMUTABLE|NEBOC_SYMBOL_FLAG_DIRECT|NEBOC_SYMBOL_FLAG_DEFINITE
  mov rax,[rsp]
  test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_MUTABLE_BINDING
  jz .direct_add
+ cmp qword [rsp+48],0
+ jne .const_mutable
  cmp qword [rsp+40],NEBOC_BIND_TYPE_INT
  je .direct_mutable
  cmp qword [rsp+40],NEBOC_BIND_TYPE_BOOL
@@ -1068,6 +1764,14 @@ g05v_analyze_binding:
 .direct_mutable:
  mov r9,NEBOC_SYMBOL_FLAG_MUTABLE|NEBOC_SYMBOL_FLAG_DIRECT|NEBOC_SYMBOL_FLAG_DEFINITE
 .direct_add:
+ cmp qword [rsp+48],0
+ je .direct_flags_ready
+ or r9,NEBOC_SYMBOL_FLAG_CONST_BINDING
+ mov rax,[rsp]
+ test qword [rax+NEBOC_AST_NODE_FLAGS_OFFSET],NEBOC_AST_FLAG_EXPLICIT_CONST_BINDING
+ jz .direct_flags_ready
+ or r9,NEBOC_SYMBOL_FLAG_EXPLICIT_CONST
+.direct_flags_ready:
  mov rdi,r12
  mov rsi,[rsp+8]
  mov rdx,[rsp+40]
@@ -1118,6 +1822,9 @@ g05v_analyze_binding:
  jmp .diagnostic
 .mutable_type:
  mov esi,NEBOC_DIAG_MUTABLE_UNSUPPORTED_TYPE
+ jmp .diagnostic
+.const_mutable:
+ mov esi,NEBOC_DIAG_ASSIGNMENT_IMMUTABLE
 .diagnostic:
  mov rdi,r12
  mov rdx,[rsp+8]
@@ -1169,12 +1876,10 @@ g05v_analyze_assignment:
  mov [rsp+8],rax
  test rax,rax
  jz .operator_ready
+ NEBOC_CORE_ARITHMETIC_CLASSIFY_COMPOUND rax,rdx,.compound
+ mov [rsp+16],rdx
  mov rcx,[rsp]
  cmp qword [rcx+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SYMBOL_TYPE_OFFSET],NEBOC_BIND_TYPE_INT
- jne .compound
- cmp rax,NEBOC_TOKEN_PLUS
- je .operator_ready
- cmp rax,NEBOC_TOKEN_MINUS
  jne .compound
 .operator_ready:
  mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
@@ -1294,7 +1999,7 @@ g05v_analyze_if:
  cmp rax,-1
  je .error_passthrough
  cmp rax,NEBOC_BIND_TYPE_BOOL
- jne .internal
+ jne .condition_type
  mov rdi,r12
  mov rsi,r15
  call g05v_node_ptr
@@ -1428,6 +2133,19 @@ g05v_analyze_if:
  mov [r12+NEBOC_VERTICAL_SYMBOL_COUNT_OFFSET],rax
  mov eax,ebx
  jmp .done
+ .condition_type:
+ mov rdi,r12
+ mov rsi,r15
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ mov qword [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_CODE_OFFSET],NEBOC_DIAG_IF_CONDITION_TYPE
+ mov rcx,[rax+NEBOC_AST_NODE_START_OFFSET]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_START_OFFSET],rcx
+ mov rcx,[rax+NEBOC_AST_NODE_END_OFFSET]
+ mov [r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_ERROR_END_OFFSET],rcx
+ mov eax,NEBOC_STATUS_INVALID_SOURCE
+ jmp .done
 .restore_internal:
  mov rax,[rsp+24]
  mov [r12+NEBOC_VERTICAL_SYMBOLS_OFFSET],rax
@@ -1470,6 +2188,8 @@ g05v_expr_type:
  cmp rax,NEBOC_AST_INTEGER_LITERAL
  je .int
  cmp rax,NEBOC_AST_FLOAT_LITERAL
+ je .float
+ cmp rax,NEBOC_AST_MATH_CONSTANT
  je .float
  cmp rax,NEBOC_AST_TEXT_LITERAL
  je .text
@@ -1533,6 +2253,88 @@ g05v_expr_type:
  mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
  lea rdx,[r14+1]
  call g05v_expr_type
+ cmp rax,-1
+ je .done
+ mov rcx,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ cmp rcx,NEBOC_TOKEN_POSTFIX_PERCENT
+ je .unary_percent
+ cmp rcx,NEBOC_TOKEN_PER_MILLE
+ je .unary_per_mille
+ cmp rcx,NEBOC_TOKEN_BASIS_POINTS
+ je .unary_basis_points
+ cmp rcx,NEBOC_TOKEN_DEGREE
+ je .unary_angle
+ cmp rcx,NEBOC_TOKEN_CELSIUS
+ je .unary_temperature
+ cmp rcx,NEBOC_TOKEN_FAHRENHEIT
+ je .unary_temperature
+ cmp rcx,NEBOC_TOKEN_SQUARE_ROOT
+ je .unary_exact_math
+ cmp rcx,NEBOC_TOKEN_CUBE_ROOT
+ je .unary_exact_math
+ cmp rcx,NEBOC_TOKEN_FOURTH_ROOT
+ je .unary_exact_math
+ cmp rcx,NEBOC_TOKEN_POSTFIX_FACTORIAL
+ je .unary_exact_math
+ cmp rcx,NEBOC_TOKEN_FLOOR_OPEN
+ je .unary_round_math
+ cmp rcx,NEBOC_TOKEN_CEIL_OPEN
+ je .unary_round_math
+ NEBOC_CORE_ORF_CLASSIFY rcx,rdx,.done
+ cmp rdx,NEBOC_OPERATOR_ID_NSR_CORE_047
+ jne .done
+ mov [rsp],rax
+ mov rdi,r12
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rsi,rsi
+ jz .internal
+ mov rdi,r12
+ lea rdx,[r14+1]
+ call g05v_core_discarded_expr_type
+ cmp rax,-1
+ je .done
+ test rax,rax
+ jz .internal
+ mov rax,[rsp]
+ jmp .done
+.unary_percent:
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .binary_type_error
+ mov eax,NEBOC_BIND_TYPE_PERCENT
+ jmp .done
+.unary_exact_math:
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .binary_type_error
+ mov eax,NEBOC_BIND_TYPE_INT
+ jmp .done
+.unary_round_math:
+ cmp rax,NEBOC_BIND_TYPE_FLOAT
+ jne .binary_type_error
+ mov eax,NEBOC_BIND_TYPE_INT
+ jmp .done
+.unary_per_mille:
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .binary_type_error
+ mov eax,NEBOC_BIND_TYPE_PER_MILLE
+ jmp .done
+.unary_basis_points:
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .binary_type_error
+ mov eax,NEBOC_BIND_TYPE_BASIS_POINTS
+ jmp .done
+.unary_angle:
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .binary_type_error
+ mov eax,NEBOC_BIND_TYPE_ANGLE
+ jmp .done
+.unary_temperature:
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .binary_type_error
+ mov eax,NEBOC_BIND_TYPE_TEMPERATURE
  jmp .done
 .binary:
  mov rbx,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
@@ -1556,9 +2358,38 @@ g05v_expr_type:
  call g05v_expr_type
  cmp rax,-1
  je .done
+ mov [rsp+8],rax
+ mov rcx,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ cmp rcx,NEBOC_TOKEN_PLUS_MINUS
+ je .binary_uncertain_construct
+ cmp rcx,NEBOC_TOKEN_APPROX_EQUAL
+ je .binary_uncertain_relation
+ cmp rcx,NEBOC_TOKEN_NOT_APPROX_EQUAL
+ je .binary_uncertain_relation
+ cmp rcx,NEBOC_TOKEN_EQUIVALENT
+ je .binary_uncertain_relation
+ cmp rcx,NEBOC_TOKEN_PROPORTIONAL
+ je .binary_uncertain_relation
+ cmp rcx,NEBOC_TOKEN_DIVIDES
+ je .binary_divides
+ cmp rcx,NEBOC_TOKEN_NOT_DIVIDES
+ je .binary_divides
+ cmp qword [rsp],NEBOC_BIND_TYPE_PERCENT
+ jae .binary_quantity
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_PERCENT
+ jae .binary_quantity
+ NEBOC_CORE_PXO_CLASSIFY rcx,rdx,.binary_not_pxo
+ cmp rdx,NEBOC_OPERATOR_ID_NSR_CORE_017
+ je .binary_power
+ cmp rdx,NEBOC_OPERATOR_ID_NSR_CORE_023
+ je .binary_xor
+ cmp rdx,NEBOC_OPERATOR_ID_NSR_CORE_030
+ je .binary_spaceship
+ ; Remaining classified operators keep their established exact-type paths.
+.binary_not_pxo:
+ mov rax,[rsp+8]
  cmp rax,[rsp]
  jne .binary_type_error
- mov rcx,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
  cmp rcx,NEBOC_TOKEN_EQUAL_EQUAL
  je .bool
  cmp rcx,NEBOC_TOKEN_BANG_EQUAL
@@ -1597,6 +2428,152 @@ g05v_expr_type:
  cmp qword [rsp],NEBOC_BIND_TYPE_BOOL
  jne .binary_type_error
  mov rax,NEBOC_BIND_TYPE_BOOL
+ jmp .done
+.binary_power:
+ cmp qword [rsp],NEBOC_BIND_TYPE_INT
+ jne .binary_power_float
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_INT
+ jne .binary_type_error
+ mov eax,NEBOC_BIND_TYPE_INT
+ jmp .done
+.binary_power_float:
+ cmp qword [rsp],NEBOC_BIND_TYPE_FLOAT
+ jne .binary_type_error
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_INT
+ jne .binary_type_error
+ mov eax,NEBOC_BIND_TYPE_FLOAT
+ jmp .done
+.binary_xor:
+ mov rax,[rsp]
+ cmp rax,[rsp+8]
+ jne .binary_type_error
+ cmp rax,NEBOC_BIND_TYPE_BOOL
+ je .binary_xor_result
+ cmp rax,NEBOC_BIND_TYPE_INT
+ je .binary_xor_result
+ cmp rax,NEBOC_BIND_TYPE_BYTES
+ jne .binary_type_error
+.binary_xor_result:
+ jmp .done
+.binary_spaceship:
+ mov rax,[rsp]
+ cmp rax,[rsp+8]
+ jne .binary_type_error
+ cmp rax,NEBOC_BIND_TYPE_BOOL
+ je .binary_ordering_result
+ cmp rax,NEBOC_BIND_TYPE_INT
+ je .binary_ordering_result
+ cmp rax,NEBOC_BIND_TYPE_BYTES
+ jne .binary_type_error
+.binary_ordering_result:
+ mov eax,NEBOC_BIND_TYPE_ORDERING
+ jmp .done
+.binary_uncertain_construct:
+ cmp qword [rsp],NEBOC_BIND_TYPE_INT
+ jne .binary_type_error
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_INT
+ jne .binary_type_error
+ mov eax,NEBOC_BIND_TYPE_UNCERTAIN_INT
+ jmp .done
+.binary_uncertain_relation:
+ cmp qword [rsp],NEBOC_BIND_TYPE_UNCERTAIN_INT
+ jne .binary_type_error
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_UNCERTAIN_INT
+ jne .binary_type_error
+ jmp .bool
+.binary_divides:
+ cmp qword [rsp],NEBOC_BIND_TYPE_INT
+ jne .binary_type_error
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_INT
+ jne .binary_type_error
+ jmp .bool
+.binary_quantity:
+ cmp qword [rsp],NEBOC_BIND_TYPE_TEMPERATURE
+ ja .binary_type_error
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_TEMPERATURE
+ ja .binary_type_error
+ cmp qword [rsp],NEBOC_BIND_TYPE_TEMPERATURE
+ je .binary_temperature
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_TEMPERATURE
+ je .binary_temperature
+ cmp rcx,NEBOC_TOKEN_EQUAL_EQUAL
+ je .binary_quantity_compare
+ cmp rcx,NEBOC_TOKEN_BANG_EQUAL
+ je .binary_quantity_compare
+ cmp rcx,NEBOC_TOKEN_LESS
+ je .binary_quantity_compare
+ cmp rcx,NEBOC_TOKEN_LESS_EQUAL
+ je .binary_quantity_compare
+ cmp rcx,NEBOC_TOKEN_GREATER
+ je .binary_quantity_compare
+ cmp rcx,NEBOC_TOKEN_GREATER_EQUAL
+ je .binary_quantity_compare
+ cmp rcx,NEBOC_TOKEN_PLUS
+ je .binary_quantity_same
+ cmp rcx,NEBOC_TOKEN_MINUS
+ je .binary_quantity_same
+ cmp rcx,NEBOC_TOKEN_STAR
+ je .binary_quantity_multiply
+ cmp rcx,NEBOC_TOKEN_SLASH
+ jne .binary_type_error
+ cmp qword [rsp],NEBOC_BIND_TYPE_PERCENT
+ jb .binary_type_error
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_INT
+ jne .binary_type_error
+ mov rax,[rsp]
+ jmp .done
+.binary_temperature:
+ cmp qword [rsp],NEBOC_BIND_TYPE_TEMPERATURE
+ jne .binary_type_error
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_TEMPERATURE
+ jne .binary_type_error
+ cmp rcx,NEBOC_TOKEN_EQUAL_EQUAL
+ je .bool
+ cmp rcx,NEBOC_TOKEN_BANG_EQUAL
+ je .bool
+ cmp rcx,NEBOC_TOKEN_LESS
+ je .bool
+ cmp rcx,NEBOC_TOKEN_LESS_EQUAL
+ je .bool
+ cmp rcx,NEBOC_TOKEN_GREATER
+ je .bool
+ cmp rcx,NEBOC_TOKEN_GREATER_EQUAL
+ je .bool
+ jmp .binary_type_error
+.binary_quantity_compare:
+ mov rax,[rsp]
+ cmp rax,[rsp+8]
+ je .bool
+ cmp rax,NEBOC_BIND_TYPE_PERCENT
+ jb .binary_type_error
+ cmp rax,NEBOC_BIND_TYPE_BASIS_POINTS
+ ja .binary_type_error
+ mov rax,[rsp+8]
+ cmp rax,NEBOC_BIND_TYPE_PERCENT
+ jb .binary_type_error
+ cmp rax,NEBOC_BIND_TYPE_BASIS_POINTS
+ ja .binary_type_error
+ jmp .bool
+.binary_quantity_same:
+ mov rax,[rsp]
+ cmp rax,[rsp+8]
+ jne .binary_type_error
+ cmp rax,NEBOC_BIND_TYPE_PERCENT
+ jb .binary_type_error
+ jmp .done
+.binary_quantity_multiply:
+ cmp qword [rsp],NEBOC_BIND_TYPE_INT
+ je .binary_quantity_multiply_right
+ cmp qword [rsp],NEBOC_BIND_TYPE_PERCENT
+ jb .binary_type_error
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_INT
+ jne .binary_type_error
+ mov rax,[rsp]
+ jmp .done
+.binary_quantity_multiply_right:
+ cmp qword [rsp+8],NEBOC_BIND_TYPE_PERCENT
+ jb .binary_type_error
+ mov rax,[rsp+8]
  jmp .done
 .binary_type_error:
  mov rdi,r12
@@ -1693,6 +2670,251 @@ g05v_expr_type:
  call g05v_token_match
  test eax,eax
  jnz .call_bytes_constructor
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_swap]
+ mov ecx,n_swap_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_swap
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_replace]
+ mov ecx,n_replace_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_replace
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_checked_add]
+ mov ecx,n_checked_add_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_safe_option_binary
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_checked_div]
+ mov ecx,n_checked_div_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_safe_option_binary
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_checked_shift]
+ mov ecx,n_checked_shift_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_safe_option_binary
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_wrapping_add]
+ mov ecx,n_wrapping_add_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_safe_int_binary
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_saturating_add]
+ mov ecx,n_saturating_add_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_safe_int_binary
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_overflowing_mul]
+ mov ecx,n_overflowing_mul_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_overflowing_binary
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_exclusive]
+ mov ecx,n_exclusive_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_range_exclusive
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_iterator]
+ mov ecx,n_iterator_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_iterator
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_next]
+ mov ecx,n_next_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_iterator_next
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_size_hint]
+ mov ecx,n_size_hint_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_size_hint
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_get]
+ mov ecx,n_get_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_option_get
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_is_some]
+ mov ecx,n_is_some_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_option_is_some
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_value]
+ mov ecx,n_value_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_overflow_value
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_overflowed]
+ mov ecx,n_overflowed_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_overflow_flag
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_lower]
+ mov ecx,n_lower_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_hint_bound
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_upper]
+ mov ecx,n_upper_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_hint_bound
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_unreachable]
+ mov ecx,n_unreachable_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_flow_unreachable
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_assert]
+ mov ecx,n_assert_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_flow_assert
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_assume]
+ mov ecx,n_assume_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_flow_assume
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_approx_equals]
+ mov ecx,n_approx_equals_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_g131_uncertain_bool
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_equivalent_to]
+ mov ecx,n_equivalent_to_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_g131_uncertain_bool
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_proportional_to]
+ mov ecx,n_proportional_to_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_g131_uncertain_bool
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_divides]
+ mov ecx,n_divides_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_g131_divides
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_add_worst_case]
+ mov ecx,n_add_worst_case_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_g131_uncertain_add
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_add_independent]
+ mov ecx,n_add_independent_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_g131_uncertain_add
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_add_correlated]
+ mov ecx,n_add_correlated_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_g131_uncertain_add
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_add_interval]
+ mov ecx,n_add_interval_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_g131_uncertain_add
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_measured_value]
+ mov ecx,n_measured_value_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_g131_metadata
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_uncertainty]
+ mov ecx,n_uncertainty_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_g131_metadata
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_unit_code]
+ mov ecx,n_unit_code_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_g131_metadata
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_quality]
+ mov ecx,n_quality_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_g131_metadata
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_confidence]
+ mov ecx,n_confidence_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_g131_metadata
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_separator_codepoint]
+ mov ecx,n_separator_codepoint_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_g131_metadata
  ; Every seguranca_numerica_conversoes_e_overflow/text_char_unicode_e_bytes foundation API used inside a bindings_constantes_mutabilidade_e_definite_assignment initializer remains arity zero.
  cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
  jne .call_type_error
@@ -1720,6 +2942,48 @@ g05v_expr_type:
  call g05v_token_match
  test eax,eax
  jnz .call_need_int_float_result
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_sqrt]
+ mov ecx,n_sqrt_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_need_int_int_result
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_cube_root]
+ mov ecx,n_cube_root_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_need_int_int_result
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_fourth_root]
+ mov ecx,n_fourth_root_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_need_int_int_result
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_factorial]
+ mov ecx,n_factorial_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_need_int_int_result
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_floor]
+ mov ecx,n_floor_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_need_float_int_result
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_ceil]
+ mov ecx,n_ceil_len
+ call g05v_token_match
+ test eax,eax
+ jnz .call_need_float_int_result
  mov rdi,r12
  mov rsi,rbx
  lea rdx,[rel n_is_finite]
@@ -1806,6 +3070,308 @@ g05v_expr_type:
  ; TIPOS-PRIMITIVOS-ESCALARES validates exact arity, literal-only arguments and 0..255 range in
  ; the text_char_unicode_e_bytes pass. bindings_constantes_mutabilidade_e_definite_assignment only transports the resulting immutable Bytes type.
  jmp .bytes
+.call_swap:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ jne .call_type_error
+ mov r13,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ mov rsi,r13
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .call_type_error
+ mov [rsp+8],rax
+ mov rdi,r12
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ call g05v_find_symbol
+ test rax,rax
+ jz .call_type_error
+ test qword [rax+NEBOC_SYMBOL_FLAGS_OFFSET],NEBOC_SYMBOL_FLAG_MUTABLE
+ jz .call_type_error
+ mov [rsp+16],rax
+ mov rdi,r12
+ mov rsi,r13
+ call g05v_node_ptr
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rsi,rsi
+ jz .call_type_error
+ mov rdi,r12
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .call_type_error
+ mov rdi,r12
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ call g05v_find_symbol
+ test rax,rax
+ jz .call_type_error
+ test qword [rax+NEBOC_SYMBOL_FLAGS_OFFSET],NEBOC_SYMBOL_FLAG_MUTABLE
+ jz .call_type_error
+ mov rcx,[rsp+16]
+ mov rdx,[rcx+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SYMBOL_TYPE_OFFSET]
+ cmp rdx,[rax+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SYMBOL_TYPE_OFFSET]
+ jne .call_type_error
+ inc qword [rcx+NEBOC_SYMBOL_WRITE_GENERATION_OFFSET]
+ inc qword [rax+NEBOC_SYMBOL_WRITE_GENERATION_OFFSET]
+ mov eax,NEBOC_BIND_TYPE_VOID
+ jmp .done
+.call_replace:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ jne .call_type_error
+ mov r13,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ mov rsi,r13
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .call_type_error
+ mov rdi,r12
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ call g05v_find_symbol
+ test rax,rax
+ jz .call_type_error
+ test qword [rax+NEBOC_SYMBOL_FLAGS_OFFSET],NEBOC_SYMBOL_FLAG_MUTABLE
+ jz .call_type_error
+ mov [rsp+16],rax
+ mov rdi,r12
+ mov rsi,r13
+ call g05v_node_ptr
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rsi,rsi
+ jz .call_type_error
+ mov rdi,r12
+ lea rdx,[r14+1]
+ call g05v_expr_type
+ cmp rax,-1
+ je .done
+ mov rcx,[rsp+16]
+ cmp rax,[rcx+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SYMBOL_TYPE_OFFSET]
+ jne .call_type_error
+ inc qword [rcx+NEBOC_SYMBOL_WRITE_GENERATION_OFFSET]
+ mov rax,[rcx+neboc_bindings_constantes_mutabilidade_e_definite_assignment_SYMBOL_TYPE_OFFSET]
+ jmp .done
+.call_safe_option_binary:
+ mov r13,NEBOC_BIND_TYPE_OPTION_INT
+ jmp .call_safe_binary
+.call_safe_int_binary:
+ mov r13,NEBOC_BIND_TYPE_INT
+ jmp .call_safe_binary
+.call_overflowing_binary:
+ mov r13,NEBOC_BIND_TYPE_OVERFLOW_INT
+.call_safe_binary:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ jne .call_type_error
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ lea rdx,[r14+1]
+ call g05v_expr_type
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .call_type_error
+ mov rdi,r12
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rsi,rsi
+ jz .call_type_error
+ mov rdi,r12
+ lea rdx,[r14+1]
+ call g05v_expr_type
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .call_type_error
+ mov rax,r13
+ jmp .done
+.call_range_exclusive:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],2
+ jne .call_type_error
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ mov rdi,r12
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .call_type_error
+ mov r13,rax
+ mov rdi,r12
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ lea rdx,[rel n_range]
+ mov ecx,n_range_len
+ call g05v_token_match
+ test eax,eax
+ jz .call_type_error
+ mov rsi,[r13+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ lea rdx,[r14+1]
+ call g05v_expr_type
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .call_type_error
+ mov rdi,r12
+ mov rsi,[r13+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ mov rdi,r12
+ lea rdx,[r14+1]
+ call g05v_expr_type
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .call_type_error
+ mov eax,NEBOC_BIND_TYPE_RANGE_INT
+ jmp .done
+.call_iterator:
+ mov r13,NEBOC_BIND_TYPE_RANGE_INT
+ mov ebx,NEBOC_BIND_TYPE_ITERATOR_INT
+ jmp .call_unary_pseudo
+.call_iterator_next:
+ mov r13,NEBOC_BIND_TYPE_ITERATOR_INT
+ mov ebx,NEBOC_BIND_TYPE_OPTION_INT
+ jmp .call_unary_pseudo
+.call_size_hint:
+ mov r13,NEBOC_BIND_TYPE_ITERATOR_INT
+ mov ebx,NEBOC_BIND_TYPE_SIZE_HINT
+ jmp .call_unary_pseudo
+.call_option_get:
+ mov r13,NEBOC_BIND_TYPE_OPTION_INT
+ mov ebx,NEBOC_BIND_TYPE_INT
+ jmp .call_unary_pseudo
+.call_option_is_some:
+ mov r13,NEBOC_BIND_TYPE_OPTION_INT
+ mov ebx,NEBOC_BIND_TYPE_BOOL
+ jmp .call_unary_pseudo
+.call_overflow_value:
+ mov r13,NEBOC_BIND_TYPE_OVERFLOW_INT
+ mov ebx,NEBOC_BIND_TYPE_INT
+ jmp .call_unary_pseudo
+.call_overflow_flag:
+ mov r13,NEBOC_BIND_TYPE_OVERFLOW_INT
+ mov ebx,NEBOC_BIND_TYPE_BOOL
+ jmp .call_unary_pseudo
+.call_hint_bound:
+ mov r13,NEBOC_BIND_TYPE_SIZE_HINT
+ mov ebx,NEBOC_BIND_TYPE_INT
+.call_unary_pseudo:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .call_type_error
+ mov rdi,r12
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ lea rdx,[r14+1]
+ call g05v_expr_type
+ cmp rax,r13
+ jne .call_type_error
+ mov eax,ebx
+ jmp .done
+.call_flow_unreachable:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .call_type_error
+ jmp .call_flow_receiver
+.call_flow_assert:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ jne .call_type_error
+ mov ebx,1
+ jmp .call_flow_condition
+.call_flow_assume:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ jne .call_type_error
+ mov ebx,2
+.call_flow_condition:
+ mov rdi,r12
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ mov r13,rax
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rsi,rsi
+ jz .call_type_error
+ mov rdi,r12
+ lea rdx,[r14+1]
+ call g05v_expr_type
+ cmp rax,-1
+ je .done
+ cmp rax,NEBOC_BIND_TYPE_BOOL
+ jne .call_type_error
+ cmp ebx,2
+ jne .call_flow_receiver_saved
+ mov rdi,r12
+ mov rsi,[r13+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_BOOL_LITERAL
+ jne .call_type_error
+ cmp qword [rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET],1
+ jne .call_type_error
+.call_flow_receiver_saved:
+ mov rax,r13
+.call_flow_receiver:
+ mov rdi,r12
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ cmp qword [rax+NEBOC_AST_NODE_KIND_OFFSET],NEBOC_AST_IDENTIFIER_EXPR
+ jne .call_type_error
+ mov rdi,r12
+ mov rsi,[rax+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ lea rdx,[rel n_flow]
+ mov ecx,n_flow_len
+ call g05v_token_match
+ test eax,eax
+ jz .call_type_error
+ mov eax,NEBOC_BIND_TYPE_VOID
+ jmp .done
+.call_g131_uncertain_bool:
+ mov r13,NEBOC_BIND_TYPE_UNCERTAIN_INT
+ mov qword [rsp+16],NEBOC_BIND_TYPE_BOOL
+ jmp .call_g131_binary
+.call_g131_divides:
+ mov r13,NEBOC_BIND_TYPE_INT
+ mov qword [rsp+16],NEBOC_BIND_TYPE_BOOL
+ jmp .call_g131_binary
+.call_g131_uncertain_add:
+ mov r13,NEBOC_BIND_TYPE_UNCERTAIN_INT
+ mov qword [rsp+16],NEBOC_BIND_TYPE_UNCERTAIN_INT
+.call_g131_binary:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
+ jne .call_type_error
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test rsi,rsi
+ jz .internal
+ mov rdi,r12
+ lea rdx,[r14+1]
+ call g05v_expr_type
+ cmp rax,r13
+ jne .call_type_error
+ mov rdi,r12
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ mov rsi,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test rsi,rsi
+ jz .internal
+ mov rdi,r12
+ lea rdx,[r14+1]
+ call g05v_expr_type
+ cmp rax,r13
+ jne .call_type_error
+ mov rax,[rsp+16]
+ jmp .done
+.call_g131_metadata:
+ cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],0
+ jne .call_type_error
+ mov rdi,r12
+ mov rsi,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ lea rdx,[r14+1]
+ call g05v_expr_type
+ cmp rax,NEBOC_BIND_TYPE_UNCERTAIN_INT
+ jne .call_type_error
+ mov eax,NEBOC_BIND_TYPE_INT
+ jmp .done
 .call_bit_binary:
  cmp qword [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],1
  jne .call_type_error
@@ -1942,6 +3508,14 @@ g05v_expr_type:
  cmp qword [rsp],NEBOC_BIND_TYPE_INT
  jne .call_type_error
  jmp .float
+.call_need_int_int_result:
+ cmp qword [rsp],NEBOC_BIND_TYPE_INT
+ jne .call_type_error
+ jmp .int
+.call_need_float_int_result:
+ cmp qword [rsp],NEBOC_BIND_TYPE_FLOAT
+ jne .call_type_error
+ jmp .int
 .call_need_float_bool_result:
  cmp qword [rsp],NEBOC_BIND_TYPE_FLOAT
  jne .call_type_error
@@ -1968,6 +3542,21 @@ g05v_expr_type:
  mov rax,-1
  jmp .done
 .constructor:
+ mov rbx,[r15+NEBOC_AST_NODE_PAYLOAD0_OFFSET]
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_uncertain_type]
+ mov ecx,n_uncertain_type_len
+ call g05v_token_match
+ test eax,eax
+ jnz .constructor_uncertain
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_measurement_type]
+ mov ecx,n_measurement_type_len
+ call g05v_token_match
+ test eax,eax
+ jnz .constructor_measurement
  ; Pratt direct-call AST stores the constructor type token in payload0 and the
  ; sole argument node directly in first_child.  It does not materialize a type
  ; receiver child or link the argument through next_sibling.
@@ -1991,6 +3580,38 @@ g05v_expr_type:
  cmp rax,[rsp]
  jne .internal
  mov rax,[rsp]
+ jmp .done
+.constructor_uncertain:
+ mov ebx,2
+ jmp .constructor_g131
+.constructor_measurement:
+ mov ebx,5
+.constructor_g131:
+ cmp [r15+NEBOC_AST_NODE_PAYLOAD1_OFFSET],rbx
+ jne .call_type_error
+ mov r13,[r15+NEBOC_AST_NODE_FIRST_CHILD_OFFSET]
+ test r13,r13
+ jz .internal
+.constructor_g131_loop:
+ mov rdi,r12
+ mov rsi,r13
+ lea rdx,[r14+1]
+ call g05v_expr_type
+ cmp rax,NEBOC_BIND_TYPE_INT
+ jne .call_type_error
+ dec rbx
+ jz .constructor_g131_done
+ mov rdi,r12
+ mov rsi,r13
+ call g05v_node_ptr
+ test rax,rax
+ jz .internal
+ mov r13,[rax+NEBOC_AST_NODE_NEXT_SIBLING_OFFSET]
+ test r13,r13
+ jz .internal
+ jmp .constructor_g131_loop
+.constructor_g131_done:
+ mov eax,NEBOC_BIND_TYPE_UNCERTAIN_INT
  jmp .done
 .int: mov eax,NEBOC_BIND_TYPE_INT
  jmp .done
@@ -2087,6 +3708,20 @@ g05v_type_ref:
  call g05v_token_match
  test eax,eax
  jnz .console_type
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_uncertain_type]
+ mov ecx,n_uncertain_type_len
+ call g05v_token_match
+ test eax,eax
+ jnz .uncertain_type
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_measurement_type]
+ mov ecx,n_measurement_type_len
+ call g05v_token_match
+ test eax,eax
+ jnz .uncertain_type
 .none: xor eax,eax
  jmp .done
 .void: mov eax,NEBOC_BIND_TYPE_VOID
@@ -2104,6 +3739,8 @@ g05v_type_ref:
 .bytes: mov eax,NEBOC_BIND_TYPE_BYTES
  jmp .done
 .console_type: mov eax,NEBOC_BIND_TYPE_CONSOLE
+ jmp .done
+.uncertain_type: mov eax,NEBOC_BIND_TYPE_UNCERTAIN_INT
 .done:
  add rsp,8
  pop r12
@@ -2174,6 +3811,20 @@ g05v_type_token_ref:
  call g05v_token_match
  test eax,eax
  jnz .console_type
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_uncertain_type]
+ mov ecx,n_uncertain_type_len
+ call g05v_token_match
+ test eax,eax
+ jnz .uncertain_type
+ mov rdi,r12
+ mov rsi,rbx
+ lea rdx,[rel n_measurement_type]
+ mov ecx,n_measurement_type_len
+ call g05v_token_match
+ test eax,eax
+ jnz .uncertain_type
 .none: xor eax,eax
  jmp .done
 .void: mov eax,NEBOC_BIND_TYPE_VOID
@@ -2191,6 +3842,8 @@ g05v_type_token_ref:
 .bytes: mov eax,NEBOC_BIND_TYPE_BYTES
  jmp .done
 .console_type: mov eax,NEBOC_BIND_TYPE_CONSOLE
+ jmp .done
+.uncertain_type: mov eax,NEBOC_BIND_TYPE_UNCERTAIN_INT
 .done:
  add rsp,8
  pop r12
@@ -2537,6 +4190,35 @@ g05v_node_ptr:
  add rax,rsi
  ret
 .none: xor eax,eax
+ ret
+
+; request*, name token -> 1 iff the exact source spelling is ALL_CAPS.
+g05v_name_is_all_caps:
+ push rbx
+ push r12
+ push r13
+ mov r12,rdi
+ mov r13,rsi
+ call g05v_token_ptr
+ test rax,rax
+ jz .no
+ cmp qword [rax+NEBOC_TOKEN_KIND_OFFSET],NEBOC_TOKEN_IDENTIFIER
+ jne .no
+ mov rbx,[rax+NEBOC_TOKEN_START_OFFSET]
+ mov rsi,[rax+NEBOC_TOKEN_END_OFFSET]
+ sub rsi,rbx
+ mov rdi,[r12+neboc_bindings_constantes_mutabilidade_e_definite_assignment_VERTICAL_SOURCE_OFFSET]
+ test rdi,rdi
+ jz .no
+ add rdi,rbx
+ call neboc_name_is_all_caps
+ jmp .done
+.no:
+ xor eax,eax
+.done:
+ pop r13
+ pop r12
+ pop rbx
  ret
 
 ; request*, token index, expected bytes, length -> 1/0

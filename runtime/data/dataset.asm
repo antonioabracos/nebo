@@ -36,6 +36,7 @@ NEBOC_ABI_FUNCTION neboc_dataset_init
  push r15
  push rbp
  push rbx
+ sub rsp,8
  mov r12,rdi
  mov r13,rsi
  mov r14,rdx
@@ -58,7 +59,9 @@ NEBOC_ABI_FUNCTION neboc_dataset_init
  push r8
  push r10
  push r11
+ sub rsp,8
  call neboc_table_validate
+ add rsp,8
  pop r11
  pop r10
  pop r8
@@ -100,6 +103,7 @@ NEBOC_ABI_FUNCTION neboc_dataset_init
  jmp .di_done
 .di_limit_saved: mov eax,NEBOC_STATUS_LIMIT_EXCEEDED
 .di_done:
+ add rsp,8
  pop rbx
  pop rbp
  pop r15
@@ -119,6 +123,7 @@ NEBOC_ABI_FUNCTION neboc_dataset_validate
  push r13
  push r14
  push r15
+ sub rsp,8
  mov r12,rdi
  mov r13,[r12+NEBO_DATASET_SCHEMA]
  mov r14,[r12+NEBO_DATASET_TABLES]
@@ -165,6 +170,7 @@ NEBOC_ABI_FUNCTION neboc_dataset_validate
  jmp .dv_done
 .dv_source: mov eax,NEBOC_STATUS_INVALID_SOURCE
 .dv_done:
+ add rsp,8
  pop r15
  pop r14
  pop r13

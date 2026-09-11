@@ -1,0 +1,1 @@
+(Row.self)observe(){self.get("age").expect("age").console();true.return;}start(){Table.fromColumns([Tuple.of("age",Column<Int>.from([83,29,17]))]).table;table.sortBy(["age"]).sorted;sorted.filter(observe);101.return;}

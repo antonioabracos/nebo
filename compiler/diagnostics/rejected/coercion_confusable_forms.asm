@@ -8,7 +8,7 @@ align 8
 forms:
     dq form_0, 11, 23, 145023, 146023
     dq form_1, 8, 24, 145024, 0
-    dq form_2, 3, 25, 145025, 0
+    dq form_2, 3, 25, 145025, 146025
     dq form_3, 2, 26, 145026, 146026
 section .text
 global nebo_reject_coercion_confusable

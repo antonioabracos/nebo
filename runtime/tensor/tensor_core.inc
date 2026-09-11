@@ -3,9 +3,18 @@
 %include "compiler/semantic/tensor/tensor_contract.inc"
 %ifndef NEBO_TENSOR_CORE_IMPLEMENTATION
 extern nebo_tensor_zeros_f64
+extern nebo_tensor_filled_f64
+extern nebo_tensor_filled_bits
 extern nebo_tensor_from_values_f64
+extern nebo_tensor_from_buffer_f64
+extern nebo_tensor_dtype
+extern nebo_tensor_device
+extern nebo_tensor_storage_id
+extern nebo_tensor_shape
+extern nebo_tensor_strides
 extern nebo_tensor_rank
 extern nebo_tensor_size
+extern nebo_tensor_axis_size
 extern nebo_tensor_is_contiguous
 %endif
 %endif

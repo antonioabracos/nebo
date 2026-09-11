@@ -1,9 +1,58 @@
-; RF166 P02 DOCRECORD-SYMBOLID-SCHEMA-TIPADO-E-EXPORT-PARA-INTERFACES bounded semantic-documentation ABI.
-%ifndef neboc_doc_record_INC
-%define neboc_doc_record_INC 1
-%define NEBOC_DOC_RESULT_BYTES 24
-%define NEBOC_DOC_MAX_INPUT 4096
-%define NEBOC_DOC_STATUS_ARGUMENT 1
-%define NEBOC_DOC_STATUS_LENGTH 2
-%define NEBOC_DOC_STATUS_ENCODING 3
+; Pointerless, bounded semantic documentation record shared by G156 owners.
+%ifndef NEBOC_DOC_RECORD_INC
+%define NEBOC_DOC_RECORD_INC 1
+
+%define NEBOC_DOC_RECORD_MAGIC          0x31524f434f44424e
+%define NEBOC_DOC_RECORD_SCHEMA         1
+%define NEBOC_DOC_RECORD_BYTES          4096
+%define NEBOC_DOC_RECORD_SCHEMA_WORD    0x0000100000000001
+%define NEBOC_DOC_RECORD_FIELD_COUNT    14
+%define NEBOC_DOC_RECORD_FIELD_MASK     0x3fff
+%define NEBOC_DOC_RECORD_ORIGIN_BUILTIN 1
+%define NEBOC_DOC_RECORD_ORIGIN_STDLIB  2
+%define NEBOC_DOC_RECORD_ORIGIN_GENERATED 3
+%define NEBOC_DOC_RECORD_ORIGIN_SOURCE  4
+%define NEBOC_DOC_RECORD_ORIGIN_INTERFACE 5
+%define NEBOC_DOC_RECORD_VIS_PUBLIC     1
+%define NEBOC_DOC_RECORD_VIS_PRIVATE    2
+
+%define NEBOC_DOC_OFF_MAGIC             0
+%define NEBOC_DOC_OFF_SCHEMA            8
+%define NEBOC_DOC_OFF_SYMBOL            16
+%define NEBOC_DOC_OFF_SPAN_START        24
+%define NEBOC_DOC_OFF_SPAN_END          32
+%define NEBOC_DOC_OFF_SIGNATURE         40
+%define NEBOC_DOC_OFF_FIELD_MASK        48
+%define NEBOC_DOC_OFF_ORIGIN_VIS        56
+%define NEBOC_DOC_OFF_TITLE             64
+%define NEBOC_DOC_OFF_SUMMARY           72
+%define NEBOC_DOC_OFF_RETURN            80
+%define NEBOC_DOC_OFF_OWNERSHIP         88
+%define NEBOC_DOC_OFF_COMPLEXITY        96
+%define NEBOC_DOC_OFF_SINCE             104
+%define NEBOC_DOC_OFF_DEPRECATED        112
+%define NEBOC_DOC_OFF_AST               120
+%define NEBOC_DOC_OFF_COUNTS_A          128
+%define NEBOC_DOC_OFF_COUNTS_B          136
+%define NEBOC_DOC_OFF_PARAMETERS        144
+%define NEBOC_DOC_OFF_ERRORS            176
+%define NEBOC_DOC_OFF_EFFECTS           184
+%define NEBOC_DOC_OFF_CAPABILITIES      192
+%define NEBOC_DOC_OFF_RISKS             200
+%define NEBOC_DOC_OFF_EXAMPLES          208
+%define NEBOC_DOC_OFF_LAWS              216
+%define NEBOC_DOC_OFF_RETURN_ID         224
+%define NEBOC_DOC_OFF_TEXT_LENGTH       232
+%define NEBOC_DOC_OFF_INDEX_KEY         240
+%define NEBOC_DOC_OFF_TEXT              256
+%define NEBOC_DOC_OFF_CONTENT_HASH      4088
+%define NEBOC_DOC_TEXT_CAPACITY         3832
+
+%define NEBOC_DOC_STATUS_ARGUMENT       1
+%define NEBOC_DOC_STATUS_SCHEMA         4
+%define NEBOC_DOC_STATUS_LIMIT          8
+%define NEBOC_DOC_STATUS_CONFLICT       4
+
+%define NEBOC_DOC_FNV_OFFSET 0xcbf29ce484222325
+%define NEBOC_DOC_FNV_PRIME  0x100000001b3
 %endif

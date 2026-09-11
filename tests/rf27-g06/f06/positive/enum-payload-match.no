@@ -1,0 +1,8 @@
+enum Number { Empty, Value(Int) }
+start() {
+    Number.Value(42).value;
+    match(value) {
+        Empty -> 0.return;
+        Value(payload) -> payload.return;
+    }
+}

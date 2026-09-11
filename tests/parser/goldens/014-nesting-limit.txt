@@ -1,0 +1,4 @@
+status: LIMIT_EXCEEDED
+diagnostic: NEBO_PARSE_NESTING_LIMIT
+progress: greater than zero
+ast: one recovered ErrorNode

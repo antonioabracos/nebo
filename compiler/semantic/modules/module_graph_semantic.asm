@@ -6,6 +6,8 @@ default rel
 %include "compiler/support/status/status_codes.inc"
 %include "compiler/parser/module_parser.inc"
 
+extern neboc_module_resolve_export
+
 section .text
 
 NEBOC_ABI_FUNCTION neboc_module_analyze
@@ -86,8 +88,11 @@ NEBOC_ABI_FUNCTION neboc_module_analyze
  mov rcx,[rbp+NEBOC_MODULE_RECORD_VISIBILITY_OFFSET]
  cmp rcx,NEBOC_MODULE_VISIBILITY_PUBLIC
  je .count_public
+ cmp rcx,NEBOC_MODULE_VISIBILITY_INTERNAL
+ je .count_non_public
  cmp rcx,NEBOC_MODULE_VISIBILITY_PRIVATE
  jne .invalid_state
+.count_non_public:
  inc qword [r12+NEBOC_MODULE_PRIVATE_COUNT_OFFSET]
  jmp .summary_start
 .count_public:
@@ -216,6 +221,16 @@ NEBOC_ABI_FUNCTION neboc_module_analyze
  shl rdx,4
  mov rax,[rbp+rdx+NEBOC_MODULE_RECORD_START0_MODULE_OFFSET]
  mov r11,[rbp+rdx+NEBOC_MODULE_RECORD_START0_SYMBOL_OFFSET]
+ test qword [rbp+NEBOC_MODULE_RECORD_FLAGS_OFFSET],NEBOC_MODULE_RECORD_MODERN_IMPORTS
+ jz .reference_namespace_ready
+ sub rsp,8
+ call module_import_resolve_namespace
+ jnc .reference_namespace_call_ok
+ add rsp,8
+ jmp .import_resolution_failed
+.reference_namespace_call_ok:
+ add rsp,8
+.reference_namespace_ready:
  xor ecx,ecx
 .reference_find_module:
  cmp ecx,NEBOC_MODULE_MAX_UNITS
@@ -239,13 +254,15 @@ NEBOC_ABI_FUNCTION neboc_module_analyze
  inc r8
  jmp .reference_import_loop
 .reference_imported:
- mov rdx,rcx
- shl rdx,7
- lea r9,[r13+rdx]
- test qword [r9+NEBOC_MODULE_RECORD_FLAGS_OFFSET],NEBOC_MODULE_RECORD_EXPORT
- jz .missing_export
- cmp r11,[r9+NEBOC_MODULE_RECORD_EXPORT_HASH_OFFSET]
- jne .missing_export
+ mov rdi,r12
+ mov rsi,rcx
+ mov rdx,r11
+ sub rsp,8
+ call neboc_module_resolve_export
+ add rsp,8
+ test eax,eax
+ jnz .export_resolution_failed
+ mov r9,rdx
  cmp qword [r9+NEBOC_MODULE_RECORD_VISIBILITY_OFFSET],NEBOC_MODULE_VISIBILITY_PRIVATE
  jne .reference_value
  cmp rcx,rbx
@@ -282,6 +299,15 @@ NEBOC_ABI_FUNCTION neboc_module_analyze
 .missing_unit:
  mov eax,neboc_seguranca_numerica_conversoes_e_overflow_MODULE_DIAG_MISSING_UNIT
  jmp .failure
+.export_resolution_failed:
+ mov eax,edx
+ jmp .failure
+.import_resolution_failed:
+ mov rax,[r12+NEBOC_MODULE_DIAGNOSTIC_OFFSET]
+ test rax,rax
+ jnz .failure
+ mov eax,neboc_seguranca_numerica_conversoes_e_overflow_MODULE_DIAG_MISSING_UNIT
+ jmp .failure
 .private_access:
  mov eax,NEBOC_MODULE_DIAG_PRIVATE_ACCESS
  jmp .failure
@@ -316,5 +342,114 @@ NEBOC_ABI_FUNCTION neboc_module_analyze
  ret
 .invalid:
  NEBOC_ABI_RETURN_STATUS NEBOC_STATUS_INVALID_ARGUMENT
+
+; Resolve the source namespace in RAX through the root's canonical G151 AST.
+; R11 is the referenced symbol. Named capsules select the unique entry that
+; publicly exports that symbol; anonymous/simple forms expose entry aliases.
+module_import_resolve_namespace:
+ mov r8,[r12+NEBOC_MODULE_IMPORT_ASTS_OFFSET]
+ test r8,r8
+ jz .bad
+ mov rdx,rbx
+ imul rdx,NEBOC_IMPORT_AST_SIZE
+ add r8,rdx
+ mov rdx,[r8+NEBOC_IMPORT_AST_FORM_OFFSET]
+ cmp rdx,NEBOC_IMPORT_FORM_NAMED_CAPSULE
+ je .named
+ cmp rax,[r8+NEBOC_IMPORT_AST_ALIAS0_HASH_OFFSET]
+ je .alias0
+ cmp qword [r8+NEBOC_IMPORT_AST_COUNT_OFFSET],2
+ jb .bad
+ cmp rax,[r8+NEBOC_IMPORT_AST_ALIAS1_HASH_OFFSET]
+ jne .bad
+ mov rax,[r8+NEBOC_IMPORT_AST_TARGET1_HASH_OFFSET]
+ clc
+ ret
+.alias0:
+ cmp qword [r8+NEBOC_IMPORT_AST_FORM_OFFSET],NEBOC_IMPORT_FORM_SELECTIVE
+ jne .alias0_ready
+ xor r9d,r9d
+.selective_symbol:
+ cmp r9,[r8+NEBOC_IMPORT_AST_SELECTIVE_COUNT_OFFSET]
+ jae .selective_missing
+ cmp r11,[r8+r9*8+NEBOC_IMPORT_AST_SELECTIVE_HASHES_OFFSET]
+ je .alias0_ready
+ inc r9
+ jmp .selective_symbol
+.selective_missing:
+ mov qword [r12+NEBOC_MODULE_DIAGNOSTIC_OFFSET],NEBOC_MODULE_DIAG_SELECTIVE_MISSING
+ stc
+ ret
+.alias0_ready:
+ mov rax,[r8+NEBOC_IMPORT_AST_TARGET0_HASH_OFFSET]
+ clc
+ ret
+.named:
+ cmp rax,[r8+NEBOC_IMPORT_AST_CAPSULE_HASH_OFFSET]
+ jne .bad
+ xor r9d,r9d                  ; entry index
+ xor r10d,r10d                ; selected module hash
+.named_entry:
+ cmp r9,[r8+NEBOC_IMPORT_AST_COUNT_OFFSET]
+ jae .named_done
+ mov rdx,r9
+ imul rdx,40
+ mov rax,[r8+rdx+NEBOC_IMPORT_AST_TARGET0_HASH_OFFSET]
+ xor ecx,ecx
+.named_find_module:
+ cmp ecx,NEBOC_MODULE_MAX_UNITS
+ jae .named_next
+ mov rdx,rcx
+ shl rdx,7
+ cmp rax,[r13+rdx+NEBOC_MODULE_RECORD_MODULE_HASH_OFFSET]
+ jne .named_find_next
+ sub rsp,40
+ mov [rsp],r8
+ mov [rsp+8],r9
+ mov [rsp+16],r10
+ mov [rsp+24],rax
+ mov [rsp+32],r11
+ mov rdi,r12
+ mov rsi,rcx
+ mov rdx,r11
+ call neboc_module_resolve_export
+ test eax,eax
+ jnz .named_no_export
+ cmp qword [rdx+NEBOC_MODULE_RECORD_VISIBILITY_OFFSET],NEBOC_MODULE_VISIBILITY_PUBLIC
+ jne .named_no_export
+ mov edx,1
+ jmp .named_export_result
+.named_no_export:
+ xor edx,edx
+.named_export_result:
+ mov r8,[rsp]
+ mov r9,[rsp+8]
+ mov r10,[rsp+16]
+ mov rax,[rsp+24]
+ mov r11,[rsp+32]
+ add rsp,40
+ test edx,edx
+ jz .named_next
+ test r10,r10
+ jnz .ambiguous
+ mov r10,rax
+ jmp .named_next
+.named_find_next:
+ inc ecx
+ jmp .named_find_module
+.named_next:
+ inc r9
+ jmp .named_entry
+.named_done:
+ test r10,r10
+ jz .bad
+ mov rax,r10
+ clc
+ ret
+.ambiguous:
+ mov qword [r12+NEBOC_MODULE_DIAGNOSTIC_OFFSET],NEBOC_IMPORT_DIAG_AMBIGUOUS_SYMBOL
+.bad:
+ stc
+ ret
 
 section .note.GNU-stack noalloc noexec nowrite progbits

@@ -1,0 +1,6 @@
+NEBO-E0001: invalid diagnostic or source contract
+causes: A required source or diagnostic invariant was not satisfied.
+solutions: Inspect the primary span and use the canonical syntax or schema.
+positive: start(){(17+24).return;}
+negative: start( {
+related: NEBO-H0001

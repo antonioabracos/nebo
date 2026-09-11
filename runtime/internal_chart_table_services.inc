@@ -1,14 +1,108 @@
-%ifndef nebo_servicos_internos_visual_chart_e_visual_table_INTERNAL_CONTRACTS_INC
-%define nebo_servicos_internos_visual_chart_e_visual_table_INTERNAL_CONTRACTS_INC 1
-%define NEBO_INTERNAL_ERR_INVALID -22
-%define NEBO_INTERNAL_ERR_BOUNDS -75
-%define servicos_internos_visual_chart_e_visual_table_chart_line_bar_CONTRACT 1
-%define servicos_internos_visual_chart_e_visual_table_scatter_histogram_CONTRACT 1
-%define servicos_internos_visual_chart_e_visual_table_heatmap_matrix_confusion_CONTRACT 1
-%define servicos_internos_visual_chart_e_visual_table_timeseries_aggregate_CONTRACT 1
-%define servicos_internos_visual_chart_e_visual_table_table_preview_schema_profile_CONTRACT 1
-%define servicos_internos_visual_chart_e_visual_table_sample_limits_CONTRACT 1
-%define servicos_internos_visual_chart_e_visual_table_redact_sort_filtersummary_CONTRACT 1
-%define servicos_internos_visual_chart_e_visual_table_service_to_receiver_migration_CONTRACT 1
-%define servicos_internos_visual_chart_e_visual_table_closeout_CONTRACT 1
+%ifndef NEBO_INTERNAL_CHART_TABLE_SERVICES_INC
+%define NEBO_INTERNAL_CHART_TABLE_SERVICES_INC 1
+
+; G112 is an internal adapter layer. These symbols are not Nebo source-level
+; visual.* callables; source programs continue to use receiver-first RenderPlan.
+%define NEBO_G112_SPEC_VERSION 1
+%define NEBO_G112_MATURITY_INTERNAL_CHART_TABLE_SERVICES_GREEN 2
+
+%define NEBO_G112_OK 0
+%define NEBO_G112_ERROR_INVALID -1
+%define NEBO_G112_ERROR_BOUNDS -2
+%define NEBO_G112_ERROR_CORE -3
+%define NEBO_G112_ERROR_VERSION -4
+%define NEBO_G112_ERROR_POLICY -5
+%define NEBO_G112_ERROR_TARGET -6
+
+%define NEBO_G112_CHART_LINE 1
+%define NEBO_G112_CHART_BAR 2
+%define NEBO_G112_CHART_SCATTER 3
+%define NEBO_G112_CHART_HISTOGRAM 4
+%define NEBO_G112_CHART_HEATMAP 5
+%define NEBO_G112_CHART_MATRIX 6
+%define NEBO_G112_CHART_CONFUSION 7
+%define NEBO_G112_CHART_TIME_SERIES 8
+%define NEBO_G112_CHART_AGGREGATE 9
+
+; Borrowed-input chart specification. The result ABI below is pointer-free.
+%define NEBO_G112_CHART_SPEC_VERSION 0
+%define NEBO_G112_CHART_SPEC_TARGET 8
+%define NEBO_G112_CHART_SPEC_POINTS 16
+%define NEBO_G112_CHART_SPEC_SERIES 24
+%define NEBO_G112_CHART_SPEC_BINS 32
+%define NEBO_G112_CHART_SPEC_ROWS 40
+%define NEBO_G112_CHART_SPEC_COLUMNS 48
+%define NEBO_G112_CHART_SPEC_X_VALUES 56
+%define NEBO_G112_CHART_SPEC_Y_VALUES 64
+%define NEBO_G112_CHART_SPEC_GENERATION 72
+%define NEBO_G112_CHART_SPEC_SIZE 80
+
+%define NEBO_G112_CHART_RECEIPT_OPERATION 0
+%define NEBO_G112_CHART_RECEIPT_CORE_KIND 8
+%define NEBO_G112_CHART_RECEIPT_TARGET 16
+%define NEBO_G112_CHART_RECEIPT_POINTS 24
+%define NEBO_G112_CHART_RECEIPT_SERIES 32
+%define NEBO_G112_CHART_RECEIPT_BINS 40
+%define NEBO_G112_CHART_RECEIPT_ROWS 48
+%define NEBO_G112_CHART_RECEIPT_COLUMNS 56
+%define NEBO_G112_CHART_RECEIPT_CORE_DIGEST 64
+%define NEBO_G112_CHART_RECEIPT_SERVICE_DIGEST 72
+%define NEBO_G112_CHART_RECEIPT_GENERATION 80
+%define NEBO_G112_CHART_RECEIPT_MATURITY 88
+%define NEBO_G112_CHART_RECEIPT_SIZE 96
+
+%define NEBO_G112_TABLE_PREVIEW 10
+%define NEBO_G112_TABLE_SCHEMA 11
+%define NEBO_G112_TABLE_PROFILE 12
+%define NEBO_G112_TABLE_SAMPLE 13
+%define NEBO_G112_TABLE_LIMIT_ROWS 14
+%define NEBO_G112_TABLE_LIMIT_COLUMNS 15
+%define NEBO_G112_TABLE_REDACT 16
+%define NEBO_G112_TABLE_SORT 17
+%define NEBO_G112_TABLE_FILTER_SUMMARY 18
+
+; The large-data points are borrowed only by table.sample. All other table
+; operations ignore that field and publish bounded metadata without source data.
+%define NEBO_G112_TABLE_SPEC_VERSION 0
+%define NEBO_G112_TABLE_SPEC_SOURCE 8
+%define NEBO_G112_TABLE_SPEC_SCHEMA 16
+%define NEBO_G112_TABLE_SPEC_ROWS 24
+%define NEBO_G112_TABLE_SPEC_COLUMNS 32
+%define NEBO_G112_TABLE_SPEC_GENERATION 40
+%define NEBO_G112_TABLE_SPEC_DATA_DIGEST 48
+%define NEBO_G112_TABLE_SPEC_SAMPLE_VALUES 56
+%define NEBO_G112_TABLE_SPEC_SIZE 64
+
+%define NEBO_G112_TABLE_RECEIPT_OPERATION 0
+%define NEBO_G112_TABLE_RECEIPT_ROWS 8
+%define NEBO_G112_TABLE_RECEIPT_COLUMNS 16
+%define NEBO_G112_TABLE_RECEIPT_CELLS 24
+%define NEBO_G112_TABLE_RECEIPT_AUX 32
+%define NEBO_G112_TABLE_RECEIPT_CORE_DIGEST 40
+%define NEBO_G112_TABLE_RECEIPT_SERVICE_DIGEST 48
+%define NEBO_G112_TABLE_RECEIPT_GENERATION 56
+%define NEBO_G112_TABLE_RECEIPT_MATURITY 64
+%define NEBO_G112_TABLE_RECEIPT_SIZE 72
+
+%ifndef NEBO_G112_CHART_TABLE_IMPLEMENTATION
+extern nebo_g112_chart_line
+extern nebo_g112_chart_bar
+extern nebo_g112_chart_scatter
+extern nebo_g112_chart_histogram
+extern nebo_g112_chart_heatmap
+extern nebo_g112_chart_matrix
+extern nebo_g112_chart_confusion
+extern nebo_g112_chart_time_series
+extern nebo_g112_chart_aggregate
+extern nebo_g112_table_preview
+extern nebo_g112_table_schema
+extern nebo_g112_table_profile
+extern nebo_g112_table_sample
+extern nebo_g112_table_limit_rows
+extern nebo_g112_table_limit_columns
+extern nebo_g112_table_redact
+extern nebo_g112_table_sort
+extern nebo_g112_table_filter_summary
+%endif
+
 %endif

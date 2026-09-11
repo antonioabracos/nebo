@@ -1,0 +1,22 @@
+usage: neboc format [-h] [--check | --diff | --stdout | --write]
+                    [--range RANGE_TEXT]
+                    [--symbol-style {preserve,ascii,math}]
+                    [--preserve-comments] [--compiler COMPILER]
+                    paths [paths ...]
+
+positional arguments:
+  paths
+
+options:
+  -h, --help            show this help message and exit
+  --check               report changes without writing
+  --diff                preview a unified diff without writing
+  --stdout              write formatted source to stdout
+  --write               atomically replace the source
+  --range RANGE_TEXT    format a complete-line START:END byte range
+  --symbol-style {preserve,ascii,math}
+                        preserve source symbols (default), or use exact
+                        ASCII/math operator aliases
+  --preserve-comments   preserve canonical line and nested block-comment bytes
+                        (default)
+  --compiler COMPILER

@@ -14,10 +14,305 @@ content_name db 'Content-Length: '
 content_name_len equ $-content_name
 chunked_name db 'Transfer-Encoding: chunked'
 chunked_name_len equ $-chunked_name
+request_version db ' HTTP/1.1',13,10
+request_version_len equ $-request_version
+request_close db 'Connection: close',13,10,13,10
+request_close_len equ $-request_close
 section .text
 global nebo_http_encode_get
 global nebo_http_parse_response
 global nebo_http_decode_chunked
+global nebo_http_request_init
+global nebo_http_request_header
+global nebo_http_client_send
+global nebo_http_response_status
+global nebo_http_response_body
+
+; rdi=Request, rsi=method, rdx=method len, rcx=origin-form URI, r8=URI len,
+; r9=caller-owned header buffer, [rsp+8]=header capacity.
+nebo_http_request_init:
+ test rdi,rdi
+ jz .request_invalid
+ test rsi,rsi
+ jz .request_invalid
+ test rdx,rdx
+ jz .request_invalid
+ cmp rdx,16
+ ja .request_limit
+ test rcx,rcx
+ jz .request_invalid
+ test r8,r8
+ jz .request_invalid
+ cmp r8,2048
+ ja .request_limit
+ cmp byte [rcx],'/'
+ jne .request_invalid
+ xor r11d,r11d
+.request_uri:
+ mov al,[rcx+r11]
+ cmp al,33
+ jb .request_invalid
+ cmp al,126
+ ja .request_invalid
+ cmp al,'#'
+ je .request_invalid
+ inc r11
+ cmp r11,r8
+ jb .request_uri
+ test r9,r9
+ jz .request_invalid
+ mov r10,[rsp+8]
+ test r10,r10
+ jz .request_limit
+ xor r11d,r11d
+.request_method:
+ mov al,[rsi+r11]
+ cmp al,'A'
+ jb .request_invalid
+ cmp al,'Z'
+ ja .request_invalid
+ inc r11
+ cmp r11,rdx
+ jb .request_method
+ mov [rdi+NEBO_HTTP_REQUEST_METHOD],rsi
+ mov [rdi+NEBO_HTTP_REQUEST_METHOD_LENGTH],rdx
+ mov [rdi+NEBO_HTTP_REQUEST_URI],rcx
+ mov [rdi+NEBO_HTTP_REQUEST_URI_LENGTH],r8
+ mov [rdi+NEBO_HTTP_REQUEST_HEADERS],r9
+ mov [rdi+NEBO_HTTP_REQUEST_HEADERS_CAPACITY],r10
+ mov qword [rdi+NEBO_HTTP_REQUEST_HEADERS_LENGTH],0
+ mov qword [rdi+NEBO_HTTP_REQUEST_STATE],NEBO_HTTP_REQUEST_STATE_READY
+ xor eax,eax
+ ret
+.request_invalid:
+ mov eax,NEBO_SYSTEM_ERROR_INVALID_ARGUMENT
+ ret
+.request_limit:
+ mov eax,NEBO_SYSTEM_ERROR_LIMIT_EXCEEDED
+ ret
+
+; rdi=Request, rsi=name, rdx=name len, rcx=value, r8=value len.
+nebo_http_request_header:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ mov r12,rdi
+ mov r13,rsi
+ mov rbx,rdx
+ mov r14,rcx
+ mov r15,r8
+ test r12,r12
+ jz .header_invalid
+ cmp qword [r12+NEBO_HTTP_REQUEST_STATE],NEBO_HTTP_REQUEST_STATE_READY
+ jne .header_invalid
+ test r13,r13
+ jz .header_invalid
+ test rbx,rbx
+ jz .header_invalid
+ cmp rbx,64
+ ja .header_limit
+ test r14,r14
+ jz .header_invalid
+ cmp r15,1024
+ ja .header_limit
+ xor r9d,r9d
+.header_name:
+ mov al,[r13+r9]
+ cmp al,'-'
+ je .header_name_ok
+ cmp al,'0'
+ jb .header_alpha
+ cmp al,'9'
+ jbe .header_name_ok
+.header_alpha:
+ cmp al,'A'
+ jb .header_lower
+ cmp al,'Z'
+ jbe .header_name_ok
+.header_lower:
+ cmp al,'a'
+ jb .header_invalid
+ cmp al,'z'
+ jbe .header_name_ok
+ jmp .header_invalid
+.header_name_ok:
+ inc r9
+ cmp r9,rbx
+ jb .header_name
+ xor r9d,r9d
+.header_value:
+ cmp r9,r15
+ jae .header_size
+ mov al,[r14+r9]
+ cmp al,32
+ jb .header_invalid
+ cmp al,126
+ ja .header_invalid
+ inc r9
+ jmp .header_value
+.header_size:
+ mov r10,[r12+NEBO_HTTP_REQUEST_HEADERS_LENGTH]
+ lea r11,[rbx+r15+4]
+ add r11,r10
+ jc .header_limit
+ cmp r11,[r12+NEBO_HTTP_REQUEST_HEADERS_CAPACITY]
+ ja .header_limit
+ mov rdi,[r12+NEBO_HTTP_REQUEST_HEADERS]
+ add rdi,r10
+ mov rsi,r13
+ mov rcx,rbx
+ rep movsb
+ mov word [rdi],0x203a
+ add rdi,2
+ mov rsi,r14
+ mov rcx,r15
+ rep movsb
+ mov word [rdi],0x0a0d
+ mov [r12+NEBO_HTTP_REQUEST_HEADERS_LENGTH],r11
+ xor eax,eax
+ jmp .header_return
+.header_invalid:
+ mov eax,NEBO_SYSTEM_ERROR_INVALID_ARGUMENT
+ jmp .header_return
+.header_limit:
+ mov eax,NEBO_SYSTEM_ERROR_LIMIT_EXCEEDED
+.header_return:
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; rdi=HttpTransaction descriptor. Synchronous, loopback-capability transport.
+nebo_http_client_send:
+ push rbx
+ push r12
+ push r13
+ push r14
+ push r15
+ mov r12,rdi
+ test r12,r12
+ jz .client_invalid
+ mov r13,[r12+NEBO_HTTP_TRANSACTION_REQUEST]
+ mov r14,[r12+NEBO_HTTP_TRANSACTION_STREAM]
+ test r13,r13
+ jz .client_invalid
+ test r14,r14
+ jz .client_invalid
+ cmp qword [r13+NEBO_HTTP_REQUEST_STATE],NEBO_HTTP_REQUEST_STATE_READY
+ jne .client_invalid
+ mov r15,[r12+NEBO_HTTP_TRANSACTION_WIRE]
+ test r15,r15
+ jz .client_invalid
+ mov rax,[r13+NEBO_HTTP_REQUEST_METHOD_LENGTH]
+ add rax,[r13+NEBO_HTTP_REQUEST_URI_LENGTH]
+ add rax,[r13+NEBO_HTTP_REQUEST_HEADERS_LENGTH]
+ add rax,1+request_version_len+request_close_len
+ jc .client_limit
+ cmp rax,[r12+NEBO_HTTP_TRANSACTION_WIRE_CAPACITY]
+ ja .client_limit
+ mov rbx,rax
+ mov rdi,r15
+ mov rsi,[r13+NEBO_HTTP_REQUEST_METHOD]
+ mov rcx,[r13+NEBO_HTTP_REQUEST_METHOD_LENGTH]
+ rep movsb
+ mov byte [rdi],' '
+ inc rdi
+ mov rsi,[r13+NEBO_HTTP_REQUEST_URI]
+ mov rcx,[r13+NEBO_HTTP_REQUEST_URI_LENGTH]
+ rep movsb
+ lea rsi,[request_version]
+ mov ecx,request_version_len
+ rep movsb
+ mov rsi,[r13+NEBO_HTTP_REQUEST_HEADERS]
+ mov rcx,[r13+NEBO_HTTP_REQUEST_HEADERS_LENGTH]
+ rep movsb
+ lea rsi,[request_close]
+ mov ecx,request_close_len
+ rep movsb
+ mov rdi,r14
+ mov rsi,r15
+ mov rdx,rbx
+ call nebo_tcp_stream_write_all
+ test eax,eax
+ jnz .client_return
+ xor ebx,ebx
+.client_read:
+ mov rax,[r12+NEBO_HTTP_TRANSACTION_RESPONSE_CAPACITY]
+ cmp rbx,rax
+ jae .client_limit
+ mov rdi,r14
+ mov rsi,[r12+NEBO_HTTP_TRANSACTION_RESPONSE_BYTES]
+ add rsi,rbx
+ mov rdx,rax
+ sub rdx,rbx
+ call nebo_tcp_stream_read
+ test eax,eax
+ jnz .client_return
+ test rdx,rdx
+ jz .client_parse
+ add rbx,rdx
+ jmp .client_read
+.client_parse:
+ mov rdi,[r12+NEBO_HTTP_TRANSACTION_RESPONSE]
+ mov rsi,[r12+NEBO_HTTP_TRANSACTION_RESPONSE_BYTES]
+ mov rdx,rbx
+ mov rcx,[r12+NEBO_HTTP_TRANSACTION_MAX_BODY]
+ mov r8,[r12+NEBO_HTTP_TRANSACTION_MAX_HEADERS]
+ call nebo_http_parse_response
+ jmp .client_return
+.client_invalid:
+ mov eax,NEBO_SYSTEM_ERROR_INVALID_ARGUMENT
+ jmp .client_return
+.client_limit:
+ mov eax,NEBO_SYSTEM_ERROR_LIMIT_EXCEEDED
+.client_return:
+ pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+; rdi=Response. eax=status, rdx=HTTP status code.
+nebo_http_response_status:
+ test rdi,rdi
+ jz .status_invalid
+ mov rdx,[rdi+NEBO_HTTP_RESPONSE_STATUS]
+ cmp rdx,100
+ jb .status_invalid
+ cmp rdx,599
+ ja .status_invalid
+ xor eax,eax
+ ret
+.status_invalid:
+ mov eax,NEBO_SYSTEM_ERROR_INVALID_ARGUMENT
+ xor edx,edx
+ ret
+
+; rdi=Response, rsi=caller limit. eax=status, rdx=body, r8=body bytes.
+nebo_http_response_body:
+ test rdi,rdi
+ jz .body_invalid
+ mov r8,[rdi+NEBO_HTTP_RESPONSE_BODY_LENGTH]
+ cmp r8,rsi
+ ja .body_limit
+ mov rdx,[rdi+NEBO_HTTP_RESPONSE_BODY]
+ xor eax,eax
+ ret
+.body_invalid:
+ mov eax,NEBO_SYSTEM_ERROR_INVALID_ARGUMENT
+ xor edx,edx
+ xor r8d,r8d
+ ret
+.body_limit:
+ mov eax,NEBO_SYSTEM_ERROR_LIMIT_EXCEEDED
+ xor edx,edx
+ xor r8d,r8d
+ ret
 
 ; rdi=out,rsi=cap,rdx=path,rcx=path len,r8=host,r9=host len. eax=status,rdx=len.
 nebo_http_encode_get:

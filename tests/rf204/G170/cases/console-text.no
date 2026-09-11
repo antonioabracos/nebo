@@ -1,0 +1,2 @@
+// Independent atomic runtime case.
+start() { "Nebo".console(); 0.return; }

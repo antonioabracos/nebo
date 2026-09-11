@@ -1,0 +1,2 @@
+campaign	seeds	budget	generator	coverage_proxy	root_cause_dedup	replays	state
+RF172-G169-F09-DETERMINISTIC_FUZZ	169091,169092,169093	192	seeded grammar-token combinations	diagnostic identity across check,emit-asm,build	diagnostic code and machine phase	2	MATERIALIZED

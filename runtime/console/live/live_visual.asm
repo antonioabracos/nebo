@@ -11,7 +11,9 @@ default rel
 
 extern nebo_console_document_copy_plain_text
 extern nebo_console_chrome_render
+extern nebo_software_surface_fill_rect
 
+global nebo_runtime_live_set_presentation
 global nebo_runtime_live_visual_render
 
 section .rodata align=8
@@ -93,10 +95,23 @@ visual_line_start_x: resq 1
 visual_max_x: resq 1
 visual_max_y: resq 1
 visual_glyph_color: resd 1
+visual_background_color: resq 1
+visual_surface_ptr: resq 1
 visual_single_line: resd 1
 visual_frame_generation: resq 1
+visual_presentation_document: resq 1
+visual_presentation_colors: resq 1
+visual_presentation_positions: resq 1
+visual_presentation_capacity: resq 1
 
 section .text
+; Bind only the authenticated current document to caller-owned presentation.
+nebo_runtime_live_set_presentation:
+ mov [rel visual_presentation_document],rdi
+ mov [rel visual_presentation_colors],rsi
+ mov [rel visual_presentation_positions],rdx
+ mov [rel visual_presentation_capacity],rcx
+ ret
 ; render(document*, optional TextEditRecord*, surface*, pixels*, capacity,
 ;        const LiveConfig*) -> zero on success.
 nebo_runtime_live_visual_render:
@@ -109,6 +124,8 @@ nebo_runtime_live_visual_render:
  mov r12,rdi
  mov r13,rsi
  mov r14,rdx
+ mov [rel visual_surface_ptr],rdx
+ mov qword [rel visual_background_color],0
  mov r15,rcx
  mov [rsp],r8
  mov [rsp+8],r9
@@ -228,9 +245,16 @@ nebo_runtime_live_visual_render:
  mov [rel visual_max_y],rax
  mov dword [rel visual_glyph_color],0xffdce7f5
  mov dword [rel visual_single_line],0
+ cmp r12,[rel visual_presentation_document]
+ jne .plain_content
+ mov rdi,r12
+ call visual_draw_document_nodes
+ jmp .content_ready
+.plain_content:
  lea rdi,[rel visual_plain_text]
  mov rsi,[rel visual_plain_length]
  call visual_draw_content_bytes
+.content_ready:
 
  test r13,r13
  jz .ok
@@ -251,6 +275,71 @@ nebo_runtime_live_visual_render:
 .done:
  add rsp,32
  pop r15
+ pop r14
+ pop r13
+ pop r12
+ pop rbx
+ ret
+
+section .rodata
+visual_newline: db 10
+section .text
+visual_draw_document_nodes:
+ push rbx
+ push r12
+ push r13
+ push r14
+ sub rsp,8
+ mov r12,rdi
+ mov rax,[r12+NEBO_CONSOLE_DOCUMENT_NODE_STORE_PTR_OFFSET]
+ mov rbx,[rax+NEBO_CONSOLE_NODE_FIRST_CHILD_ID_OFFSET]
+.node:
+ test rbx,rbx
+ jz .done
+ mov rax,rbx
+ dec rax
+ imul r13,rax,NEBO_CONSOLE_NODE_HEADER_SIZE
+ add r13,[r12+NEBO_CONSOLE_DOCUMENT_NODE_STORE_PTR_OFFSET]
+ mov dword [rel visual_glyph_color],0xffdce7f5
+ mov qword [rel visual_background_color],0
+ cmp rax,[rel visual_presentation_capacity]
+ jae .payload
+ mov rdx,rax
+ shl rdx,4
+ add rdx,[rel visual_presentation_colors]
+ mov rcx,[rdx+8]
+ mov [rel visual_background_color],rcx
+ mov rcx,[rdx]
+ test rcx,rcx
+ jz .position
+ mov [rel visual_glyph_color],ecx
+.position:
+ imul rax,24
+ add rax,[rel visual_presentation_positions]
+ cmp qword [rax+16],0
+ je .payload
+ mov rdx,[rax]
+ mov [rel visual_cursor_x],rdx
+ mov [rel visual_line_start_x],rdx
+ mov rdx,[rax+8]
+ add rdx,NEBO_CHROME_HEIGHT_PX
+ mov [rel visual_cursor_y],rdx
+.payload:
+ cmp dword [r13+NEBO_CONSOLE_NODE_KIND_OFFSET],NEBO_CONSOLE_NODE_KIND_LINE_BREAK
+ je .newline
+ mov rdi,[r12+NEBO_CONSOLE_DOCUMENT_TEXT_STORE_PTR_OFFSET]
+ add rdi,[r13+NEBO_CONSOLE_NODE_PAYLOAD_OFFSET_OFFSET]
+ mov rsi,[r13+NEBO_CONSOLE_NODE_PAYLOAD_LENGTH_OFFSET]
+ jmp .draw
+.newline:
+ lea rdi,[rel visual_newline]
+ mov esi,1
+.draw:
+ call visual_draw_content_bytes
+ mov rbx,[r13+NEBO_CONSOLE_NODE_NEXT_SIBLING_ID_OFFSET]
+ jmp .node
+.done:
+ add rsp,8
  pop r14
  pop r13
  pop r12
@@ -749,6 +838,18 @@ visual_draw_content_bytes:
  add rax,NEBO_LIVE_CONTENT_CELL_WIDTH_PX
  cmp rax,[rel visual_max_x]
  ja .content_bytes_wrap
+ cmp qword [rel visual_background_color],0
+ je .content_no_background
+ mov [rsp],rdi
+ mov rdi,[rel visual_surface_ptr]
+ mov rsi,[rel visual_cursor_x]
+ mov rdx,[rel visual_cursor_y]
+ mov ecx,NEBO_LIVE_CONTENT_CELL_WIDTH_PX
+ mov r8d,NEBO_LIVE_CONTENT_CELL_HEIGHT_PX
+ mov r9d,[rel visual_background_color]
+ call nebo_software_surface_fill_rect
+ mov rdi,[rsp]
+.content_no_background:
  mov rsi,[rel visual_cursor_x]
  mov rdx,[rel visual_cursor_y]
  call visual_draw_content_glyph

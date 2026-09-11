@@ -1,0 +1,10 @@
+NEBO-LIFECYCLE-HEADLESS-001 create mount visible active
+NEBO-LIFECYCLE-HEADLESS-002 minimize preserves Pending
+NEBO-LIFECYCLE-HEADLESS-003 maximize restore geometry
+NEBO-LIFECYCLE-HEADLESS-004 close without Pending safe CLOSED
+NEBO-LIFECYCLE-HEADLESS-005 close with Pending CANCELLED
+NEBO-LIFECYCLE-HEADLESS-006 dependents cancelled no execution
+NEBO-LIFECYCLE-HEADLESS-007 another Console continues
+NEBO-LIFECYCLE-SECURITY-008 late generation event discarded
+NEBO-LIFECYCLE-SECURITY-009 reclaim before drain blocked
+NEBO-LIFECYCLE-CONTRACT-010 last window safe shutdown

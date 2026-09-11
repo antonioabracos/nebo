@@ -1,0 +1,12 @@
+// List construction is explicit and capacity is observable but not semantic.
+// reserve grows for additional elements while preserving every stored value.
+start() {
+    List<Int>.new().empty;
+    empty.length().emptyLength;
+    List<Int>.withCapacity(5).reserved;
+    reserved.capacity().initialCapacity;
+    List<Int>.from([7, 11, 13]).items;
+    items.length().sourceLength;
+    items.reserve(4);
+    items.capacity();
+}

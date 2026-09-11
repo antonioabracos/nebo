@@ -1,0 +1,7 @@
+// Group, tag, branch, and flush metadata remain bounded and pointer-free.
+start() {
+    RenderPlan;
+    3102;
+    output.stdout().stderr().target("observability-service").plain().visual().headlessEvent();
+    lifecycle.event("log-progress-timeline").payload("log-scope-flush").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

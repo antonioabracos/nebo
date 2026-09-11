@@ -1,0 +1,4 @@
+start() {
+    42.value;
+    if (value == 42) { 0; } else { 1; }
+}

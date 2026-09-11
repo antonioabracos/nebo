@@ -53,6 +53,17 @@ nebo_tensor_init_owned:
  test rsi,rsi
  jz .arg
 .store:
+ ; Complete the frozen descriptor deterministically for every dtype/rank.
+ ; Unused shape/stride slots cannot retain stack bytes in public copies.
+ mov r10,r12
+.unused:
+ cmp r10,NEBO_TENSOR_MAX_RANK
+ jae .header
+ mov qword [rdi+NEBO_TENSOR_SHAPE+r10*8],0
+ mov qword [rdi+NEBO_TENSOR_STRIDES+r10*8],0
+ inc r10
+ jmp .unused
+.header:
  mov rax,NEBO_TENSOR_MAGIC
  mov [rdi+NEBO_TENSOR_MAGIC_OFF],rax
  mov [rdi+NEBO_TENSOR_DTYPE],r8

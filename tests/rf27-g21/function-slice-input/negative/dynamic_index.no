@@ -1,0 +1,2 @@
+(Int.self)pick(Slice<Int>.values, Int.index) { values.at(index).return; }
+start() { 0.return; }

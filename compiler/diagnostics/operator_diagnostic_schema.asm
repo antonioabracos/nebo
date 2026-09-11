@@ -17,8 +17,20 @@ NEBOC_ABI_FUNCTION neboc_operator_diagnostic_create
  ja .source
  test rsi,rsi
  jz .source
- cmp rsi,NEBOC_OPERATOR_REGISTRY_ENTRY_COUNT
+ cmp rsi,NEBOC_OPERATOR_CATALOG_ENTRY_COUNT
  ja .source
+ cmp rdi,NEBOC_OPERATOR_DIAG_CATEGORY_RESERVED
+ jne .check_rejected
+ cmp rsi,NEBOC_OPERATOR_CATALOG_DOMAIN_LAST
+ jbe .source
+ cmp rsi,NEBOC_OPERATOR_CATALOG_RESERVED_LAST
+ ja .source
+.check_rejected:
+ cmp rdi,NEBOC_OPERATOR_DIAG_CATEGORY_REJECTED
+ jne .span
+ cmp rsi,NEBOC_OPERATOR_CATALOG_RESERVED_LAST
+ jbe .source
+.span:
  cmp rcx,r8
  ja .source
  mov r10,NEBOC_OPERATOR_DIAG_NAMESPACE_BASE
@@ -36,7 +48,36 @@ NEBOC_ABI_FUNCTION neboc_operator_diagnostic_create
  mov [r9+NEBOC_OPERATOR_DIAG_END_OFFSET],r8
  mov [r9+NEBOC_OPERATOR_DIAG_SEVERITY_OFFSET],r11
  mov [r9+NEBOC_OPERATOR_DIAG_CATEGORY_OFFSET],rdi
- mov qword [r9+NEBOC_OPERATOR_DIAG_FLAGS_OFFSET],NEBOC_OPERATOR_DIAG_FLAG_MACHINE_PARITY|NEBOC_OPERATOR_DIAG_FLAG_SOURCE_MAP
+ mov rax,NEBOC_OPERATOR_DIAG_FLAG_MACHINE_PARITY|NEBOC_OPERATOR_DIAG_FLAG_SOURCE_MAP
+ cmp rdi,NEBOC_OPERATOR_DIAG_CATEGORY_RESERVED
+ je .quick_fix
+ cmp rdi,NEBOC_OPERATOR_DIAG_CATEGORY_REJECTED
+ jne .classify
+.quick_fix:
+ or rax,NEBOC_OPERATOR_DIAG_FLAG_QUICK_FIX_AVAILABLE
+.classify:
+ mov [r9+NEBOC_OPERATOR_DIAG_FLAGS_OFFSET],rax
+ mov eax,1
+ cmp rsi,NEBOC_OPERATOR_CATALOG_CORE_LAST
+ jbe .class_ready
+ inc eax
+ cmp rsi,NEBOC_OPERATOR_CATALOG_ALIAS_LAST
+ jbe .class_ready
+ inc eax
+ cmp rsi,NEBOC_OPERATOR_CATALOG_DOMAIN_LAST
+ jbe .class_ready
+ inc eax
+ cmp rsi,NEBOC_OPERATOR_CATALOG_RESERVED_LAST
+ jbe .class_ready
+ inc eax
+.class_ready:
+ mov [r9+NEBOC_OPERATOR_DIAG_CLASS_OFFSET],rax
+ xor eax,eax
+ cmp rsi,NEBOC_OPERATOR_CATALOG_ALIAS_LAST
+ ja .canonical_ready
+ mov rax,rdx
+.canonical_ready:
+ mov [r9+NEBOC_OPERATOR_DIAG_CANONICAL_TOKEN_OFFSET],rax
  xor eax,eax
  ret
 .source:

@@ -1,0 +1,5 @@
+start() {
+    "Primeiro: ".scan().primeiro;
+    "Segundo: ".scan().segundo;
+    // Conformance driver resolves segundo before primeiro.
+}

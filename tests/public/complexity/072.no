@@ -1,0 +1,13 @@
+// Finite state machines expose deterministic transitions, guards, history, and validation.
+(Int.self)stateMachineNew() { self.return; }
+(Int.self)machineState() { self.return; }
+(Int.self)stateOn() { self.return; }
+(Int.self)machineSend() { self.return; }
+(Int.self)machineCurrentState() { self.return; }
+(Int.self)machineAllowedEvents() { self.return; }
+(Int.self)machineTransitionHistory() { self.return; }
+(Int.self)machineValidate() { self.return; }
+
+start() {
+    45.stateMachineNew().machineState().stateOn().machineSend().machineCurrentState().machineAllowedEvents().machineTransitionHistory().machineValidate();
+}

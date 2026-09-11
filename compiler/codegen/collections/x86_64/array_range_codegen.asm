@@ -4,6 +4,7 @@ default rel
 
 %include "compiler/abi/internal/x86_64/neboc_internal_abi.inc"
 %include "compiler/support/status/status_codes.inc"
+%include "compiler/tokens/token_kind.inc"
 %include "compiler/semantic/collections/array_range.inc"
 %include "compiler/lowering/collections/array_range_plan.inc"
 %include "compiler/codegen/collections/x86_64/array_range_codegen.inc"
@@ -67,6 +68,22 @@ slot_inc_b: db ']',10
 slot_inc_b_len equ $-slot_inc_b
 return_item: db '    add rsp, 128',10,'    ret',10
 return_item_len equ $-return_item
+return_index: db '    mov rax, rcx',10,'    add rsp, 128',10,'    ret',10
+return_index_len equ $-return_index
+filter_cmp: db '    cmp rax, '
+filter_cmp_len equ $-filter_cmp
+filter_false_lt: db 10,'    jge ._for_latch'
+filter_false_lt_len equ $-filter_false_lt
+filter_false_le: db 10,'    jg ._for_latch'
+filter_false_le_len equ $-filter_false_le
+filter_false_gt: db 10,'    jle ._for_latch'
+filter_false_gt_len equ $-filter_false_gt
+filter_false_ge: db 10,'    jl ._for_latch'
+filter_false_ge_len equ $-filter_false_ge
+filter_false_eq: db 10,'    jne ._for_latch'
+filter_false_eq_len equ $-filter_false_eq
+filter_false_ne: db 10,'    je ._for_latch'
+filter_false_ne_len equ $-filter_false_ne
 final_a: db '    mov rax, '
 final_a_len equ $-final_a
 final_b: db 10,'    add rsp, 128',10,'    ret',10
@@ -383,6 +400,71 @@ emit_for_loop:
  test eax,eax
  jnz .done
 .action:
+ cmp qword [r13+NEBOC_FOR_FILTER_LHS_TOKEN_OFFSET],-1
+ je .action_ready
+ mov rdi,r14
+ lea rsi,[rel filter_cmp]
+ mov edx,filter_cmp_len
+ call neboc_assembly_writer_append_bytes
+ test eax,eax
+ jnz .done
+ mov rdi,r14
+ mov rsi,[r13+NEBOC_FOR_FILTER_VALUE_OFFSET]
+ call neboc_assembly_writer_append_i64_decimal
+ test eax,eax
+ jnz .done
+ mov rax,[r13+NEBOC_FOR_FILTER_OPERATOR_OFFSET]
+ cmp rax,NEBOC_TOKEN_LESS
+ je .filter_lt
+ cmp rax,NEBOC_TOKEN_LESS_EQUAL
+ je .filter_le
+ cmp rax,NEBOC_TOKEN_GREATER
+ je .filter_gt
+ cmp rax,NEBOC_TOKEN_GREATER_EQUAL
+ je .filter_ge
+ cmp rax,NEBOC_TOKEN_EQUAL_EQUAL
+ je .filter_eq
+ cmp rax,NEBOC_TOKEN_BANG_EQUAL
+ jne .bad
+ lea rsi,[rel filter_false_ne]
+ mov edx,filter_false_ne_len
+ jmp .filter_emit
+.filter_lt:
+ lea rsi,[rel filter_false_lt]
+ mov edx,filter_false_lt_len
+ jmp .filter_emit
+.filter_le:
+ lea rsi,[rel filter_false_le]
+ mov edx,filter_false_le_len
+ jmp .filter_emit
+.filter_gt:
+ lea rsi,[rel filter_false_gt]
+ mov edx,filter_false_gt_len
+ jmp .filter_emit
+.filter_ge:
+ lea rsi,[rel filter_false_ge]
+ mov edx,filter_false_ge_len
+ jmp .filter_emit
+.filter_eq:
+ lea rsi,[rel filter_false_eq]
+ mov edx,filter_false_eq_len
+.filter_emit:
+ mov rdi,r14
+ call neboc_assembly_writer_append_bytes
+ test eax,eax
+ jnz .done
+ mov rdi,r14
+ mov rsi,[r13+NEBOC_FOR_ID_OFFSET]
+ call neboc_assembly_writer_append_u64_decimal
+ test eax,eax
+ jnz .done
+ mov rdi,r14
+ lea rsi,[rel newline]
+ mov edx,newline_len
+ call neboc_assembly_writer_append_bytes
+ test eax,eax
+ jnz .done
+.action_ready:
  mov rax,[r13+NEBOC_FOR_ACTION_OFFSET]
  cmp rax,NEBOC_FOR_ACTION_BREAK
  je .break
@@ -390,6 +472,8 @@ emit_for_loop:
  je .continue
  cmp rax,NEBOC_FOR_ACTION_RETURN_ITEM
  je .return
+ cmp rax,NEBOC_FOR_ACTION_RETURN_INDEX
+ je .return_index
  cmp rax,NEBOC_FOR_ACTION_NESTED
  je .nested
  test rax,rax
@@ -434,6 +518,14 @@ emit_for_loop:
  mov rdi,r14
  lea rsi,[rel return_item]
  mov edx,return_item_len
+ call neboc_assembly_writer_append_bytes
+ test eax,eax
+ jnz .done
+ jmp .latch
+.return_index:
+ mov rdi,r14
+ lea rsi,[rel return_index]
+ mov edx,return_index_len
  call neboc_assembly_writer_append_bytes
  test eax,eax
  jnz .done

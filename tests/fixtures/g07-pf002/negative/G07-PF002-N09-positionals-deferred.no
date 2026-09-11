@@ -1,0 +1,6 @@
+generic<T: Scalar> (T.value)identity(T.other) {
+    value.return;
+}
+
+start() {
+}

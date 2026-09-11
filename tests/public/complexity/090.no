@@ -1,0 +1,6 @@
+// Closes the protocol with every event surface, batch, consumer, and invariant.
+start() {
+    RenderPlan;
+    1310;
+    protocol.event("console.emit").event("console.clear").event("console.region").event("console.text").event("console.write").event("console.table").event("console.plot2d").event("console.graph").event("console.dashboard").event("console.scan.request").event("console.scan.response").event("console.scan.validation_failed").event("console.scan.cancelled").event("console.scan.timeout").payload("protocol-closeout").headless().jsonl().targetConformance().validate().deterministic().failureAtomic().bounded();
+}

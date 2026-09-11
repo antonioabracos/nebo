@@ -1,0 +1,10 @@
+Test ID: NEBO-SOURCE-UNIT_ASM-006
+Logical Path: src/main.no
+Column Policy: Unicode codepoint, 1-based
+Byte Offset 1: line 1, column 2
+Byte Offset 3: line 1, column 3
+Byte Offset 7: line 2, column 1
+Continuation Offset 2: INVALID_ARGUMENT
+Empty Span: VALID
+Span Union: [1,6)
+Result: PASS

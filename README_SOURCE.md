@@ -1,7 +1,11 @@
 # Build Nebo 1.1.0 from source
 
-Language Edition: 1.0. Status: PULL_REQUEST_CANDIDATE.
-The latest published release remains 1.0.1.
+Language Edition: 1.0. Status: FINAL_RELEASE.
+Latest published release: 1.1.0.
+Release date: 2026-09-12
+Release timestamp (UTC): 2026-09-12T07:14:22Z
+Tag: nebo-v1.1.0
+Publication channel: GitHub Release; publication authorization: RELEASE_GO.
 
 On Linux x86-64 with Python 3, Ninja, NASM and GNU binutils installed:
 

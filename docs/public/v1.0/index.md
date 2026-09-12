@@ -20,7 +20,12 @@ reference, projects, search, CLI manual and editor help.
 
 ## Current source release
 
-Source version: `1.1.0`; Language Edition: `1.0`. PULL_REQUEST_CANDIDATE.
-Latest published release: `1.0.1`. See the [current release notes](releases/NEBO-1.1.0-RELEASE-NOTES.md),
+Source version: `1.1.0`; Language Edition: `1.0`. FINAL_RELEASE.
+Latest published release: `1.1.0`. See the [current release notes](releases/NEBO-1.1.0-RELEASE-NOTES.md),
 [migration guide](releases/NEBO-1.1.0-MIGRATION-GUIDE.md) and
 [known limitations](releases/NEBO-1.1.0-KNOWN-LIMITATIONS.md).
+
+Release date: 2026-09-12
+Release timestamp (UTC): 2026-09-12T07:14:22Z
+Tag: `nebo-v1.1.0`
+Final publication through GitHub Release is authorized by RELEASE_GO.

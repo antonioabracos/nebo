@@ -67,5 +67,16 @@
     "Headless console tests do not certify live X11 or external services",
     "Unsigned local integrity and inventory; no external certification or release publication",
     "Review covers current public contracts and critical owners; no claim of manual line-by-line review of every historical source file"
-  ]
+  ],
+  "release_readiness": "FINAL_RELEASE",
+  "source_integration_commit": "ea0e407b82595577c48c70b7877499f7757d4010",
+  "source_integration_tree": "5878240e6627106a466bf3fd88399eacde7492e1",
+  "post_merge_ci_run": 34645936056,
+  "post_merge_ci": "PASS",
+  "release_date": "2026-09-12",
+  "validation_record_scope": "Existing gate counts and reproducibility records describe the integrated public snapshot; RELEASE_GO executions and remote asset verification have separate release records",
+  "release_go_metadata_validation": "PASS",
+  "release_timestamp_utc": "2026-09-12T07:14:22Z",
+  "final_tag": "nebo-v1.1.0",
+  "publication_authorization": "RELEASE_GO"
 }

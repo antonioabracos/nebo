@@ -1,6 +1,6 @@
 {
   "schema": "nebo.public-source-provenance.v1",
-  "status": "PULL_REQUEST_CANDIDATE",
+  "status": "FINAL_RELEASE",
   "version": "1.1.0",
   "edition": "1.0",
   "target": "x86_64-systemv-elf-linux",
@@ -8,8 +8,8 @@
   "public_base_tree": "4ec315e223c0eb639bda1d2bd097286c2bd57dda",
   "strategy": "A_NON_CIRCULAR_PUBLIC_CONTENT",
   "content_manifest": "release/PUBLIC-CONTENT-SHA256SUMS",
-  "content_manifest_sha256": "c6b248c97338857b369e2e72a3ac001757ad6d9212036036ee6af4612a789066",
-  "canonical_public_tree_digest": "83db3554f81c75be5024695e7c8fbb76b3eae2c19a22fa6bd2e6267bc45cb1bc",
+  "content_manifest_sha256": "754568060e78c26ea2ab9ec3dbe869c9fc1149cedee0db5445a58f744997af4a",
+  "canonical_public_tree_digest": "664743390a4f48e0ede8efcd7415aa34e29c980da4e37bdd221cab80a13dff1a",
   "canonical_digest_recipe": "SHA-256 of compact sorted-key JSON records sorted by path, each containing path, Git mode and SHA-256, followed by one newline",
   "content_digest_exclusions": [
     "SHA256SUMS",
@@ -18,7 +18,16 @@
   ],
   "checksum_recipe": "SHA256SUMS covers every public source file except SHA256SUMS itself; it includes this provenance document and the content manifest",
   "validation": "release/PUBLIC-VALIDATION.json",
-  "source_files": 18335,
+  "source_files": 18342,
   "trust": "Public source integrity; unsigned, no publisher certification",
-  "publication": "Pull request candidate; no tag, release or uploaded binary assets"
+  "publication": "Final public release through GitHub Release, authorized by RELEASE_GO",
+  "source_integration_commit": "ea0e407b82595577c48c70b7877499f7757d4010",
+  "source_integration_tree": "5878240e6627106a466bf3fd88399eacde7492e1",
+  "source_integration_ci_run": 34645936056,
+  "source_integration_ci": "PASS",
+  "release_date": "2026-09-12",
+  "release_timestamp_utc": "2026-09-12T07:14:22Z",
+  "tag": "nebo-v1.1.0",
+  "publication_channel": "GITHUB_RELEASE",
+  "publication_authorization": "RELEASE_GO"
 }

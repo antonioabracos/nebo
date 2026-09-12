@@ -20,7 +20,10 @@ compiler version `1.1.0`. Link compatibility validates the complete bounded
 object set before publishing a result.
 
 The legacy aggregate status is an implementation inspection result and does not
-describe publication. The public source is a PULL_REQUEST_CANDIDATE; the latest
-published release remains 1.0.1. Historical release materialization and roadmap
+describe publication. The public source is FINAL_RELEASE.
+Latest published release: 1.1.0. Release date: 2026-09-12.
+Release timestamp (UTC): 2026-09-12T07:14:22Z. Tag: nebo-v1.1.0.
+Publication through GitHub Release is authorized by RELEASE_GO.
+Historical release materialization and roadmap
 orchestration are excluded. Run `bash scripts/ci-public.sh` for the current
 bounded validation suite. No inspection result grants release authorization.

@@ -2,7 +2,7 @@
 
 All notable changes to Nebo are recorded in this file.
 
-## [1.1.0] - Unreleased
+## [1.1.0] - 2026-09-12
 
 ### Added
 
@@ -32,7 +32,9 @@ All notable changes to Nebo are recorded in this file.
 
 ### Publication
 
-- Pull request candidate; the latest published release remains 1.0.1.
+- Publication status: FINAL_RELEASE; publication authorized by RELEASE_GO.
+- Release date: 2026-09-12; release timestamp (UTC): 2026-09-12T07:14:22Z.
+- Latest published release: 1.1.0; tag: `nebo-v1.1.0`.
 
 ## [1.0.1] - Published
 

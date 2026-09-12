@@ -2,8 +2,15 @@
 
 Version: `1.1.0`
 Language Edition: `1.0`
-Publication status: PULL_REQUEST_CANDIDATE
-Latest published release: `1.0.1`
+Publication status: FINAL_RELEASE
+Latest published release: `1.1.0`
+Release date: 2026-09-12
+Release timestamp (UTC): 2026-09-12T07:14:22Z
+Tag: `nebo-v1.1.0`
+
+Final release publication through GitHub Release is authorized by RELEASE_GO.
+Source, SDK, offline documentation, tooling and package archives share the
+final public release identity and are covered by release-level SHA256SUMS.
 
 The release line adds bounded public functionality while preserving the
 stable public source envelope. Integral overload selection is now executable;
@@ -35,4 +42,4 @@ The public validation entry point is `scripts/ci-public.sh`.
 
 Only Linux x86-64/System V static ELF is certified. Live display and external
 services remain environment-gated. No new external security certification,
-signing approval, supported OS or GPU claim is made. The latest published release remains 1.0.1 until separate release publication.
+signing approval, supported OS or GPU claim is made.

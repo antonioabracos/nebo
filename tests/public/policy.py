@@ -3,6 +3,8 @@
 import csv, hashlib, json, re, stat, subprocess, unicodedata
 from pathlib import Path
 from privacy import scan_files
+from finalization import read_texts, validate as validate_finalization
+from finalization_selftest import run as finalization_selftests
 ROOT=Path(__file__).resolve().parents[2]
 
 def sha(raw): return hashlib.sha256(raw).hexdigest()
@@ -49,12 +51,13 @@ def main():
     canonical=[dict(path=n,mode='100755' if (ROOT/n).stat().st_mode&0o111 else '100644',sha256=records[n]) for n in sorted(records)]
     assert provenance['canonical_public_tree_digest']==sha((json.dumps(canonical,sort_keys=True,separators=(',',':'))+'\n').encode())
     assert provenance['version']=='1.1.0' and provenance['edition']=='1.0'
-    env=dict(line.split('=',1) for line in (ROOT/'release/PUBLIC-RELEASE-CANDIDATE.env').read_text().splitlines() if line and not line.startswith('#'))
-    assert env['STATUS']=='PULL_REQUEST_CANDIDATE' and env['VERSION']=='1.1.0' and env['EDITION']=='1.0'
-    assert env['PREVIOUS_PUBLIC_VERSION']=='1.0.1' and env['OPEN_FINDINGS']=='0'
+    texts=read_texts(ROOT,names)
+    finalization=validate_finalization(texts)
+    assert finalization['readiness']=='FINAL_RELEASE'
+    finalization_tests=finalization_selftests(texts)
     with (ROOT/'release/PUBLIC-PR-CHANGE-MANIFEST.tsv').open() as f:
         rows=list(csv.DictReader(f,delimiter='\t'))
     assert rows and len({x['path'] for x in rows})==len(rows)
     assert all(x['classification'] and x['classification']!='UNCLASSIFIED' and x['public_reason'] and x['validation'] for x in rows)
-    print(json.dumps(dict(status='PASS',source_files=len(names),source_bytes=total,unclassified=0,unsafe_paths=0,private_paths=0,credential_patterns=0,license_pins=len(policy['license_and_asset_sha256']),local_only_occurrences=sum(local_only.values()))))
+    print(json.dumps(dict(status='PASS',source_files=len(names),source_bytes=total,unclassified=0,unsafe_paths=0,private_paths=0,credential_patterns=0,license_pins=len(policy['license_and_asset_sha256']),local_only_occurrences=sum(local_only.values()),finalization=finalization,finalization_selftests=finalization_tests['passed'])))
 if __name__=='__main__':main()

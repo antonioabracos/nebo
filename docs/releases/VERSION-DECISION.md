@@ -2,8 +2,11 @@
 
 Product version: **1.1.0**. Language Edition: **1.0**.
 Decision: **BACKWARD_COMPATIBLE_PUBLIC_ADDITIONS**.
-Publication status: **PULL_REQUEST_CANDIDATE**.
-Latest published release: **1.0.1**.
+Publication status: **FINAL_RELEASE**.
+Latest published release: **1.1.0**.
+Release date: 2026-09-12
+Release timestamp (UTC): 2026-09-12T07:14:22Z
+Tag: nebo-v1.1.0
 
 Bounded overload selection, composable Array reads and machine-readable CLI
 identity are public additions. The published immutable four-Int array indexing
@@ -24,6 +27,6 @@ and data/stream validators retain independent values, negative controls,
 ordering, missing-state and lazy-effect checks.
 
 Only Linux x86-64/System V static ELF is supported. Edition, ABI identifiers
-and schema versions are separate from the product version. The candidate
+and schema versions are separate from the product version. This source
 makes no additional operating-system, GPU, external-service or certification
-claim. Integration and publication remain separate steps.
+claim. Final release publication through GitHub Release is authorized by RELEASE_GO.

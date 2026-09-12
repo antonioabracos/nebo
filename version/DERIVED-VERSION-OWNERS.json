@@ -96,15 +96,15 @@
       "contains": [
         "Source version: `{version}`",
         "Language Edition: `{edition}`",
-        "Latest published release: `1.0.1`",
-        "Publication status: FINAL_RELEASE_READY"
+        "Latest published release: `{version}`",
+        "Publication status: FINAL_RELEASE"
       ]
     },
     {
       "path": "CHANGELOG.md",
       "kind": "text",
       "contains": [
-        "## [{version}] - Unreleased"
+        "## [{version}] - 2026-09-12"
       ]
     },
     {
@@ -113,7 +113,7 @@
       "contains": [
         "Version: `{version}`",
         "Language Edition: `{edition}`",
-        "Publication status: FINAL_RELEASE_READY"
+        "Publication status: FINAL_RELEASE"
       ]
     },
     {
@@ -187,7 +187,7 @@
       "kind": "text",
       "contains": [
         "Source version: `{version}`",
-        "FINAL_RELEASE_READY"
+        "FINAL_RELEASE"
       ]
     },
     {
@@ -263,7 +263,7 @@
       "contains": [
         "# Build Nebo {version} from source",
         "Language Edition: {edition}.",
-        "Status: FINAL_RELEASE_READY."
+        "Status: FINAL_RELEASE."
       ]
     },
     {
@@ -272,27 +272,37 @@
       "fields": {
         "version": "{version}",
         "edition": "{edition}",
-        "status": "FINAL_RELEASE_READY",
+        "status": "FINAL_RELEASE",
         "source_integration_commit": "ea0e407b82595577c48c70b7877499f7757d4010",
         "source_integration_tree": "5878240e6627106a466bf3fd88399eacde7492e1",
         "source_integration_ci": "PASS",
-        "remote_publication": "NOT_PERFORMED_BY_THIS_SNAPSHOT"
+        "release_date": "2026-09-12",
+        "release_timestamp_utc": "2026-09-12T07:14:22Z",
+        "tag": "nebo-v{version}",
+        "publication_authorization": "RELEASE_GO"
       }
     },
     {
       "path": "release/PUBLIC-RELEASE-CANDIDATE.env",
       "kind": "text",
       "contains": [
-        "\nVERSION={version}\n",
-        "\nEDITION={edition}\n",
-        "STATUS=FINAL_RELEASE_READY\n",
+        "STATUS=FINAL_RELEASE\n",
+        "VERSION={version}\n",
+        "EDITION={edition}\n",
+        "RELEASE_DATE=2026-09-12\n",
+        "RELEASE_TIMESTAMP_UTC=2026-09-12T07:14:22Z\n",
+        "TAG=nebo-v1.1.0\n",
+        "PUBLICATION_CHANNEL=GITHUB_RELEASE\n",
+        "PUBLICATION_AUTHORIZATION=RELEASE_GO\n",
+        "TARGET=x86_64-systemv-elf-linux\n",
+        "SEMVER_DECISION=BACKWARD_COMPATIBLE_PUBLIC_ADDITIONS\n",
+        "PREVIOUS_PUBLIC_VERSION=1.0.1\n",
         "SOURCE_MAIN_COMMIT=ea0e407b82595577c48c70b7877499f7757d4010\n",
+        "SOURCE_MAIN_TREE=5878240e6627106a466bf3fd88399eacde7492e1\n",
+        "SOURCE_MAIN_CI_RUN=34645936056\n",
         "SOURCE_MAIN_CI=PASS\n",
-        "RELEASE_DATE=UNSET\n",
-        "EXPECTED_TAG=nebo-v{version}\n",
-        "TAG_CREATED=NO\n",
-        "GITHUB_RELEASE_CREATED=NO\n",
-        "ASSETS_UPLOADED=0\n"
+        "OPEN_FINDINGS=0\n",
+        "FILENAME_COMPATIBILITY=HISTORICAL_PATH_PRESERVED\n"
       ]
     },
     {
@@ -301,23 +311,49 @@
       "fields": {
         "version": "{version}",
         "edition": "{edition}",
-        "release_readiness": "FINAL_RELEASE_READY",
+        "release_readiness": "FINAL_RELEASE",
         "source_integration_commit": "ea0e407b82595577c48c70b7877499f7757d4010",
-        "post_merge_ci": "PASS"
+        "post_merge_ci": "PASS",
+        "release_date": "2026-09-12",
+        "release_timestamp_utc": "2026-09-12T07:14:22Z",
+        "final_tag": "nebo-v{version}",
+        "release_go_metadata_validation": "PASS"
       }
     },
     {
       "path": "docs/releases/VERSION-DECISION.md",
       "kind": "text",
       "contains": [
-        "Publication status: **FINAL_RELEASE_READY**."
+        "Publication status: **FINAL_RELEASE**."
       ]
     },
     {
       "path": "docs/reference/nebo-1.0/g027-readiness.md",
       "kind": "text",
       "contains": [
-        "The public source is FINAL_RELEASE_READY"
+        "The public source is FINAL_RELEASE"
+      ]
+    },
+    {
+      "path": "release/NEBO-PUBLIC-RELEASE-IDENTITY.env",
+      "kind": "text",
+      "contains": [
+        "STATUS=FINAL_RELEASE\n",
+        "VERSION={version}\n",
+        "EDITION={edition}\n",
+        "RELEASE_DATE=2026-09-12\n",
+        "RELEASE_TIMESTAMP_UTC=2026-09-12T07:14:22Z\n",
+        "TAG=nebo-v1.1.0\n",
+        "PUBLICATION_CHANNEL=GITHUB_RELEASE\n",
+        "PUBLICATION_AUTHORIZATION=RELEASE_GO\n",
+        "TARGET=x86_64-systemv-elf-linux\n",
+        "SEMVER_DECISION=BACKWARD_COMPATIBLE_PUBLIC_ADDITIONS\n",
+        "PREVIOUS_PUBLIC_VERSION=1.0.1\n",
+        "SOURCE_MAIN_COMMIT=ea0e407b82595577c48c70b7877499f7757d4010\n",
+        "SOURCE_MAIN_TREE=5878240e6627106a466bf3fd88399eacde7492e1\n",
+        "SOURCE_MAIN_CI_RUN=34645936056\n",
+        "SOURCE_MAIN_CI=PASS\n",
+        "OPEN_FINDINGS=0\n"
       ]
     }
   ],
@@ -2772,6 +2808,7 @@
     "docs/reference",
     "tests/public",
     "TOOLCHAIN.json",
-    "release/PUBLIC-VALIDATION.json"
+    "release/PUBLIC-VALIDATION.json",
+    "release/NEBO-PUBLIC-RELEASE-IDENTITY.env"
   ]
 }

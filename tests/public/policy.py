@@ -53,7 +53,7 @@ def main():
     assert provenance['version']=='1.1.0' and provenance['edition']=='1.0'
     texts=read_texts(ROOT,names)
     finalization=validate_finalization(texts)
-    assert finalization['readiness']=='FINAL_RELEASE_READY'
+    assert finalization['readiness']=='FINAL_RELEASE'
     finalization_tests=finalization_selftests(texts)
     with (ROOT/'release/PUBLIC-PR-CHANGE-MANIFEST.tsv').open() as f:
         rows=list(csv.DictReader(f,delimiter='\t'))

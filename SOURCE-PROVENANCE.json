@@ -1,6 +1,6 @@
 {
   "schema": "nebo.public-source-provenance.v1",
-  "status": "FINAL_RELEASE_READY",
+  "status": "FINAL_RELEASE",
   "version": "1.1.0",
   "edition": "1.0",
   "target": "x86_64-systemv-elf-linux",
@@ -8,8 +8,8 @@
   "public_base_tree": "4ec315e223c0eb639bda1d2bd097286c2bd57dda",
   "strategy": "A_NON_CIRCULAR_PUBLIC_CONTENT",
   "content_manifest": "release/PUBLIC-CONTENT-SHA256SUMS",
-  "content_manifest_sha256": "c649f8b3de12755a8e140504146936440eb978f9a8822168b620a5fc2de9c0d6",
-  "canonical_public_tree_digest": "c5159414f33cca0d68c530890adeacdbbb07554eca1a2d44928e040698848d7c",
+  "content_manifest_sha256": "754568060e78c26ea2ab9ec3dbe869c9fc1149cedee0db5445a58f744997af4a",
+  "canonical_public_tree_digest": "664743390a4f48e0ede8efcd7415aa34e29c980da4e37bdd221cab80a13dff1a",
   "canonical_digest_recipe": "SHA-256 of compact sorted-key JSON records sorted by path, each containing path, Git mode and SHA-256, followed by one newline",
   "content_digest_exclusions": [
     "SHA256SUMS",
@@ -18,14 +18,16 @@
   ],
   "checksum_recipe": "SHA256SUMS covers every public source file except SHA256SUMS itself; it includes this provenance document and the content manifest",
   "validation": "release/PUBLIC-VALIDATION.json",
-  "source_files": 18339,
+  "source_files": 18342,
   "trust": "Public source integrity; unsigned, no publisher certification",
-  "publication": "Source integrated; release metadata ready; separate RELEASE_GO required for tag, GitHub Release and assets",
+  "publication": "Final public release through GitHub Release, authorized by RELEASE_GO",
   "source_integration_commit": "ea0e407b82595577c48c70b7877499f7757d4010",
   "source_integration_tree": "5878240e6627106a466bf3fd88399eacde7492e1",
   "source_integration_ci_run": 34645936056,
   "source_integration_ci": "PASS",
-  "expected_tag": "nebo-v1.1.0",
-  "remote_publication": "NOT_PERFORMED_BY_THIS_SNAPSHOT",
-  "release_date": null
+  "release_date": "2026-09-12",
+  "release_timestamp_utc": "2026-09-12T07:14:22Z",
+  "tag": "nebo-v1.1.0",
+  "publication_channel": "GITHUB_RELEASE",
+  "publication_authorization": "RELEASE_GO"
 }

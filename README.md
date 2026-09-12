@@ -2,17 +2,16 @@
 
 Source version: `1.1.0`
 Language Edition: `1.0`
-Publication status: FINAL_RELEASE_READY
-Latest published release: `1.0.1`
+Publication status: FINAL_RELEASE
+Latest published release: `1.1.0`
 Supported target: `x86_64-systemv-elf-linux`
-Expected tag: `nebo-v1.1.0`
-Tag status: NOT_CREATED
-GitHub Release status: NOT_CREATED
-Release date: UNSET
+Tag: `nebo-v1.1.0`
+Release date: 2026-09-12
+Release timestamp (UTC): 2026-09-12T07:14:22Z
 
-The 1.1.0 source is integrated into main and has passed post-merge CI.
-FINAL_RELEASE_READY records release readiness; publication requires a separate
-RELEASE_GO. No 1.1.0 tag, GitHub Release or uploaded assets exist yet.
+Nebo 1.1.0 is the final release authorized by RELEASE_GO.
+The [GitHub Release](https://github.com/antonioabracos/nebo/releases/tag/nebo-v1.1.0)
+provides verified source, SDK, documentation, tooling and offline package assets.
 
 Nebo compila programas para executáveis ELF64 estáticos em Linux x86-64.
 O compilador e o runtime nativos usam Assembly/NASM. As ferramentas locais de
@@ -79,7 +78,7 @@ operativo, GPU, scheduler de produção ou serviços externos.
 
 ## Histórico de publicação
 
-A versão de source 1.1.0 ainda não foi publicada. As releases públicas
+A versão 1.1.0 é a release pública atual. As releases públicas anteriores
 [1.0.1](https://github.com/antonioabracos/nebo/releases/tag/nebo-v1.0.1) e
 [1.0.0](https://github.com/antonioabracos/nebo/releases/tag/nebo-v1.0.0) permanecem
 inalteradas. O [changelog](CHANGELOG.md) preserva as entradas históricas.

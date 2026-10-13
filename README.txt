@@ -34,3 +34,11 @@ Infrastructure PASS is never POS/NEG/META/COMP/REG/R006 acceptance. Native count
 remain zero until the real frozen admission executes and its own receipts and
 tool provenance validate. R006 and checkpoint/seal require a full authenticated
 checkout; this deliberately minimal branch does not supply one.
+
+The subsequent namespace probe reuses the authenticated 7/7 supervisor receipt
+for unchanged source. It installs exactly bubblewrap 0.9.0-1ubuntu0.3 using
+Ubuntu's signed package indices, verifies the downloaded package digest, then
+tests bwrap/strace with /usr/bin/true. It does not disable AppArmor, change sysctl
+protections, modify the frozen harness, or execute Nebo. Host-tool digests are
+compared to the frozen destinations without publishing private source paths or
+the binaries themselves. Namespace compatibility alone cannot clear admission.

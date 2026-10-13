@@ -1,0 +1,16 @@
+{
+  "schema": "nebo-rev218-authenticated-smoke-reference-v1",
+  "run_id": 38397427215,
+  "job_id": 115296115797,
+  "run_url": "https://github.com/antonioabracos/nebo/actions/runs/38397427215",
+  "artifact_id": 11812533407,
+  "artifact_archive_sha256": "a1e787eb86ab344e8b449336e52bd42b679cf13fc6a47401dc4f0984106759c7",
+  "smoke_commit": "4e931b35433483b64a35ea0b2960d49d46553c10",
+  "result": "PASS_INFRASTRUCTURE_ONLY",
+  "passed": 7,
+  "failed": 0,
+  "native_requests": 0,
+  "supervisor_sha256": "39160d8c6b9d7dac942d6c5051fb6f5d0afbdd54f89fae8b156d9c3c30469c9f",
+  "fixture_sha256": "9da505dc40bd2770ce1936ab68e3bc5d27ec7975877a8ebebd72f989fdcb799b",
+  "evidence_reuse": "Reuse 7 successful infrastructure cases for identical supervisor and fixture source; do not infer native admission or whole runner compatibility"
+}

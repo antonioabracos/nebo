@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  supervisor-smoke:
+  namespace-probe:
     if: github.repository == 'antonioabracos/nebo'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -31,15 +31,15 @@ jobs:
           clean: false
           fetch-depth: 1
           fetch-tags: false
-      - name: Verify identity, characterize runner and test supervisor
+      - name: Reuse supervisor evidence and probe pinned namespace dependency
         timeout-minutes: 15
-        run: python3 -B ci/smoke.py
+        run: python3 -B ci/namespace_probe.py
       - name: Preserve bounded infrastructure evidence
         if: always()
         timeout-minutes: 3
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2, official MIT action
         with:
-          name: rev218-smoke-${{ github.run_id }}-${{ github.run_attempt }}
+          name: rev218-namespace-${{ github.run_id }}-${{ github.run_attempt }}
           path: ci-results/
           if-no-files-found: error
           compression-level: 0

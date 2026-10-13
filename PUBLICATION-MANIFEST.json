@@ -1,72 +1,85 @@
 {
   "schema": "nebo-rev218-publication-manifest-v1",
-  "scope": "PUBLIC_INFRASTRUCTURE_SMOKE_ONLY",
+  "scope": "PUBLIC_INFRASTRUCTURE_AND_NAMESPACE_PROBE_ONLY",
   "baseline_revision": 217,
   "baseline_head": "8711d27f4b552c999b8ad443fb09760f80c932b0",
   "files": [
     {
       "path": ".github/workflows/rev218-recovery.yml",
-      "sha256": "43a46b9c5e71e6d3708d61858a51861f37713a73ccc55ab4e7445029405273fd",
-      "bytes": 1425,
-      "necessary_for": "CI smoke, baseline identity, provenance/license or finite session policy",
-      "publication": "APPROVED_UNDER_CURRENT_OWNER_AUTHORIZATION",
-      "origin": "Authored for this isolated CI session"
+      "sha256": "c48616eeddfeb3fb69615cff48e10f30d4e3598e09034412891079d66440951c",
+      "bytes": 1445,
+      "publication": "APPROVED_CI_INFRASTRUCTURE_ONLY",
+      "origin": "Previously reviewed or newly authored CI source; references authenticated upstream evidence only"
     },
     {
       "path": "BASELINE.json",
       "sha256": "140713ad61511fdd85a4ac4aebaf68b147301114f8b9e497caf7ebe45a175b6c",
       "bytes": 822,
-      "necessary_for": "CI smoke, baseline identity, provenance/license or finite session policy",
-      "publication": "APPROVED_UNDER_CURRENT_OWNER_AUTHORIZATION",
-      "origin": "Authored for this isolated CI session"
+      "publication": "APPROVED_CI_INFRASTRUCTURE_ONLY",
+      "origin": "Previously reviewed or newly authored CI source; references authenticated upstream evidence only"
     },
     {
       "path": "LICENSE",
       "sha256": "23b838f798e12a514b33388d262003e90fc660b2b50593142f158ff62a743a0a",
       "bytes": 400,
-      "necessary_for": "CI smoke, baseline identity, provenance/license or finite session policy",
-      "publication": "APPROVED_UNDER_CURRENT_OWNER_AUTHORIZATION",
-      "origin": "Existing project license"
+      "publication": "APPROVED_CI_INFRASTRUCTURE_ONLY",
+      "origin": "Previously reviewed or newly authored CI source; references authenticated upstream evidence only"
     },
     {
       "path": "README.txt",
-      "sha256": "07b445761d3f8c1008ad2eab5e4a87e0701e52eb597140ca8d9325c9bc6c083a",
-      "bytes": 2346,
-      "necessary_for": "CI smoke, baseline identity, provenance/license or finite session policy",
-      "publication": "APPROVED_UNDER_CURRENT_OWNER_AUTHORIZATION",
-      "origin": "Authored for this isolated CI session"
+      "sha256": "6939ddedfbeea23cfe3f7389a5843319edaae607ad53438815df230e97511363",
+      "bytes": 2900,
+      "publication": "APPROVED_CI_INFRASTRUCTURE_ONLY",
+      "origin": "Previously reviewed or newly authored CI source; references authenticated upstream evidence only"
+    },
+    {
+      "path": "SUPERVISOR-SMOKE-RECEIPT.json",
+      "sha256": "6afd76387b548b521eab573a82dc3149e20572d184669dc80e20396323568a94",
+      "bytes": 824,
+      "publication": "APPROVED_CI_INFRASTRUCTURE_ONLY",
+      "origin": "Previously reviewed or newly authored CI source; references authenticated upstream evidence only"
+    },
+    {
+      "path": "ci/namespace_probe.py",
+      "sha256": "944f554178eeeb9864b416b581611fcd8d9f4f7d813c8e1f8602b8a8c3b47dd7",
+      "bytes": 6727,
+      "publication": "APPROVED_CI_INFRASTRUCTURE_ONLY",
+      "origin": "Previously reviewed or newly authored CI source; references authenticated upstream evidence only"
+    },
+    {
+      "path": "ci/native-tool-digests.json",
+      "sha256": "7a177aad0a0b656d736ff25592d0a476a2ede0d3fa741b5a2b6e9f2e8648ef32",
+      "bytes": 2641,
+      "publication": "APPROVED_CI_INFRASTRUCTURE_ONLY",
+      "origin": "Previously reviewed or newly authored CI source; references authenticated upstream evidence only"
     },
     {
       "path": "ci/process_fixture.py",
       "sha256": "9da505dc40bd2770ce1936ab68e3bc5d27ec7975877a8ebebd72f989fdcb799b",
       "bytes": 1810,
-      "necessary_for": "CI smoke, baseline identity, provenance/license or finite session policy",
-      "publication": "APPROVED_UNDER_CURRENT_OWNER_AUTHORIZATION",
-      "origin": "Authored for this isolated CI session"
+      "publication": "APPROVED_CI_INFRASTRUCTURE_ONLY",
+      "origin": "Previously reviewed or newly authored CI source; references authenticated upstream evidence only"
     },
     {
       "path": "ci/session.json",
       "sha256": "719b62b79e7e274a75584398860174fd572c2125951af64e6a362064bb388cec",
       "bytes": 291,
-      "necessary_for": "CI smoke, baseline identity, provenance/license or finite session policy",
-      "publication": "APPROVED_UNDER_CURRENT_OWNER_AUTHORIZATION",
-      "origin": "Authored for this isolated CI session"
+      "publication": "APPROVED_CI_INFRASTRUCTURE_ONLY",
+      "origin": "Previously reviewed or newly authored CI source; references authenticated upstream evidence only"
     },
     {
       "path": "ci/smoke.py",
       "sha256": "3522e146790ccb3fd1c8cd7a434933fd74c81ea01a70e649156a3c9e4d353a79",
       "bytes": 9144,
-      "necessary_for": "CI smoke, baseline identity, provenance/license or finite session policy",
-      "publication": "APPROVED_UNDER_CURRENT_OWNER_AUTHORIZATION",
-      "origin": "Authored for this isolated CI session"
+      "publication": "APPROVED_CI_INFRASTRUCTURE_ONLY",
+      "origin": "Previously reviewed or newly authored CI source; references authenticated upstream evidence only"
     },
     {
       "path": "ci/supervisor.py",
       "sha256": "39160d8c6b9d7dac942d6c5051fb6f5d0afbdd54f89fae8b156d9c3c30469c9f",
       "bytes": 3186,
-      "necessary_for": "CI smoke, baseline identity, provenance/license or finite session policy",
-      "publication": "APPROVED_UNDER_CURRENT_OWNER_AUTHORIZATION",
-      "origin": "Authored for this isolated CI session"
+      "publication": "APPROVED_CI_INFRASTRUCTURE_ONLY",
+      "origin": "Previously reviewed or newly authored CI source; references authenticated upstream evidence only"
     }
   ],
   "manifest_self_hash": "Recorded in local pre-push report and Git commit; excluded here to avoid a circular hash",
@@ -88,5 +101,12 @@
       "reviewed_tag": "v4.6.2",
       "license": "MIT"
     }
-  ]
+  ],
+  "reviewed_dependency": {
+    "package": "bubblewrap",
+    "version": "0.9.0-1ubuntu0.3",
+    "origin": "Ubuntu signed package index",
+    "reference": "https://packages.ubuntu.com/noble/bubblewrap",
+    "redistributed": false
+  }
 }

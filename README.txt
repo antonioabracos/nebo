@@ -42,3 +42,11 @@ tests bwrap/strace with /usr/bin/true. It does not disable AppArmor, change sysc
 protections, modify the frozen harness, or execute Nebo. Host-tool digests are
 compared to the frozen destinations without publishing private source paths or
 the binaries themselves. Namespace compatibility alone cannot clear admission.
+
+The final bounded probe also checks sudo-assisted namespace creation and nested
+namespaces using only installed bwrap, strace and /usr/bin/true. Capabilities are
+dropped inside each sandbox; host files are mounted read-only. No project payload
+or Python harness is executed as root. Relevant AppArmor/userns settings are read
+before and after and must remain unchanged; no profile or sysctl is modified.
+This synthetic system test is not authorization to run the frozen native harness
+under a different identity and is not an application admission result.

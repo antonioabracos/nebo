@@ -1,6 +1,6 @@
 {
   "schema": "nebo-rev218-publication-manifest-v1",
-  "scope": "PUBLIC_INFRASTRUCTURE_AND_NAMESPACE_PROBE_ONLY",
+  "scope": "BOUNDED_SYSTEM_NAMESPACE_PROBE_NO_NATIVE_PAYLOAD",
   "baseline_revision": 217,
   "baseline_head": "8711d27f4b552c999b8ad443fb09760f80c932b0",
   "files": [
@@ -27,8 +27,8 @@
     },
     {
       "path": "README.txt",
-      "sha256": "6939ddedfbeea23cfe3f7389a5843319edaae607ad53438815df230e97511363",
-      "bytes": 2900,
+      "sha256": "3109aabf5857e49fba1720e0b050279a0b455f1e7c53c9e8ebd92513d65a091c",
+      "bytes": 3457,
       "publication": "APPROVED_CI_INFRASTRUCTURE_ONLY",
       "origin": "Previously reviewed or newly authored CI source; references authenticated upstream evidence only"
     },
@@ -41,8 +41,8 @@
     },
     {
       "path": "ci/namespace_probe.py",
-      "sha256": "944f554178eeeb9864b416b581611fcd8d9f4f7d813c8e1f8602b8a8c3b47dd7",
-      "bytes": 6727,
+      "sha256": "ce5a74639d566e617a9bb53fe5a91c8ea94c1c367fd1b09c6a0469e971a028b3",
+      "bytes": 8604,
       "publication": "APPROVED_CI_INFRASTRUCTURE_ONLY",
       "origin": "Previously reviewed or newly authored CI source; references authenticated upstream evidence only"
     },
@@ -107,6 +107,7 @@
     "version": "0.9.0-1ubuntu0.3",
     "origin": "Ubuntu signed package index",
     "reference": "https://packages.ubuntu.com/noble/bubblewrap",
-    "redistributed": false
+    "redistributed": false,
+    "archive_sha256": "2461f1beee9cb04c8942739fe1a2b37e7b7c2a3d518f0779dc75f9245baa3094"
   }
 }

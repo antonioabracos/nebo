@@ -16,6 +16,7 @@ import supervisor as S
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'ci-results'
 VERSION = '0.9.0-1ubuntu0.3'
+PACKAGE_SHA256 = '2461f1beee9cb04c8942739fe1a2b37e7b7c2a3d518f0779dc75f9245baa3094'
 
 
 def execute(name, argv, timeout=180, cwd=None):
@@ -57,6 +58,8 @@ def main():
         if len({r['SHA256'] for r in rows}) != 1 or not rows:
             raise RuntimeError('Pinned package identity missing or ambiguous')
         declared = rows[0]['SHA256']
+        if declared != PACKAGE_SHA256:
+            raise RuntimeError('Ubuntu package differs from the reviewed previous-run archive')
         with tempfile.TemporaryDirectory(prefix='nebo-reviewed-dependency-') as temp:
             download = execute('download-pinned-bubblewrap', ['apt-get','download','bubblewrap='+VERSION], cwd=temp)
             result['cases'].append(download)
@@ -77,6 +80,26 @@ def main():
             '--','/usr/bin/strace','-f','-qq','-e','trace=execve','/usr/bin/true'], timeout=10)
         result['cases'].append(trace)
         result['namespace_ptrace'] = 'PASS_SYSTEM_SMOKE_ONLY' if trace['exit']==0 else 'BLOCKED'
+        security_paths = [Path('/proc/sys/kernel/apparmor_restrict_unprivileged_userns'),
+                          Path('/proc/sys/kernel/unprivileged_userns_clone')]
+        before = {str(p):p.read_text().strip() if p.is_file() else None for p in security_paths}
+        sandbox = ['bwrap','--unshare-all','--die-with-parent','--new-session',
+                   '--ro-bind','/','/','--proc','/proc','--dev','/dev','--tmpfs','/tmp',
+                   '--cap-drop','ALL','--']
+        # Only installed, digest-recorded system tools execute with sudo. No
+        # application source, Python harness, credential or native Nebo payload.
+        privileged = execute('privileged-sandbox-system-smoke',
+            ['sudo','-n',*sandbox,'/usr/bin/strace','-f','-qq','-e','trace=execve','/usr/bin/true'],timeout=10)
+        result['cases'].append(privileged)
+        nested = execute('nested-sandbox-system-smoke',
+            ['sudo','-n',*sandbox,*sandbox,'/usr/bin/strace','-f','-qq','-e','trace=execve','/usr/bin/true'],timeout=10)
+        result['cases'].append(nested)
+        after = {str(p):p.read_text().strip() if p.is_file() else None for p in security_paths}
+        result['security_controls'] = dict(before=before,after=after,unchanged=before==after,
+                                           profiles_modified=False,sysctl_writes=False)
+        if before!=after: raise RuntimeError('Host security setting unexpectedly changed')
+        result['privileged_system_namespace'] = 'PASS_SYSTEM_SMOKE_ONLY' if privileged['exit']==0 else 'BLOCKED'
+        result['nested_system_namespace'] = 'PASS_SYSTEM_SMOKE_ONLY' if nested['exit']==0 else 'BLOCKED'
         expected = json.loads((ROOT/'ci/native-tool-digests.json').read_text())
         comparisons=[]
         for entry in expected['bindings']:
@@ -94,7 +117,7 @@ def main():
         result.update(elapsed=time.time()-started,finished_at=datetime.now(timezone.utc).isoformat(),
                       passed=sum(c['exit']==0 for c in result['cases']),
                       failed=sum(c['exit']!=0 for c in result['cases']),
-                      incomplete=max(0,4-len(result['cases'])))
+                      incomplete=max(0,6-len(result['cases'])))
         payloads=[dict(path=str(p.relative_to(OUT)),sha256=S.digest(p),bytes=p.stat().st_size)
                   for p in sorted(OUT.rglob('*')) if p.is_file()]
         S.write_json(OUT/'OUTPUT-MANIFEST.json',dict(files=payloads))

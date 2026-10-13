@@ -1,0 +1,17 @@
+{
+  "project": "Nebo Lang",
+  "entry_revision": 217,
+  "entry_head": "8711d27f4b552c999b8ad443fb09760f80c932b0",
+  "entry_tree": "7b08080161d35f33b15dc55d7f0650797ca9b8de",
+  "candidate_revision": 218,
+  "phase": "R050",
+  "group": "Iterator7",
+  "existing_spec_sha256": "6ef27d06f8c94f9c2267c552c5165aae5418ffe0168670733b3f7fab3836cf6c",
+  "existing_plan_sha256": "265c20c9c453a122591c45b929cd797ecf506951bda73300a7ae634bbd245d4f",
+  "existing_controller_sha256": "0de988920aa4cdcbc7619229b563f16cf67fc769151b9196240066f418cd4066",
+  "planned_native_requests": 2226,
+  "payload_published": false,
+  "source_checkout_included": false,
+  "baseline_ancestry_published": false,
+  "purpose": "Independent public CI infrastructure smoke with preserved baseline digest references, not a replacement checkout or revision seal"
+}

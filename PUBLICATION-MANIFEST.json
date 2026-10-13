@@ -1,0 +1,92 @@
+{
+  "schema": "nebo-rev218-publication-manifest-v1",
+  "scope": "PUBLIC_INFRASTRUCTURE_SMOKE_ONLY",
+  "baseline_revision": 217,
+  "baseline_head": "8711d27f4b552c999b8ad443fb09760f80c932b0",
+  "files": [
+    {
+      "path": ".github/workflows/rev218-recovery.yml",
+      "sha256": "43a46b9c5e71e6d3708d61858a51861f37713a73ccc55ab4e7445029405273fd",
+      "bytes": 1425,
+      "necessary_for": "CI smoke, baseline identity, provenance/license or finite session policy",
+      "publication": "APPROVED_UNDER_CURRENT_OWNER_AUTHORIZATION",
+      "origin": "Authored for this isolated CI session"
+    },
+    {
+      "path": "BASELINE.json",
+      "sha256": "140713ad61511fdd85a4ac4aebaf68b147301114f8b9e497caf7ebe45a175b6c",
+      "bytes": 822,
+      "necessary_for": "CI smoke, baseline identity, provenance/license or finite session policy",
+      "publication": "APPROVED_UNDER_CURRENT_OWNER_AUTHORIZATION",
+      "origin": "Authored for this isolated CI session"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "23b838f798e12a514b33388d262003e90fc660b2b50593142f158ff62a743a0a",
+      "bytes": 400,
+      "necessary_for": "CI smoke, baseline identity, provenance/license or finite session policy",
+      "publication": "APPROVED_UNDER_CURRENT_OWNER_AUTHORIZATION",
+      "origin": "Existing project license"
+    },
+    {
+      "path": "README.txt",
+      "sha256": "07b445761d3f8c1008ad2eab5e4a87e0701e52eb597140ca8d9325c9bc6c083a",
+      "bytes": 2346,
+      "necessary_for": "CI smoke, baseline identity, provenance/license or finite session policy",
+      "publication": "APPROVED_UNDER_CURRENT_OWNER_AUTHORIZATION",
+      "origin": "Authored for this isolated CI session"
+    },
+    {
+      "path": "ci/process_fixture.py",
+      "sha256": "9da505dc40bd2770ce1936ab68e3bc5d27ec7975877a8ebebd72f989fdcb799b",
+      "bytes": 1810,
+      "necessary_for": "CI smoke, baseline identity, provenance/license or finite session policy",
+      "publication": "APPROVED_UNDER_CURRENT_OWNER_AUTHORIZATION",
+      "origin": "Authored for this isolated CI session"
+    },
+    {
+      "path": "ci/session.json",
+      "sha256": "719b62b79e7e274a75584398860174fd572c2125951af64e6a362064bb388cec",
+      "bytes": 291,
+      "necessary_for": "CI smoke, baseline identity, provenance/license or finite session policy",
+      "publication": "APPROVED_UNDER_CURRENT_OWNER_AUTHORIZATION",
+      "origin": "Authored for this isolated CI session"
+    },
+    {
+      "path": "ci/smoke.py",
+      "sha256": "3522e146790ccb3fd1c8cd7a434933fd74c81ea01a70e649156a3c9e4d353a79",
+      "bytes": 9144,
+      "necessary_for": "CI smoke, baseline identity, provenance/license or finite session policy",
+      "publication": "APPROVED_UNDER_CURRENT_OWNER_AUTHORIZATION",
+      "origin": "Authored for this isolated CI session"
+    },
+    {
+      "path": "ci/supervisor.py",
+      "sha256": "39160d8c6b9d7dac942d6c5051fb6f5d0afbdd54f89fae8b156d9c3c30469c9f",
+      "bytes": 3186,
+      "necessary_for": "CI smoke, baseline identity, provenance/license or finite session policy",
+      "publication": "APPROVED_UNDER_CURRENT_OWNER_AUTHORIZATION",
+      "origin": "Authored for this isolated CI session"
+    }
+  ],
+  "manifest_self_hash": "Recorded in local pre-push report and Git commit; excluded here to avoid a circular hash",
+  "frozen_payload_included": false,
+  "history_included": false,
+  "credentials_included": false,
+  "private_identifiers_included": false,
+  "external_binary_redistribution": false,
+  "actions": [
+    {
+      "repository": "actions/checkout",
+      "sha": "11bd71901bbe5b1630ceea73d27597364c9af683",
+      "reviewed_tag": "v4.2.2",
+      "license": "MIT"
+    },
+    {
+      "repository": "actions/upload-artifact",
+      "sha": "ea165f8d65b6e75b540449e92b4886f43607fa02",
+      "reviewed_tag": "v4.6.2",
+      "license": "MIT"
+    }
+  ]
+}

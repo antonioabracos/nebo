@@ -1,0 +1,9 @@
+{
+  "session_start_utc": "2026-10-13T12:17:25+00:00",
+  "soft_stop_utc": "2026-10-13T19:47:25+00:00",
+  "hard_stop_utc": "2026-10-13T20:17:25+00:00",
+  "max_job_minutes": 120,
+  "this_workflow_minutes": 20,
+  "automatic_retries": 0,
+  "native_admission_authorized_by_this_snapshot": false
+}

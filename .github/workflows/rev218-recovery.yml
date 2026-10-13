@@ -1,0 +1,48 @@
+name: REV218 controlled off-host recovery
+
+on:
+  push:
+    branches: [ci/nebo-recovery-rev218]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nebo-rev218-controlled-recovery
+  cancel-in-progress: false
+
+jobs:
+  supervisor-smoke:
+    if: github.repository == 'antonioabracos/nebo'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      BUILD_JOBS: '1'
+      TEST_JOBS: '1'
+      CMAKE_BUILD_PARALLEL_LEVEL: '1'
+      CTEST_PARALLEL_LEVEL: '1'
+      MAKEFLAGS: '-j1'
+    steps:
+      - name: Checkout reviewed CI snapshot
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2, official MIT action
+        with:
+          persist-credentials: false
+          clean: false
+          fetch-depth: 1
+          fetch-tags: false
+      - name: Verify identity, characterize runner and test supervisor
+        timeout-minutes: 15
+        run: python3 -B ci/smoke.py
+      - name: Preserve bounded infrastructure evidence
+        if: always()
+        timeout-minutes: 3
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2, official MIT action
+        with:
+          name: rev218-smoke-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ci-results/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+          include-hidden-files: false
+          overwrite: false
